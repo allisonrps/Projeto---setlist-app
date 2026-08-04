@@ -1,0 +1,11 @@
+POLÍTICA DE PRIVACIDADE - SETLIST MANAGER
+
+A sua privacidade é muito importante para nós. O aplicativo Setlist Manager foi desenvolvido como um aplicativo comercial/utilitário local.
+
+1. Coleta e Uso de Informações O Setlist Manager não coleta, não transmite e não armazena nenhuma informação pessoal, dados de localização ou identificadores de dispositivos em servidores externos. Todos os dados cadastrados (como músicas, cifras, roteiros e fotos de bandas) são armazenados localmente e exclusivamente no banco de dados do seu próprio dispositivo de forma offline.
+
+2. Compartilhamento de Dados Não compartilhamos nenhuma informação com terceiros, pois não possuímos acesso aos seus dados. As funções de exportação de arquivos (.doc e .json) são acionadas manualmente por você e processadas localmente através do sistema de compartilhamento padrão do sistema operacional do seu celular.
+
+3. Exclusão de Dados Você tem total controle sobre seus dados. Para excluir permanentemente todas as informações registradas, basta apagar os dados do aplicativo nas configurações do seu celular ou desinstalar o aplicativo.
+
+4. Contato Caso tenha dúvidas, entre em contato pelo e-mail: [SEU_EMAIL_AQUI].
