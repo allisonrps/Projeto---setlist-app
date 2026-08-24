@@ -1,13 +1,17 @@
 {
   "name": "setlist-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "index.js",
   "dependencies": {
-    "expo": "~57.0.4",
-    "expo-image-picker": "~57.0.2",
-    "expo-linking": "~57.0.2",
-    "expo-sqlite": "~57.0.0",
-    "expo-status-bar": "~57.0.0",
+    "@expo/vector-icons": "^15.1.1",
+    "expo": "~57.0.8",
+    "expo-document-picker": "~57.0.1",
+    "expo-file-system": "~57.0.1",
+    "expo-image-picker": "~57.0.6",
+    "expo-linking": "~57.0.4",
+    "expo-sharing": "~57.0.7",
+    "expo-sqlite": "~57.0.1",
+    "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
@@ -19,5 +23,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@expo/ngrok": "^4.1.3"
+  }
 }
