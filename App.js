@@ -2070,10 +2070,10 @@ function MainApp() {
               fontWeight: '900', 
               color: selectedSetlistType !== '' ? colors.primary : colors.text 
             }}>
-              {selectedSetlistType === 'show' ? `🎤 ${t('show').toUpperCase()}S` :
-               selectedSetlistType === 'ensaio' ? `🎸 ${t('rehearsal').toUpperCase()}S` :
-               selectedSetlistType === 'repertório' ? `📋 ${t('repertoire').toUpperCase()}` :
-               `🔍 FILTRO: TODOS`}
+              {selectedSetlistType === 'show' ? `${t('show').toUpperCase()}S` :
+               selectedSetlistType === 'ensaio' ? `${t('rehearsal').toUpperCase()}S` :
+               selectedSetlistType === 'repertório' ? t('repertoire').toUpperCase() :
+               `FILTRO: TODOS`}
             </Text>
           </Pressable>
 
@@ -2152,25 +2152,7 @@ function MainApp() {
           </Pressable>
         </View>
 
-        {/* Banner de filtro por banda */}
-        {selectedBandId && activeBand && (
-          <View style={[styles.filterBanner, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={[styles.filterBannerLabel, { color: colors.textMuted }]}>{language === 'en' ? 'SHOWING BAND SETLISTS:' : language === 'es' ? 'MOSTRANDO SETLISTS DE LA BANDA:' : 'MOSTRANDO SETLISTS DA BANDA:'}</Text>
-              <Text style={[styles.filterBannerText, { color: colors.primary }]} numberOfLines={1}>{activeBand.name}</Text>
-            </View>
-            <Pressable
-              style={({ pressed }) => [
-                styles.clearFilterButton,
-                { backgroundColor: colors.border },
-                pressed && { opacity: 0.7 }
-              ]}
-              onPress={() => setSelectedBandId(null)}
-            >
-              <Text style={{ fontSize: 10, fontWeight: '900', color: colors.text }}>{language === 'en' ? 'SEE ALL' : language === 'es' ? 'VER TODAS' : 'VER TODAS'}</Text>
-            </Pressable>
-          </View>
-        )}
+
 
         <ScrollView 
           style={{ flex: 1 }} 

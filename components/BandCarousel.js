@@ -48,13 +48,6 @@ export default function BandCarousel({
 
   return (
     <View style={styles.carouselContainer}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, paddingHorizontal: 4 }}>
-        <Ionicons name="people-outline" size={16} color={colors.textMuted} />
-        <Text style={[styles.carouselTitle, { color: colors.textMuted, marginBottom: 0 }]}>
-          {t('myBands').toUpperCase()}
-        </Text>
-      </View>
-      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
