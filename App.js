@@ -2279,7 +2279,7 @@ function MainApp() {
           <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, alignItems: 'center' }]}>
             <Image source={require('./assets/logo.png')} style={styles.aboutLogo} />
             <Text style={[styles.aboutAppTitle, { color: colors.primary }]}>SETLIST BAND MANAGER</Text>
-            <Text style={[styles.aboutAppVersion, { color: colors.textMuted }]}>{t('versionText')} 1.1.0</Text>
+            <Text style={[styles.aboutAppVersion, { color: colors.textMuted }]}>{t('versionText')} 1.1.2</Text>
             
             <View style={[styles.divider, { backgroundColor: colors.border, width: '100%' }]} />
             
