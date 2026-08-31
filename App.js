@@ -160,7 +160,6 @@ function MainApp() {
   const [selectedStyles, setSelectedStyles] = useState([]); // Array de tags selecionadas (máx 3)
   const [showStyleFilters, setShowStyleFilters] = useState(false); // Olho de exibição dos filtros de tags
   const [selectedSetlistType, setSelectedSetlistType] = useState(''); // '' | 'show' | 'ensaio' | 'repertório'
-  const [showBandFilterSelector, setShowBandFilterSelector] = useState(false);
   const [songSortBy, setSongSortBy] = useState('band'); // 'name' | 'band'
   const [songSortOrder, setSongSortOrder] = useState('asc'); // 'asc' | 'desc'
 
@@ -2038,7 +2037,8 @@ function MainApp() {
                 borderColor: selectedSetlistType !== '' ? colors.primary : colors.border,
                 borderWidth: 1.5,
                 borderRadius: 8,
-                paddingVertical: 12,
+                paddingVertical: 10,
+                height: 48,
                 transform: [{ scale: pressed ? 0.98 : 1 }]
               }
             ]}
@@ -2077,95 +2077,80 @@ function MainApp() {
             </Text>
           </Pressable>
 
-          {/* Botão de Filtro de Banda */}
+          {/* Botão de Ciclo de Filtro de Banda */}
           <Pressable
             style={({ pressed }) => [
               {
-                width: 44,
-                height: 44,
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
                 backgroundColor: colors.cardBackground,
                 borderColor: selectedBandId ? colors.primary : colors.border,
                 borderWidth: 1.5,
                 borderRadius: 8,
-                justifyContent: 'center',
-                alignItems: 'center',
-                transform: [{ scale: pressed ? 0.95 : 1 }]
+                paddingVertical: 10,
+                height: 48,
+                transform: [{ scale: pressed ? 0.98 : 1 }]
               }
             ]}
             onPress={() => {
               if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
-              setShowBandFilterSelector(!showBandFilterSelector);
+              if (bands.length === 0) {
+                setSelectedBandId(null);
+                return;
+              }
+              if (!selectedBandId) {
+                setSelectedBandId(bands[0].id);
+              } else {
+                const idx = bands.findIndex(b => String(b.id) === String(selectedBandId));
+                if (idx === -1 || idx === bands.length - 1) {
+                  setSelectedBandId(null);
+                } else {
+                  setSelectedBandId(bands[idx + 1].id);
+                }
+              }
             }}
           >
-            <Ionicons 
-              name={selectedBandId ? "briefcase" : "briefcase-outline"} 
-              size={18} 
-              color={selectedBandId ? colors.primary : colors.text} 
-            />
+            {/* Círculo da Banda / Icone de Todas */}
+            <View style={{
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: selectedBandId ? colors.primary + '15' : colors.border,
+              borderWidth: 1.5,
+              borderColor: selectedBandId ? colors.primary : 'rgba(0,0,0,0.1)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden'
+            }}>
+              {selectedBandId && activeBand ? (
+                activeBand.imageUri ? (
+                  <Image source={{ uri: activeBand.imageUri }} style={{ width: 24, height: 24, borderRadius: 12 }} />
+                ) : (
+                  <Text style={{ fontSize: 9, fontWeight: '950', color: colors.primary }}>
+                    {getBandInitials(activeBand.name || '')}
+                  </Text>
+                )
+              ) : (
+                <Ionicons name="briefcase-outline" size={12} color={colors.textMuted} />
+              )}
+            </View>
+
+            <Text 
+              style={{ 
+                fontSize: 12, 
+                fontWeight: '900', 
+                color: selectedBandId ? colors.primary : colors.text,
+                flexShrink: 1 
+              }}
+              numberOfLines={1}
+            >
+              {selectedBandId && activeBand ? activeBand.name.toUpperCase() : (language === 'en' ? 'ALL BANDS' : language === 'es' ? 'TODAS' : 'TODAS')}
+            </Text>
           </Pressable>
         </View>
-
-        {/* Seletor Horizontal de Bandas */}
-        {showBandFilterSelector && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: 12, paddingHorizontal: 4 }}
-            contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
-          >
-            {/* Chip "Todas" */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.smallFilterChip,
-                { 
-                  backgroundColor: !selectedBandId ? colors.primary : colors.cardBackground, 
-                  borderColor: !selectedBandId ? colors.primary : colors.border 
-                },
-                pressed && { opacity: 0.8 }
-              ]}
-              onPress={() => {
-                if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
-                setSelectedBandId(null);
-              }}
-            >
-              <Text style={[
-                styles.smallFilterChipText, 
-                { color: !selectedBandId ? '#fff' : colors.textMuted }
-              ]}>
-                {language === 'en' ? 'All Bands' : language === 'es' ? 'Todas' : 'Todas'}
-              </Text>
-            </Pressable>
-
-            {/* Listar bandas reais */}
-            {bands.map((band) => {
-              const isSelected = String(band.id) === String(selectedBandId);
-              return (
-                <Pressable
-                  key={band.id}
-                  style={({ pressed }) => [
-                    styles.smallFilterChip,
-                    { 
-                      backgroundColor: isSelected ? colors.primary : colors.cardBackground, 
-                      borderColor: isSelected ? colors.primary : colors.border 
-                    },
-                    pressed && { opacity: 0.8 }
-                  ]}
-                  onPress={() => {
-                    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
-                    setSelectedBandId(band.id);
-                  }}
-                >
-                  <Text style={[
-                    styles.smallFilterChipText, 
-                    { color: isSelected ? '#fff' : colors.textMuted }
-                  ]}>
-                    {band.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        )}
 
         {/* Banner de filtro por banda */}
         {selectedBandId && activeBand && (
