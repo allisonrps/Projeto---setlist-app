@@ -180,24 +180,31 @@ export default function SetlistCard({
               {setlist.name || 'Sem Nome'}
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-            <Ionicons 
-              name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-              size={12} 
-              color={colors.textMuted} 
-            />
-            <Text style={[styles.cardSubText, { color: colors.textMuted, marginTop: 0 }]} numberOfLines={1}>
-              {t(setlist.type).toUpperCase()}
-            </Text>
-            {setlist.local ? (
-              <>
-                <Text style={{ fontSize: 11, color: colors.textMuted }}>•</Text>
-                <Ionicons name="pin-outline" size={12} color={colors.textMuted} />
-                <Text style={[styles.cardSubText, { color: colors.textMuted, marginTop: 0 }]} numberOfLines={1}>
-                  {setlist.local}
-                </Text>
-              </>
-            ) : null}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+            <View style={{
+              backgroundColor: typeColor + '15',
+              borderColor: typeColor + '30',
+              borderWidth: 1,
+              borderRadius: 4,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4
+            }}>
+              <Ionicons 
+                name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
+                size={10} 
+                color={typeColor} 
+              />
+              <Text style={{ 
+                fontSize: 10, 
+                fontWeight: '900', 
+                color: typeColor 
+              }}>
+                {t(setlist.type).toUpperCase()}
+              </Text>
+            </View>
           </View>
         </View>
 

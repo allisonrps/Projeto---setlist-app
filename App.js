@@ -160,6 +160,7 @@ function MainApp() {
   const [selectedStyles, setSelectedStyles] = useState([]); // Array de tags selecionadas (máx 3)
   const [showStyleFilters, setShowStyleFilters] = useState(false); // Olho de exibição dos filtros de tags
   const [selectedSetlistType, setSelectedSetlistType] = useState(''); // '' | 'show' | 'ensaio' | 'repertório'
+  const [showBandFilterSelector, setShowBandFilterSelector] = useState(false);
   const [songSortBy, setSongSortBy] = useState('band'); // 'name' | 'band'
   const [songSortOrder, setSongSortOrder] = useState('asc'); // 'asc' | 'desc'
 
@@ -1695,24 +1696,31 @@ function MainApp() {
                       <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }} numberOfLines={1}>
                         {setlist.name || 'Sem Nome'}
                       </Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                        <Ionicons 
-                          name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                          size={12} 
-                          color={colors.textMuted} 
-                        />
-                        <Text style={{ fontSize: 11, color: colors.textMuted }} numberOfLines={1}>
-                          {t(setlist.type).toUpperCase()}
-                        </Text>
-                        {setlist.local ? (
-                          <>
-                            <Text style={{ fontSize: 11, color: colors.textMuted }}>•</Text>
-                            <Ionicons name="pin-outline" size={12} color={colors.textMuted} />
-                            <Text style={{ fontSize: 11, color: colors.textMuted }} numberOfLines={1}>
-                              {setlist.local}
-                            </Text>
-                          </>
-                        ) : null}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                        <View style={{
+                          backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
+                          borderColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '30',
+                          borderWidth: 1,
+                          borderRadius: 4,
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 4
+                        }}>
+                          <Ionicons 
+                            name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
+                            size={10} 
+                            color={setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success} 
+                          />
+                          <Text style={{ 
+                            fontSize: 10, 
+                            fontWeight: '900', 
+                            color: setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success 
+                          }}>
+                            {t(setlist.type).toUpperCase()}
+                          </Text>
+                        </View>
                       </View>
                     </View>
                   </Pressable>
@@ -1785,7 +1793,7 @@ function MainApp() {
             onPress={() => setShowStyleFilters(!showStyleFilters)}
           >
             <Ionicons 
-              name={showStyleFilters ? "eye-outline" : "eye-off-outline"} 
+              name={showStyleFilters ? "pricetags" : "pricetags-outline"} 
               size={18} 
               color={showStyleFilters ? colors.primary : colors.textMuted} 
             />
@@ -2009,31 +2017,155 @@ function MainApp() {
           </View>
         </View>
 
-        {/* Filtros de Tipo de Setlist - Grid 2x2 */}
-        <View style={styles.filterGridContainer}>
-          {setlistTypes.map((t) => (
+        {/* Barra de Filtros Consolidada (Tipo e Banda) */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          gap: 10, 
+          paddingHorizontal: 4, 
+          marginBottom: 12 
+        }}>
+          {/* Botão Único de Ciclo de Tipo */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                backgroundColor: colors.cardBackground,
+                borderColor: selectedSetlistType !== '' ? colors.primary : colors.border,
+                borderWidth: 1.5,
+                borderRadius: 8,
+                paddingVertical: 12,
+                transform: [{ scale: pressed ? 0.98 : 1 }]
+              }
+            ]}
+            onPress={() => {
+              if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+              if (selectedSetlistType === '') {
+                setSelectedSetlistType('show');
+              } else if (selectedSetlistType === 'show') {
+                setSelectedSetlistType('ensaio');
+              } else if (selectedSetlistType === 'ensaio') {
+                setSelectedSetlistType('repertório');
+              } else {
+                setSelectedSetlistType('');
+              }
+            }}
+          >
+            <Ionicons 
+              name={
+                selectedSetlistType === 'show' ? 'mic' : 
+                selectedSetlistType === 'ensaio' ? 'musical-notes' : 
+                selectedSetlistType === 'repertório' ? 'clipboard' : 
+                'funnel-outline'
+              } 
+              size={15} 
+              color={selectedSetlistType !== '' ? colors.primary : colors.text} 
+            />
+            <Text style={{ 
+              fontSize: 12, 
+              fontWeight: '900', 
+              color: selectedSetlistType !== '' ? colors.primary : colors.text 
+            }}>
+              {selectedSetlistType === 'show' ? `🎤 ${t('show').toUpperCase()}S` :
+               selectedSetlistType === 'ensaio' ? `🎸 ${t('rehearsal').toUpperCase()}S` :
+               selectedSetlistType === 'repertório' ? `📋 ${t('repertoire').toUpperCase()}` :
+               `🔍 FILTRO: TODOS`}
+            </Text>
+          </Pressable>
+
+          {/* Botão de Filtro de Banda */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                width: 44,
+                height: 44,
+                backgroundColor: colors.cardBackground,
+                borderColor: selectedBandId ? colors.primary : colors.border,
+                borderWidth: 1.5,
+                borderRadius: 8,
+                justifyContent: 'center',
+                alignItems: 'center',
+                transform: [{ scale: pressed ? 0.95 : 1 }]
+              }
+            ]}
+            onPress={() => {
+              if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+              setShowBandFilterSelector(!showBandFilterSelector);
+            }}
+          >
+            <Ionicons 
+              name={selectedBandId ? "briefcase" : "briefcase-outline"} 
+              size={18} 
+              color={selectedBandId ? colors.primary : colors.text} 
+            />
+          </Pressable>
+        </View>
+
+        {/* Seletor Horizontal de Bandas */}
+        {showBandFilterSelector && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 12, paddingHorizontal: 4 }}
+            contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
+          >
+            {/* Chip "Todas" */}
             <Pressable
-              key={t.key}
               style={({ pressed }) => [
-                styles.filterGridChip,
+                styles.smallFilterChip,
                 { 
-                  backgroundColor: colors.cardBackground, 
-                  borderColor: colors.border,
-                  transform: [{ scale: pressed ? 0.95 : 1 }]
+                  backgroundColor: !selectedBandId ? colors.primary : colors.cardBackground, 
+                  borderColor: !selectedBandId ? colors.primary : colors.border 
                 },
-                selectedSetlistType === t.key && { borderColor: colors.primary, borderWidth: 1.5 }
+                pressed && { opacity: 0.8 }
               ]}
-              onPress={() => setSelectedSetlistType(t.key)}
+              onPress={() => {
+                if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+                setSelectedBandId(null);
+              }}
             >
               <Text style={[
-                styles.filterGridChipText, 
-                { color: selectedSetlistType === t.key ? colors.primary : colors.text }
+                styles.smallFilterChipText, 
+                { color: !selectedBandId ? '#fff' : colors.textMuted }
               ]}>
-                {t.label}
+                {language === 'en' ? 'All Bands' : language === 'es' ? 'Todas' : 'Todas'}
               </Text>
             </Pressable>
-          ))}
-        </View>
+
+            {/* Listar bandas reais */}
+            {bands.map((band) => {
+              const isSelected = String(band.id) === String(selectedBandId);
+              return (
+                <Pressable
+                  key={band.id}
+                  style={({ pressed }) => [
+                    styles.smallFilterChip,
+                    { 
+                      backgroundColor: isSelected ? colors.primary : colors.cardBackground, 
+                      borderColor: isSelected ? colors.primary : colors.border 
+                    },
+                    pressed && { opacity: 0.8 }
+                  ]}
+                  onPress={() => {
+                    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+                    setSelectedBandId(band.id);
+                  }}
+                >
+                  <Text style={[
+                    styles.smallFilterChipText, 
+                    { color: isSelected ? '#fff' : colors.textMuted }
+                  ]}>
+                    {band.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
 
         {/* Banner de filtro por banda */}
         {selectedBandId && activeBand && (
@@ -2207,8 +2339,8 @@ function MainApp() {
             <Text style={[styles.aboutSectionTitle, { color: colors.text }]}>{t('aboutFeatures')}</Text>
             
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="people-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="people-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature1Title')}</Text>
@@ -2217,8 +2349,8 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="musical-notes-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="musical-notes-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature2Title')}</Text>
@@ -2227,8 +2359,8 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="desktop-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="desktop-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature3Title')}</Text>
@@ -2237,8 +2369,8 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="clipboard-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="clipboard-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature4Title')}</Text>
@@ -2247,8 +2379,8 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="share-social-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="share-social-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature5Title')}</Text>
@@ -2257,8 +2389,8 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="globe-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="globe-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature6Title')}</Text>
@@ -2267,8 +2399,8 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="star-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="star-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature7Title')}</Text>
@@ -2277,12 +2409,32 @@ function MainApp() {
             </View>
 
             <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="pricetag-outline" size={18} color={colors.primary} />
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="pricetag-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature8Title')}</Text>
                 <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature8Desc')}</Text>
+              </View>
+            </View>
+
+            <View style={styles.aboutFeatureRow}>
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="move-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature9Title')}</Text>
+                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature9Desc')}</Text>
+              </View>
+            </View>
+
+            <View style={styles.aboutFeatureRow}>
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="create-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature10Title')}</Text>
+                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature10Desc')}</Text>
               </View>
             </View>
           </View>
@@ -2562,7 +2714,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50,
-    paddingBottom: Platform.OS === 'ios' ? 98 : 92, // Aumentado para compensar a barra inferior mais alta
+    paddingBottom: Platform.OS === 'ios' ? 104 : 98,
   },
   header: {
     flexDirection: 'row',
@@ -2839,7 +2991,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 32,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 38,
     borderTopWidth: 1.5,
     position: 'absolute',
     bottom: 0,
