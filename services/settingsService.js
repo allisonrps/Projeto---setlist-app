@@ -29,12 +29,12 @@ export const settingsService = {
   async getPreferences() {
     try {
       const themeMode = await this.getSetting('themeMode', 'dark');
-      const primaryColor = await this.getSetting('primaryColor', '#8b5cf6'); // Violeta Neon default
-      const secondaryColor = await this.getSetting('secondaryColor', '#ec4899'); // Rosa Neon default
+      const primaryColor = await this.getSetting('primaryColor', '#0ea5e9'); // Azul Claro default
+      const secondaryColor = await this.getSetting('secondaryColor', '#0ea5e9'); // Azul Claro default
       return { themeMode, primaryColor, secondaryColor };
     } catch (error) {
       console.error('Error in settingsService.getPreferences:', error);
-      return { themeMode: 'dark', primaryColor: '#8b5cf6', secondaryColor: '#ec4899' };
+      return { themeMode: 'dark', primaryColor: '#0ea5e9', secondaryColor: '#0ea5e9' };
     }
   },
 

@@ -12,6 +12,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 
 const COLORS = [
+  '#0ea5e9', // Azul Claro / Sky Blue (Padrão)
   '#8b5cf6', // Roxo/Violet
   '#3b82f6', // Azul/Blue
   '#10b981', // Verde/Green
@@ -25,6 +26,16 @@ const COLORS = [
   '#d946ef', // Fúcsia/Fuchsia
   '#84cc16', // Verde Lima/Lime
   '#475569', // Slate
+  '#38bdf8', // Azul Claro Vivo/Sky Light
+  '#0284c7', // Azul Escuro Claro/Sky Dark
+  '#14b8a6', // Teal Claro
+  '#f43f5e', // Rose
+  '#a855f7', // Roxo Claro
+  '#e11d48', // Vermelho Escuro
+  '#fbbf24', // Amarelo Dourado
+  '#22c55e', // Verde Claro
+  '#1e293b', // Slate Dark
+  '#a1a1aa', // Cinza/Gray
 ];
 
 export default function SettingsModal({ visible, onClose }) {

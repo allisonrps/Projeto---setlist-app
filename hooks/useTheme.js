@@ -5,8 +5,8 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [themeMode, setThemeMode] = useState('dark');
-  const [primaryColor, setPrimaryColor] = useState('#8b5cf6'); // Violeta Neon
-  const [secondaryColor, setSecondaryColor] = useState('#ec4899'); // Rosa Neon
+  const [primaryColor, setPrimaryColor] = useState('#0ea5e9'); // Azul Claro default
+  const [secondaryColor, setSecondaryColor] = useState('#0ea5e9'); // Azul Claro default
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

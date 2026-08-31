@@ -2681,7 +2681,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50,
-    paddingBottom: Platform.OS === 'ios' ? 104 : 98,
+    paddingBottom: Platform.OS === 'ios' ? 112 : 106,
   },
   header: {
     flexDirection: 'row',
@@ -2958,7 +2958,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 38,
+    paddingBottom: Platform.OS === 'ios' ? 48 : 46,
     borderTopWidth: 1.5,
     position: 'absolute',
     bottom: 0,
