@@ -18,7 +18,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
 
-const ROW_HEIGHT = 54;
+const ROW_HEIGHT = 56;
 
 export function DraggableSortableList({ 
   songs, 
@@ -30,20 +30,20 @@ export function DraggableSortableList({
   onDragStateChange,
 }) {
   const [activeIdx, setActiveIdx] = useState(null);
-  const [orderState, setOrderState] = useState(songs.map((_, i) => i));
-  const animatedY = useRef([]);
-  const currentOrder = useRef([]);
+  const [hoverIdx, setHoverIdx] = useState(null);
   const activeIdxRef = useRef(null);
+  const hoverIdxRef = useRef(null);
+  const animatedOffset = useRef([]);
   const dragPanResponders = useRef([]);
   const swipePanResponders = useRef([]);
   const swipeTranslateX = useRef([]);
 
-  // Sincronizar array de animações verticais
-  while (animatedY.current.length < songs.length) {
-    animatedY.current.push(new Animated.Value(animatedY.current.length * ROW_HEIGHT));
+  // Sincronizar array de offsets de animação
+  while (animatedOffset.current.length < songs.length) {
+    animatedOffset.current.push(new Animated.Value(0));
   }
-  while (animatedY.current.length > songs.length) {
-    animatedY.current.pop();
+  while (animatedOffset.current.length > songs.length) {
+    animatedOffset.current.pop();
   }
 
   // Sincronizar array de swipe horizontal
@@ -54,25 +54,23 @@ export function DraggableSortableList({
     swipeTranslateX.current.pop();
   }
 
+  // Resetar todos os offsets para 0 sempre que a lista de músicas mudar
   useEffect(() => {
-    const initialOrder = songs.map((_, i) => i);
-    currentOrder.current = initialOrder;
-    setOrderState(initialOrder);
-    songs.forEach((_, i) => {
-      if (animatedY.current[i]) {
-        animatedY.current[i].setValue(i * ROW_HEIGHT);
-      }
-      if (swipeTranslateX.current[i]) {
-        swipeTranslateX.current[i].setValue(0);
-      }
+    animatedOffset.current.forEach((val) => {
+      if (val) val.setValue(0);
     });
+    swipeTranslateX.current.forEach((val) => {
+      if (val) val.setValue(0);
+    });
+    activeIdxRef.current = null;
+    hoverIdxRef.current = null;
+    setActiveIdx(null);
+    setHoverIdx(null);
   }, [songs]);
 
-  // Criar PanResponders estáveis que não são recriados a cada render
+  // Criar PanResponders estáveis para o arraste
   if (dragPanResponders.current.length !== songs.length) {
     dragPanResponders.current = songs.map((_, itemIndex) => {
-      let initialY = itemIndex * ROW_HEIGHT;
-
       return PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onStartShouldSetPanResponderCapture: () => true,
@@ -83,37 +81,44 @@ export function DraggableSortableList({
 
         onPanResponderGrant: () => {
           activeIdxRef.current = itemIndex;
+          hoverIdxRef.current = itemIndex;
           setActiveIdx(itemIndex);
+          setHoverIdx(itemIndex);
           if (onDragStateChange) onDragStateChange(true);
-
-          const curSlot = currentOrder.current.indexOf(itemIndex);
-          initialY = (curSlot !== -1 ? curSlot : itemIndex) * ROW_HEIGHT;
           if (typeof Vibration !== 'undefined') Vibration.vibrate(15);
         },
 
         onPanResponderMove: (_, gestureState) => {
-          const dragY = initialY + gestureState.dy;
-          if (animatedY.current[itemIndex]) {
-            animatedY.current[itemIndex].setValue(dragY);
+          if (animatedOffset.current[itemIndex]) {
+            animatedOffset.current[itemIndex].setValue(gestureState.dy);
           }
 
-          const hoverIndex = Math.max(0, Math.min(songs.length - 1, Math.round(dragY / ROW_HEIGHT)));
-          const oldHoverIndex = currentOrder.current.indexOf(itemIndex);
+          const currentHover = Math.max(0, Math.min(songs.length - 1, itemIndex + Math.round(gestureState.dy / ROW_HEIGHT)));
 
-          if (hoverIndex !== oldHoverIndex && oldHoverIndex !== -1) {
-            const newOrder = [...currentOrder.current];
-            newOrder.splice(oldHoverIndex, 1);
-            newOrder.splice(hoverIndex, 0, itemIndex);
-            currentOrder.current = newOrder;
-            setOrderState(newOrder);
-
+          if (currentHover !== hoverIdxRef.current) {
+            hoverIdxRef.current = currentHover;
+            setHoverIdx(currentHover);
             if (typeof Vibration !== 'undefined') Vibration.vibrate(8);
 
-            newOrder.forEach((originalIndex, orderIndex) => {
-              if (originalIndex !== itemIndex && animatedY.current[originalIndex]) {
-                Animated.spring(animatedY.current[originalIndex], {
-                  toValue: orderIndex * ROW_HEIGHT,
-                  tension: 180,
+            // Animar os offsets dos outros itens conforme a nova posição de sobreposição
+            songs.forEach((_, j) => {
+              if (j !== itemIndex && animatedOffset.current[j]) {
+                let targetOffset = 0;
+                if (currentHover > itemIndex) {
+                  // Arrastando para baixo: itens intermediários sobem
+                  if (j > itemIndex && j <= currentHover) {
+                    targetOffset = -ROW_HEIGHT;
+                  }
+                } else if (currentHover < itemIndex) {
+                  // Arrastando para cima: itens intermediários descem
+                  if (j < itemIndex && j >= currentHover) {
+                    targetOffset = ROW_HEIGHT;
+                  }
+                }
+
+                Animated.spring(animatedOffset.current[j], {
+                  toValue: targetOffset,
+                  tension: 200,
                   friction: 16,
                   useNativeDriver: true,
                 }).start();
@@ -123,48 +128,68 @@ export function DraggableSortableList({
         },
 
         onPanResponderRelease: () => {
-          const finalOrder = [...currentOrder.current];
-          const finalOrderIndex = finalOrder.indexOf(itemIndex);
-          const targetY = (finalOrderIndex !== -1 ? finalOrderIndex : itemIndex) * ROW_HEIGHT;
-          if (animatedY.current[itemIndex]) {
-            Animated.spring(animatedY.current[itemIndex], {
-              toValue: targetY,
-              tension: 180,
+          const startSlot = itemIndex;
+          const endSlot = hoverIdxRef.current !== null ? hoverIdxRef.current : itemIndex;
+          const targetOffset = (endSlot - startSlot) * ROW_HEIGHT;
+
+          if (animatedOffset.current[itemIndex]) {
+            Animated.spring(animatedOffset.current[itemIndex], {
+              toValue: targetOffset,
+              tension: 200,
               friction: 14,
               useNativeDriver: true,
             }).start(() => {
+              // Calcular a nova ordem final
+              const finalOrder = songs.map((_, i) => i);
+              finalOrder.splice(startSlot, 1);
+              finalOrder.splice(endSlot, 0, itemIndex);
+
+              // Resetar todos os offsets para 0 antes de commitar para o estado do pai
+              animatedOffset.current.forEach((val) => {
+                if (val) val.setValue(0);
+              });
               activeIdxRef.current = null;
+              hoverIdxRef.current = null;
               setActiveIdx(null);
+              setHoverIdx(null);
               if (onDragStateChange) onDragStateChange(false);
+
+              // Notificar o pai com a nova ordem
               onReorder(finalOrder);
             });
           } else {
+            const finalOrder = songs.map((_, i) => i);
+            finalOrder.splice(startSlot, 1);
+            finalOrder.splice(endSlot, 0, itemIndex);
+
+            animatedOffset.current.forEach((val) => {
+              if (val) val.setValue(0);
+            });
             activeIdxRef.current = null;
+            hoverIdxRef.current = null;
             setActiveIdx(null);
+            setHoverIdx(null);
             if (onDragStateChange) onDragStateChange(false);
             onReorder(finalOrder);
           }
         },
 
         onPanResponderTerminate: () => {
-          const finalOrderIndex = currentOrder.current.indexOf(itemIndex);
-          const targetY = (finalOrderIndex !== -1 ? finalOrderIndex : itemIndex) * ROW_HEIGHT;
-          if (animatedY.current[itemIndex]) {
-            Animated.spring(animatedY.current[itemIndex], {
-              toValue: targetY,
-              tension: 160,
-              friction: 14,
-              useNativeDriver: true,
-            }).start(() => {
-              activeIdxRef.current = null;
-              setActiveIdx(null);
-              if (onDragStateChange) onDragStateChange(false);
-            });
-          } else {
-            activeIdxRef.current = null;
-            setActiveIdx(null);
-            if (onDragStateChange) onDragStateChange(false);
-          }
+          animatedOffset.current.forEach((val) => {
+            if (val) {
+              Animated.spring(val, {
+                toValue: 0,
+                tension: 200,
+                friction: 16,
+                useNativeDriver: true,
+              }).start();
+            }
+          });
+          activeIdxRef.current = null;
+          hoverIdxRef.current = null;
+          setActiveIdx(null);
+          setHoverIdx(null);
+          if (onDragStateChange) onDragStateChange(false);
         },
       });
     });
@@ -221,7 +246,7 @@ export function DraggableSortableList({
   }
 
   return (
-    <View style={{ height: songs.length * ROW_HEIGHT + 10, position: 'relative', marginTop: 4 }}>
+    <View style={{ marginTop: 4, paddingBottom: 10 }}>
       {songs.map((song, index) => {
         const isPause = song.id === -1;
         const isNote = song.id === -2;
@@ -229,9 +254,18 @@ export function DraggableSortableList({
         const dragResponder = dragPanResponders.current[index];
         const swipeResponder = swipePanResponders.current[index];
         const translateX = swipeTranslateX.current[index] || new Animated.Value(0);
+        const translateY = animatedOffset.current[index] || new Animated.Value(0);
 
-        if (!animatedY.current[index]) {
-          animatedY.current[index] = new Animated.Value(index * ROW_HEIGHT);
+        // Calcular o número exibido em tempo real
+        let displaySlot = index + 1;
+        if (activeIdx !== null && hoverIdx !== null) {
+          if (index === activeIdx) {
+            displaySlot = hoverIdx + 1;
+          } else if (hoverIdx > activeIdx && index > activeIdx && index <= hoverIdx) {
+            displaySlot = index; // subiu 1 posição
+          } else if (hoverIdx < activeIdx && index < activeIdx && index >= hoverIdx) {
+            displaySlot = index + 2; // desceu 1 posição
+          }
         }
 
           return (
@@ -241,7 +275,7 @@ export function DraggableSortableList({
               styles.draggableAbsoluteRow,
               {
                 transform: [
-                  { translateY: animatedY.current[index] },
+                  { translateY },
                   { scale: isDragging ? 1.03 : 1.0 }
                 ],
                 zIndex: isDragging ? 100 : 1,
@@ -313,7 +347,7 @@ export function DraggableSortableList({
                     styles.compactIndexText,
                     { color: isDragging ? colors.primary : (isPause ? colors.secondary : isNote ? colors.warning : colors.primary) }
                   ]}>
-                    {String((orderState.indexOf(index) !== -1 ? orderState.indexOf(index) : index) + 1).padStart(2, '0')}
+                    {String(displaySlot).padStart(2, '0')}
                   </Text>
                 </View>
 
@@ -1278,10 +1312,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   draggableAbsoluteRow: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
     height: 48,
+    marginBottom: 8,
   },
   swipeableRowContainer: {
     flex: 1,
