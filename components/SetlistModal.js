@@ -66,7 +66,7 @@ export function DraggableSortableList({
         swipeTranslateX.current[i].setValue(0);
       }
     });
-  }, [songs.length]);
+  }, [songs]);
 
   // Criar PanResponders estáveis que não são recriados a cada render
   if (dragPanResponders.current.length !== songs.length) {
@@ -123,25 +123,26 @@ export function DraggableSortableList({
         },
 
         onPanResponderRelease: () => {
-          const finalOrderIndex = currentOrder.current.indexOf(itemIndex);
+          const finalOrder = [...currentOrder.current];
+          const finalOrderIndex = finalOrder.indexOf(itemIndex);
           const targetY = (finalOrderIndex !== -1 ? finalOrderIndex : itemIndex) * ROW_HEIGHT;
           if (animatedY.current[itemIndex]) {
             Animated.spring(animatedY.current[itemIndex], {
               toValue: targetY,
-              tension: 160,
+              tension: 180,
               friction: 14,
               useNativeDriver: true,
             }).start(() => {
               activeIdxRef.current = null;
               setActiveIdx(null);
               if (onDragStateChange) onDragStateChange(false);
-              onReorder(currentOrder.current);
+              onReorder(finalOrder);
             });
           } else {
             activeIdxRef.current = null;
             setActiveIdx(null);
             if (onDragStateChange) onDragStateChange(false);
-            onReorder(currentOrder.current);
+            onReorder(finalOrder);
           }
         },
 
