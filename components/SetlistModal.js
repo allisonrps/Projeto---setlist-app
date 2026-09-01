@@ -20,24 +20,38 @@ import { Ionicons } from '@expo/vector-icons';
 
 const ROW_HEIGHT = 54;
 
-function DraggableSortableList({ 
+export function DraggableSortableList({ 
   songs, 
   onReorder, 
   onRemove, 
   onEditCustomItem, 
   colors, 
-  t 
+  t,
+  onDragStateChange,
 }) {
   const [activeIdx, setActiveIdx] = useState(null);
   const [orderState, setOrderState] = useState(songs.map((_, i) => i));
   const animatedY = useRef([]);
   const currentOrder = useRef([]);
+  const activeIdxRef = useRef(null);
+  const dragPanResponders = useRef([]);
+  const swipePanResponders = useRef([]);
+  const swipeTranslateX = useRef([]);
 
+  // Sincronizar array de animações verticais
   while (animatedY.current.length < songs.length) {
     animatedY.current.push(new Animated.Value(animatedY.current.length * ROW_HEIGHT));
   }
   while (animatedY.current.length > songs.length) {
     animatedY.current.pop();
+  }
+
+  // Sincronizar array de swipe horizontal
+  while (swipeTranslateX.current.length < songs.length) {
+    swipeTranslateX.current.push(new Animated.Value(0));
+  }
+  while (swipeTranslateX.current.length > songs.length) {
+    swipeTranslateX.current.pop();
   }
 
   useEffect(() => {
@@ -48,117 +62,151 @@ function DraggableSortableList({
       if (animatedY.current[i]) {
         animatedY.current[i].setValue(i * ROW_HEIGHT);
       }
+      if (swipeTranslateX.current[i]) {
+        swipeTranslateX.current[i].setValue(0);
+      }
     });
-  }, [songs]);
+  }, [songs.length]);
 
-  const createDragPanResponder = (itemIndex) => {
-    let initialY = itemIndex * ROW_HEIGHT;
+  // Criar PanResponders estáveis que não são recriados a cada render
+  if (dragPanResponders.current.length !== songs.length) {
+    dragPanResponders.current = songs.map((_, itemIndex) => {
+      let initialY = itemIndex * ROW_HEIGHT;
 
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        setActiveIdx(itemIndex);
-        initialY = currentOrder.current.indexOf(itemIndex) * ROW_HEIGHT;
-        if (typeof Vibration !== 'undefined') Vibration.vibrate(15);
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        const dragY = initialY + gestureState.dy;
-        if (animatedY.current[itemIndex]) {
-          animatedY.current[itemIndex].setValue(dragY);
-        }
+      return PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onStartShouldSetPanResponderCapture: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponderCapture: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onShouldBlockNativeResponder: () => true,
 
-        const hoverIndex = Math.max(0, Math.min(songs.length - 1, Math.round(dragY / ROW_HEIGHT)));
-        const oldHoverIndex = currentOrder.current.indexOf(itemIndex);
+        onPanResponderGrant: () => {
+          activeIdxRef.current = itemIndex;
+          setActiveIdx(itemIndex);
+          if (onDragStateChange) onDragStateChange(true);
 
-        if (hoverIndex !== oldHoverIndex) {
-          const newOrder = [...currentOrder.current];
-          newOrder.splice(oldHoverIndex, 1);
-          newOrder.splice(hoverIndex, 0, itemIndex);
-          currentOrder.current = newOrder;
-          setOrderState(newOrder);
+          const curSlot = currentOrder.current.indexOf(itemIndex);
+          initialY = (curSlot !== -1 ? curSlot : itemIndex) * ROW_HEIGHT;
+          if (typeof Vibration !== 'undefined') Vibration.vibrate(15);
+        },
 
-          if (typeof Vibration !== 'undefined') Vibration.vibrate(8);
+        onPanResponderMove: (_, gestureState) => {
+          const dragY = initialY + gestureState.dy;
+          if (animatedY.current[itemIndex]) {
+            animatedY.current[itemIndex].setValue(dragY);
+          }
 
-          newOrder.forEach((originalIndex, orderIndex) => {
-            if (originalIndex !== itemIndex && animatedY.current[originalIndex]) {
-              Animated.spring(animatedY.current[originalIndex], {
-                toValue: orderIndex * ROW_HEIGHT,
-                tension: 140,
-                friction: 14,
-                useNativeDriver: true,
-              }).start();
-            }
-          });
-        }
-      },
-      onPanResponderRelease: () => {
-        const finalOrderIndex = currentOrder.current.indexOf(itemIndex);
-        if (animatedY.current[itemIndex]) {
-          Animated.spring(animatedY.current[itemIndex], {
-            toValue: finalOrderIndex * ROW_HEIGHT,
-            tension: 120,
-            friction: 12,
-            useNativeDriver: true,
-          }).start(() => {
+          const hoverIndex = Math.max(0, Math.min(songs.length - 1, Math.round(dragY / ROW_HEIGHT)));
+          const oldHoverIndex = currentOrder.current.indexOf(itemIndex);
+
+          if (hoverIndex !== oldHoverIndex && oldHoverIndex !== -1) {
+            const newOrder = [...currentOrder.current];
+            newOrder.splice(oldHoverIndex, 1);
+            newOrder.splice(hoverIndex, 0, itemIndex);
+            currentOrder.current = newOrder;
+            setOrderState(newOrder);
+
+            if (typeof Vibration !== 'undefined') Vibration.vibrate(8);
+
+            newOrder.forEach((originalIndex, orderIndex) => {
+              if (originalIndex !== itemIndex && animatedY.current[originalIndex]) {
+                Animated.spring(animatedY.current[originalIndex], {
+                  toValue: orderIndex * ROW_HEIGHT,
+                  tension: 180,
+                  friction: 16,
+                  useNativeDriver: true,
+                }).start();
+              }
+            });
+          }
+        },
+
+        onPanResponderRelease: () => {
+          const finalOrderIndex = currentOrder.current.indexOf(itemIndex);
+          const targetY = (finalOrderIndex !== -1 ? finalOrderIndex : itemIndex) * ROW_HEIGHT;
+          if (animatedY.current[itemIndex]) {
+            Animated.spring(animatedY.current[itemIndex], {
+              toValue: targetY,
+              tension: 160,
+              friction: 14,
+              useNativeDriver: true,
+            }).start(() => {
+              activeIdxRef.current = null;
+              setActiveIdx(null);
+              if (onDragStateChange) onDragStateChange(false);
+              onReorder(currentOrder.current);
+            });
+          } else {
+            activeIdxRef.current = null;
             setActiveIdx(null);
+            if (onDragStateChange) onDragStateChange(false);
             onReorder(currentOrder.current);
-          });
-        } else {
-          setActiveIdx(null);
-        }
-      },
-      onPanResponderTerminate: () => {
-        const finalOrderIndex = currentOrder.current.indexOf(itemIndex);
-        if (animatedY.current[itemIndex]) {
-          Animated.spring(animatedY.current[itemIndex], {
-            toValue: finalOrderIndex * ROW_HEIGHT,
-            tension: 120,
-            friction: 12,
-            useNativeDriver: true,
-          }).start(() => {
-            setActiveIdx(null);
-          });
-        } else {
-          setActiveIdx(null);
-        }
-      },
-    });
-  };
+          }
+        },
 
-  const createSwipeDeletePanResponder = (index, translateX) => {
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        if (activeIdx !== null) return false;
-        return Math.abs(gestureState.dx) > 10 && gestureState.dx < 0 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dx < 0) {
-          translateX.setValue(Math.max(gestureState.dx, -120));
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -70) {
-          Animated.timing(translateX, {
-            toValue: -400,
-            duration: 180,
-            useNativeDriver: true,
-          }).start(() => {
-            if (typeof Vibration !== 'undefined') Vibration.vibrate(12);
-            onRemove(index);
-          });
-        } else {
-          Animated.spring(translateX, {
-            toValue: 0,
-            friction: 7,
-            tension: 40,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
+        onPanResponderTerminate: () => {
+          const finalOrderIndex = currentOrder.current.indexOf(itemIndex);
+          const targetY = (finalOrderIndex !== -1 ? finalOrderIndex : itemIndex) * ROW_HEIGHT;
+          if (animatedY.current[itemIndex]) {
+            Animated.spring(animatedY.current[itemIndex], {
+              toValue: targetY,
+              tension: 160,
+              friction: 14,
+              useNativeDriver: true,
+            }).start(() => {
+              activeIdxRef.current = null;
+              setActiveIdx(null);
+              if (onDragStateChange) onDragStateChange(false);
+            });
+          } else {
+            activeIdxRef.current = null;
+            setActiveIdx(null);
+            if (onDragStateChange) onDragStateChange(false);
+          }
+        },
+      });
     });
-  };
+  }
+
+  // PanResponders estáveis para o Swipe to Delete
+  if (swipePanResponders.current.length !== songs.length) {
+    swipePanResponders.current = songs.map((_, itemIndex) => {
+      const transX = swipeTranslateX.current[itemIndex] || new Animated.Value(0);
+
+      return PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+          if (activeIdxRef.current !== null) return false;
+          return Math.abs(gestureState.dx) > 10 && gestureState.dx < 0 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        },
+        onPanResponderMove: (_, gestureState) => {
+          if (gestureState.dx < 0) {
+            transX.setValue(Math.max(gestureState.dx, -120));
+          }
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (gestureState.dx < -70) {
+            Animated.timing(transX, {
+              toValue: -400,
+              duration: 180,
+              useNativeDriver: true,
+            }).start(() => {
+              if (typeof Vibration !== 'undefined') Vibration.vibrate(12);
+              onRemove(itemIndex);
+            });
+          } else {
+            Animated.spring(transX, {
+              toValue: 0,
+              friction: 7,
+              tension: 40,
+              useNativeDriver: true,
+            }).start();
+          }
+        },
+      });
+    });
+  }
 
   if (songs.length === 0) {
     return (
@@ -177,9 +225,9 @@ function DraggableSortableList({
         const isPause = song.id === -1;
         const isNote = song.id === -2;
         const isDragging = activeIdx === index;
-        const dragResponder = createDragPanResponder(index);
-        const translateX = new Animated.Value(0);
-        const swipeResponder = createSwipeDeletePanResponder(index, translateX);
+        const dragResponder = dragPanResponders.current[index];
+        const swipeResponder = swipePanResponders.current[index];
+        const translateX = swipeTranslateX.current[index] || new Animated.Value(0);
 
         if (!animatedY.current[index]) {
           animatedY.current[index] = new Animated.Value(index * ROW_HEIGHT);
@@ -375,6 +423,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const [editingCustomIndex, setEditingCustomIndex] = useState(null);
   const [tempCustomNotes, setTempCustomNotes] = useState('');
   const [tempCustomDuration, setTempCustomDuration] = useState('');
+  const [isDraggingActive, setIsDraggingActive] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -581,8 +630,9 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
 
             <ScrollView 
               style={styles.modalBody} 
+              scrollEnabled={!isDraggingActive}
               keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={true}
+              showsVerticalScrollIndicator={!isDraggingActive}
             >
               <View style={[styles.eventDetailsHeaderRow, { borderBottomColor: colors.border }]}>
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -831,6 +881,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 onEditCustomItem={handleOpenCustomItemEditor}
                 colors={colors}
                 t={t}
+                onDragStateChange={setIsDraggingActive}
               />
             </ScrollView>
 
