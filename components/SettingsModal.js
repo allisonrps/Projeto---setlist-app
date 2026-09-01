@@ -7,8 +7,8 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
-
 import { useLanguage } from '../hooks/useLanguage';
 
 const COLORS = [
@@ -77,7 +77,7 @@ export default function SettingsModal({ visible, onClose }) {
               style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
               onPress={onClose}
             >
-              <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
+              <Ionicons name="close" size={20} color={colors.danger} />
             </Pressable>
           </View>
 
@@ -93,9 +93,12 @@ export default function SettingsModal({ visible, onClose }) {
                 ]}
                 onPress={() => setTempMode('dark')}
               >
-                <Text style={[styles.segmentText, { color: tempMode === 'dark' ? '#fff' : colors.text }]}>
-                  {t('dark')}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                  <Ionicons name="moon-outline" size={14} color={tempMode === 'dark' ? '#fff' : colors.text} />
+                  <Text style={[styles.segmentText, { color: tempMode === 'dark' ? '#fff' : colors.text }]}>
+                    {t('dark')}
+                  </Text>
+                </View>
               </Pressable>
               <Pressable
                 style={[
@@ -105,9 +108,12 @@ export default function SettingsModal({ visible, onClose }) {
                 ]}
                 onPress={() => setTempMode('light')}
               >
-                <Text style={[styles.segmentText, { color: tempMode === 'light' ? '#fff' : colors.text }]}>
-                  {t('light')}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                  <Ionicons name="sunny-outline" size={14} color={tempMode === 'light' ? '#fff' : colors.text} />
+                  <Text style={[styles.segmentText, { color: tempMode === 'light' ? '#fff' : colors.text }]}>
+                    {t('light')}
+                  </Text>
+                </View>
               </Pressable>
             </View>
 
@@ -219,7 +225,10 @@ export default function SettingsModal({ visible, onClose }) {
               ]}
               onPress={handleSave}
             >
-              <Text style={styles.saveButtonText}>{t('save')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                <Text style={styles.saveButtonText}>{t('save')}</Text>
+              </View>
             </Pressable>
           </ScrollView>
         </View>

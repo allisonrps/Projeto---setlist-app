@@ -96,7 +96,7 @@ export default function ImportModal({
               style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
               onPress={onClose}
             >
-              <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
+              <Ionicons name="close" size={20} color={colors.danger} />
             </Pressable>
           </View>
 

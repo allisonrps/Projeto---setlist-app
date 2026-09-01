@@ -347,9 +347,10 @@ export default function SetlistCard({
                           ) : null}
                         </View>
                       ) : isNote ? (
-                        <View>
-                          <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontSize: 13, fontStyle: 'italic' }]}>
-                            📝 {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                          <Ionicons name="document-text-outline" size={13} color={colors.warning} />
+                          <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontSize: 13, fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
+                            {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
                           </Text>
                         </View>
                       ) : (
@@ -393,13 +394,19 @@ export default function SetlistCard({
                       )}
                     </View>
                     {isPause && song.customDuration ? (
-                      <Text style={[styles.songDurationText, { color: colors.secondary, fontWeight: '800' }]}>
-                        ⏱ {song.customDuration}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Ionicons name="time-outline" size={11} color={colors.secondary} />
+                        <Text style={[styles.songDurationText, { color: colors.secondary, fontWeight: '800' }]}>
+                          {song.customDuration}
+                        </Text>
+                      </View>
                     ) : (!isPause && song.duration ? (
-                      <Text style={[styles.songDurationText, { color: colors.textMuted }]}>
-                        ⏱ {song.duration}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Ionicons name="time-outline" size={11} color={colors.textMuted} />
+                        <Text style={[styles.songDurationText, { color: colors.textMuted }]}>
+                          {song.duration}
+                        </Text>
+                      </View>
                     ) : null)}
                   </View>
                 );

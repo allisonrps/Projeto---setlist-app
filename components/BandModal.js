@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 
@@ -84,7 +85,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
               style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
               onPress={onClose}
             >
-              <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
+              <Ionicons name="close" size={20} color={colors.danger} />
             </Pressable>
           </View>
 
@@ -118,9 +119,12 @@ export default function BandModal({ visible, onClose, onSave, band }) {
               ]} 
               onPress={handlePickImage}
             >
-              <Text style={[styles.imagePickButtonText, { color: colors.primary }]}>
-                {imageUri ? t('imageSelected') : t('chooseImage')}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                <Ionicons name="image-outline" size={18} color={colors.primary} />
+                <Text style={[styles.imagePickButtonText, { color: colors.primary }]}>
+                  {imageUri ? t('imageSelected') : t('chooseImage')}
+                </Text>
+              </View>
             </Pressable>
 
             {imageUri && (
@@ -134,7 +138,10 @@ export default function BandModal({ visible, onClose, onSave, band }) {
                     pressed && { opacity: 0.8 }
                   ]}
                 >
-                  <Text style={[styles.removeImageText, { color: colors.danger }]}>{t('removeImage')}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="trash-outline" size={14} color={colors.danger} />
+                    <Text style={[styles.removeImageText, { color: colors.danger }]}>{t('removeImage')}</Text>
+                  </View>
                 </Pressable>
               </View>
             )}
@@ -147,9 +154,12 @@ export default function BandModal({ visible, onClose, onSave, band }) {
               ]} 
               onPress={handleSave}
             >
-              <Text style={styles.saveButtonText}>
-                {band ? t('saveChanges') : t('createBand')}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                <Text style={styles.saveButtonText}>
+                  {band ? t('saveChanges') : t('createBand')}
+                </Text>
+              </View>
             </Pressable>
           </ScrollView>
         </View>

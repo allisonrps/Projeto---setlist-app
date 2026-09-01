@@ -520,14 +520,18 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                         PAUSA
                       </Text>
                     ) : isNote ? (
-                      <Text style={{
-                        fontSize: Math.max(12, fontSize * 0.7),
-                        fontWeight: '900',
-                        color: colors.warning,
-                        fontStyle: 'italic'
-                      }}>
-                        📝 {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Ionicons name="document-text-outline" size={Math.max(12, fontSize * 0.7)} color={colors.warning} />
+                        <Text style={{
+                          fontSize: Math.max(12, fontSize * 0.7),
+                          fontWeight: '900',
+                          color: colors.warning,
+                          fontStyle: 'italic',
+                          flex: 1
+                        }} numberOfLines={1}>
+                          {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
+                        </Text>
+                      </View>
                     ) : (
                       <>
                         <Text style={{
@@ -569,7 +573,10 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
           >
             {currentSong.id === -1 ? (
               <View style={styles.pauseTimerContainer}>
-                <Text style={[styles.pauseTitle, { color: colors.secondary, fontSize: fontSize + 10 }]}>⏸ {t('pauseTitle').toUpperCase()}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                  <Ionicons name="pause-circle-outline" size={fontSize + 8} color={colors.secondary} />
+                  <Text style={[styles.pauseTitle, { color: colors.secondary, fontSize: fontSize + 10 }]}>{t('pauseTitle').toUpperCase()}</Text>
+                </View>
                 
                 {currentSong.customNotes ? (
                   <View style={[styles.pauseNotesCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
@@ -607,9 +614,12 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                       ]}
                       onPress={() => setTimerActive(!timerActive)}
                     >
-                      <Text style={[styles.timerBtnText, { color: timerActive ? colors.warning : colors.success }]}>
-                        {timerActive ? t('pauseTimer') : t('startTimer')}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                        <Ionicons name={timerActive ? "pause" : "play"} size={14} color={timerActive ? colors.warning : colors.success} />
+                        <Text style={[styles.timerBtnText, { color: timerActive ? colors.warning : colors.success }]}>
+                          {timerActive ? t('pauseTimer') : t('startTimer')}
+                        </Text>
+                      </View>
                     </Pressable>
                     <Pressable
                       style={({ pressed }) => [
@@ -622,16 +632,22 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                         setTimerActive(false);
                       }}
                     >
-                      <Text style={[styles.timerBtnText, { color: colors.text }]}>
-                        {t('resetTimer')}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                        <Ionicons name="refresh" size={14} color={colors.text} />
+                        <Text style={[styles.timerBtnText, { color: colors.text }]}>
+                          {t('resetTimer')}
+                        </Text>
+                      </View>
                     </Pressable>
                   </View>
                 )}
               </View>
             ) : currentSong.id === -2 ? (
               <View style={styles.pauseTimerContainer}>
-                <Text style={[styles.pauseTitle, { color: colors.warning, fontSize: fontSize + 10 }]}>📝 {t('noteItem') || 'ANOTAÇÃO / OBSERVAÇÃO'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                  <Ionicons name="document-text-outline" size={fontSize + 8} color={colors.warning} />
+                  <Text style={[styles.pauseTitle, { color: colors.warning, fontSize: fontSize + 10 }]}>{t('noteItem') || 'ANOTAÇÃO / OBSERVAÇÃO'}</Text>
+                </View>
                 
                 {currentSong.customNotes ? (
                   <View style={[styles.pauseNotesCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 24 }]}>

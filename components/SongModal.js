@@ -146,7 +146,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
               onPress={onClose}
             >
-              <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
+              <Ionicons name="close" size={20} color={colors.danger} />
             </Pressable>
           </View>
 
@@ -279,7 +279,10 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                         style={({ pressed }) => [styles.removeLinkButton, pressed && { opacity: 0.7 }]} 
                         onPress={() => removeLink(index)}
                       >
-                        <Text style={[styles.removeLinkText, { color: colors.danger }]}>✕ {t('removeLink')}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                          <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                          <Text style={[styles.removeLinkText, { color: colors.danger }]}>{t('removeLink')}</Text>
+                        </View>
                       </Pressable>
                     )}
                   </View>
@@ -292,7 +295,10 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                   ]} 
                   onPress={addLinkField}
                 >
-                  <Text style={[styles.addLinkButtonText, { color: colors.primary }]}>{t('addLink')}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="add-circle-outline" size={14} color={colors.primary} />
+                    <Text style={[styles.addLinkButtonText, { color: colors.primary }]}>{t('addLink')}</Text>
+                  </View>
                 </Pressable>
               </>
             )}
@@ -340,7 +346,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
             >
               {[
-                { key: 'none', label: '✕' },
+                { key: 'none', label: 'OFF', isOff: true },
                 { key: '0.5', label: '0.5x' },
                 { key: '1.0', label: '1.0x' },
                 { key: '1.25', label: '1.25x' },
@@ -362,12 +368,24 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                   ]}
                   onPress={() => setScrollSpeed(item.key)}
                 >
-                  <Text style={[
-                    styles.tabSelectText,
-                    { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
-                  ]}>
-                    {item.label}
-                  </Text>
+                  {item.isOff ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="close-circle-outline" size={13} color={scrollSpeed === item.key ? '#fff' : colors.textMuted} />
+                      <Text style={[
+                        styles.tabSelectText,
+                        { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
+                      ]}>
+                        OFF
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={[
+                      styles.tabSelectText,
+                      { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
+                    ]}>
+                      {item.label}
+                    </Text>
+                  )}
                 </Pressable>
               ))}
             </ScrollView>
@@ -376,9 +394,9 @@ export default function SongModal({ visible, onClose, onSave, song }) {
             <Text style={[styles.inputLabel, { color: colors.textMuted, marginTop: 8 }]}>{t('editSongContent').toUpperCase()}</Text>
             <View style={styles.tabSelectorRow}>
               {[
-                { key: 'lyrics', label: t('lyricsFormLabel') },
-                { key: 'chords', label: t('chordsFormLabel') },
-                { key: 'tabs', label: t('tabsFormLabel') }
+                { key: 'lyrics', label: t('lyricsFormLabel'), icon: 'document-text-outline' },
+                { key: 'chords', label: t('chordsFormLabel'), icon: 'musical-notes-outline' },
+                { key: 'tabs', label: t('tabsFormLabel'), icon: 'list-outline' }
               ].map(item => (
                 <Pressable
                   key={item.key}
@@ -389,12 +407,19 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                   ]}
                   onPress={() => setActiveEditorTab(item.key)}
                 >
-                  <Text style={[
-                    styles.tabSelectText,
-                    { color: activeEditorTab === item.key ? '#fff' : colors.textMuted }
-                  ]}>
-                    {item.label}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                    <Ionicons 
+                      name={item.icon} 
+                      size={13} 
+                      color={activeEditorTab === item.key ? '#fff' : colors.textMuted} 
+                    />
+                    <Text style={[
+                      styles.tabSelectText,
+                      { color: activeEditorTab === item.key ? '#fff' : colors.textMuted }
+                    ]}>
+                      {item.label}
+                    </Text>
+                  </View>
                 </Pressable>
               ))}
             </View>
@@ -461,9 +486,12 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               ]} 
               onPress={handleSave}
             >
-              <Text style={styles.saveButtonText}>
-                {song ? t('saveChanges') : t('saveSong')}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                <Text style={styles.saveButtonText}>
+                  {song ? t('saveChanges') : t('saveSong')}
+                </Text>
+              </View>
             </Pressable>
           </ScrollView>
         </View>

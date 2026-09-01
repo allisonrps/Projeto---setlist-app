@@ -238,20 +238,22 @@ function DraggableSortableList({
                   {isPause ? (
                     <View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Ionicons name="pause-circle-outline" size={12} color={colors.secondary} />
                         <Text style={{ color: colors.secondary, fontWeight: '950', fontSize: 12 }}>
-                          ⏸ PAUSA
+                          PAUSA
                         </Text>
                         <Ionicons name="create-outline" size={11} color={colors.secondary} style={{ opacity: 0.8 }} />
                       </View>
                       <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 1 }} numberOfLines={1}>
-                        {song.customDuration ? `⏱ ${song.customDuration}` : '5 min'} {song.customNotes ? `• ${song.customNotes}` : ''}
+                        {song.customDuration || '5 min'} {song.customNotes ? `• ${song.customNotes}` : ''}
                       </Text>
                     </View>
                   ) : isNote ? (
                     <View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <Text style={{ color: colors.warning, fontWeight: '950', fontSize: 12, fontStyle: 'italic' }} numberOfLines={1}>
-                          📝 {song.customNotes || 'Anotação / Aviso'}
+                        <Ionicons name="document-text-outline" size={12} color={colors.warning} />
+                        <Text style={{ color: colors.warning, fontWeight: '950', fontSize: 12, fontStyle: 'italic', flex: 1 }} numberOfLines={1}>
+                          {song.customNotes || 'Anotação / Aviso'}
                         </Text>
                         <Ionicons name="create-outline" size={11} color={colors.warning} style={{ opacity: 0.8 }} />
                       </View>
@@ -265,7 +267,7 @@ function DraggableSortableList({
                         {song.name}
                       </Text>
                       <Text style={[styles.compactSongSubtitle, { color: colors.textMuted }]} numberOfLines={1}>
-                        {song.originalBand || ''} {song.key ? `• ${song.key}` : ''} {song.duration ? `• ⏱ ${song.duration}` : ''}
+                        {song.originalBand || ''} {song.key ? `• ${song.key}` : ''} {song.duration ? `• ${song.duration}` : ''}
                       </Text>
                     </View>
                   )}
@@ -520,11 +522,11 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 </Text>
               </View>
               <Pressable 
-                style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
-                onPress={onClose}
-              >
-                <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
-              </Pressable>
+              style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
+              onPress={onClose}
+            >
+              <Ionicons name="close" size={20} color={colors.danger} />
+            </Pressable>
             </View>
 
             <ScrollView 
@@ -757,9 +759,12 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
 
               {selectedSongs.length > 0 && (
                 <View style={styles.swipeTipBanner}>
-                  <Text style={[styles.swipeTipText, { color: colors.textMuted }]}>
-                    💡 {t('dragToReorderTip') || 'Arraste por ☰ para reordenar'} • {t('swipeToDeleteTip') || 'Deslize para a esquerda para excluir'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                    <Ionicons name="bulb-outline" size={13} color={colors.textMuted} />
+                    <Text style={[styles.swipeTipText, { color: colors.textMuted }]}>
+                      {t('dragToReorderTip') || 'Arraste por ☰ para reordenar'} • {t('swipeToDeleteTip') || 'Deslize para a esquerda para excluir'}
+                    </Text>
+                  </View>
                 </View>
               )}
 

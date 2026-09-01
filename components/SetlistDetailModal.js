@@ -210,13 +210,19 @@ export default function SetlistDetailModal({
 
                       <View style={{ flex: 1 }}>
                         {isPause ? (
-                          <Text style={[styles.songName, { color: colors.secondary, fontWeight: '950' }]}>
-                            ⏸ {t('pauseTitle').toUpperCase()}
-                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <Ionicons name="pause-circle-outline" size={13} color={colors.secondary} />
+                            <Text style={[styles.songName, { color: colors.secondary, fontWeight: '950' }]}>
+                              {t('pauseTitle').toUpperCase()}
+                            </Text>
+                          </View>
                         ) : isNote ? (
-                          <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontStyle: 'italic' }]}>
-                            📝 {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
-                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <Ionicons name="document-text-outline" size={13} color={colors.warning} />
+                            <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
+                              {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
+                            </Text>
+                          </View>
                         ) : (
                           <Pressable
                             style={{ flex: 1 }}
@@ -255,9 +261,10 @@ export default function SetlistDetailModal({
                       </View>
 
                       {!isPause && song.duration ? (
-                        <View style={[styles.durationBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}>
+                        <View style={[styles.durationBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', flexDirection: 'row', alignItems: 'center', gap: 3 }]}>
+                          <Ionicons name="time-outline" size={11} color={colors.textMuted} />
                           <Text style={[styles.songDuration, { color: colors.textMuted }]}>
-                            ⏱ {song.duration}
+                            {song.duration}
                           </Text>
                         </View>
                       ) : null}
