@@ -186,18 +186,42 @@ function DraggableSortableList({
             style={[
               styles.draggableAbsoluteRow,
               {
-                transform: [{ translateY: animatedY.current[index] }],
+                transform: [
+                  { translateY: animatedY.current[index] },
+                  { scale: isDragging ? 1.025 : 1.0 }
+                ],
                 zIndex: isDragging ? 100 : 1,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: isDragging ? 0.35 : 0,
-                elevation: isDragging ? 10 : 0,
+                shadowRadius: 8,
+                elevation: isDragging ? 8 : 0,
               }
             ]}
           >
             <View style={styles.swipeableRowContainer}>
-              <View style={[styles.swipeDeleteBackground, { backgroundColor: colors.danger }]}>
+              <View style={[
+                styles.swipeDeleteBackground, 
+                { 
+                  backgroundColor: colors.isDark ? 'rgba(239, 68, 68, 0.16)' : 'rgba(239, 68, 68, 0.10)',
+                  borderColor: colors.isDark ? 'rgba(239, 68, 68, 0.35)' : 'rgba(239, 68, 68, 0.25)',
+                  borderWidth: 1,
+                  borderRadius: 7,
+                }
+              ]}>
                 <View style={styles.swipeDeleteAction}>
-                  <Ionicons name="trash-outline" size={16} color="#fff" />
-                  <Text style={styles.swipeDeleteText}>{t('delete') || 'Excluir'}</Text>
+                  <View style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    backgroundColor: colors.danger + '22',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 2
+                  }}>
+                    <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                  </View>
+                  <Text style={[styles.swipeDeleteText, { color: colors.danger }]}>{t('delete') || 'Excluir'}</Text>
                 </View>
               </View>
 
@@ -206,8 +230,13 @@ function DraggableSortableList({
                 style={[
                   styles.compactSongCard,
                   {
-                    backgroundColor: isDragging ? colors.primary + '25' : colors.cardBackground,
-                    borderColor: isDragging ? colors.primary : (isPause ? colors.secondary + '40' : isNote ? colors.warning + '40' : colors.border),
+                    backgroundColor: isDragging 
+                      ? (colors.isDark ? colors.primary + '33' : colors.primary + '18') 
+                      : colors.cardBackground,
+                    borderColor: isDragging 
+                      ? colors.primary 
+                      : (isPause ? colors.secondary + '40' : isNote ? colors.warning + '40' : colors.border),
+                    borderWidth: isDragging ? 1.8 : 1.2,
                     transform: [{ translateX }],
                   }
                 ]}
@@ -286,7 +315,13 @@ function DraggableSortableList({
 
                 <View 
                   {...dragResponder.panHandlers} 
-                  style={styles.compactDragHandle}
+                  style={[
+                    styles.compactDragHandle,
+                    isDragging && {
+                      backgroundColor: colors.primary + '25',
+                      borderRadius: 6,
+                    }
+                  ]}
                 >
                   <Ionicons 
                     name="reorder-three" 
@@ -759,10 +794,16 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
 
               {selectedSongs.length > 0 && (
                 <View style={styles.swipeTipBanner}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                    <Ionicons name="bulb-outline" size={13} color={colors.textMuted} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', marginBottom: 2 }}>
+                    <Ionicons name="reorder-three" size={13} color={colors.primary} />
                     <Text style={[styles.swipeTipText, { color: colors.textMuted }]}>
-                      {t('dragToReorderTip') || 'Arraste por ☰ para reordenar'} • {t('swipeToDeleteTip') || 'Deslize para a esquerda para excluir'}
+                      {t('dragToReorderTip') || 'Arraste por ☰ para reordenar'}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
+                    <Ionicons name="arrow-back-outline" size={11} color={colors.textMuted} />
+                    <Text style={[styles.swipeTipText, { color: colors.textMuted }]}>
+                      {t('swipeToDeleteTip') || 'Deslize para a esquerda para excluir'}
                     </Text>
                   </View>
                 </View>
