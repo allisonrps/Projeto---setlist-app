@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Modal,
   Pressable,
@@ -38,6 +38,12 @@ export function DraggableSortableList({
   const swipePanResponders = useRef([]);
   const swipeTranslateX = useRef([]);
 
+  const songsRef = useRef(songs);
+  songsRef.current = songs;
+
+  const onReorderRef = useRef(onReorder);
+  onReorderRef.current = onReorder;
+
   // Sincronizar array de offsets de animação
   while (animatedOffset.current.length < songs.length) {
     animatedOffset.current.push(new Animated.Value(0));
@@ -57,16 +63,42 @@ export function DraggableSortableList({
   // Resetar todos os offsets para 0 sempre que a lista de músicas mudar
   useEffect(() => {
     animatedOffset.current.forEach((val) => {
-      if (val) val.setValue(0);
+      if (val) {
+        val.stopAnimation();
+        val.setValue(0);
+      }
     });
     swipeTranslateX.current.forEach((val) => {
-      if (val) val.setValue(0);
+      if (val) {
+        val.stopAnimation();
+        val.setValue(0);
+      }
     });
     activeIdxRef.current = null;
     hoverIdxRef.current = null;
     setActiveIdx(null);
     setHoverIdx(null);
   }, [songs]);
+
+  const handleMoveUp = (index) => {
+    if (index <= 0) return;
+    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+    const newOrder = songs.map((_, i) => i);
+    const temp = newOrder[index];
+    newOrder[index] = newOrder[index - 1];
+    newOrder[index - 1] = temp;
+    onReorder(newOrder);
+  };
+
+  const handleMoveDown = (index) => {
+    if (index >= songs.length - 1) return;
+    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+    const newOrder = songs.map((_, i) => i);
+    const temp = newOrder[index];
+    newOrder[index] = newOrder[index + 1];
+    newOrder[index + 1] = temp;
+    onReorder(newOrder);
+  };
 
   // Criar PanResponders estáveis para o arraste
   if (dragPanResponders.current.length !== songs.length) {
@@ -93,7 +125,7 @@ export function DraggableSortableList({
             animatedOffset.current[itemIndex].setValue(gestureState.dy);
           }
 
-          const currentHover = Math.max(0, Math.min(songs.length - 1, itemIndex + Math.round(gestureState.dy / ROW_HEIGHT)));
+          const currentHover = Math.max(0, Math.min(songsRef.current.length - 1, itemIndex + Math.round(gestureState.dy / ROW_HEIGHT)));
 
           if (currentHover !== hoverIdxRef.current) {
             hoverIdxRef.current = currentHover;
@@ -101,7 +133,7 @@ export function DraggableSortableList({
             if (typeof Vibration !== 'undefined') Vibration.vibrate(8);
 
             // Animar os offsets dos outros itens conforme a nova posição de sobreposição
-            songs.forEach((_, j) => {
+            songsRef.current.forEach((_, j) => {
               if (j !== itemIndex && animatedOffset.current[j]) {
                 let targetOffset = 0;
                 if (currentHover > itemIndex) {
@@ -118,7 +150,7 @@ export function DraggableSortableList({
 
                 Animated.spring(animatedOffset.current[j], {
                   toValue: targetOffset,
-                  tension: 200,
+                  tension: 220,
                   friction: 16,
                   useNativeDriver: true,
                 }).start();
@@ -132,57 +164,47 @@ export function DraggableSortableList({
           const endSlot = hoverIdxRef.current !== null ? hoverIdxRef.current : itemIndex;
           const targetOffset = (endSlot - startSlot) * ROW_HEIGHT;
 
-          if (animatedOffset.current[itemIndex]) {
-            Animated.spring(animatedOffset.current[itemIndex], {
-              toValue: targetOffset,
-              tension: 200,
-              friction: 14,
-              useNativeDriver: true,
-            }).start(() => {
-              // Calcular a nova ordem final
-              const finalOrder = songs.map((_, i) => i);
+          const executeCommit = () => {
+            const finalOrder = songsRef.current.map((_, i) => i);
+            if (startSlot !== endSlot) {
               finalOrder.splice(startSlot, 1);
               finalOrder.splice(endSlot, 0, itemIndex);
-
-              // Resetar todos os offsets para 0 antes de commitar para o estado do pai
-              animatedOffset.current.forEach((val) => {
-                if (val) val.setValue(0);
-              });
-              activeIdxRef.current = null;
-              hoverIdxRef.current = null;
-              setActiveIdx(null);
-              setHoverIdx(null);
-              if (onDragStateChange) onDragStateChange(false);
-
-              // Notificar o pai com a nova ordem
-              onReorder(finalOrder);
-            });
-          } else {
-            const finalOrder = songs.map((_, i) => i);
-            finalOrder.splice(startSlot, 1);
-            finalOrder.splice(endSlot, 0, itemIndex);
+            }
 
             animatedOffset.current.forEach((val) => {
-              if (val) val.setValue(0);
+              if (val) {
+                val.stopAnimation();
+                val.setValue(0);
+              }
             });
             activeIdxRef.current = null;
             hoverIdxRef.current = null;
             setActiveIdx(null);
             setHoverIdx(null);
             if (onDragStateChange) onDragStateChange(false);
-            onReorder(finalOrder);
+
+            if (startSlot !== endSlot) {
+              onReorderRef.current(finalOrder);
+            }
+          };
+
+          if (animatedOffset.current[itemIndex] && startSlot !== endSlot) {
+            Animated.spring(animatedOffset.current[itemIndex], {
+              toValue: targetOffset,
+              tension: 240,
+              friction: 14,
+              useNativeDriver: true,
+            }).start(executeCommit);
+          } else {
+            executeCommit();
           }
         },
 
         onPanResponderTerminate: () => {
           animatedOffset.current.forEach((val) => {
             if (val) {
-              Animated.spring(val, {
-                toValue: 0,
-                tension: 200,
-                friction: 16,
-                useNativeDriver: true,
-              }).start();
+              val.stopAnimation();
+              val.setValue(0);
             }
           });
           activeIdxRef.current = null;
@@ -268,9 +290,9 @@ export function DraggableSortableList({
           }
         }
 
-          return (
+        return (
           <Animated.View
-            key={`${song.id}-${index}`}
+            key={`draggable-song-${song.id}-${index}`}
             style={[
               styles.draggableAbsoluteRow,
               {
@@ -397,6 +419,34 @@ export function DraggableSortableList({
                   )}
                 </Pressable>
 
+                {/* Botões de Mover para Cima / Baixo para precisão rápida */}
+                {activeIdx === null && !isDragging && (
+                  <View style={{ flexDirection: 'column', gap: 2, marginRight: 2 }}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.compactArrowBtn,
+                        index === 0 && { opacity: 0.2 },
+                        pressed && { opacity: 0.6 }
+                      ]}
+                      onPress={() => handleMoveUp(index)}
+                      disabled={index === 0}
+                    >
+                      <Ionicons name="chevron-up" size={12} color={colors.textMuted} />
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.compactArrowBtn,
+                        index === songs.length - 1 && { opacity: 0.2 },
+                        pressed && { opacity: 0.6 }
+                      ]}
+                      onPress={() => handleMoveDown(index)}
+                      disabled={index === songs.length - 1}
+                    >
+                      <Ionicons name="chevron-down" size={12} color={colors.textMuted} />
+                    </Pressable>
+                  </View>
+                )}
+
                 {/* Botão de lixeira visível somente quando NÃO está arrastando */}
                 {activeIdx === null && !isDragging && (
                   <Pressable
@@ -501,10 +551,9 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
     setSelectedSongs(updated);
   };
 
-  const handleReorderSongs = (newOrderIndices) => {
-    const reordered = newOrderIndices.map(originalIdx => selectedSongs[originalIdx]);
-    setSelectedSongs(reordered);
-  };
+  const handleReorderSongs = useCallback((newOrderIndices) => {
+    setSelectedSongs((prev) => newOrderIndices.map((originalIdx) => prev[originalIdx]));
+  }, []);
 
   const updateSongItem = (index, updatedProps) => {
     const updated = [...selectedSongs];
@@ -1372,6 +1421,14 @@ const styles = StyleSheet.create({
   compactSongSubtitle: {
     fontSize: 10.5,
     marginTop: 1,
+  },
+  compactArrowBtn: {
+    width: 22,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 3,
+    backgroundColor: 'rgba(150, 150, 150, 0.12)',
   },
   compactTrashBtn: {
     width: 26,
