@@ -126,8 +126,7 @@ export default function SetlistDetailModal({
               </View>
               {setlist.notes ? (
                 <View style={[styles.infoRow, { alignItems: 'flex-start' }]}>
-                  <Ionicons name="document-text-outline" size={15} color={colors.warning} style={{ width: 24, textAlign: 'center', marginTop: 2 }} />
-                  <Text style={[styles.infoText, { color: colors.text, flex: 1 }]}>
+                  <Text style={[styles.infoText, { color: colors.text, flex: 1, paddingLeft: 4 }]}>
                     {language === 'en' ? 'Notes' : language === 'es' ? 'Notas' : 'Obs'}: <Text style={styles.infoBold}>{setlist.notes}</Text>
                   </Text>
                 </View>

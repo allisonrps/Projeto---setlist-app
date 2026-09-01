@@ -29,6 +29,7 @@ function DraggableSortableList({
   t 
 }) {
   const [activeIdx, setActiveIdx] = useState(null);
+  const [orderState, setOrderState] = useState(songs.map((_, i) => i));
   const animatedY = useRef([]);
   const currentOrder = useRef([]);
 
@@ -40,7 +41,9 @@ function DraggableSortableList({
   }
 
   useEffect(() => {
-    currentOrder.current = songs.map((_, i) => i);
+    const initialOrder = songs.map((_, i) => i);
+    currentOrder.current = initialOrder;
+    setOrderState(initialOrder);
     songs.forEach((_, i) => {
       if (animatedY.current[i]) {
         animatedY.current[i].setValue(i * ROW_HEIGHT);
@@ -73,6 +76,7 @@ function DraggableSortableList({
           newOrder.splice(oldHoverIndex, 1);
           newOrder.splice(hoverIndex, 0, itemIndex);
           currentOrder.current = newOrder;
+          setOrderState(newOrder);
 
           if (typeof Vibration !== 'undefined') Vibration.vibrate(8);
 
@@ -260,7 +264,7 @@ function DraggableSortableList({
                     styles.compactIndexText,
                     { color: isDragging ? colors.primary : (isPause ? colors.secondary : isNote ? colors.warning : colors.primary) }
                   ]}>
-                    {String((currentOrder.current.indexOf(index) !== -1 ? currentOrder.current.indexOf(index) : index) + 1).padStart(2, '0')}
+                    {String((orderState.indexOf(index) !== -1 ? orderState.indexOf(index) : index) + 1).padStart(2, '0')}
                   </Text>
                 </View>
 

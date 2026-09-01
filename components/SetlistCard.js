@@ -262,17 +262,16 @@ export default function SetlistCard({
                 </Text>
               </View>
             ) : null}
+            
+            {/* Observações */}
+            {setlist.notes ? (
+              <View style={[styles.detailRow, { alignItems: 'flex-start', marginBottom: 12 }]}>
+                <Text style={[styles.detailText, { color: colors.text, flex: 1 }]}>
+                  Obs: <Text style={{ fontWeight: '500', color: colors.textMuted }}>{setlist.notes}</Text>
+                </Text>
+              </View>
+            ) : null}
           </View>
-
-          {/* Observações */}
-          {setlist.notes ? (
-            <View style={[styles.detailRow, { alignItems: 'flex-start', marginBottom: 12 }]}>
-              <Ionicons name="document-text-outline" size={14} color={colors.warning} style={{ marginRight: 6, marginTop: 2 }} />
-              <Text style={[styles.detailText, { color: colors.text, flex: 1 }]}>
-                Obs: <Text style={{ fontWeight: '500', color: colors.textMuted }}>{setlist.notes}</Text>
-              </Text>
-            </View>
-          ) : null}
 
           {/* Listagem de Músicas do Setlist */}
           {setlist.songs && setlist.songs.length > 0 && (
@@ -285,42 +284,56 @@ export default function SetlistCard({
                   style={({ pressed }) => [styles.eyeBtn, pressed && { opacity: 0.7 }]}
                   onPress={() => setShowSongs(!showSongs)}
                 >
-                  <Text style={{ fontSize: 18 }}>{showSongs ? '👁️' : '👁️‍🗨️'}</Text>
+                  <Ionicons 
+                    name={showSongs ? "eye-outline" : "eye-off-outline"} 
+                    size={17} 
+                    color={showSongs ? colors.primary : colors.textMuted} 
+                  />
                 </Pressable>
               </View>
 
               {showSongs && setlist.songs.map((song, index) => {
                 const isPause = song.id === -1;
                 const isNote = song.id === -2;
-                const isEnsaio = setlist.type === 'ensaio';
-                const showRehearsalInput = isEnsaio && !isPause && !isNote && (song.rehearsalStatus === 'yellow' || song.rehearsalStatus === 'red');
+                const isRehearsal = setlist.type === 'ensaio';
+                const showRehearsalInput = isRehearsal && !isPause && !isNote && (song.rehearsalStatus === 'yellow' || song.rehearsalStatus === 'red');
 
                 return (
                   <View 
                     key={`${song.id}-${index}`} 
                     style={[
-                      styles.songRow, 
-                      { borderBottomColor: colors.border },
-                      showRehearsalInput && { alignItems: 'flex-start', paddingVertical: 12 }
+                      styles.songRow,
+                      { 
+                        backgroundColor: isPause ? colors.secondary + '08' : (isNote ? colors.warning + '08' : 'transparent'),
+                        borderLeftWidth: isPause || isNote ? 3 : 0,
+                        borderLeftColor: isPause ? colors.secondary : colors.warning,
+                        paddingHorizontal: isPause || isNote ? 6 : 0,
+                        borderRadius: isPause || isNote ? 4 : 0
+                      }
                     ]}
                   >
-                    {isEnsaio && !isPause && !isNote ? (
+                    {isRehearsal && onToggleSongStatus && !isPause && !isNote ? (
                       <Pressable 
-                        onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, song.id, index, song.rehearsalStatus)}
                         style={[
-                          styles.songIndexBadge, 
-                          song.rehearsalStatus === 'green' && { backgroundColor: colors.success, borderColor: colors.success },
-                          song.rehearsalStatus === 'yellow' && { backgroundColor: '#eab308', borderColor: '#eab308' },
-                          song.rehearsalStatus === 'red' && { backgroundColor: colors.danger, borderColor: colors.danger },
-                          song.rehearsalStatus !== 'green' && song.rehearsalStatus !== 'yellow' && song.rehearsalStatus !== 'red' && { backgroundColor: colors.primary + '10' }
+                          styles.songIndexBadge,
+                          { 
+                            backgroundColor: song.rehearsalStatus === 'green' 
+                              ? colors.success 
+                              : song.rehearsalStatus === 'yellow' 
+                              ? '#eab308' 
+                              : song.rehearsalStatus === 'red' 
+                              ? colors.danger 
+                              : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') 
+                          }
                         ]}
+                        onPress={() => onToggleSongStatus(setlist.id, song.id, index)}
                       >
                         <Text 
                           style={[
                             styles.songIndexText, 
                             (song.rehearsalStatus === 'green' || song.rehearsalStatus === 'red') && { color: '#fff' },
                             song.rehearsalStatus === 'yellow' && { color: '#000' },
-                            song.rehearsalStatus !== 'green' && song.rehearsalStatus !== 'yellow' && song.rehearsalStatus !== 'red' && { color: colors.primary }
+                            (song.rehearsalStatus !== 'green' && song.rehearsalStatus !== 'yellow' && song.rehearsalStatus !== 'red') && { color: colors.text }
                           ]}
                         >
                           {String(index + 1).padStart(2, '0')}
@@ -355,42 +368,44 @@ export default function SetlistCard({
                         </View>
                       ) : (
                         <Pressable 
-                          style={{ flex: 1 }}
+                          style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
                           onPress={() => onEditSong && onEditSong(song)}
                         >
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                            <Text style={[styles.songName, { color: colors.text, fontSize: 13, flex: 1 }]} numberOfLines={1}>
+                          <View style={{ flex: 1, paddingRight: 6 }}>
+                            <Text style={[styles.songName, { color: colors.text, fontSize: 13 }]} numberOfLines={1}>
                               {song.name}
                             </Text>
-                            <Ionicons name="create-outline" size={13} color={colors.primary} style={{ opacity: 0.6 }} />
+                            {song.originalBand ? (
+                              <Text style={[styles.songBand, { color: colors.textMuted, fontSize: 11, marginTop: 1 }]} numberOfLines={1}>
+                                {song.originalBand}
+                              </Text>
+                            ) : null}
                           </View>
-                          <Text style={[styles.songBand, { color: colors.textMuted, fontSize: 11 }]} numberOfLines={1}>
-                            {song.originalBand}
-                          </Text>
-
-                          {showRehearsalInput && (
-                            <TextInput
-                              style={{ 
-                                backgroundColor: isDark ? 'rgba(0,0,0,0.15)' : '#fff', 
-                                color: colors.inputText, 
-                                borderColor: colors.border, 
-                                borderWidth: 1, 
-                                paddingVertical: 4, 
-                                paddingHorizontal: 8, 
-                                borderRadius: 6, 
-                                fontSize: 12, 
-                                marginTop: 6, 
-                                fontStyle: 'italic'
-                              }}
-                              placeholder={t('rehearsalNotesPlaceholder')}
-                              placeholderTextColor={colors.textMuted}
-                              value={song.rehearsalNotes || ''}
-                              onChangeText={(text) => onUpdateSongRehearsalNotes && onUpdateSongRehearsalNotes(setlist.id, song.id, index, text)}
-                              autoComplete="off"
-                              importantForAutofill="no"
-                            />
-                          )}
+                          <Ionicons name="create-outline" size={14} color={colors.primary} style={{ opacity: 0.7, marginRight: 6 }} />
                         </Pressable>
+                      )}
+
+                      {showRehearsalInput && (
+                        <TextInput
+                          style={{ 
+                            backgroundColor: isDark ? 'rgba(0,0,0,0.15)' : '#fff', 
+                            color: colors.inputText, 
+                            borderColor: colors.border, 
+                            borderWidth: 1, 
+                            paddingVertical: 4, 
+                            paddingHorizontal: 8, 
+                            borderRadius: 6, 
+                            fontSize: 12, 
+                            marginTop: 6, 
+                            fontStyle: 'italic'
+                          }}
+                          placeholder={t('rehearsalNotesPlaceholder')}
+                          placeholderTextColor={colors.textMuted}
+                          value={song.rehearsalNotes || ''}
+                          onChangeText={(text) => onUpdateSongRehearsalNotes && onUpdateSongRehearsalNotes(setlist.id, song.id, index, text)}
+                          autoComplete="off"
+                          importantForAutofill="no"
+                        />
                       )}
                     </View>
                     {isPause && song.customDuration ? (
@@ -467,15 +482,21 @@ export default function SetlistCard({
               <Ionicons name="copy-outline" size={18} color={colors.primary} />
             </Pressable>
 
-            {/* EDITAR */}
+            {/* EDITAR (Destacado com contorno reforçado) */}
             <Pressable 
               onPress={() => onEdit(setlist)} 
               style={({ pressed }) => [
                 styles.actionBtn, 
-                { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border, borderWidth: 1, opacity: pressed ? 0.7 : 1 }
+                { 
+                  backgroundColor: colors.primary + '18', 
+                  borderColor: colors.primary, 
+                  borderWidth: 2, 
+                  opacity: pressed ? 0.75 : 1,
+                  transform: [{ scale: pressed ? 0.95 : 1 }]
+                }
               ]}
             >
-              <Ionicons name="pencil-outline" size={18} color={colors.text} />
+              <Ionicons name="pencil" size={17} color={colors.primary} />
             </Pressable>
 
             {/* DOCUMENTO WORD */}
