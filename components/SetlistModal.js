@@ -126,6 +126,7 @@ function DraggableSortableList({
     return PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
+        if (activeIdx !== null) return false;
         return Math.abs(gestureState.dx) > 10 && gestureState.dx < 0 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
       },
       onPanResponderMove: (_, gestureState) => {
@@ -180,7 +181,7 @@ function DraggableSortableList({
           animatedY.current[index] = new Animated.Value(index * ROW_HEIGHT);
         }
 
-        return (
+          return (
           <Animated.View
             key={`${song.id}-${index}`}
             style={[
@@ -188,7 +189,7 @@ function DraggableSortableList({
               {
                 transform: [
                   { translateY: animatedY.current[index] },
-                  { scale: isDragging ? 1.025 : 1.0 }
+                  { scale: isDragging ? 1.03 : 1.0 }
                 ],
                 zIndex: isDragging ? 100 : 1,
                 shadowColor: colors.primary,
@@ -200,30 +201,33 @@ function DraggableSortableList({
             ]}
           >
             <View style={styles.swipeableRowContainer}>
-              <View style={[
-                styles.swipeDeleteBackground, 
-                { 
-                  backgroundColor: colors.isDark ? 'rgba(239, 68, 68, 0.16)' : 'rgba(239, 68, 68, 0.10)',
-                  borderColor: colors.isDark ? 'rgba(239, 68, 68, 0.35)' : 'rgba(239, 68, 68, 0.25)',
-                  borderWidth: 1,
-                  borderRadius: 7,
-                }
-              ]}>
-                <View style={styles.swipeDeleteAction}>
-                  <View style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 13,
-                    backgroundColor: colors.danger + '22',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 2
-                  }}>
-                    <Ionicons name="trash-outline" size={13} color={colors.danger} />
+              {/* Fundo de Excluir visível apenas no Swipe quando NÃO está em modo drag */}
+              {activeIdx === null && !isDragging && (
+                <View style={[
+                  styles.swipeDeleteBackground, 
+                  { 
+                    backgroundColor: colors.isDark ? 'rgba(239, 68, 68, 0.16)' : 'rgba(239, 68, 68, 0.10)',
+                    borderColor: colors.isDark ? 'rgba(239, 68, 68, 0.35)' : 'rgba(239, 68, 68, 0.25)',
+                    borderWidth: 1,
+                    borderRadius: 7,
+                  }
+                ]}>
+                  <View style={styles.swipeDeleteAction}>
+                    <View style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: 13,
+                      backgroundColor: colors.danger + '22',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 2
+                    }}>
+                      <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                    </View>
+                    <Text style={[styles.swipeDeleteText, { color: colors.danger }]}>{t('delete') || 'Excluir'}</Text>
                   </View>
-                  <Text style={[styles.swipeDeleteText, { color: colors.danger }]}>{t('delete') || 'Excluir'}</Text>
                 </View>
-              </View>
+              )}
 
               <Animated.View
                 {...swipeResponder.panHandlers}
@@ -231,7 +235,7 @@ function DraggableSortableList({
                   styles.compactSongCard,
                   {
                     backgroundColor: isDragging 
-                      ? (colors.isDark ? colors.primary + '33' : colors.primary + '18') 
+                      ? (colors.isDark ? colors.primary + '38' : colors.primary + '22') 
                       : colors.cardBackground,
                     borderColor: isDragging 
                       ? colors.primary 
@@ -244,13 +248,17 @@ function DraggableSortableList({
                 <View style={[
                   styles.compactIndexBadge,
                   {
-                    backgroundColor: isPause ? colors.secondary + '18' : isNote ? colors.warning + '18' : colors.primary + '12',
-                    borderColor: isPause ? colors.secondary + '35' : isNote ? colors.warning + '35' : colors.primary + '35',
+                    backgroundColor: isDragging
+                      ? colors.primary + '28'
+                      : (isPause ? colors.secondary + '18' : isNote ? colors.warning + '18' : colors.primary + '12'),
+                    borderColor: isDragging
+                      ? colors.primary
+                      : (isPause ? colors.secondary + '35' : isNote ? colors.warning + '35' : colors.primary + '35'),
                   }
                 ]}>
                   <Text style={[
                     styles.compactIndexText,
-                    { color: isPause ? colors.secondary : isNote ? colors.warning : colors.primary }
+                    { color: isDragging ? colors.primary : (isPause ? colors.secondary : isNote ? colors.warning : colors.primary) }
                   ]}>
                     {String((currentOrder.current.indexOf(index) !== -1 ? currentOrder.current.indexOf(index) : index) + 1).padStart(2, '0')}
                   </Text>
@@ -302,23 +310,26 @@ function DraggableSortableList({
                   )}
                 </Pressable>
 
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.compactTrashBtn,
-                    { backgroundColor: colors.danger + '14' },
-                    pressed && { opacity: 0.6 }
-                  ]}
-                  onPress={() => onRemove(index)}
-                >
-                  <Ionicons name="trash-outline" size={13} color={colors.danger} />
-                </Pressable>
+                {/* Botão de lixeira visível somente quando NÃO está arrastando */}
+                {activeIdx === null && !isDragging && (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.compactTrashBtn,
+                      { backgroundColor: colors.danger + '14' },
+                      pressed && { opacity: 0.6 }
+                    ]}
+                    onPress={() => onRemove(index)}
+                  >
+                    <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                  </Pressable>
+                )}
 
                 <View 
                   {...dragResponder.panHandlers} 
                   style={[
                     styles.compactDragHandle,
                     isDragging && {
-                      backgroundColor: colors.primary + '25',
+                      backgroundColor: colors.primary + '30',
                       borderRadius: 6,
                     }
                   ]}
