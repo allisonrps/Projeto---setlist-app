@@ -2181,6 +2181,7 @@ function MainApp() {
                   onToggleExpand={() => handleToggleExpandSetlist(setlist.id)}
                   onToggleRehearsalStatus={handleToggleRehearsalStatus}
                   onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+                  onEditSong={handleEditSong}
                 />
               ))}
 
@@ -2200,6 +2201,7 @@ function MainApp() {
                   onToggleExpand={() => handleToggleExpandSetlist(setlist.id)}
                   onToggleRehearsalStatus={handleToggleRehearsalStatus}
                   onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+                  onEditSong={handleEditSong}
                 />
               ))}
 
@@ -2252,6 +2254,7 @@ function MainApp() {
                       onToggleExpand={() => handleToggleExpandSetlist(setlist.id)}
                       onToggleRehearsalStatus={handleToggleRehearsalStatus}
                       onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+                      onEditSong={handleEditSong}
                     />
                   ))}
                 </View>
@@ -2612,6 +2615,7 @@ function MainApp() {
         setlist={editingSetlist}
         bands={bands}
         songs={allSongsUnfiltered}
+        onEditSong={handleEditSong}
       />
 
       <SetlistDetailModal
@@ -2621,6 +2625,7 @@ function MainApp() {
         onStartPerformance={handleStartPerformance}
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+        onEditSong={handleEditSong}
       />
 
       {/* Modo Performance em Tela Cheia */}

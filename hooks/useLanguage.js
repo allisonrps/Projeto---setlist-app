@@ -137,9 +137,13 @@ const translations = {
     typeText: 'Tipo',
     songsCount: 'Músicas',
     noSongsInDetail: 'Nenhuma música associada a este setlist.',
-    startStageBtn: '🎤 INICIAR MODO PERFORMANCE (PALCO)',
-    
-    // Performance Mode
+    startStageBtn: 'MODO PALCO',
+    setlistTabRepertoire: 'ROTEIRO',
+    setlistTabDetails: 'DADOS DO EVENTO',
+    editNoteTitle: 'EDITAR ANOTAÇÃO',
+    editPauseTitle: 'EDITAR PAUSA',
+    tapToEditSongTip: 'Toque na música para editar cifra/letra',
+    dragToReorderTip: 'Arraste pelo ícone ☰ para reordenar',
     pause: 'PAUSA',
     rehearsalReport: '📋 ROTEIRO COMPLETO',
     pauseTitle: 'PAUSA / INTERVALO',
@@ -366,7 +370,13 @@ const translations = {
     typeText: 'Type',
     songsCount: 'Songs',
     noSongsInDetail: 'No songs associated with this setlist.',
-    startStageBtn: '🎤 START PERFORMANCE MODE (STAGE)',
+    startStageBtn: 'STAGE MODE',
+    setlistTabRepertoire: 'REPERTOIRE',
+    setlistTabDetails: 'EVENT DETAILS',
+    editNoteTitle: 'EDIT NOTE',
+    editPauseTitle: 'EDIT PAUSE',
+    tapToEditSongTip: 'Tap song to edit chords/lyrics',
+    dragToReorderTip: 'Drag by ☰ icon to reorder',
     
     // Performance Mode
     pause: 'PAUSE',
@@ -595,7 +605,13 @@ const translations = {
     typeText: 'Tipo',
     songsCount: 'Canciones',
     noSongsInDetail: 'Ninguna canción asociada a este setlist.',
-    startStageBtn: '🎤 INICIAR MODO PERFORMANCE (ESCENARIO)',
+    startStageBtn: 'MODO ESCENARIO',
+    setlistTabRepertoire: 'REPERTORIO',
+    setlistTabDetails: 'DATOS DEL EVENTO',
+    editNoteTitle: 'EDITAR NOTA',
+    editPauseTitle: 'EDITAR PAUSA',
+    tapToEditSongTip: 'Toque en la canción para editar acordes/letra',
+    dragToReorderTip: 'Arrastre por el icono ☰ para reordenar',
     
     // Performance Mode
     pause: 'PAUSA',

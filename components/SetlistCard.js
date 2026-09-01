@@ -30,7 +30,8 @@ export default function SetlistCard({
   expanded, 
   onToggleExpand,
   onToggleRehearsalStatus,
-  onUpdateSongRehearsalNotes
+  onUpdateSongRehearsalNotes,
+  onEditSong
 }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
@@ -352,10 +353,16 @@ export default function SetlistCard({
                           </Text>
                         </View>
                       ) : (
-                        <>
-                          <Text style={[styles.songName, { color: colors.text, fontSize: 13 }]} numberOfLines={1}>
-                            {song.name}
-                          </Text>
+                        <Pressable 
+                          style={{ flex: 1 }}
+                          onPress={() => onEditSong && onEditSong(song)}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={[styles.songName, { color: colors.text, fontSize: 13, flex: 1 }]} numberOfLines={1}>
+                              {song.name}
+                            </Text>
+                            <Ionicons name="create-outline" size={13} color={colors.primary} style={{ opacity: 0.6 }} />
+                          </View>
                           <Text style={[styles.songBand, { color: colors.textMuted, fontSize: 11 }]} numberOfLines={1}>
                             {song.originalBand}
                           </Text>
@@ -382,7 +389,7 @@ export default function SetlistCard({
                               importantForAutofill="no"
                             />
                           )}
-                        </>
+                        </Pressable>
                       )}
                     </View>
                     {isPause && song.customDuration ? (
@@ -404,11 +411,12 @@ export default function SetlistCard({
           <Pressable
             style={({ pressed }) => [
               styles.performanceButton,
-              { backgroundColor: colors.success, transform: [{ scale: pressed ? 0.98 : 1 }] }
+              { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.98 : 1 }] }
             ]}
             onPress={() => onStartPerformance(setlist)}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Ionicons name="play" size={16} color="#fff" />
               <Text style={styles.performanceButtonText}>{t('startStageBtn')}</Text>
             </View>
           </Pressable>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   Pressable,
@@ -18,15 +18,15 @@ import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
 
-const ROW_HEIGHT = 70;
+const ROW_HEIGHT = 68;
 
-function DraggableSortableList({ songs, onReorder, colors, t }) {
+function DraggableSortableList({ songs, onReorder, onRemove, onEditSong, onEditCustomItem, colors, t }) {
   const [activeIdx, setActiveIdx] = useState(null);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   
-  const animatedY = React.useRef(songs.map((_, i) => new Animated.Value(i * ROW_HEIGHT))).current;
+  const animatedY = useRef(songs.map((_, i) => new Animated.Value(i * ROW_HEIGHT))).current;
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (animatedY.length !== songs.length) {
       while (animatedY.length < songs.length) {
         animatedY.push(new Animated.Value(animatedY.length * ROW_HEIGHT));
@@ -38,16 +38,16 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
     songs.forEach((_, i) => {
       Animated.spring(animatedY[i], {
         toValue: i * ROW_HEIGHT,
-        tension: 100,
+        tension: 110,
         friction: 12,
         useNativeDriver: true,
       }).start();
     });
   }, [songs.length]);
 
-  const currentOrder = React.useRef(songs.map((_, i) => i));
+  const currentOrder = useRef(songs.map((_, i) => i));
 
-  React.useEffect(() => {
+  useEffect(() => {
     currentOrder.current = songs.map((_, i) => i);
     songs.forEach((_, i) => {
       animatedY[i].setValue(i * ROW_HEIGHT);
@@ -56,7 +56,6 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
 
   const createPanResponder = (itemIndex) => {
     let initialY = itemIndex * ROW_HEIGHT;
-    let currentY = initialY;
 
     return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -65,12 +64,10 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
         setActiveIdx(itemIndex);
         setScrollEnabled(false);
         initialY = currentOrder.current.indexOf(itemIndex) * ROW_HEIGHT;
-        currentY = initialY;
         if (typeof Vibration !== 'undefined') Vibration.vibrate(15);
       },
       onPanResponderMove: (evt, gestureState) => {
         const dragY = initialY + gestureState.dy;
-        currentY = dragY;
         animatedY[itemIndex].setValue(dragY);
 
         const hoverIndex = Math.max(0, Math.min(songs.length - 1, Math.round(dragY / ROW_HEIGHT)));
@@ -88,7 +85,7 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
             if (originalIndex !== itemIndex) {
               Animated.spring(animatedY[originalIndex], {
                 toValue: orderIndex * ROW_HEIGHT,
-                tension: 120,
+                tension: 130,
                 friction: 14,
                 useNativeDriver: true,
               }).start();
@@ -124,18 +121,30 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
     });
   };
 
+  if (songs.length === 0) {
+    return (
+      <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>
+        <Ionicons name="musical-notes-outline" size={42} color={colors.textMuted} style={{ opacity: 0.4, marginBottom: 12 }} />
+        <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 13, lineHeight: 18 }}>
+          {t('noSongsInDetail') || 'Nenhuma música no roteiro ainda.\nAdicione acima para começar!'}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView 
       scrollEnabled={scrollEnabled} 
       style={{ flex: 1 }}
       contentContainerStyle={{ height: songs.length * ROW_HEIGHT + 20 }}
+      nestedScrollEnabled={true}
+      showsVerticalScrollIndicator={true}
     >
       <View style={{ height: songs.length * ROW_HEIGHT, position: 'relative' }}>
         {songs.map((song, index) => {
           const isPause = song.id === -1;
           const isNote = song.id === -2;
           const isDragging = activeIdx === index;
-
           const responder = createPanResponder(index);
 
           return (
@@ -155,7 +164,6 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
                 }
               ]}
             >
-              {/* Indicador de Número */}
               <View style={[
                 styles.reorderBadge, 
                 { 
@@ -165,7 +173,7 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
                 }
               ]}>
                 <Text style={{ 
-                  fontSize: 12, 
+                  fontSize: 11, 
                   fontWeight: '900', 
                   color: isPause ? colors.secondary : (isNote ? colors.warning : colors.primary) 
                 }}>
@@ -173,41 +181,73 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
                 </Text>
               </View>
 
-              {/* Nome do Item */}
-              <View style={{ flex: 1 }}>
+              <Pressable 
+                style={{ flex: 1, paddingVertical: 4 }}
+                onPress={() => {
+                  if (isPause || isNote) {
+                    onEditCustomItem && onEditCustomItem(index, song);
+                  } else {
+                    onEditSong && onEditSong(song);
+                  }
+                }}
+              >
                 {isPause ? (
-                  <Text style={{ color: colors.secondary, fontWeight: '950', fontSize: 13 }}>
-                    ⏸ PAUSA
-                  </Text>
-                ) : isNote ? (
-                  <Text style={{ color: colors.warning, fontWeight: '950', fontSize: 13, fontStyle: 'italic' }}>
-                    📝 ANOTAÇÃO: {song.customNotes || 'Vazia'}
-                  </Text>
-                ) : (
-                  <>
-                    <Text style={{ color: colors.text, fontWeight: '800', fontSize: 13 }} numberOfLines={1}>
-                      {song.name}
-                    </Text>
+                  <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ color: colors.secondary, fontWeight: '950', fontSize: 13 }}>
+                        ⏸ PAUSA
+                      </Text>
+                      <Ionicons name="create-outline" size={12} color={colors.secondary} style={{ opacity: 0.7 }} />
+                    </View>
                     <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }} numberOfLines={1}>
-                      {song.originalBand}
+                      {song.customDuration ? `⏱ ${song.customDuration}` : '5 min'} {song.customNotes ? `• ${song.customNotes}` : ''}
                     </Text>
-                  </>
+                  </View>
+                ) : isNote ? (
+                  <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ color: colors.warning, fontWeight: '950', fontSize: 13, fontStyle: 'italic' }} numberOfLines={1}>
+                        📝 {song.customNotes || 'Anotação / Aviso'}
+                      </Text>
+                      <Ionicons name="create-outline" size={12} color={colors.warning} style={{ opacity: 0.7 }} />
+                    </View>
+                    <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 1 }}>
+                      {t('tapToEditSongTip') || 'Toque para editar o texto'}
+                    </Text>
+                  </View>
+                ) : (
+                  <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ color: colors.text, fontWeight: '800', fontSize: 13, flexShrink: 1 }} numberOfLines={1}>
+                        {song.name}
+                      </Text>
+                      <Ionicons name="create-outline" size={12} color={colors.primary} style={{ opacity: 0.6 }} />
+                    </View>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }} numberOfLines={1}>
+                      {song.originalBand || ''} {song.key ? `• ${song.key}` : ''} {song.duration ? `• ⏱ ${song.duration}` : ''}
+                    </Text>
+                  </View>
                 )}
-              </View>
+              </Pressable>
 
-              {/* Drag Handle Area */}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.removeBtn,
+                  { backgroundColor: colors.danger + '18' },
+                  pressed && { opacity: 0.7 }
+                ]}
+                onPress={() => onRemove(index)}
+              >
+                <Ionicons name="close" size={15} color={colors.danger} />
+              </Pressable>
+
               <View 
                 {...responder.panHandlers} 
-                style={{ 
-                  paddingHorizontal: 12, 
-                  paddingVertical: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
+                style={styles.dragHandle}
               >
                 <Ionicons 
                   name="reorder-three" 
-                  size={26} 
+                  size={24} 
                   color={isDragging ? colors.primary : colors.textMuted} 
                 />
               </View>
@@ -219,11 +259,11 @@ function DraggableSortableList({ songs, onReorder, colors, t }) {
   );
 }
 
-export default function SetlistModal({ visible, onClose, onSave, setlist, bands, songs }) {
+export default function SetlistModal({ visible, onClose, onSave, setlist, bands, songs, onEditSong }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const isDark = colors.isDark;
 
+  const [activeTab, setActiveTab] = useState('roteiro');
   const [name, setName] = useState('');
   const [type, setType] = useState('repertório');
   const [bandId, setBandId] = useState(null);
@@ -232,19 +272,18 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands,
   const [cachê, setCachê] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedSongs, setSelectedSongs] = useState([]);
-  const [showReorderModal, setShowReorderModal] = useState(false);
-  const [selectedIdxForMove, setSelectedIdxForMove] = useState(null);
-
-  // Estados do dropdown de músicas
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownSearch, setDropdownSearch] = useState('');
   const [selectedSongToSelect, setSelectedSongToSelect] = useState(null);
+  const [editingCustomIndex, setEditingCustomIndex] = useState(null);
+  const [tempCustomNotes, setTempCustomNotes] = useState('');
+  const [tempCustomDuration, setTempCustomDuration] = useState('');
 
   useEffect(() => {
     if (visible) {
       if (setlist) {
         setName(setlist.name || '');
-        setType(setlist.type);
+        setType(setlist.type || 'repertório');
         setBandId(setlist.myBandId);
         setDate(setlist.date || '');
         setLocal(setlist.local || '');
@@ -256,6 +295,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands,
           customDuration: s.customDuration || ''
         })) : [];
         setSelectedSongs(items);
+        setActiveTab('roteiro');
       } else {
         setName('');
         setType('repertório');
@@ -265,48 +305,19 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands,
         setCachê('');
         setNotes('');
         setSelectedSongs([]);
+        setActiveTab('roteiro');
       }
       setShowDropdown(false);
       setDropdownSearch('');
       setSelectedSongToSelect(null);
-      setShowReorderModal(false);
-      setSelectedIdxForMove(null);
+      setEditingCustomIndex(null);
     }
   }, [visible, setlist, bands]);
 
   const removeSongByIndex = (index) => {
+    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
     const updated = selectedSongs.filter((_, idx) => idx !== index);
     setSelectedSongs(updated);
-  };
-
-  const moveUp = (index) => {
-    if (index === 0) return;
-    const updated = [...selectedSongs];
-    const temp = updated[index];
-    updated[index] = updated[index - 1];
-    updated[index - 1] = temp;
-    setSelectedSongs(updated);
-  };
-
-  const moveDown = (index) => {
-    if (index === selectedSongs.length - 1) return;
-    const updated = [...selectedSongs];
-    const temp = updated[index];
-    updated[index] = updated[index + 1];
-    updated[index + 1] = temp;
-    setSelectedSongs(updated);
-  };
-
-  const moveItemTo = (from, to) => {
-    if (from === to) return;
-    const newSongs = [...selectedSongs];
-    const [removed] = newSongs.splice(from, 1);
-    newSongs.splice(to, 0, removed);
-    setSelectedSongs(newSongs);
-    if (typeof Vibration !== 'undefined') {
-      Vibration.vibrate(12);
-    }
-    setSelectedIdxForMove(null);
   };
 
   const updateSongItem = (index, updatedProps) => {
@@ -315,21 +326,41 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands,
     setSelectedSongs(updated);
   };
 
+  const handleOpenCustomItemEditor = (index, song) => {
+    setEditingCustomIndex(index);
+    setTempCustomNotes(song.customNotes || '');
+    setTempCustomDuration(song.customDuration || '');
+  };
+
+  const handleSaveCustomItem = () => {
+    if (editingCustomIndex !== null) {
+      updateSongItem(editingCustomIndex, {
+        customNotes: tempCustomNotes.trim(),
+        customDuration: tempCustomDuration.trim()
+      });
+      setEditingCustomIndex(null);
+    }
+  };
+
   const handleSave = () => {
     if (!name.trim()) {
       Alert.alert(t('attention'), t('alertSetlistName'));
+      setActiveTab('dados');
       return;
     }
     if (!bandId) {
       Alert.alert(t('attention'), t('alertSelectBand'));
+      setActiveTab('dados');
       return;
     }
     if (!date.trim()) {
       Alert.alert(t('attention'), t('alertSetlistDate'));
+      setActiveTab('dados');
       return;
     }
     if (selectedSongs.length === 0) {
       Alert.alert(t('attention'), t('alertSelectSong'));
+      setActiveTab('roteiro');
       return;
     }
 
@@ -370,502 +401,420 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands,
         transparent={true}
         onRequestClose={onClose}
       >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}
-      >
-        <View style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.primary }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              {setlist ? t('editSetlist') : t('newSetlist')}
-            </Text>
-            <Pressable 
-              style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
-              onPress={onClose}
-            >
-              <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
-            </Pressable>
-          </View>
-
-          <ScrollView 
-            style={styles.modalBody} 
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Tipo de Setlist */}
-            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('presentationType')}</Text>
-            <View style={styles.segmentedContainer}>
-              {['show', 'ensaio', 'repertório'].map((item) => (
-                <Pressable
-                  key={item}
-                  style={[
-                    styles.segmentButton,
-                    { borderColor: colors.border },
-                    type === item && { backgroundColor: colors.primary, borderColor: colors.primary }
-                  ]}
-                  onPress={() => setType(item)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                    <Ionicons 
-                      name={item === 'show' ? 'mic-outline' : item === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                      size={13} 
-                      color={type === item ? '#fff' : colors.textMuted} 
-                    />
-                    <Text style={[
-                      styles.segmentText,
-                      { color: type === item ? '#fff' : colors.textMuted }
-                    ]}>
-                      {t(item).toUpperCase()}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Banda */}
-            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('responsibleBand')}</Text>
-            {bands.length === 0 ? (
-              <Text style={[styles.warningText, { color: colors.danger }]}>
-                {t('registerBandFirst')}
-              </Text>
-            ) : (
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                style={styles.bandSelector}
-                contentContainerStyle={{ paddingVertical: 4 }}
-              >
-                {bands.map((band) => (
-                  <Pressable
-                    key={band.id}
-                    style={[
-                      styles.bandSelectButton,
-                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
-                      bandId === band.id && { borderColor: colors.primary, borderWidth: 2 }
-                    ]}
-                    onPress={() => setBandId(band.id)}
-                  >
-                    <Text style={[
-                      styles.bandSelectText,
-                      { color: bandId === band.id ? colors.primary : colors.text, fontWeight: bandId === band.id ? '900' : '700' }
-                    ]}>
-                      {band.name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            )}
-
-            {/* Nome do Roteiro */}
-            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('setlistNameLabel').toUpperCase()}</Text>
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.inputBackground, 
-                color: colors.inputText,
-                borderColor: colors.border
-              }]}
-              value={name}
-              onChangeText={setName}
-              autoComplete="off"
-              importantForAutofill="no"
-            />
-
-            {/* Data & Local */}
-            <View style={styles.rowInputs}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('dateLabel').toUpperCase()} *</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    backgroundColor: colors.inputBackground, 
-                    color: colors.inputText,
-                    borderColor: colors.border
-                  }]}
-                  value={date}
-                  onChangeText={setDate}
-                  autoComplete="off"
-                  importantForAutofill="no"
-                />
-              </View>
-              <View style={{ flex: 1.2 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('localLabel').toUpperCase()}</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    backgroundColor: colors.inputBackground, 
-                    color: colors.inputText,
-                    borderColor: colors.border
-                  }]}
-                  value={local}
-                  onChangeText={setLocal}
-                  autoComplete="off"
-                  importantForAutofill="no"
-                />
-              </View>
-            </View>
-
-            {/* Cachê (somente para shows) */}
-            {type === 'show' && (
-              <>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('cachêLabel').toUpperCase()}</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    backgroundColor: colors.inputBackground, 
-                    color: colors.inputText,
-                    borderColor: colors.border
-                  }]}
-                  value={cachê}
-                  onChangeText={setCachê}
-                  keyboardType="numeric"
-                  autoComplete="off"
-                  importantForAutofill="no"
-                />
-              </>
-            )}
-
-            {/* Observações */}
-            <>
-              <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('notesLabel').toUpperCase()}</Text>
-              <TextInput
-                style={[styles.input, { 
-                  backgroundColor: colors.inputBackground, 
-                  color: colors.inputText,
-                  borderColor: colors.border
-                }]}
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                numberOfLines={2}
-                autoComplete="off"
-                importantForAutofill="no"
-              />
-            </>
-
-            {/* Seleção de Músicas */}
-            <Text style={[styles.sectionLabel, { color: colors.text, borderBottomColor: colors.border }]}>
-              {t('songsLabel').toUpperCase()} ({selectedSongs.length})
-            </Text>
-
-            {/* Custom Dropdown Selector */}
-            <View style={{ position: 'relative', zIndex: 10 }}>
-              <Pressable 
-                style={[styles.dropdownSelector, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
-                onPress={() => setShowDropdown(!showDropdown)}
-              >
-                <Text style={{ color: selectedSongToSelect ? colors.text : colors.textMuted, fontWeight: '700', fontSize: 14 }}>
-                  {selectedSongToSelect ? (selectedSongToSelect.id === -1 ? `⏸ ${t('pause').toUpperCase()}` : `${selectedSongToSelect.originalBand} - ${selectedSongToSelect.name}`) : `${t('searchPlaceholder')}...`}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}
+        >
+          <View style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.primary }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={1}>
+                  {setlist ? (setlist.name || t('editSetlist')) : t('newSetlist')}
                 </Text>
-                <Text style={{ color: colors.textMuted, fontSize: 12 }}>{showDropdown ? '▲' : '▼'}</Text>
+                <Text style={[styles.modalSubtitle, { color: colors.primary }]} numberOfLines={1}>
+                  {t(type).toUpperCase()} • {bands.find(b => b.id === bandId)?.name || ''}
+                </Text>
+              </View>
+              <Pressable 
+                style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
+                onPress={onClose}
+              >
+                <Text style={[styles.closeButton, { color: colors.danger }]}>✕</Text>
+              </Pressable>
+            </View>
+
+            <View style={[styles.tabBar, { borderBottomColor: colors.border }]}>
+              <Pressable
+                style={[
+                  styles.tabButton,
+                  activeTab === 'roteiro' && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }
+                ]}
+                onPress={() => setActiveTab('roteiro')}
+              >
+                <Ionicons 
+                  name="musical-notes" 
+                  size={15} 
+                  color={activeTab === 'roteiro' ? colors.primary : colors.textMuted} 
+                />
+                <Text style={[
+                  styles.tabButtonText,
+                  { color: activeTab === 'roteiro' ? colors.primary : colors.textMuted }
+                ]}>
+                  {t('setlistTabRepertoire') || 'ROTEIRO'} ({selectedSongs.length})
+                </Text>
               </Pressable>
 
-              {showDropdown && (
-                <View style={[styles.dropdownContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-                  <TextInput
-                    style={[styles.dropdownSearch, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    value={dropdownSearch}
-                    onChangeText={setDropdownSearch}
-                    autoComplete="off"
-                    importantForAutofill="no"
-                  />
-                  <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                    {/* Opção fixa PAUSA */}
-                    <Pressable
-                      style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
-                      onPress={() => {
-                        setSelectedSongToSelect({ id: -1, name: 'PAUSA', originalBand: '' });
-                        setShowDropdown(false);
-                        setDropdownSearch('');
-                      }}
-                    >
-                      <Text style={{ fontWeight: '950', color: colors.secondary }}>⏸ {t('pause').toUpperCase()}</Text>
-                    </Pressable>
+              <Pressable
+                style={[
+                  styles.tabButton,
+                  activeTab === 'dados' && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }
+                ]}
+                onPress={() => setActiveTab('dados')}
+              >
+                <Ionicons 
+                  name="calendar-outline" 
+                  size={15} 
+                  color={activeTab === 'dados' ? colors.primary : colors.textMuted} 
+                />
+                <Text style={[
+                  styles.tabButtonText,
+                  { color: activeTab === 'dados' ? colors.primary : colors.textMuted }
+                ]}>
+                  {t('setlistTabDetails') || 'DADOS DO EVENTO'}
+                </Text>
+              </Pressable>
+            </View>
 
-                    {/* Opção fixa ANOTAÇÃO */}
-                    <Pressable
-                      style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
-                      onPress={() => {
-                        setSelectedSongToSelect({ id: -2, name: 'ANOTAÇÃO', originalBand: '' });
-                        setShowDropdown(false);
-                        setDropdownSearch('');
-                      }}
-                    >
-                      <Text style={{ fontWeight: '950', color: colors.warning }}>📝 {t('noteItem') || 'ANOTAÇÃO / TEXTO'}</Text>
-                    </Pressable>
+            {activeTab === 'roteiro' && (
+              <View style={{ flex: 1, padding: 16 }}>
+                <View style={{ position: 'relative', zIndex: 10, marginBottom: 10 }}>
+                  <Pressable 
+                    style={[styles.dropdownSelector, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
+                    onPress={() => setShowDropdown(!showDropdown)}
+                  >
+                    <Text style={{ color: selectedSongToSelect ? colors.text : colors.textMuted, fontWeight: '700', fontSize: 13, flex: 1 }} numberOfLines={1}>
+                      {selectedSongToSelect ? (selectedSongToSelect.id === -1 ? `⏸ ${t('pause').toUpperCase()}` : selectedSongToSelect.id === -2 ? `📝 ${t('noteItem') || 'ANOTAÇÃO / TEXTO'}` : `${selectedSongToSelect.originalBand} - ${selectedSongToSelect.name}`) : `${t('searchPlaceholder')}...`}
+                    </Text>
+                    <Ionicons name={showDropdown ? "chevron-up" : "chevron-down"} size={14} color={colors.textMuted} />
+                  </Pressable>
 
-                    {songs
-                      .filter(s => s.id >= 0 && (
-                        s.name.toLowerCase().includes(dropdownSearch.toLowerCase()) || 
-                        s.originalBand.toLowerCase().includes(dropdownSearch.toLowerCase())
-                      ))
-                      .map((song) => (
+                  {showDropdown && (
+                    <View style={[styles.dropdownContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+                      <TextInput
+                        style={[styles.dropdownSearch, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                        value={dropdownSearch}
+                        onChangeText={setDropdownSearch}
+                        placeholder={t('searchPlaceholderDesc')}
+                        placeholderTextColor={colors.textMuted}
+                        autoComplete="off"
+                        importantForAutofill="no"
+                      />
+                      <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
                         <Pressable
-                          key={song.id}
                           style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
                           onPress={() => {
-                            setSelectedSongToSelect(song);
+                            setSelectedSongToSelect({ id: -1, name: 'PAUSA', originalBand: '' });
                             setShowDropdown(false);
                             setDropdownSearch('');
                           }}
                         >
-                          <Text style={{ color: colors.text, fontWeight: '700' }}>
-                            <Text style={{ fontWeight: '900', color: colors.primary }}>{song.originalBand}</Text> - {song.name}
-                          </Text>
+                          <Text style={{ fontWeight: '950', color: colors.secondary }}>⏸ {t('pause').toUpperCase()}</Text>
                         </Pressable>
-                      ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
-            {/* Botão de Adicionar */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.addButton, 
-                { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }
-              ]}
-              onPress={() => {
-                if (!selectedSongToSelect) {
-                  Alert.alert(t('attention'), t('alertSelectSongOrPauseFirst'));
-                  return;
-                }
-                setSelectedSongs([...selectedSongs, { id: selectedSongToSelect.id, customNotes: '', customDuration: '' }]);
-                setSelectedSongToSelect(null);
-              }}
-            >
-              <Text style={styles.addButtonText}>{t('addToSetlist')}</Text>
-            </Pressable>
-
-            {/* Músicas Selecionadas / Ordem do Show */}
-            {orderedSongs.length > 0 && (
-              <>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, marginBottom: 8 }}>
-                  <Text style={[styles.sectionLabel, { color: colors.text, marginBottom: 0, marginTop: 0 }]}>
-                    {t('songsTitle')}
-                  </Text>
-                  <Pressable
-                    style={({ pressed }) => [
-                      {
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 6,
-                        backgroundColor: colors.primary + '15',
-                        paddingVertical: 6,
-                        paddingHorizontal: 12,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: colors.primary + '30',
-                        opacity: pressed ? 0.8 : 1,
-                      }
-                    ]}
-                    onPress={() => setShowReorderModal(true)}
-                  >
-                    <Ionicons name="swap-vertical-outline" size={13} color={colors.primary} />
-                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>
-                      {t('reorderBtn') || 'REORDENAR'}
-                    </Text>
-                  </Pressable>
-                </View>
-                <View style={[styles.orderListContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-                  <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                    {orderedSongs.map((song, index) => {
-                      const isPause = song.id === -1;
-                      const isNote = song.id === -2;
-                      return (
-                        <View 
-                          key={`${song.id}-${index}`} 
-                          style={[styles.orderItemContainer, { borderBottomColor: colors.border, borderBottomWidth: 1.5 }]}
+                        <Pressable
+                          style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
+                          onPress={() => {
+                            setSelectedSongToSelect({ id: -2, name: 'ANOTAÇÃO', originalBand: '' });
+                            setShowDropdown(false);
+                            setDropdownSearch('');
+                          }}
                         >
-                          <View style={styles.orderItem}>
-                            {/* Badge de número circular */}
-                            <View style={[styles.orderIndexBadge, { backgroundColor: isPause ? colors.secondary + '20' : (isNote ? colors.warning + '20' : colors.primary + '15'), borderColor: isPause ? colors.secondary + '35' : (isNote ? colors.warning + '35' : colors.primary + '35') }]}>
-                              <Text style={[styles.orderIndexText, { color: isPause ? colors.secondary : (isNote ? colors.warning : colors.primary) }]}>
-                                {String(index + 1).padStart(2, '0')}
+                          <Text style={{ fontWeight: '950', color: colors.warning }}>📝 {t('noteItem') || 'ANOTAÇÃO / TEXTO'}</Text>
+                        </Pressable>
+                        {songs
+                          .filter(s => s.id >= 0 && (
+                            s.name.toLowerCase().includes(dropdownSearch.toLowerCase()) || 
+                            s.originalBand.toLowerCase().includes(dropdownSearch.toLowerCase())
+                          ))
+                          .map((song) => (
+                            <Pressable
+                              key={song.id}
+                              style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
+                              onPress={() => {
+                                setSelectedSongToSelect(song);
+                                setShowDropdown(false);
+                                setDropdownSearch('');
+                              }}
+                            >
+                              <Text style={{ color: colors.text, fontWeight: '700' }} numberOfLines={1}>
+                                <Text style={{ fontWeight: '900', color: colors.primary }}>{song.originalBand}</Text> - {song.name}
                               </Text>
-                            </View>
-
-                            <View style={{ flex: 1 }}>
-                              {isPause ? (
-                                <Text style={[styles.orderSongName, { color: colors.secondary, fontWeight: '950' }]} numberOfLines={1}>
-                                  ⏸ PAUSA
-                                </Text>
-                              ) : isNote ? (
-                                <Text style={[styles.orderSongName, { color: colors.warning, fontWeight: '950' }]} numberOfLines={1}>
-                                  📝 {t('noteItem') || 'ANOTAÇÃO / TEXTO'}
-                                </Text>
-                              ) : (
-                                <>
-                                  <Text style={[styles.orderSongName, { color: colors.text }]} numberOfLines={1}>
-                                    {song.name}
-                                  </Text>
-                                  <Text style={[styles.orderBandName, { color: colors.textMuted }]} numberOfLines={1}>
-                                    {song.originalBand}
-                                  </Text>
-                                </>
-                              )}
-                            </View>
-
-                            {/* Botões de Ação: Subir, Descer e Remover */}
-                            <View style={styles.orderActions}>
-                              <Pressable
-                                disabled={index === 0}
-                                style={[
-                                  styles.orderActionButton,
-                                  { backgroundColor: colors.border },
-                                  index === 0 && { opacity: 0.25 }
-                                ]}
-                                onPress={() => moveUp(index)}
-                              >
-                                <Text style={[styles.orderActionText, { color: colors.text }]}>▲</Text>
-                              </Pressable>
-                              <Pressable
-                                disabled={index === orderedSongs.length - 1}
-                                style={[
-                                  styles.orderActionButton,
-                                  { backgroundColor: colors.border },
-                                  index === orderedSongs.length - 1 && { opacity: 0.25 }
-                                ]}
-                                onPress={() => moveDown(index)}
-                              >
-                                <Text style={[styles.orderActionText, { color: colors.text }]}>▼</Text>
-                              </Pressable>
-                              <Pressable
-                                style={[
-                                  styles.orderActionButton,
-                                  { backgroundColor: colors.danger + '20', borderColor: colors.danger + '40', borderWidth: 1 }
-                                ]}
-                                onPress={() => removeSongByIndex(index)}
-                              >
-                                <Text style={[styles.orderActionText, { color: colors.danger, fontWeight: 'bold' }]}>✕</Text>
-                              </Pressable>
-                            </View>
-                          </View>
-
-                          {/* Se for Pausa, exibe inputs adicionais para Observações e Temporizador */}
-                          {isPause && (
-                            <View style={styles.pauseDetailsRow}>
-                              <TextInput
-                                style={[styles.pauseInputNotes, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                                placeholder={t('notesLabel')}
-                                placeholderTextColor={colors.textMuted}
-                                value={song.customNotes || ''}
-                                onChangeText={(val) => updateSongItem(index, { customNotes: val })}
-                              />
-                              <TextInput
-                                style={[styles.pauseInputTime, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                                placeholder={t('durationLabel')}
-                                placeholderTextColor={colors.textMuted}
-                                value={song.customDuration || ''}
-                                onChangeText={(val) => updateSongItem(index, { customDuration: val })}
-                                keyboardType="default"
-                              />
-                            </View>
-                          )}
-
-                          {/* Se for Anotação, exibe input apenas para a observação */}
-                          {isNote && (
-                            <View style={styles.pauseDetailsRow}>
-                              <TextInput
-                                style={[styles.pauseInputNotes, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border, flex: 1 }]}
-                                placeholder={t('notePlaceholder') || 'Digite sua anotação ou observação...'}
-                                placeholderTextColor={colors.textMuted}
-                                value={song.customNotes || ''}
-                                onChangeText={(val) => updateSongItem(index, { customNotes: val })}
-                              />
-                            </View>
-                          )}
-                        </View>
-                      );
-                    })}
-                  </ScrollView>
+                            </Pressable>
+                          ))}
+                      </ScrollView>
+                    </View>
+                  )}
                 </View>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.addButton, 
+                    { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }
+                  ]}
+                  onPress={() => {
+                    if (!selectedSongToSelect) {
+                      Alert.alert(t('attention'), t('alertSelectSongOrPauseFirst'));
+                      return;
+                    }
+                    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+                    setSelectedSongs([...selectedSongs, { id: selectedSongToSelect.id, customNotes: '', customDuration: '' }]);
+                    setSelectedSongToSelect(null);
+                  }}
+                >
+                  <Ionicons name="add-circle-outline" size={16} color="#fff" />
+                  <Text style={styles.addButtonText}>{t('addToSetlist')}</Text>
+                </Pressable>
+
+                {selectedSongs.length > 0 && (
+                  <View style={styles.tipBanner}>
+                    <Text style={[styles.tipText, { color: colors.textMuted }]}>
+                      💡 {t('dragToReorderTip') || 'Arraste por ☰ para ordenar'} • {t('tapToEditSongTip') || 'Toque para abrir editor'}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={{ flex: 1 }}>
+                  <DraggableSortableList
+                    songs={orderedSongs}
+                    onReorder={(newOrderIndices) => {
+                      const reordered = newOrderIndices.map(originalIdx => selectedSongs[originalIdx]);
+                      setSelectedSongs(reordered);
+                    }}
+                    onRemove={removeSongByIndex}
+                    onEditSong={onEditSong}
+                    onEditCustomItem={handleOpenCustomItemEditor}
+                    colors={colors}
+                    t={t}
+                  />
+                </View>
+              </View>
+            )}
+
+            {activeTab === 'dados' && (
+              <ScrollView 
+                style={styles.modalBody} 
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('presentationType')}</Text>
+                <View style={styles.segmentedContainer}>
+                  {['show', 'ensaio', 'repertório'].map((item) => (
+                    <Pressable
+                      key={item}
+                      style={[
+                        styles.segmentButton,
+                        { borderColor: colors.border },
+                        type === item && { backgroundColor: colors.primary, borderColor: colors.primary }
+                      ]}
+                      onPress={() => setType(item)}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                        <Ionicons 
+                          name={item === 'show' ? 'mic-outline' : item === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
+                          size={13} 
+                          color={type === item ? '#fff' : colors.textMuted} 
+                        />
+                        <Text style={[
+                          styles.segmentText,
+                          { color: type === item ? '#fff' : colors.textMuted }
+                        ]}>
+                          {t(item).toUpperCase()}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('responsibleBand')}</Text>
+                {bands.length === 0 ? (
+                  <Text style={[styles.warningText, { color: colors.danger }]}>
+                    {t('registerBandFirst')}
+                  </Text>
+                ) : (
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false} 
+                    style={styles.bandSelector}
+                    contentContainerStyle={{ paddingVertical: 4 }}
+                  >
+                    {bands.map((band) => (
+                      <Pressable
+                        key={band.id}
+                        style={[
+                          styles.bandSelectButton,
+                          { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                          bandId === band.id && { borderColor: colors.primary, borderWidth: 2 }
+                        ]}
+                        onPress={() => setBandId(band.id)}
+                      >
+                        <Text style={[
+                          styles.bandSelectText,
+                          { color: bandId === band.id ? colors.primary : colors.text, fontWeight: bandId === band.id ? '900' : '700' }
+                        ]}>
+                          {band.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                )}
+
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('setlistNameLabel').toUpperCase()} *</Text>
+                <TextInput
+                  style={[styles.input, { 
+                    backgroundColor: colors.inputBackground, 
+                    color: colors.inputText,
+                    borderColor: colors.border
+                  }]}
+                  value={name}
+                  onChangeText={setName}
+                  autoComplete="off"
+                  importantForAutofill="no"
+                />
+
+                <View style={styles.rowInputs}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('dateLabel').toUpperCase()} *</Text>
+                    <TextInput
+                      style={[styles.input, { 
+                        backgroundColor: colors.inputBackground, 
+                        color: colors.inputText,
+                        borderColor: colors.border
+                      }]}
+                      value={date}
+                      onChangeText={setDate}
+                      placeholder="AAAA-MM-DD"
+                      placeholderTextColor={colors.textMuted}
+                      autoComplete="off"
+                      importantForAutofill="no"
+                    />
+                  </View>
+                  <View style={{ flex: 1.2 }}>
+                    <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('localLabel').toUpperCase()}</Text>
+                    <TextInput
+                      style={[styles.input, { 
+                        backgroundColor: colors.inputBackground, 
+                        color: colors.inputText,
+                        borderColor: colors.border
+                      }]}
+                      value={local}
+                      onChangeText={setLocal}
+                      autoComplete="off"
+                      importantForAutofill="no"
+                    />
+                  </View>
+                </View>
+
+                {type === 'show' && (
+                  <>
+                    <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('cachêLabel').toUpperCase()}</Text>
+                    <TextInput
+                      style={[styles.input, { 
+                        backgroundColor: colors.inputBackground, 
+                        color: colors.inputText,
+                        borderColor: colors.border
+                      }]}
+                      value={cachê}
+                      onChangeText={setCachê}
+                      keyboardType="numeric"
+                      autoComplete="off"
+                      importantForAutofill="no"
+                    />
+                  </>
+                )}
+
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('notesLabel').toUpperCase()}</Text>
+                <TextInput
+                  style={[styles.input, { 
+                    backgroundColor: colors.inputBackground, 
+                    color: colors.inputText,
+                    borderColor: colors.border
+                  }]}
+                  value={notes}
+                  onChangeText={setNotes}
+                  multiline
+                  numberOfLines={2}
+                  autoComplete="off"
+                  importantForAutofill="no"
+                />
+              </ScrollView>
+            )}
+
+            <View style={[styles.modalFooter, { borderTopColor: colors.border }]}>
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.saveButton, 
+                  { backgroundColor: colors.success },
+                  pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
+                ]} 
+                onPress={handleSave}
+              >
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                <Text style={styles.saveButtonText}>
+                  {setlist ? t('saveChanges') : t('createSetlist')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal
+        visible={editingCustomIndex !== null}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setEditingCustomIndex(null)}
+      >
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}>
+          <View style={[styles.customEditCard, { backgroundColor: colors.background, borderColor: colors.primary }]}>
+            <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 14 }]}>
+              {editingCustomIndex !== null && selectedSongs[editingCustomIndex]?.id === -1 
+                ? (t('editPauseTitle') || 'EDITAR PAUSA')
+                : (t('editNoteTitle') || 'EDITAR ANOTAÇÃO')}
+            </Text>
+
+            {editingCustomIndex !== null && selectedSongs[editingCustomIndex]?.id === -1 && (
+              <>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('durationLabel').toUpperCase()}</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                  placeholder="Ex: 5 min, 10 min"
+                  placeholderTextColor={colors.textMuted}
+                  value={tempCustomDuration}
+                  onChangeText={setTempCustomDuration}
+                  autoComplete="off"
+                  importantForAutofill="no"
+                />
               </>
             )}
 
-            <Pressable 
-              style={({ pressed }) => [
-                styles.saveButton, 
-                { backgroundColor: colors.success },
-                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
-              ]} 
-              onPress={handleSave}
-            >
-              <Text style={styles.saveButtonText}>
-                {setlist ? t('saveChanges') : t('createSetlist')}
-              </Text>
-            </Pressable>
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
-
-    {/* Modal de Reordenação Rápida */}
-    <Modal
-      visible={showReorderModal}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => {
-        setSelectedIdxForMove(null);
-        setShowReorderModal(false);
-      }}
-    >
-      <View style={[styles.reorderOverlay, { backgroundColor: 'rgba(0,0,0,0.8)' }]}>
-        <View style={[styles.reorderContainer, { backgroundColor: colors.background, borderColor: colors.primary }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.modalTitle, { color: colors.text, fontSize: 16 }]}>
-              ⇅ {t('reorderTitle') || 'REORDENAR REPERTÓRIO'}
-            </Text>
-            <Pressable 
-              style={[styles.closePressable, { backgroundColor: colors.border }]} 
-              onPress={() => {
-                setSelectedIdxForMove(null);
-                setShowReorderModal(false);
-              }}
-            >
-              <Ionicons name="close" size={20} color={colors.text} />
-            </Pressable>
-          </View>
-
-          <Text style={{ 
-            fontSize: 12, 
-            color: colors.textMuted, 
-            paddingHorizontal: 20, 
-            paddingTop: 16, 
-            paddingBottom: 16, 
-            lineHeight: 16 
-          }}>
-            💡 {t('reorderTipDrag') || 'Arraste as músicas segurando no ícone (☰) à direita para ordenar o repertório suavemente.'}
-          </Text>
-
-          <View style={{ flex: 1, paddingHorizontal: 16 }}>
-            <DraggableSortableList
-              songs={orderedSongs}
-              onReorder={(newOrderIndices) => {
-                const reordered = newOrderIndices.map(originalIdx => selectedSongs[originalIdx]);
-                setSelectedSongs(reordered);
-              }}
-              colors={colors}
-              t={t}
+            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('notesLabel').toUpperCase()}</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border, minHeight: 60 }]}
+              placeholder="Digite sua anotação ou aviso..."
+              placeholderTextColor={colors.textMuted}
+              value={tempCustomNotes}
+              onChangeText={setTempCustomNotes}
+              multiline
+              autoComplete="off"
+              importantForAutofill="no"
             />
-          </View>
 
-          {/* Botão de Fechar no rodapé */}
-          <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.saveButton,
-                { backgroundColor: colors.primary, marginTop: 0, marginBottom: 0 },
-                pressed && { opacity: 0.8 }
-              ]}
-              onPress={() => {
-                setSelectedIdxForMove(null);
-                setShowReorderModal(false);
-              }}
-            >
-              <Text style={styles.saveButtonText}>{t('done') || 'CONCLUÍDO'}</Text>
-            </Pressable>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.cancelBtn,
+                  { backgroundColor: colors.border },
+                  pressed && { opacity: 0.7 }
+                ]}
+                onPress={() => setEditingCustomIndex(null)}
+              >
+                <Text style={{ color: colors.text, fontWeight: '800', fontSize: 12 }}>{t('cancel') || 'CANCELAR'}</Text>
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [
+                  styles.confirmBtn,
+                  { backgroundColor: colors.primary },
+                  pressed && { opacity: 0.85 }
+                ]}
+                onPress={handleSaveCustomItem}
+              >
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{t('done') || 'CONCLUÍDO'}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
-  </>
+      </Modal>
+    </>
   );
 }
 
@@ -874,31 +823,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     width: '100%',
-    maxWidth: 440,
-    borderRadius: 8,
+    maxWidth: 460,
+    borderRadius: 12,
     borderWidth: 1.5,
-    maxHeight: '90%',
+    height: '92%',
+    maxHeight: 750,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 6,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
   },
   modalTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  modalSubtitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    marginTop: 2,
   },
   closePressable: {
     width: 32,
@@ -911,23 +867,32 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  tabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+  },
+  tabButtonText: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
   modalBody: {
-    padding: 20,
+    padding: 16,
+    flex: 1,
   },
   inputLabel: {
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.2,
-    marginBottom: 8,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '950',
-    letterSpacing: 1.2,
-    marginTop: 12,
-    marginBottom: 16,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
+    marginBottom: 6,
   },
   segmentedContainer: {
     flexDirection: 'row',
@@ -970,7 +935,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 12,
     borderWidth: 1.0,
-    fontSize: 14,
+    fontSize: 13,
   },
   warningText: {
     fontSize: 13,
@@ -983,38 +948,46 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 6,
-    borderWidth: 1.0,
-    marginBottom: 12,
+    borderRadius: 8,
+    borderWidth: 1.5,
   },
   dropdownContainer: {
-    borderWidth: 1.0,
-    borderRadius: 6,
+    borderWidth: 1.5,
+    borderRadius: 8,
     padding: 10,
-    marginBottom: 12,
-    maxHeight: 250,
+    marginTop: 6,
+    maxHeight: 230,
+    position: 'absolute',
+    top: 44,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   dropdownSearch: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
     borderWidth: 1.0,
-    marginBottom: 10,
-    fontSize: 14,
+    marginBottom: 8,
+    fontSize: 13,
   },
   dropdownItem: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
   },
   addButton: {
-    paddingVertical: 14,
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    gap: 6,
+    paddingVertical: 11,
+    borderRadius: 8,
+    marginBottom: 10,
   },
   addButtonText: {
     color: '#fff',
@@ -1022,121 +995,31 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  orderListContainer: {
-    borderWidth: 1.5,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  orderItemContainer: {
-    // Cada item do roteiro fica agrupado aqui
-  },
-  orderItem: {
-    flexDirection: 'row',
+  tipBanner: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginBottom: 8,
     alignItems: 'center',
-    padding: 12,
   },
-  pauseDetailsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  pauseInputNotes: {
-    flex: 1,
-    height: 36,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    paddingHorizontal: 10,
-    fontSize: 12,
-  },
-  pauseInputTime: {
-    width: 90,
-    height: 36,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    paddingHorizontal: 10,
-    fontSize: 12,
+  tipText: {
+    fontSize: 10.5,
+    fontWeight: '700',
     textAlign: 'center',
   },
-  orderIndexBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 4, // Quadradinho
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  orderIndexText: {
-    fontSize: 12,
-    fontWeight: '900',
-  },
-  orderSongName: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  orderBandName: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  orderActions: {
+  reorderRowAbsolute: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 58,
     flexDirection: 'row',
-    gap: 6,
-    marginLeft: 8,
-  },
-  orderActionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 4, // Quadradinho
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  orderActionText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  saveButton: {
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-  },
-  reorderOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  reorderContainer: {
-    width: '100%',
-    maxWidth: 440,
+    paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1.5,
-    height: '85%',
-    maxHeight: 700,
-    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  reorderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    marginBottom: 8,
-    gap: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    gap: 8,
   },
   reorderBadge: {
     width: 26,
@@ -1145,25 +1028,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reorderArrowBtn: {
+  removeBtn: {
     width: 28,
     height: 28,
-    borderRadius: 4,
-    justifyContent: 'center',
+    borderRadius: 6,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  reorderRowAbsolute: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 60,
+  dragHandle: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  modalFooter: {
+    padding: 12,
+    borderTopWidth: 1,
+  },
+  saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 13,
     borderRadius: 8,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  customEditCard: {
+    width: '100%',
+    maxWidth: 380,
+    padding: 18,
+    borderRadius: 12,
     borderWidth: 1.5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    elevation: 8,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

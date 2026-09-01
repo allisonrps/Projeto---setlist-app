@@ -18,7 +18,8 @@ export default function SetlistDetailModal({
   setlist, 
   onStartPerformance,
   onToggleRehearsalStatus,
-  onUpdateSongRehearsalNotes
+  onUpdateSongRehearsalNotes,
+  onEditSong
 }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
@@ -145,7 +146,10 @@ export default function SetlistDetailModal({
                 onStartPerformance(setlist);
               }}
             >
-              <Text style={styles.performanceButtonText}>{t('startStageBtn')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <Ionicons name="play" size={16} color="#fff" />
+                <Text style={styles.performanceButtonText}>{t('startStageBtn')}</Text>
+              </View>
             </Pressable>
 
             {/* Músicas */}
@@ -214,8 +218,14 @@ export default function SetlistDetailModal({
                             📝 {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
                           </Text>
                         ) : (
-                          <>
-                            <Text style={[styles.songName, { color: colors.text }]}>{song.name}</Text>
+                          <Pressable
+                            style={{ flex: 1 }}
+                            onPress={() => onEditSong && onEditSong(song)}
+                          >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              <Text style={[styles.songName, { color: colors.text, flex: 1 }]}>{song.name}</Text>
+                              <Ionicons name="create-outline" size={13} color={colors.primary} style={{ opacity: 0.6 }} />
+                            </View>
                             <Text style={[styles.songBand, { color: colors.textMuted }]}>{song.originalBand}</Text>
 
                             {showRehearsalInput && (
@@ -240,7 +250,7 @@ export default function SetlistDetailModal({
                                 importantForAutofill="no"
                               />
                             )}
-                          </>
+                          </Pressable>
                         )}
                       </View>
 
