@@ -143,27 +143,27 @@ const getFeaturesList = (lang) => {
         id: 'multiband',
         icon: 'people-outline',
         title: 'Multi-Band Management',
-        subtitle: 'Manage independent repertoires, setlists, and branding for different musical projects.',
+        subtitle: 'Register your bands with photo/logo and manage setlists and repertoires for each project.',
         steps: [
           'On the Home screen, tap "NEW BAND" to register a new band or music project.',
-          'Add name, musical style, notes, and choose a custom logo from your gallery.',
-          'Tap on any band card in the top carousel to set it as active and filter its exclusive content.',
-          'Manage members, rehearsals, and stats individually per project.'
+          'Enter the band name and choose a custom photo/logo from your device gallery.',
+          'Tap on any band card in the top carousel to select it as the active band.',
+          'Selecting a band automatically filters only the setlists and songs linked to it.'
         ],
-        proTip: 'You can quickly switch active bands by tapping their logo in the top carousel anytime.'
+        proTip: 'You can quickly switch between active bands anytime by tapping their logo in the top carousel.'
       },
       {
         id: 'repertoire',
         icon: 'musical-notes-outline',
         title: 'Structured Song Repertoire',
-        subtitle: 'Store lyrics, chords, tabs, keys, BPM, duration, and reference links neatly.',
+        subtitle: 'Store lyrics, chords, tabs, duration, and reference links neatly organized.',
         steps: [
-          'In the "Songs" tab, tap the "+" button to add a new song.',
-          'Fill in Title, Original Artist, Key/Tone, BPM, Duration, and comma-separated tags.',
+          'In the "Songs" tab, tap the "+" button to add a new song to your collection.',
+          'Fill in Song Title, Original Artist, Duration, and comma-separated tags/styles.',
           'Paste or write Lyrics, Chords, and Guitar Tabs in their dedicated tabs.',
-          'Add quick reference links (YouTube, Spotify, Chord charts) for fast lookup.'
+          'Add quick reference links (YouTube, Spotify, etc.) for fast lookup while practicing.'
         ],
-        proTip: 'Use smart search by title, artist, tone, or combined tags to find songs in milliseconds.'
+        proTip: 'Use smart search by title, artist, or combined tags to find any song in milliseconds.'
       },
       {
         id: 'performance',
@@ -171,11 +171,11 @@ const getFeaturesList = (lang) => {
         title: 'Live Performance Stage Mode',
         subtitle: 'Full-screen stage prompter with autoscroll, chords/lyrics viewer, and marquee header.',
         steps: [
-          'On any Setlist card, tap "STAGE MODE" (or Rehearsal Mode).',
+          'On any Setlist card, tap the "STAGE MODE" button.',
           'The screen will stay awake and enter a distraction-free high-contrast view.',
           'Switch between Lyrics, Chords, and Tabs with the top square toggle buttons.',
-          'Activate Autoscroll (play button) and adjust scroll speed (0.5x, 1x, 2x) while playing.',
-          'Use large bottom arrows (◀ ▶) or swipe to change songs on stage with one finger.'
+          'Activate Autoscroll (speed button) for automatic chord scrolling while you play.',
+          'Use the large bottom arrows (◀ ▶) to move to the next or previous song with a quick tap.'
         ],
         proTip: 'Tap the center counter (e.g. 01 / 15) to open the entire song list and jump directly to any song.'
       },
@@ -186,9 +186,9 @@ const getFeaturesList = (lang) => {
         subtitle: 'Evaluate rehearsal song performance with colors (green/yellow/red) and custom notes.',
         steps: [
           'Create a setlist with type "REHEARSAL".',
-          'On the expanded card or in full-screen rehearsal mode, tap the song number (01, 02...):',
+          'On the expanded card or in the rehearsal screen, tap the song number (01, 02...) to set its status:',
           '🟢 Green: Ready / Approved for live shows.',
-          '🟡 Yellow: Review specific passages or tricky transitions.',
+          '🟡 Yellow: Review specific passages or transitions.',
           '🔴 Red: Needs more practice and adjustments.',
           'For Yellow and Red, enter inline rehearsal notes to remember what to fix.'
         ],
@@ -197,13 +197,13 @@ const getFeaturesList = (lang) => {
       {
         id: 'export_share',
         icon: 'share-social-outline',
-        title: 'Word, PDF & JSON Export',
-        subtitle: 'Generate formatted Word (.doc), PDF stage sheets, or share JSON backup codes.',
+        title: 'Sharing, Exporting & Backup',
+        subtitle: 'Generate formatted Word (.doc) files, share setlist codes, and backup all your data safely.',
         steps: [
-          'On any Setlist card, tap the Export / Share button.',
-          'Export .DOC: Creates a clean 2-column Microsoft Word document with headers.',
-          'Export PDF: Creates a print-ready stage sheet.',
-          'Share JSON: Shares raw setlist code so other band members can import it into their app.'
+          'On any Setlist card, tap "Export .DOC" to generate a clean 2-column Word document with band header.',
+          'Tap "Share" to send the setlist JSON code so another band member can import it into their app.',
+          'In the About tab, tap "BACKUP ALL" to save your entire database (bands, songs, and setlists) into a secure file.',
+          'Use "RESTORE BACKUP" to recover all your data instantly when changing devices or reinstalling the app.'
         ],
         proTip: 'The generated .doc file opens cleanly on MS Word, Google Docs, and mobile office apps.'
       },
@@ -239,7 +239,7 @@ const getFeaturesList = (lang) => {
         subtitle: 'Tag songs by genre, mood, or decade and filter by combining up to 3 tags simultaneously.',
         steps: [
           'When editing a song, type multiple tags separated by commas (e.g. "rock, 80s, acoustic").',
-          'In the Songs tab or Setlist editor, tap tag chips in the carousel.',
+          'In the Songs tab or Setlist screen, tap tag chips in the carousel to filter.',
           'Combine up to 3 tags at once (e.g. "rock" + "80s") to narrow down your search.'
         ],
         proTip: 'Tap an active tag chip again to deselect it.'
@@ -265,8 +265,8 @@ const getFeaturesList = (lang) => {
         steps: [
           'In Setlist editor, tap "+ PAUSE" or "+ NOTE".',
           'Pause: Set an intermission break with countdown timer (e.g. 15 min break).',
-          'Note: Add key changes, speaker cues, or transition reminders.',
-          'In Stage Mode, pauses and notes appear as dedicated highlight cards.'
+          'Note: Add transition reminders, spoken cues, or instrument change notes.',
+          'In Stage Mode, pauses and notes appear as dedicated highlight screens.'
         ],
         proTip: 'Pauses do not disrupt the contiguous numbering of your actual songs (e.g. 01, 02, [PAUSE], 03).'
       },
@@ -279,39 +279,39 @@ const getFeaturesList = (lang) => {
         id: 'multiband',
         icon: 'people-outline',
         title: 'Gestión Multibandas',
-        subtitle: 'Administra repertorios, setlists y marcas independientes para diferentes proyectos musicales.',
+        subtitle: 'Registre sus bandas con foto/logo y gestione los setlists y repertorios de cada proyecto.',
         steps: [
-          'En la pantalla de Inicio, toca en "NUEVA BANDA" para registrar tu grupo o proyecto.',
-          'Agrega nombre, estilo musical, notas y un logo personalizado de tu galería.',
-          'Toca la tarjeta de la banda en el carrusel superior para activarla y filtrar su contenido exclusivo.',
-          'Administra miembros, ensayos y estadísticas individualmente por proyecto.'
+          'En la pantalla de Inicio, toca en "NUEVA BANDA" para registrar tu grupo o proyecto musical.',
+          'Agrega el nombre de la banda y elige una foto/logo personalizado de tu galería.',
+          'Toca la tarjeta de la banda en el carrusel superior para seleccionarla como activa.',
+          'Al seleccionar una banda, la app filtra automáticamente solo los setlists y canciones vinculados a ella.'
         ],
         proTip: 'Puedes cambiar de banda activa en cualquier momento tocando su logo en el carrusel superior.'
       },
       {
         id: 'repertoire',
         icon: 'musical-notes-outline',
-        title: 'Repertorio Estructurado',
-        subtitle: 'Guarda letras, acordes, tablaturas, tonos, BPM, duración y enlaces de apoyo organizadamente.',
+        title: 'Repertorio y Canciones Estructuradas',
+        subtitle: 'Guarde letras, acordes, tablaturas, duración y enlaces de apoyo organizadamente.',
         steps: [
           'En la pestaña "Canciones", toca el botón "+" para registrar una nueva canción.',
-          'Completa Nombre, Banda Original, Tonalidad, BPM, Duración y etiquetas separadas por comas.',
+          'Completa Nombre de la canción, Banda Original, Duración y etiquetas/estilos separados por comas.',
           'Agrega Letras, Acordes y Tablaturas en sus pestañas dedicadas.',
-          'Inserta enlaces útiles (YouTube, Spotify, etc.) para consulta rápida.'
+          'Inserta enlaces útiles (YouTube, Spotify, etc.) para consulta y estudio rápido.'
         ],
-        proTip: 'Usa la búsqueda inteligente por título, artista, tono o etiquetas combinadas.'
+        proTip: 'Usa la búsqueda inteligente por título, artista o etiquetas combinadas para encontrar cualquier canción en milisegundos.'
       },
       {
         id: 'performance',
         icon: 'desktop-outline',
         title: 'Modo Escenario (En Vivo)',
-        subtitle: 'Visualizador de escenario en pantalla completa con desplazamiento automático y acordes.',
+        subtitle: 'Visualizador de escenario en pantalla completa con desplazamiento automático y acordes/letras.',
         steps: [
-          'En la tarjeta del setlist, toca "MODO ESCENARIO" (o Modo Ensayo).',
+          'En la tarjeta del setlist, toca el botón "MODO ESCENARIO".',
           'La pantalla se mantendrá encendida sin apagarse durante la presentación.',
-          'Alterna entre Letra, Acordes y Tablatura con los botones superiores.',
-          'Activa el Autoscroll (botón de velocidad) para desplazamiento automático de acordes.',
-          'Usa las flechas inferiores (◀ ▶) para cambiar de canción con un solo toque.'
+          'Alterna entre Letra, Acordes o Tablatura con los botones superiores.',
+          'Activa el Autoscroll (botón de velocidad) para desplazamiento automático de acordes mientras tocas.',
+          'Usa las flechas inferiores grandes (◀ ▶) para avanzar o retroceder canciones con un toque rápido.'
         ],
         proTip: 'Toca el contador central (ej: 01 / 15) para abrir la lista del repertorio y saltar a cualquier canción.'
       },
@@ -322,7 +322,7 @@ const getFeaturesList = (lang) => {
         subtitle: 'Evalúa el desempeño de las canciones en el ensayo con colores (verde/amarillo/rojo) y notas.',
         steps: [
           'Crea un setlist con tipo "ENSAYO".',
-          'En la tarjeta expandida o en el modo ensayo, toca el número de la canción (01, 02...):',
+          'En la tarjeta expandida o en la pantalla de ensayo, toca el número de la canción (01, 02...) para evaluar el status:',
           '🟢 Verde: Canción lista/aprobada para el show.',
           '🟡 Amarillo: Revisar pasajes o partes específicas.',
           '🔴 Rojo: Necesita más ensayo y ajustes.',
@@ -333,13 +333,13 @@ const getFeaturesList = (lang) => {
       {
         id: 'export_share',
         icon: 'share-social-outline',
-        title: 'Exportación a Word, PDF y JSON',
-        subtitle: 'Genera archivos de Word (.doc), hojas PDF para escenario o comparte códigos JSON.',
+        title: 'Compartir, Exportar y Respaldo',
+        subtitle: 'Genere archivos Word (.doc) formateados, comparta setlists y haga copia de seguridad completa.',
         steps: [
-          'En la tarjeta del setlist, toca el botón de Exportar o Compartir.',
-          'Exportar .DOC: Genera un documento formateado de Microsoft Word en dos columnas con encabezado.',
-          'Exportar PDF: Genera un PDF listo para imprimir para el escenario.',
-          'Compartir JSON: Envía el código completo para que otro músico lo importe en su app.'
+          'En la tarjeta del setlist, toca "Exportar .DOC" para generar un archivo Word en 2 columnas con encabezado.',
+          'Toca el botón "Compartir" para enviar el código JSON del setlist y permitir que otro músico lo importe en su app.',
+          'En la pestaña Acerca de, toca "RESPALDO TOTAL" para guardar toda la base de datos (bandas, canciones y setlists) en un archivo seguro.',
+          'Usa el botón "RESTAURAR RESPALDO" para recuperar todos tus datos al cambiar de teléfono o reinstalar la app.'
         ],
         proTip: 'El archivo .doc se abre limpiamente en MS Word, Google Docs y apps de móvil.'
       },
@@ -374,8 +374,8 @@ const getFeaturesList = (lang) => {
         title: 'Filtros por Múltiples Etiquetas',
         subtitle: 'Categoriza canciones por etiquetas y filtra combinando hasta 3 simultáneamente.',
         steps: [
-          'Al registrar canciones, escribe etiquetas separadas por comas (ej: "rock, 80s, acustico").',
-          'En la pestaña de Canciones o editor de Setlist, toca las etiquetas para filtrar.',
+          'Al registrar canciones, escribe etiquetas/estilos separados por comas (ej: "rock, 80s, acustico").',
+          'En la pestaña de Canciones o en la pantalla de Setlist, toca las etiquetas para filtrar.',
           'Combina hasta 3 etiquetas a la vez para afinar tu búsqueda.'
         ],
         proTip: 'Toca una etiqueta seleccionada nuevamente para desmarcarla.'
@@ -401,8 +401,8 @@ const getFeaturesList = (lang) => {
         steps: [
           'En el editor del setlist, toca "+ PAUSA" o "+ NOTA".',
           'Pausa: Define un intervalo con cuenta regresiva (ej: 15 min de descanso).',
-          'Nota: Inserta cambios de tono, avisos o transiciones en el show.',
-          'En el Modo Escenario, las pausas y notas aparecen como tarjetas destacadas.'
+          'Nota: Inserta avisos de voz, cambios de afinación o transiciones en el show.',
+          'En el Modo Escenario, las pausas y notas aparecen como pantallas destacadas.'
         ],
         proTip: 'Las pausas no alteran la numeración consecutiva de tus canciones (ej: 01, 02, [PAUSA], 03).'
       },
@@ -415,12 +415,12 @@ const getFeaturesList = (lang) => {
       id: 'multiband',
       icon: 'people-outline',
       title: 'Gestão Multibandas',
-      subtitle: 'Cadastre e gerencie o repertório, setlists e identidade de diferentes projetos musicais.',
+      subtitle: 'Cadastre suas bandas com foto/logo e gerencie os roteiros e repertórios de cada projeto.',
       steps: [
         'Na tela inicial (Início), toque em "NOVA BANDA" para cadastrar seu grupo ou projeto musical.',
-        'Adicione o nome, estilo musical, observações e uma foto/logo personalizada da sua galeria.',
-        'Toque em qualquer card de banda no carrossel do topo para defini-la como ativa e filtrar o conteúdo exclusivo dela.',
-        'Gerencie integrantes, ensaios e estatísticas individualmente por projeto.'
+        'Adicione o nome da banda e escolha uma foto/logo personalizada da sua galeria.',
+        'Toque no card da banda no carrossel do topo para selecioná-la como ativa.',
+        'Ao selecionar uma banda, o app filtra automaticamente apenas os setlists e músicas vinculados a ela.'
       ],
       proTip: 'Você pode alternar entre seus diferentes projetos musicais a qualquer momento tocando na foto da banda no topo.'
     },
@@ -428,14 +428,14 @@ const getFeaturesList = (lang) => {
       id: 'repertoire',
       icon: 'musical-notes-outline',
       title: 'Repertório e Músicas Estruturadas',
-      subtitle: 'Guarde letras, cifras, tablaturas, tonalidades, BPM, duração e links de apoio de forma organizada.',
+      subtitle: 'Guarde letras, cifras, tablaturas, duração e links de apoio de forma organizada.',
       steps: [
         'Na aba "Músicas", toque no botão "+" para cadastrar uma nova música no acervo.',
-        'Preencha Nome, Banda Original, Tonalidade, BPM, Duração e tags separadas por vírgula.',
+        'Preencha Nome da música, Banda Original, Duração e tags/estilos separados por vírgula.',
         'Cole ou digite Letra, Cifra e Tablatura nas abas correspondentes.',
         'Insira links úteis (YouTube, Spotify, etc.) para consulta e estudo rápido da banda.'
       ],
-      proTip: 'Use o campo de busca inteligente por título, artista, tom ou tags combinadas para encontrar qualquer música em milissegundos.'
+      proTip: 'Use o campo de busca inteligente por título, artista ou tags combinadas para encontrar qualquer música em milissegundos.'
     },
     {
       id: 'performance',
@@ -443,7 +443,7 @@ const getFeaturesList = (lang) => {
       title: 'Modo Palco (Live Performance)',
       subtitle: 'Visualizador de palco em tela cheia com rolagem automática, cifras/letras e letreiro dinâmico.',
       steps: [
-        'No card da setlist, toque em "ENTRAR NO MODO PALCO" (ou no Modo Ensaio).',
+        'No card da setlist, toque no botão "MODO PALCO".',
         'A tela entrará em visualização cheia e não apagará durante o show.',
         'Alterne entre Letra, Cifra ou Tablatura nos botões superiores.',
         'Ative o Autoscroll (botão de velocidade) para rolagem automática das cifras enquanto você toca.',
@@ -458,7 +458,7 @@ const getFeaturesList = (lang) => {
       subtitle: 'Avalie o desempenho das músicas no ensaio com cores (verde/amarelo/vermelho) e observações.',
       steps: [
         'Crie uma setlist escolhendo o tipo "ENSAIO".',
-        'No card expandido ou na tela cheia de ensaio, toque no número da música (01, 02...) para avaliar o status:',
+        'No card expandido ou na tela de ensaio, toque no número da música (01, 02...) para avaliar o status:',
         '🟢 Verde: Música pronta/aprovada para o show.',
         '🟡 Amarelo: Revisar passagens ou partes específicas.',
         '🔴 Vermelho: Precisa de mais ensaio e ajustes.',
@@ -469,13 +469,13 @@ const getFeaturesList = (lang) => {
     {
       id: 'export_share',
       icon: 'share-social-outline',
-      title: 'Compartilhamento e Exportação (DOC / PDF / JSON)',
-      subtitle: 'Gere arquivos Word (.doc) em duas colunas, folhas PDF para palco ou compartilhe códigos de setlist.',
+      title: 'Compartilhamento, Exportação e Backup',
+      subtitle: 'Gere arquivos Word (.doc) formatados, compartilhe setlists e faça backup total dos seus dados.',
       steps: [
-        'No card da setlist, toque no botão "Exportar" ou "Compartilhar".',
-        'Exportar .DOC: Gera um arquivo do Microsoft Word formatado em duas colunas com cabeçalho profissional da banda.',
-        'Exportar PDF: Gera um arquivo PDF pronto para impressão de palco.',
-        'Compartilhar JSON: Envia o código completo do setlist para outro integrante da banda importar no app dele.'
+        'No card da setlist, toque no botão "Exportar .DOC" para gerar um arquivo Word pronto em 2 colunas com o cabeçalho da banda.',
+        'Toque no botão de "Compartilhar" para enviar o código JSON da setlist e permitir que outro músico importe no app dele.',
+        'Na aba Sobre, toque em "BACKUP TOTAL" para salvar todo o banco de dados (bandas, músicas e setlists) em um arquivo seguro.',
+        'Use o botão "RESTAURAR BACKUP" para recuperar seus dados instantaneamente ao trocar de aparelho ou reinstalar o app.'
       ],
       proTip: 'O arquivo .doc gerado abre perfeitamente no Word, Google Docs e aplicativos de celular sem corrupção.'
     },
@@ -510,8 +510,8 @@ const getFeaturesList = (lang) => {
       title: 'Filtros Avançados por Múltiplas Tags',
       subtitle: 'Cadastre músicas com múltiplas tags por vírgula e filtre combinando até 3 tags simultâneas.',
       steps: [
-        'Ao cadastrar músicas, digite tags separadas por vírgula (ex: "rock, nacional, 80s").',
-        'Na aba de Músicas ou no modal do Setlist, toque nas tags do carrossel para filtrar.',
+        'Ao cadastrar músicas, digite tags/estilos separados por vírgula (ex: "rock, nacional, 80s").',
+        'Na aba de Músicas ou na tela de Setlist, toque nas tags do carrossel para filtrar.',
         'Você pode combinar até 3 tags simultâneas para encontrar exatamente o que precisa (ex: "rock" + "nacional").'
       ],
       proTip: 'Toque novamente em uma tag selecionada para desmarcá-la.'
@@ -537,7 +537,7 @@ const getFeaturesList = (lang) => {
       steps: [
         'No editor da setlist, toque em "+ PAUSA" ou "+ ANOTAÇÃO".',
         'Pausa: Define um intervalo com cronômetro regressivo (ex: 15 min de intervalo no show).',
-        'Anotação: Insere um recado, mudança de afinação, aviso de fala ou transição (ex: "Fala do Vocalista", "Trocar Guitarra").',
+        'Anotação: Insere um recado, aviso de fala ou lembrete de transição (ex: "Fala do Vocalista", "Trocar Guitarra").',
         'No Modo Palco, pausas e anotações aparecem como telas especiais de destaque.'
       ],
       proTip: 'Pausas não alteram a contagem contígua das músicas (ex: 01, 02, [PAUSA], 03).'
