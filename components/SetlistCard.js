@@ -181,27 +181,28 @@ export default function SetlistCard({
               {setlist.name || 'Sem Nome'}
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
             <View style={{
               backgroundColor: typeColor + '15',
               borderColor: typeColor + '30',
               borderWidth: 1,
-              borderRadius: 4,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
+              borderRadius: 3.5,
+              paddingHorizontal: 6,
+              paddingVertical: 1.5,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4
+              gap: 3.5
             }}>
               <Ionicons 
                 name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                size={10} 
+                size={9} 
                 color={typeColor} 
               />
               <Text style={{ 
-                fontSize: 10, 
+                fontSize: 9, 
                 fontWeight: '900', 
-                color: typeColor 
+                color: typeColor,
+                letterSpacing: 0.3
               }}>
                 {t(setlist.type).toUpperCase()}
               </Text>
@@ -223,11 +224,11 @@ export default function SetlistCard({
       {expanded && (
         <View style={[styles.expandedContent, { borderTopColor: colors.border }]}>
           
-          {/* Metadados no Expansivo (Músicas, Tempo Estimado, Local, Cachê como tags) */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+          {/* Metadados no Expansivo (Músicas, Tempo Estimado, Local, Cachê como tags compactas) */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
             {/* Total de Músicas */}
             <View style={[styles.miniInfoBadge, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '25', borderWidth: 1 }]}>
-              <Ionicons name="musical-notes-outline" size={10} color={colors.primary} style={{ marginRight: 4 }} />
+              <Ionicons name="musical-notes-outline" size={9} color={colors.primary} style={{ marginRight: 3 }} />
               <Text style={[styles.miniInfoText, { color: colors.primary }]}>
                 {setlist.songs ? setlist.songs.filter(s => s.id !== -1 && s.id !== -2).length : 0} {t('songsBadge')}
               </Text>
@@ -236,7 +237,7 @@ export default function SetlistCard({
             {/* Tempo Estimado */}
             {totalDuration ? (
               <View style={[styles.miniInfoBadge, { backgroundColor: colors.secondary + '10', borderColor: colors.secondary + '25', borderWidth: 1 }]}>
-                <Ionicons name="time-outline" size={10} color={colors.secondary} style={{ marginRight: 4 }} />
+                <Ionicons name="time-outline" size={9} color={colors.secondary} style={{ marginRight: 3 }} />
                 <Text style={[styles.miniInfoText, { color: colors.secondary }]}>
                   {totalDuration}
                 </Text>
@@ -246,7 +247,7 @@ export default function SetlistCard({
             {/* Local */}
             {setlist.local ? (
               <View style={[styles.miniInfoBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderColor: colors.border, borderWidth: 1 }]}>
-                <Ionicons name="location-outline" size={10} color={colors.textMuted} style={{ marginRight: 4 }} />
+                <Ionicons name="location-outline" size={9} color={colors.textMuted} style={{ marginRight: 3 }} />
                 <Text style={[styles.miniInfoText, { color: colors.textMuted }]}>
                   {setlist.local}
                 </Text>
@@ -256,7 +257,7 @@ export default function SetlistCard({
             {/* Cachê */}
             {setlist.type === 'show' && setlist.cachê ? (
               <View style={[styles.miniInfoBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '25', borderWidth: 1 }]}>
-                <Ionicons name="cash-outline" size={10} color={colors.success} style={{ marginRight: 4 }} />
+                <Ionicons name="cash-outline" size={9} color={colors.success} style={{ marginRight: 3 }} />
                 <Text style={[styles.miniInfoText, { color: colors.success }]}>
                   R$ {setlist.cachê}
                 </Text>
@@ -265,8 +266,8 @@ export default function SetlistCard({
             
             {/* Observações */}
             {setlist.notes ? (
-              <View style={[styles.detailRow, { alignItems: 'flex-start', marginBottom: 12 }]}>
-                <Text style={[styles.detailText, { color: colors.text, flex: 1 }]}>
+              <View style={[styles.detailRow, { alignItems: 'flex-start', marginBottom: 6, marginTop: 2 }]}>
+                <Text style={[styles.detailText, { color: colors.text, flex: 1, fontSize: 11 }]}>
                   Obs: <Text style={{ fontWeight: '500', color: colors.textMuted }}>{setlist.notes}</Text>
                 </Text>
               </View>
@@ -281,12 +282,13 @@ export default function SetlistCard({
                   {t('songsTitle')} ({setlist.songs.length})
                 </Text>
                 <Pressable 
-                  style={({ pressed }) => [styles.eyeBtn, pressed && { opacity: 0.7 }]}
+                  style={({ pressed }) => [styles.eyeBtn, pressed && { opacity: 0.6 }]}
                   onPress={() => setShowSongs(!showSongs)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <Ionicons 
                     name={showSongs ? "eye-outline" : "eye-off-outline"} 
-                    size={17} 
+                    size={16} 
                     color={showSongs ? colors.primary : colors.textMuted} 
                   />
                 </Pressable>
@@ -312,7 +314,7 @@ export default function SetlistCard({
                       }
                     ]}
                   >
-                    {isRehearsal && onToggleSongStatus && !isPause && !isNote ? (
+                    {isRehearsal && onToggleRehearsalStatus && !isPause && !isNote ? (
                       <Pressable 
                         style={[
                           styles.songIndexBadge,
@@ -326,7 +328,7 @@ export default function SetlistCard({
                               : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') 
                           }
                         ]}
-                        onPress={() => onToggleSongStatus(setlist.id, song.id, index)}
+                        onPress={() => onToggleRehearsalStatus(setlist.id, song.id, index, song.rehearsalStatus)}
                       >
                         <Text 
                           style={[
@@ -350,19 +352,19 @@ export default function SetlistCard({
                     <View style={{ flex: 1 }}>
                       {isPause ? (
                         <View>
-                          <Text style={[styles.songName, { color: colors.secondary, fontWeight: '900', fontSize: 13 }]}>
+                          <Text style={[styles.songName, { color: colors.secondary, fontWeight: '900', fontSize: 12 }]}>
                             PAUSA
                           </Text>
                           {song.customNotes ? (
-                            <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: 'italic', marginTop: 2 }}>
+                            <Text style={{ fontSize: 10, color: colors.textMuted, fontStyle: 'italic', marginTop: 1 }}>
                               Obs: {song.customNotes}
                             </Text>
                           ) : null}
                         </View>
                       ) : isNote ? (
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                          <Ionicons name="document-text-outline" size={13} color={colors.warning} />
-                          <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontSize: 13, fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
+                          <Ionicons name="document-text-outline" size={12} color={colors.warning} />
+                          <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontSize: 12, fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
                             {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
                           </Text>
                         </View>
@@ -372,16 +374,16 @@ export default function SetlistCard({
                           onPress={() => onEditSong && onEditSong(song)}
                         >
                           <View style={{ flex: 1, paddingRight: 6 }}>
-                            <Text style={[styles.songName, { color: colors.text, fontSize: 13 }]} numberOfLines={1}>
+                            <Text style={[styles.songName, { color: colors.text, fontSize: 12 }]} numberOfLines={1}>
                               {song.name}
                             </Text>
                             {song.originalBand ? (
-                              <Text style={[styles.songBand, { color: colors.textMuted, fontSize: 11, marginTop: 1 }]} numberOfLines={1}>
+                              <Text style={[styles.songBand, { color: colors.textMuted, fontSize: 10 }]} numberOfLines={1}>
                                 {song.originalBand}
                               </Text>
                             ) : null}
                           </View>
-                          <Ionicons name="create-outline" size={14} color={colors.primary} style={{ opacity: 0.7, marginRight: 6 }} />
+                          <Ionicons name="create-outline" size={13} color={colors.primary} style={{ opacity: 0.7, marginRight: 6 }} />
                         </Pressable>
                       )}
 
@@ -392,11 +394,11 @@ export default function SetlistCard({
                             color: colors.inputText, 
                             borderColor: colors.border, 
                             borderWidth: 1, 
-                            paddingVertical: 4, 
-                            paddingHorizontal: 8, 
-                            borderRadius: 6, 
-                            fontSize: 12, 
-                            marginTop: 6, 
+                            paddingVertical: 3, 
+                            paddingHorizontal: 6, 
+                            borderRadius: 5, 
+                            fontSize: 11, 
+                            marginTop: 4, 
                             fontStyle: 'italic'
                           }}
                           placeholder={t('rehearsalNotesPlaceholder')}
@@ -410,14 +412,14 @@ export default function SetlistCard({
                     </View>
                     {isPause && song.customDuration ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Ionicons name="time-outline" size={11} color={colors.secondary} />
+                        <Ionicons name="time-outline" size={10} color={colors.secondary} />
                         <Text style={[styles.songDurationText, { color: colors.secondary, fontWeight: '800' }]}>
                           {song.customDuration}
                         </Text>
                       </View>
                     ) : (!isPause && song.duration ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Ionicons name="time-outline" size={11} color={colors.textMuted} />
+                        <Ionicons name="time-outline" size={10} color={colors.textMuted} />
                         <Text style={[styles.songDurationText, { color: colors.textMuted }]}>
                           {song.duration}
                         </Text>
@@ -602,27 +604,29 @@ const styles = StyleSheet.create({
   },
   miniInfoBadge: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniInfoText: {
-    fontSize: 9,
-    fontWeight: '950',
+    fontSize: 8.5,
+    fontWeight: '800',
   },
   songsSectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 4,
+    paddingHorizontal: 2,
   },
   eyeBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    padding: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   arrowIcon: {
     fontSize: 12,
@@ -631,67 +635,70 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   expandedContent: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: 10,
+    paddingTop: 10,
     borderTopWidth: 1,
   },
   detailsList: {
-    gap: 8,
-    marginBottom: 16,
+    gap: 6,
+    marginBottom: 12,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   detailIcon: {
-    fontSize: 13,
-    width: 16,
+    fontSize: 12,
+    width: 14,
     textAlign: 'center',
   },
   detailText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
   songsSection: {
     borderWidth: 1,
     borderRadius: 6,
-    padding: 10,
-    marginBottom: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginBottom: 12,
   },
   songsSectionTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '900',
-    marginBottom: 8,
+    marginBottom: 0,
     letterSpacing: 0.5,
   },
   songRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   songIndexBadge: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 8,
   },
   songIndexText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '900',
   },
   songName: {
     fontWeight: '800',
+    fontSize: 12,
   },
   songBand: {
-    marginTop: 1,
+    fontSize: 10,
+    marginTop: 0,
   },
   songDurationText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
   },
   performanceButton: {

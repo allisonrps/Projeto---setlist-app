@@ -1031,30 +1031,13 @@ function MainApp() {
         }
       }
 
-      // Tentar carregar logo da banda como Base64 (usando comparação string para evitar erros de tipo SQLite)
-      let base64Logo = '';
-      if (Platform.OS !== 'web' && setlist.myBandId) {
-        try {
-          const bandList = await bandService.getAll();
-          const foundBand = bandList.find(b => String(b.id) === String(setlist.myBandId));
-          if (foundBand && foundBand.imageUri) {
-            const fileData = await FileSystem.readAsStringAsync(foundBand.imageUri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-            const mime = foundBand.imageUri.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-            base64Logo = `data:${mime};base64,${fileData}`;
-          }
-        } catch (imgErr) {
-          console.warn('Erro ao carregar imagem para Word:', imgErr);
-        }
-      }
-
-      // Pré-calcular numeração contígua pulando pausas
+      // Pré-calcular numeração contígua pulando pausas e anotações
       let songCounter = 0;
       const processedSongs = (setlist.songs || []).map((song) => {
         const isPause = String(song.id) === '-1';
+        const isNote = String(song.id) === '-2';
         let numStr = '';
-        if (!isPause) {
+        if (!isPause && !isNote) {
           songCounter++;
           numStr = String(songCounter).padStart(2, '0');
         }
@@ -1068,34 +1051,33 @@ function MainApp() {
 
       const renderSongHtml = (song, numStr) => {
         const isPause = String(song.id) === '-1';
+        const isNote = String(song.id) === '-2';
         if (isPause) {
-          let html = `<div class="pause-item">----- PAUSA -----`;
+          let html = `<div class="pause-item"><div class="pause-name">----- PAUSA -----`;
           if (song.customDuration && song.customDuration.trim()) {
-            html += ` <span style="font-size: 9px; font-weight: normal;">(${song.customDuration.trim()})</span>`;
+            html += ` <span style="font-size: 8pt; font-weight: normal;">(${song.customDuration.trim()})</span>`;
           }
           html += `</div>`;
           if (song.customNotes && song.customNotes.trim()) {
-            html += `<div class="pause-details">${song.customNotes.trim()}</div>`;
-          } else {
-            html += `<div style="margin-bottom: 2px;"></div>`;
-          }
-          return html;
-        } else {
-          let html = `<div class="song-item">${numStr}. ${song.name.toUpperCase()}`;
-          if (song.duration && song.duration.trim()) {
-            html += ` <span style="font-size: 9px; font-weight: normal; color: #555555;">(${song.duration.trim()})</span>`;
+            html += `<div class="pause-obs">${song.customNotes.trim()}</div>`;
           }
           html += `</div>`;
-          
+          return html;
+        } else if (isNote) {
+          return `<div class="note-item"><div class="note-name">${song.customNotes || 'ANOTAÇÃO'}</div></div>`;
+        } else {
+          let html = `<div class="song-item"><div class="song-name">${numStr}. ${song.name ? song.name.toUpperCase() : ''}`;
+          if (song.duration && song.duration.trim()) {
+            html += ` <span style="font-size: 8pt; font-weight: normal; color: #6b7280;">(${song.duration.trim()})</span>`;
+          }
+          html += `</div>`;
           if (song.originalBand && song.originalBand.trim()) {
             html += `<div class="song-band">(${song.originalBand.trim()})</div>`;
           }
-          
           if (song.customNotes && song.customNotes.trim()) {
-            html += `<div class="song-details">Obs: ${song.customNotes.trim()}</div>`;
-          } else if (!song.originalBand || !song.originalBand.trim()) {
-            html += `<div style="margin-bottom: 2px;"></div>`;
+            html += `<div class="song-obs">Obs: ${song.customNotes.trim()}</div>`;
           }
+          html += `</div>`;
           return html;
         }
       };
@@ -1103,146 +1085,166 @@ function MainApp() {
       const col1Html = col1Songs.map((item) => renderSongHtml(item.song, item.numStr)).join('\n');
       const col2Html = col2Songs.map((item) => renderSongHtml(item.song, item.numStr)).join('\n');
 
-      const totalSongsCount = setlist.songs ? setlist.songs.filter(s => String(s.id) !== '-1').length : 0;
+      const totalSongsCount = setlist.songs ? setlist.songs.filter(s => String(s.id) !== '-1' && String(s.id) !== '-2').length : 0;
 
-      // Gerar HTML de Word
+      // Gerar documento HTML compatível 100% com MS Word (.doc)
       let docContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head>
-<meta charset="utf-8">
-<title>Roteiro Setlist</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<meta name="Originator" content="Microsoft Word 15">
 <!--[if gte mso 9]>
 <xml>
 <w:WordDocument>
-<w:View>Print</w:View>
-<w:Zoom>100</w:Zoom>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
 </w:WordDocument>
 </xml>
 <![endif]-->
 <style>
+  @page {
+    size: 21.0cm 29.7cm;
+    margin: 1.2cm 1.2cm 1.2cm 1.2cm;
+    mso-page-orientation: portrait;
+  }
   body {
-    font-family: 'Arial', sans-serif;
-    color: #333333;
-    margin: 10px 15px;
+    font-family: Calibri, Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #1f2937;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
   }
-  .header-table {
-    width: 100%;
+  table {
     border-collapse: collapse;
-    margin-bottom: 8px;
-    border: 1px solid #999999;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
   }
-  .logo-cell {
-    width: 60px;
+  .header-box {
+    width: 100%;
+    border: 1.5pt solid #374151;
+    background-color: #f3f4f6;
+    margin-bottom: 12pt;
+  }
+  .header-td {
+    padding: 8pt 12pt;
     vertical-align: middle;
-    padding: 6px;
-    border-right: 1px solid #999999;
-    text-align: center;
-  }
-  .logo-img {
-    width: 50px;
-    height: 50px;
-  }
-  .info-cell {
-    vertical-align: middle;
-    padding: 4px 10px;
   }
   .show-title {
-    font-size: 15px;
+    font-size: 15pt;
     font-weight: bold;
     color: #111827;
-    margin: 0;
+    margin: 0 0 2pt 0;
     text-transform: uppercase;
   }
-  .band-name {
-    font-size: 11px;
-    color: #4b5563;
+  .band-title {
+    font-size: 10.5pt;
     font-weight: bold;
-    margin: 1px 0 0 0;
+    color: #4b5563;
+    margin: 0 0 4pt 0;
     text-transform: uppercase;
   }
-  .meta-grid {
-    font-size: 9px;
-    color: #555555;
-    margin: 1px 0 0 0;
+  .meta-text {
+    font-size: 8.5pt;
+    color: #6b7280;
+    margin: 0;
   }
-  .setlist-table {
+  .setlist-grid {
     width: 100%;
-    border-collapse: collapse;
   }
   .column-td {
     width: 48%;
     vertical-align: top;
     padding: 0;
   }
-  .divider-td {
+  .gap-td {
     width: 4%;
+    vertical-align: top;
+    padding: 0;
   }
   .song-item {
-    font-size: 11px;
+    margin-bottom: 5pt;
+    padding-bottom: 3pt;
+    border-bottom: 0.5pt solid #e5e7eb;
+  }
+  .song-name {
+    font-size: 10pt;
     font-weight: bold;
     color: #111827;
     margin: 0;
-    padding: 0;
-    line-height: 1.05;
+    line-height: 1.15;
   }
   .song-band {
-    font-size: 8.5px;
-    color: #666666;
-    margin: 0 0 2px 18px;
-    padding: 0;
+    font-size: 8pt;
+    color: #4b5563;
+    margin: 1pt 0 0 0;
     line-height: 1.0;
   }
-  .song-details {
-    font-size: 8.5px;
-    color: #888888;
-    margin: -1px 0 2px 18px;
-    padding: 0;
-    line-height: 1.0;
+  .song-obs {
+    font-size: 8pt;
+    color: #6b7280;
     font-style: italic;
+    margin: 1pt 0 0 0;
+    line-height: 1.0;
   }
   .pause-item {
-    font-size: 11px;
-    font-weight: bold;
-    color: #dc2626;
-    margin: 0;
-    padding: 0;
-    line-height: 1.05;
+    margin-bottom: 5pt;
+    padding: 3pt 6pt;
+    background-color: #fef2f2;
+    border-left: 2.5pt solid #ef4444;
   }
-  .pause-details {
-    font-size: 8.5px;
+  .pause-name {
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #b91c1c;
+    margin: 0;
+  }
+  .pause-obs {
+    font-size: 8pt;
     color: #dc2626;
-    margin: 0 0 2px 18px;
-    padding: 0;
-    line-height: 1.0;
+    font-style: italic;
+    margin: 1pt 0 0 0;
+  }
+  .note-item {
+    margin-bottom: 5pt;
+    padding: 3pt 6pt;
+    background-color: #fffbeb;
+    border-left: 2.5pt solid #f59e0b;
+  }
+  .note-name {
+    font-size: 9pt;
+    font-weight: bold;
+    color: #b45309;
+    margin: 0;
+    font-style: italic;
   }
 </style>
 </head>
 <body>
-  <table class="header-table">
+  <table class="header-box">
     <tr>
-      ${base64Logo ? `
-      <td class="logo-cell">
-        <img class="logo-img" src="${base64Logo}" alt="Logo" />
-      </td>
-      ` : ''}
-      <td class="info-cell">
-        <h1 class="show-title">${(setlist.name || 'SEM NOME').toUpperCase()}</h1>
-        <div class="band-name">BANDA: ${(setlist.bandName || 'SEM BANDA').toUpperCase()}</div>
-        <p class="meta-grid">
-          ${setlist.date ? `📅 ${setlist.date} &nbsp;&nbsp;|&nbsp;&nbsp; ` : ''}
-          ${setlist.local ? `📍 ${setlist.local} &nbsp;&nbsp;|&nbsp;&nbsp; ` : ''}
-          🎼 ${totalSongsCount} Músicas &nbsp;&nbsp;|&nbsp;&nbsp;
-          ⏱ ${totalDur || 'Não informado'}
-        </p>
+      <td class="header-td">
+        <div class="show-title">${(setlist.name || 'SEM NOME').toUpperCase()}</div>
+        <div class="band-title">BANDA: ${(setlist.bandName || 'SEM BANDA').toUpperCase()}</div>
+        <div class="meta-text">
+          ${setlist.date ? `Data: ${setlist.date} &nbsp;|&nbsp; ` : ''}
+          ${setlist.local ? `Local: ${setlist.local} &nbsp;|&nbsp; ` : ''}
+          Total: ${totalSongsCount} Músicas &nbsp;|&nbsp;
+          Duração: ${totalDur || 'Não informado'}
+          ${setlist.notes ? `<br>Obs: ${setlist.notes}` : ''}
+        </div>
       </td>
     </tr>
   </table>
 
-  <table class="setlist-table">
+  <table class="setlist-grid">
     <tr>
       <td class="column-td">
         ${col1Html}
       </td>
-      <td class="divider-td"></td>
+      <td class="gap-td"></td>
       <td class="column-td">
         ${col2Html}
       </td>
@@ -1251,19 +1253,21 @@ function MainApp() {
 </body>
 </html>`;
 
-      // 2. Formatar nome do arquivo: nomedabanda - nomedoevento - data - local.doc
-      const cleanBand = (setlist.bandName || 'SEM-BANDA').replace(/[\/:*?"<>|]/g, '-').trim();
-      const cleanEvent = (setlist.name || 'SEM-NOME').replace(/[\/:*?"<>|]/g, '-').trim();
-      const cleanDate = (setlist.date || 'SEM-DATA').replace(/[\/:*?"<>|]/g, '-').trim();
-      const cleanLocal = (setlist.local || '').replace(/[\/:*?"<>|]/g, '-').trim();
+      // 2. Formatar nome do arquivo seguro: nomedabanda - nomedoevento - data - local.doc
+      const cleanBand = (setlist.bandName || 'SEM-BANDA').replace(/[\/:*?"<>|\\]/g, '-').trim();
+      const cleanEvent = (setlist.name || 'SEM-NOME').replace(/[\/:*?"<>|\\]/g, '-').trim();
+      const cleanDate = (setlist.date || 'SEM-DATA').replace(/[\/:*?"<>|\\]/g, '-').trim();
+      const cleanLocal = (setlist.local || '').replace(/[\/:*?"<>|\\]/g, '-').trim();
       let fileName = `${cleanBand} - ${cleanEvent} - ${cleanDate}`;
       if (cleanLocal) {
         fileName += ` - ${cleanLocal}`;
       }
       fileName += `.doc`;
 
+      const fileContentWithBom = '\ufeff' + docContent;
+
       if (Platform.OS === 'web') {
-        const blob = new Blob([docContent], { type: 'application/msword' });
+        const blob = new Blob([fileContentWithBom], { type: 'application/msword;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -1272,16 +1276,16 @@ function MainApp() {
         URL.revokeObjectURL(url);
         Alert.alert('Sucesso', `Arquivo "${fileName}" baixado com sucesso!`);
       } else {
-        // Substituir espaços por underlines no path do sistema de arquivos para evitar falhas no Sharing do Android/iOS
         const safeFileName = fileName.replace(/\s+/g, '_');
         const fileUri = `${FileSystem.cacheDirectory}${safeFileName}`;
         
-        await FileSystem.writeAsStringAsync(fileUri, docContent, { encoding: FileSystem.EncodingType.UTF8 });
+        await FileSystem.writeAsStringAsync(fileUri, fileContentWithBom, { encoding: FileSystem.EncodingType.UTF8 });
 
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(fileUri, {
             mimeType: 'application/msword',
-            dialogTitle: `Exportar Roteiro .DOC: ${setlist.name}`
+            dialogTitle: `Exportar Roteiro .DOC: ${setlist.name}`,
+            UTI: 'com.microsoft.word.doc',
           });
         } else {
           Alert.alert('Erro', 'Serviço de compartilhamento de arquivos não disponível.');
@@ -1319,17 +1323,26 @@ function MainApp() {
         'yellow': 'red',
         'red': 'none'
       };
-      const nextStatus = nextStatusMap[currentStatus || 'none'] || 'none';
+      const nextStatus = nextStatusMap[currentStatus || 'none'] || 'green';
 
+      setSetlists(prevSetlists => 
+        prevSetlists.map(s => {
+          if (s.id === setlistId) {
+            const updatedSongs = [...(s.songs || [])];
+            if (updatedSongs[index]) {
+              updatedSongs[index] = { ...updatedSongs[index], rehearsalStatus: nextStatus };
+            }
+            return { ...s, songs: updatedSongs };
+          }
+          return s;
+        })
+      );
+
+      if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
       const setlist = setlists.find(s => s.id === setlistId);
-      if (!setlist) return;
-      const song = setlist.songs[index];
-      if (!song) return;
-
-      const currentNotes = song.rehearsalNotes || '';
+      const currentNotes = (setlist && setlist.songs && setlist.songs[index] && setlist.songs[index].rehearsalNotes) || '';
 
       await setlistService.updateSongRehearsal(setlistId, songId, index, nextStatus, currentNotes);
-      await reloadAllData();
     } catch (error) {
       console.error('Erro ao atualizar status de ensaio:', error);
     }
