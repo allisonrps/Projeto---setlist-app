@@ -165,7 +165,7 @@ export default function SetlistDetailModal({
                 {setlist.songs.map((song, index) => {
                   const isPause = song.id === -1;
                   const isNote = song.id === -2;
-                  const isEnsaio = setlist.type === 'ensaio';
+                  const isEnsaio = (setlist.type || '').toLowerCase() === 'ensaio';
                   const showRehearsalInput = isEnsaio && !isPause && !isNote && (song.rehearsalStatus === 'yellow' || song.rehearsalStatus === 'red');
 
                   return (
@@ -179,6 +179,7 @@ export default function SetlistDetailModal({
                     >
                       {isEnsaio && !isPause && !isNote ? (
                         <Pressable 
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                           onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, song.id, index, song.rehearsalStatus)}
                           style={[
                             styles.songIndexBadge, 

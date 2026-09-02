@@ -297,7 +297,7 @@ export default function SetlistCard({
               {showSongs && setlist.songs.map((song, index) => {
                 const isPause = song.id === -1;
                 const isNote = song.id === -2;
-                const isRehearsal = setlist.type === 'ensaio';
+                const isRehearsal = (setlist.type || '').toLowerCase() === 'ensaio';
                 const showRehearsalInput = isRehearsal && !isPause && !isNote && (song.rehearsalStatus === 'yellow' || song.rehearsalStatus === 'red');
 
                 return (
@@ -316,6 +316,7 @@ export default function SetlistCard({
                   >
                     {isRehearsal && onToggleRehearsalStatus && !isPause && !isNote ? (
                       <Pressable 
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         style={[
                           styles.songIndexBadge,
                           { 

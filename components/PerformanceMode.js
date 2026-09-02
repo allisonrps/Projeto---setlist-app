@@ -91,10 +91,18 @@ function MarqueeText({ text, style }) {
   );
 }
 
-export default function PerformanceMode({ visible, onClose, setlist, onEditSong }) {
+export default function PerformanceMode({ 
+  visible, 
+  onClose, 
+  setlist, 
+  onEditSong,
+  onToggleRehearsalStatus,
+  onUpdateSongRehearsalNotes 
+}) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
   const isDark = colors.isDark;
+  const isEnsaio = (setlist?.type || '').toLowerCase() === 'ensaio';
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fontSize, setFontSize] = useState(20); // Letras levemente maiores por padrão
   const [activeView, setActiveView] = useState('lyrics');
@@ -456,30 +464,106 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
           />
         </View>
 
+        {/* 2.5 Barra de Avaliação Rápida do Modo Ensaio */}
+        {isEnsaio && currentSong && currentSong.id !== -1 && currentSong.id !== -2 && !showSongList && (
+          <View style={[styles.rehearsalRatingBar, { borderBottomColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }]}>
+            <Text style={[styles.rehearsalRatingLabel, { color: colors.textMuted }]}>
+              {t('rating') || 'AVALIAÇÃO'}:
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 6, flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+              <Pressable
+                onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, currentSong.id, activeIndex, currentSong.rehearsalStatus === 'green' ? 'none' : 'green')}
+                style={[
+                  styles.rehearsalRatingPill,
+                  {
+                    backgroundColor: currentSong.rehearsalStatus === 'green' ? colors.success : colors.success + '15',
+                    borderColor: colors.success,
+                    borderWidth: 1.5,
+                  }
+                ]}
+              >
+                <Ionicons name="checkmark-circle" size={12} color={currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success} />
+                <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success }]}>
+                  PRONTA
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, currentSong.id, activeIndex, currentSong.rehearsalStatus === 'yellow' ? 'none' : 'yellow')}
+                style={[
+                  styles.rehearsalRatingPill,
+                  {
+                    backgroundColor: currentSong.rehearsalStatus === 'yellow' ? '#eab308' : '#eab30815',
+                    borderColor: '#eab308',
+                    borderWidth: 1.5,
+                  }
+                ]}
+              >
+                <Ionicons name="alert-circle" size={12} color={currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308'} />
+                <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308' }]}>
+                  REVISAR
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, currentSong.id, activeIndex, currentSong.rehearsalStatus === 'red' ? 'none' : 'red')}
+                style={[
+                  styles.rehearsalRatingPill,
+                  {
+                    backgroundColor: currentSong.rehearsalStatus === 'red' ? colors.danger : colors.danger + '15',
+                    borderColor: colors.danger,
+                    borderWidth: 1.5,
+                  }
+                ]}
+              >
+                <Ionicons name="close-circle" size={12} color={currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger} />
+                <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger }]}>
+                  AJUSTAR
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
         {/* 3. Visualização Principal de Letra / Cifra / Tablatura (Maximizada) ou Lista de Músicas */}
         {showSongList ? (
           <ScrollView 
             style={styles.lyricsContainer} 
-            contentContainerStyle={{ padding: 20 }}
+            contentContainerStyle={{ padding: 16 }}
             showsVerticalScrollIndicator={true}
           >
             {songs.map((song, idx) => {
               const isPause = song.id === -1;
               const isNote = song.id === -2;
               const isActive = idx === activeIndex;
+
+              const badgeColor = isEnsaio && !isPause && !isNote
+                ? (song.rehearsalStatus === 'green' 
+                    ? colors.success 
+                    : song.rehearsalStatus === 'yellow' 
+                    ? '#eab308' 
+                    : song.rehearsalStatus === 'red' 
+                    ? colors.danger 
+                    : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'))
+                : (isPause ? colors.secondary + '20' : (isNote ? colors.warning + '20' : colors.primary + '20'));
+
+              const badgeTextColor = isEnsaio && !isPause && !isNote
+                ? (song.rehearsalStatus === 'green' || song.rehearsalStatus === 'red'
+                    ? '#fff'
+                    : song.rehearsalStatus === 'yellow'
+                    ? '#000'
+                    : colors.text)
+                : (isPause ? colors.secondary : (isNote ? colors.warning : colors.primary));
+
               return (
-                <Pressable
+                <View
                   key={`${song.id}-${idx}`}
-                  onPress={() => {
-                    setCurrentIndex(idx);
-                    setShowSongList(false);
-                  }}
-                  style={({ pressed }) => [
+                  style={[
                     {
-                      paddingVertical: 14,
-                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
                       borderRadius: 8,
-                      marginBottom: 10,
+                      marginBottom: 8,
                       borderWidth: 1.5,
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -489,31 +573,61 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                       borderColor: isActive 
                         ? colors.primary 
                         : colors.border,
-                      opacity: pressed ? 0.8 : 1
                     }
                   ]}
                 >
-                  <View style={{
-                    width: Math.max(22, fontSize * 1.3),
-                    height: Math.max(22, fontSize * 1.3),
-                    borderRadius: 4,
-                    backgroundColor: isPause ? colors.secondary + '20' : (isNote ? colors.warning + '20' : colors.primary + '20'),
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: 12
-                  }}>
-                    <Text style={{
-                      fontSize: Math.max(10, fontSize * 0.55),
-                      fontWeight: '900',
-                      color: isPause ? colors.secondary : (isNote ? colors.warning : colors.primary)
+                  {isEnsaio && !isPause && !isNote ? (
+                    <Pressable
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, song.id, idx, song.rehearsalStatus)}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 6,
+                        backgroundColor: badgeColor,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 10,
+                      }}
+                    >
+                      <Text style={{
+                        fontSize: 11,
+                        fontWeight: '900',
+                        color: badgeTextColor,
+                      }}>
+                        {String(idx + 1).padStart(2, '0')}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <View style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      backgroundColor: badgeColor,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 10,
                     }}>
-                      {String(idx + 1).padStart(2, '0')}
-                    </Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 11,
+                        fontWeight: '900',
+                        color: badgeTextColor,
+                      }}>
+                        {String(idx + 1).padStart(2, '0')}
+                      </Text>
+                    </View>
+                  )}
+
+                  <Pressable
+                    style={{ flex: 1 }}
+                    onPress={() => {
+                      setCurrentIndex(idx);
+                      setShowSongList(false);
+                    }}
+                  >
                     {isPause ? (
                       <Text style={{
-                        fontSize: Math.max(12, fontSize * 0.7),
+                        fontSize: 12,
                         fontWeight: '900',
                         color: colors.secondary
                       }}>
@@ -521,9 +635,9 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                       </Text>
                     ) : isNote ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Ionicons name="document-text-outline" size={Math.max(12, fontSize * 0.7)} color={colors.warning} />
+                        <Ionicons name="document-text-outline" size={12} color={colors.warning} />
                         <Text style={{
-                          fontSize: Math.max(12, fontSize * 0.7),
+                          fontSize: 12,
                           fontWeight: '900',
                           color: colors.warning,
                           fontStyle: 'italic',
@@ -535,7 +649,7 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                     ) : (
                       <>
                         <Text style={{
-                          fontSize: Math.max(12, fontSize * 0.7),
+                          fontSize: 12.5,
                           fontWeight: '800',
                           color: colors.text
                         }}>
@@ -543,20 +657,31 @@ export default function PerformanceMode({ visible, onClose, setlist, onEditSong 
                         </Text>
                         {song.originalBand ? (
                           <Text style={{
-                            fontSize: Math.max(10, fontSize * 0.5),
+                            fontSize: 10.5,
                             color: colors.textMuted,
-                            marginTop: 2
+                            marginTop: 1
                           }}>
                             {song.originalBand}
                           </Text>
                         ) : null}
+                        {song.rehearsalNotes ? (
+                          <Text style={{
+                            fontSize: 10,
+                            color: '#eab308',
+                            fontStyle: 'italic',
+                            marginTop: 1
+                          }}>
+                            Obs: {song.rehearsalNotes}
+                          </Text>
+                        ) : null}
                       </>
                     )}
-                  </View>
+                  </Pressable>
+
                   {isActive && (
-                    <Ionicons name="play" size={Math.max(14, fontSize * 0.65)} color={colors.primary} />
+                    <Ionicons name="play" size={14} color={colors.primary} style={{ marginLeft: 6 }} />
                   )}
-                </Pressable>
+                </View>
               );
             })}
           </ScrollView>
@@ -987,5 +1112,30 @@ const styles = StyleSheet.create({
   timerBtnText: {
     fontSize: 11,
     fontWeight: '900',
+  },
+  rehearsalRatingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1.5,
+  },
+  rehearsalRatingLabel: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  rehearsalRatingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    gap: 4,
+  },
+  rehearsalRatingText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
 });

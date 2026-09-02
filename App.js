@@ -1335,7 +1335,7 @@ function MainApp() {
     }
   };
 
-  const handleToggleRehearsalStatus = async (setlistId, songId, index, currentStatus) => {
+  const handleToggleRehearsalStatus = async (setlistId, songId, index, currentOrTargetStatus) => {
     try {
       const nextStatusMap = {
         'none': 'green',
@@ -1343,7 +1343,7 @@ function MainApp() {
         'yellow': 'red',
         'red': 'none'
       };
-      const nextStatus = nextStatusMap[currentStatus || 'none'] || 'green';
+      const nextStatus = nextStatusMap[currentOrTargetStatus || 'none'] || 'green';
 
       setSetlists(prevSetlists => 
         prevSetlists.map(s => {
@@ -1357,6 +1357,15 @@ function MainApp() {
           return s;
         })
       );
+
+      setActiveSetlist(prev => {
+        if (!prev || prev.id !== setlistId) return prev;
+        const updatedSongs = [...(prev.songs || [])];
+        if (updatedSongs[index]) {
+          updatedSongs[index] = { ...updatedSongs[index], rehearsalStatus: nextStatus };
+        }
+        return { ...prev, songs: updatedSongs };
+      });
 
       if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
       const setlist = setlists.find(s => s.id === setlistId);
@@ -1387,6 +1396,15 @@ function MainApp() {
           return s;
         })
       );
+
+      setActiveSetlist(prev => {
+        if (!prev || prev.id !== setlistId) return prev;
+        const updatedSongs = [...(prev.songs || [])];
+        if (updatedSongs[index]) {
+          updatedSongs[index] = { ...updatedSongs[index], rehearsalNotes: text };
+        }
+        return { ...prev, songs: updatedSongs };
+      });
 
       await setlistService.updateSongRehearsal(setlistId, songId, index, currentStatus, text);
     } catch (error) {
@@ -2665,11 +2683,13 @@ function MainApp() {
       <PerformanceMode
         visible={showPerformanceMode}
         onClose={() => { setShowPerformanceMode(false); setActiveSetlist(null); }}
-        setlist={activeSetlist}
+        setlist={activeSetlist ? (setlists.find(s => s.id === activeSetlist.id) || activeSetlist) : null}
         onEditSong={(song) => {
           setEditingSong(song);
           setShowSongModal(true);
         }}
+        onToggleRehearsalStatus={handleToggleRehearsalStatus}
+        onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
       />
 
       <ImportModal
