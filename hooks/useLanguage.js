@@ -921,13 +921,13 @@ const translations = {
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  const [language, setLanguageState] = useState('pt');
+  const [language, setLanguageState] = useState('en');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadLang() {
       try {
-        const savedLang = await settingsService.getSetting('appLanguage', 'pt');
+        const savedLang = await settingsService.getSetting('appLanguage', 'en');
         setLanguageState(savedLang);
       } catch (error) {
         console.error('Error loading language setting:', error);
@@ -944,8 +944,8 @@ export function LanguageProvider({ children }) {
   };
 
   const t = (key) => {
-    const langDict = translations[language] || translations.pt;
-    return langDict[key] || translations.pt[key] || key;
+    const langDict = translations[language] || translations.en || translations.pt;
+    return langDict[key] || (translations.en && translations.en[key]) || translations.pt[key] || key;
   };
 
   return (
