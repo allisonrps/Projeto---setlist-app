@@ -35,6 +35,7 @@ import SetlistModal from './components/SetlistModal';
 import SetlistDetailModal from './components/SetlistDetailModal';
 import PerformanceMode from './components/PerformanceMode';
 import ImportModal from './components/ImportModal';
+import FeatureTutorialModal from './components/FeatureTutorialModal';
 import { LanguageProvider, useLanguage } from './hooks/useLanguage';
 
 export default function App() {
@@ -135,6 +136,415 @@ const getBandInitials = (name) => {
   return initials.slice(0, 3);
 };
 
+const getFeaturesList = (lang) => {
+  if (lang === 'en') {
+    return [
+      {
+        id: 'multiband',
+        icon: 'people-outline',
+        title: 'Multi-Band Management',
+        subtitle: 'Manage independent repertoires, setlists, and branding for different musical projects.',
+        steps: [
+          'On the Home screen, tap "NEW BAND" to register a new band or music project.',
+          'Add name, musical style, notes, and choose a custom logo from your gallery.',
+          'Tap on any band card in the top carousel to set it as active and filter its exclusive content.',
+          'Manage members, rehearsals, and stats individually per project.'
+        ],
+        proTip: 'You can quickly switch active bands by tapping their logo in the top carousel anytime.'
+      },
+      {
+        id: 'repertoire',
+        icon: 'musical-notes-outline',
+        title: 'Structured Song Repertoire',
+        subtitle: 'Store lyrics, chords, tabs, keys, BPM, duration, and reference links neatly.',
+        steps: [
+          'In the "Songs" tab, tap the "+" button to add a new song.',
+          'Fill in Title, Original Artist, Key/Tone, BPM, Duration, and comma-separated tags.',
+          'Paste or write Lyrics, Chords, and Guitar Tabs in their dedicated tabs.',
+          'Add quick reference links (YouTube, Spotify, Chord charts) for fast lookup.'
+        ],
+        proTip: 'Use smart search by title, artist, tone, or combined tags to find songs in milliseconds.'
+      },
+      {
+        id: 'performance',
+        icon: 'desktop-outline',
+        title: 'Live Performance Stage Mode',
+        subtitle: 'Full-screen stage prompter with autoscroll, chords/lyrics viewer, and marquee header.',
+        steps: [
+          'On any Setlist card, tap "STAGE MODE" (or Rehearsal Mode).',
+          'The screen will stay awake and enter a distraction-free high-contrast view.',
+          'Switch between Lyrics, Chords, and Tabs with the top square toggle buttons.',
+          'Activate Autoscroll (play button) and adjust scroll speed (0.5x, 1x, 2x) while playing.',
+          'Use large bottom arrows (◀ ▶) or swipe to change songs on stage with one finger.'
+        ],
+        proTip: 'Tap the center counter (e.g. 01 / 15) to open the entire song list and jump directly to any song.'
+      },
+      {
+        id: 'rehearsal',
+        icon: 'clipboard-outline',
+        title: 'Smart Rehearsal Evaluation',
+        subtitle: 'Evaluate rehearsal song performance with colors (green/yellow/red) and custom notes.',
+        steps: [
+          'Create a setlist with type "REHEARSAL".',
+          'On the expanded card or in full-screen rehearsal mode, tap the song number (01, 02...):',
+          '🟢 Green: Ready / Approved for live shows.',
+          '🟡 Yellow: Review specific passages or tricky transitions.',
+          '🔴 Red: Needs more practice and adjustments.',
+          'For Yellow and Red, enter inline rehearsal notes to remember what to fix.'
+        ],
+        proTip: 'Evaluation statuses update in real time with haptic feedback and persist in your setlist history.'
+      },
+      {
+        id: 'export_share',
+        icon: 'share-social-outline',
+        title: 'Word, PDF & JSON Export',
+        subtitle: 'Generate formatted Word (.doc), PDF stage sheets, or share JSON backup codes.',
+        steps: [
+          'On any Setlist card, tap the Export / Share button.',
+          'Export .DOC: Creates a clean 2-column Microsoft Word document with headers.',
+          'Export PDF: Creates a print-ready stage sheet.',
+          'Share JSON: Shares raw setlist code so other band members can import it into their app.'
+        ],
+        proTip: 'The generated .doc file opens cleanly on MS Word, Google Docs, and mobile office apps.'
+      },
+      {
+        id: 'customization',
+        icon: 'globe-outline',
+        title: 'Themes, Colors & Languages',
+        subtitle: 'Customize light/dark modes, premium primary/secondary color palettes, and languages.',
+        steps: [
+          'Tap the gear / palette icon on the top header.',
+          'Switch between Dark Mode and Light Mode.',
+          'Pick your favorite primary color (Blue, Purple, Red, Green, Orange, etc.) and secondary accent.',
+          'Change language between Portuguese, English, and Spanish instantly.'
+        ],
+        proTip: 'Dark mode saves battery during live performances and reduces stage glare.'
+      },
+      {
+        id: 'favorites',
+        icon: 'star-outline',
+        title: 'Pinned Favorites',
+        subtitle: 'Star your most important setlists and songs to pin them automatically to the top.',
+        steps: [
+          'Tap the star icon (★) on any Setlist card or Song row.',
+          'Favorited items jump straight to the "Favorites" section at the top of the list.',
+          'Easily unstar items anytime by tapping the star again.'
+        ],
+        proTip: 'Pin your upcoming gig setlist so you never have to scroll to find it on show night.'
+      },
+      {
+        id: 'tags_filters',
+        icon: 'pricetag-outline',
+        title: 'Multi-Tag Smart Filters',
+        subtitle: 'Tag songs by genre, mood, or decade and filter by combining up to 3 tags simultaneously.',
+        steps: [
+          'When editing a song, type multiple tags separated by commas (e.g. "rock, 80s, acoustic").',
+          'In the Songs tab or Setlist editor, tap tag chips in the carousel.',
+          'Combine up to 3 tags at once (e.g. "rock" + "80s") to narrow down your search.'
+        ],
+        proTip: 'Tap an active tag chip again to deselect it.'
+      },
+      {
+        id: 'drag_reorder',
+        icon: 'move-outline',
+        title: 'Drag & Drop Reordering',
+        subtitle: 'Reorder songs smoothly with spring physics, haptics, and 1-tap nudge arrows.',
+        steps: [
+          'Open Setlist editor (REPERTOIRE tab).',
+          'Press and hold the drag handle (☰) to drag any song to a new position.',
+          'Or tap the compact arrow buttons (▲ ▼) for precise 1-tap moving.',
+          'Song numbers (01, 02, 03...) update in real time dynamically.'
+        ],
+        proTip: 'The reordered order is saved automatically when you save the setlist.'
+      },
+      {
+        id: 'pauses_notes',
+        icon: 'create-outline',
+        title: 'Pauses & Stage Note Slides',
+        subtitle: 'Insert countdown intermission pauses and full-screen stage notes into your setlist.',
+        steps: [
+          'In Setlist editor, tap "+ PAUSE" or "+ NOTE".',
+          'Pause: Set an intermission break with countdown timer (e.g. 15 min break).',
+          'Note: Add key changes, speaker cues, or transition reminders.',
+          'In Stage Mode, pauses and notes appear as dedicated highlight cards.'
+        ],
+        proTip: 'Pauses do not disrupt the contiguous numbering of your actual songs (e.g. 01, 02, [PAUSE], 03).'
+      },
+    ];
+  }
+
+  if (lang === 'es') {
+    return [
+      {
+        id: 'multiband',
+        icon: 'people-outline',
+        title: 'Gestión Multibandas',
+        subtitle: 'Administra repertorios, setlists y marcas independientes para diferentes proyectos musicales.',
+        steps: [
+          'En la pantalla de Inicio, toca en "NUEVA BANDA" para registrar tu grupo o proyecto.',
+          'Agrega nombre, estilo musical, notas y un logo personalizado de tu galería.',
+          'Toca la tarjeta de la banda en el carrusel superior para activarla y filtrar su contenido exclusivo.',
+          'Administra miembros, ensayos y estadísticas individualmente por proyecto.'
+        ],
+        proTip: 'Puedes cambiar de banda activa en cualquier momento tocando su logo en el carrusel superior.'
+      },
+      {
+        id: 'repertoire',
+        icon: 'musical-notes-outline',
+        title: 'Repertorio Estructurado',
+        subtitle: 'Guarda letras, acordes, tablaturas, tonos, BPM, duración y enlaces de apoyo organizadamente.',
+        steps: [
+          'En la pestaña "Canciones", toca el botón "+" para registrar una nueva canción.',
+          'Completa Nombre, Banda Original, Tonalidad, BPM, Duración y etiquetas separadas por comas.',
+          'Agrega Letras, Acordes y Tablaturas en sus pestañas dedicadas.',
+          'Inserta enlaces útiles (YouTube, Spotify, etc.) para consulta rápida.'
+        ],
+        proTip: 'Usa la búsqueda inteligente por título, artista, tono o etiquetas combinadas.'
+      },
+      {
+        id: 'performance',
+        icon: 'desktop-outline',
+        title: 'Modo Escenario (En Vivo)',
+        subtitle: 'Visualizador de escenario en pantalla completa con desplazamiento automático y acordes.',
+        steps: [
+          'En la tarjeta del setlist, toca "MODO ESCENARIO" (o Modo Ensayo).',
+          'La pantalla se mantendrá encendida sin apagarse durante la presentación.',
+          'Alterna entre Letra, Acordes y Tablatura con los botones superiores.',
+          'Activa el Autoscroll (botón de velocidad) para desplazamiento automático de acordes.',
+          'Usa las flechas inferiores (◀ ▶) para cambiar de canción con un solo toque.'
+        ],
+        proTip: 'Toca el contador central (ej: 01 / 15) para abrir la lista del repertorio y saltar a cualquier canción.'
+      },
+      {
+        id: 'rehearsal',
+        icon: 'clipboard-outline',
+        title: 'Ensayos Inteligentes con Colores',
+        subtitle: 'Evalúa el desempeño de las canciones en el ensayo con colores (verde/amarillo/rojo) y notas.',
+        steps: [
+          'Crea un setlist con tipo "ENSAYO".',
+          'En la tarjeta expandida o en el modo ensayo, toca el número de la canción (01, 02...):',
+          '🟢 Verde: Canción lista/aprobada para el show.',
+          '🟡 Amarillo: Revisar pasajes o partes específicas.',
+          '🔴 Rojo: Necesita más ensayo y ajustes.',
+          'Para amarillo y rojo, ingresa notas de ensayo para registrar lo que debe corregirse.'
+        ],
+        proTip: 'Las evaluaciones se guardan en el historial del setlist para el próximo ensayo.'
+      },
+      {
+        id: 'export_share',
+        icon: 'share-social-outline',
+        title: 'Exportación a Word, PDF y JSON',
+        subtitle: 'Genera archivos de Word (.doc), hojas PDF para escenario o comparte códigos JSON.',
+        steps: [
+          'En la tarjeta del setlist, toca el botón de Exportar o Compartir.',
+          'Exportar .DOC: Genera un documento formateado de Microsoft Word en dos columnas con encabezado.',
+          'Exportar PDF: Genera un PDF listo para imprimir para el escenario.',
+          'Compartir JSON: Envía el código completo para que otro músico lo importe en su app.'
+        ],
+        proTip: 'El archivo .doc se abre limpiamente en MS Word, Google Docs y apps de móvil.'
+      },
+      {
+        id: 'customization',
+        icon: 'globe-outline',
+        title: 'Temas, Colores e Idiomas',
+        subtitle: 'Personaliza modo claro/oscuro, paletas de colores premium e idiomas.',
+        steps: [
+          'Toca el ícono de engranaje / paleta en el encabezado superior.',
+          'Elige entre Modo Oscuro y Modo Claro.',
+          'Selecciona tu color primario favorito y color secundario.',
+          'Alterna el idioma entre Portugués, Inglés y Español al instante.'
+        ],
+        proTip: 'El modo oscuro ahorra batería en el escenario y mejora el contraste con poca luz.'
+      },
+      {
+        id: 'favorites',
+        icon: 'star-outline',
+        title: 'Fijados y Favoritos',
+        subtitle: 'Marca tus setlists y canciones con estrella para fijarlos en la parte superior.',
+        steps: [
+          'Toca el ícono de estrella (★) en cualquier tarjeta de setlist o fila de canción.',
+          'Los elementos favoritos suben automáticamente a la sección superior.',
+          'Desmarca tocando la estrella nuevamente cuando desees.'
+        ],
+        proTip: 'Fija el setlist del próximo show para tenerlo siempre a mano.'
+      },
+      {
+        id: 'tags_filters',
+        icon: 'pricetag-outline',
+        title: 'Filtros por Múltiples Etiquetas',
+        subtitle: 'Categoriza canciones por etiquetas y filtra combinando hasta 3 simultáneamente.',
+        steps: [
+          'Al registrar canciones, escribe etiquetas separadas por comas (ej: "rock, 80s, acustico").',
+          'En la pestaña de Canciones o editor de Setlist, toca las etiquetas para filtrar.',
+          'Combina hasta 3 etiquetas a la vez para afinar tu búsqueda.'
+        ],
+        proTip: 'Toca una etiqueta seleccionada nuevamente para desmarcarla.'
+      },
+      {
+        id: 'drag_reorder',
+        icon: 'move-outline',
+        title: 'Reordenación por Arrastre',
+        subtitle: 'Reorganiza canciones arrastrando suavemente o con botones de flecha de 1 toque.',
+        steps: [
+          'Abre la edición del setlist (pestaña REPERTORIO).',
+          'Mantén presionado y arrastra el ícono (☰) a la nueva posición.',
+          'O toca las flechas (▲ ▼) para mover la canción 1 posición arriba o abajo.',
+          'La numeración (01, 02, 03...) se actualiza en tiempo real.'
+        ],
+        proTip: 'El nuevo orden se guarda automáticamente al guardar el setlist.'
+      },
+      {
+        id: 'pauses_notes',
+        icon: 'create-outline',
+        title: 'Pausas y Notas en el Roteiro',
+        subtitle: 'Inserta descansos con temporizador y avisos de escenario en tu setlist.',
+        steps: [
+          'En el editor del setlist, toca "+ PAUSA" o "+ NOTA".',
+          'Pausa: Define un intervalo con cuenta regresiva (ej: 15 min de descanso).',
+          'Nota: Inserta cambios de tono, avisos o transiciones en el show.',
+          'En el Modo Escenario, las pausas y notas aparecen como tarjetas destacadas.'
+        ],
+        proTip: 'Las pausas no alteran la numeración consecutiva de tus canciones (ej: 01, 02, [PAUSA], 03).'
+      },
+    ];
+  }
+
+  // Padrão: Português (PT)
+  return [
+    {
+      id: 'multiband',
+      icon: 'people-outline',
+      title: 'Gestão Multibandas',
+      subtitle: 'Cadastre e gerencie o repertório, setlists e identidade de diferentes projetos musicais.',
+      steps: [
+        'Na tela inicial (Início), toque em "NOVA BANDA" para cadastrar seu grupo ou projeto musical.',
+        'Adicione o nome, estilo musical, observações e uma foto/logo personalizada da sua galeria.',
+        'Toque em qualquer card de banda no carrossel do topo para defini-la como ativa e filtrar o conteúdo exclusivo dela.',
+        'Gerencie integrantes, ensaios e estatísticas individualmente por projeto.'
+      ],
+      proTip: 'Você pode alternar entre seus diferentes projetos musicais a qualquer momento tocando na foto da banda no topo.'
+    },
+    {
+      id: 'repertoire',
+      icon: 'musical-notes-outline',
+      title: 'Repertório e Músicas Estruturadas',
+      subtitle: 'Guarde letras, cifras, tablaturas, tonalidades, BPM, duração e links de apoio de forma organizada.',
+      steps: [
+        'Na aba "Músicas", toque no botão "+" para cadastrar uma nova música no acervo.',
+        'Preencha Nome, Banda Original, Tonalidade, BPM, Duração e tags separadas por vírgula.',
+        'Cole ou digite Letra, Cifra e Tablatura nas abas correspondentes.',
+        'Insira links úteis (YouTube, Spotify, etc.) para consulta e estudo rápido da banda.'
+      ],
+      proTip: 'Use o campo de busca inteligente por título, artista, tom ou tags combinadas para encontrar qualquer música em milissegundos.'
+    },
+    {
+      id: 'performance',
+      icon: 'desktop-outline',
+      title: 'Modo Palco (Live Performance)',
+      subtitle: 'Visualizador de palco em tela cheia com rolagem automática, cifras/letras e letreiro dinâmico.',
+      steps: [
+        'No card da setlist, toque em "ENTRAR NO MODO PALCO" (ou no Modo Ensaio).',
+        'A tela entrará em visualização cheia e não apagará durante o show.',
+        'Alterne entre Letra, Cifra ou Tablatura nos botões superiores.',
+        'Ative o Autoscroll (botão de velocidade) para rolagem automática das cifras enquanto você toca.',
+        'Use as setas inferiores grandes (◀ ▶) para avançar ou retroceder as músicas com um toque rápido.'
+      ],
+      proTip: 'Toque no contador central inferior (ex: 01 / 15) para abrir a lista completa do roteiro e pular diretamente para qualquer música.'
+    },
+    {
+      id: 'rehearsal',
+      icon: 'clipboard-outline',
+      title: 'Ensaios Inteligentes com Cores',
+      subtitle: 'Avalie o desempenho das músicas no ensaio com cores (verde/amarelo/vermelho) e observações.',
+      steps: [
+        'Crie uma setlist escolhendo o tipo "ENSAIO".',
+        'No card expandido ou na tela cheia de ensaio, toque no número da música (01, 02...) para avaliar o status:',
+        '🟢 Verde: Música pronta/aprovada para o show.',
+        '🟡 Amarelo: Revisar passagens ou partes específicas.',
+        '🔴 Vermelho: Precisa de mais ensaio e ajustes.',
+        'Ao selecionar amarelo ou vermelho, um campo de anotação de ensaio aparecerá para registrar o que precisa ser corrigido.'
+      ],
+      proTip: 'Essas avaliações ficam salvas no histórico do setlist para acompanhamento no próximo ensaio da banda.'
+    },
+    {
+      id: 'export_share',
+      icon: 'share-social-outline',
+      title: 'Compartilhamento e Exportação (DOC / PDF / JSON)',
+      subtitle: 'Gere arquivos Word (.doc) em duas colunas, folhas PDF para palco ou compartilhe códigos de setlist.',
+      steps: [
+        'No card da setlist, toque no botão "Exportar" ou "Compartilhar".',
+        'Exportar .DOC: Gera um arquivo do Microsoft Word formatado em duas colunas com cabeçalho profissional da banda.',
+        'Exportar PDF: Gera um arquivo PDF pronto para impressão de palco.',
+        'Compartilhar JSON: Envia o código completo do setlist para outro integrante da banda importar no app dele.'
+      ],
+      proTip: 'O arquivo .doc gerado abre perfeitamente no Word, Google Docs e aplicativos de celular sem corrupção.'
+    },
+    {
+      id: 'customization',
+      icon: 'globe-outline',
+      title: 'Temas, Cores e Idiomas',
+      subtitle: 'Alterne entre Modo Escuro/Claro, escolha paletas de cores primárias e secundárias e idiomas.',
+      steps: [
+        'Toque no ícone de engrenagem / paleta no cabeçalho superior.',
+        'Escolha entre Modo Escuro (Dark) e Modo Claro (Light).',
+        'Selecione sua cor primária favorita (Azul, Roxo, Vermelho, Verde, Laranja, etc.) e cor secundária.',
+        'Alterne o idioma do aplicativo entre Português, Inglês ou Espanhol.'
+      ],
+      proTip: 'O tema escuro economiza bateria no palco e melhora o contraste sob iluminação de show.'
+    },
+    {
+      id: 'favorites',
+      icon: 'star-outline',
+      title: 'Fixados e Favoritos',
+      subtitle: 'Marque setlists e músicas com estrela para mantê-los sempre fixados no topo.',
+      steps: [
+        'Toque no ícone de estrela (★) no card de qualquer setlist ou linha de música.',
+        'Os itens favoritados sobem automaticamente para a seção do topo "Favoritas".',
+        'Músicas e setlists com estrela têm prioridade na visualização.'
+      ],
+      proTip: 'Use favoritos para manter a setlist do próximo show sempre à mão no topo da tela.'
+    },
+    {
+      id: 'tags_filters',
+      icon: 'pricetag-outline',
+      title: 'Filtros Avançados por Múltiplas Tags',
+      subtitle: 'Cadastre músicas com múltiplas tags por vírgula e filtre combinando até 3 tags simultâneas.',
+      steps: [
+        'Ao cadastrar músicas, digite tags separadas por vírgula (ex: "rock, nacional, 80s").',
+        'Na aba de Músicas ou no modal do Setlist, toque nas tags do carrossel para filtrar.',
+        'Você pode combinar até 3 tags simultâneas para encontrar exatamente o que precisa (ex: "rock" + "nacional").'
+      ],
+      proTip: 'Toque novamente em uma tag selecionada para desmarcá-la.'
+    },
+    {
+      id: 'drag_reorder',
+      icon: 'move-outline',
+      title: 'Reordenação por Arraste (Drag & Drop)',
+      subtitle: 'Organize a ordem das músicas no setlist arrastando suavemente ou com botões de 1 toque.',
+      steps: [
+        'Abra a edição de uma setlist (aba ROTEIRO).',
+        'Segure e arraste qualquer música pelo ícone de três barras (☰) para a nova posição.',
+        'Ou toque nas setas compactas (▲ ▼) para mover a música 1 posição acima ou abaixo com precisão de 1 toque.',
+        'A numeração (01, 02, 03...) se reorganiza automaticamente em tempo real.'
+      ],
+      proTip: 'Arraste suavemente para cima ou para baixo; a reordenação é salva automaticamente ao salvar a setlist.'
+    },
+    {
+      id: 'pauses_notes',
+      icon: 'create-outline',
+      title: 'Pausas e Linhas de Anotação no Roteiro',
+      subtitle: 'Adicione intervalos com contagem regressiva e avisos especiais de palco diretamente no setlist.',
+      steps: [
+        'No editor da setlist, toque em "+ PAUSA" ou "+ ANOTAÇÃO".',
+        'Pausa: Define um intervalo com cronômetro regressivo (ex: 15 min de intervalo no show).',
+        'Anotação: Insere um recado, mudança de afinação, aviso de fala ou transição (ex: "Fala do Vocalista", "Trocar Guitarra").',
+        'No Modo Palco, pausas e anotações aparecem como telas especiais de destaque.'
+      ],
+      proTip: 'Pausas não alteram a contagem contígua das músicas (ex: 01, 02, [PAUSA], 03).'
+    },
+  ];
+};
+
 function MainApp() {
   const { colors, themeMode } = useTheme();
   const { t, language } = useLanguage();
@@ -173,6 +583,7 @@ function MainApp() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showImportSongModal, setShowImportSongModal] = useState(false);
   const [showImportBackupModal, setShowImportBackupModal] = useState(false);
+  const [selectedTutorialFeature, setSelectedTutorialFeature] = useState(null);
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -2355,109 +2766,52 @@ function MainApp() {
               {t('aboutAppDesc')}
             </Text>
           </View>
-          {/* Card de Funcionalidades */}
+          {/* Card de Funcionalidades com Tutoriais Interativos */}
           <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <Text style={[styles.aboutSectionTitle, { color: colors.text }]}>{t('aboutFeatures')}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('aboutFeatures')}</Text>
+              <View style={{ backgroundColor: colors.primary + '15', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                <Text style={{ fontSize: 9.5, fontWeight: '900', color: colors.primary }}>
+                  {t('tapForTutorial') || 'TOQUE PARA O GUIA'}
+                </Text>
+              </View>
+            </View>
             
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="people-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature1Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature1Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="musical-notes-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature2Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature2Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="desktop-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature3Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature3Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="clipboard-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature4Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature4Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="share-social-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature5Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature5Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="globe-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature6Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature6Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="star-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature7Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature7Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="pricetag-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature8Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature8Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="move-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature9Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature9Desc')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.aboutFeatureRow}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="create-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={[styles.aboutFeatureTitle, { color: colors.text }]}>{t('aboutFeature10Title')}</Text>
-                <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted }]}>{t('aboutFeature10Desc')}</Text>
-              </View>
-            </View>
+            {getFeaturesList(language).map((feature) => (
+              <Pressable
+                key={feature.id}
+                onPress={() => setSelectedTutorialFeature(feature)}
+                style={({ pressed }) => [
+                  styles.aboutFeatureRow,
+                  {
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
+                    padding: 10,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    marginBottom: 8,
+                    alignItems: 'center',
+                  },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.99 }] }
+                ]}
+              >
+                <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name={feature.icon} size={20} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}>
+                  <Text style={[styles.aboutFeatureTitle, { color: colors.text, fontSize: 12.5 }]}>{feature.title}</Text>
+                  <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted, fontSize: 10.5, marginTop: 1 }]} numberOfLines={2}>
+                    {feature.subtitle}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '12', paddingHorizontal: 7, paddingVertical: 4, borderRadius: 6 }}>
+                  <Text style={{ fontSize: 9, fontWeight: '900', color: colors.primary }}>
+                    TUTORIAL
+                  </Text>
+                  <Ionicons name="chevron-forward" size={11} color={colors.primary} />
+                </View>
+              </Pressable>
+            ))}
           </View>
 
           {/* Card de Dicas de Backup */}
@@ -2717,6 +3071,12 @@ function MainApp() {
         title={t('restoreBackupTitle') || 'RESTAURAR BACKUP'}
         description={t('restoreBackupDesc') || 'Selecione o arquivo de backup (.json) ou cole o código no editor abaixo para restaurar todos os dados.'}
         fileTypeLabel={t('fileTypeLabelBackup') || 'de backup'}
+      />
+
+      <FeatureTutorialModal
+        visible={!!selectedTutorialFeature}
+        onClose={() => setSelectedTutorialFeature(null)}
+        feature={selectedTutorialFeature}
       />
     </KeyboardAvoidingView>
   );
