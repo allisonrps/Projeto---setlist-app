@@ -990,9 +990,11 @@ function MainApp() {
 
   const handleExportDoc = async (setlist) => {
     try {
+      if (!setlist) return;
+
       const parseDuration = (durStr) => {
         if (!durStr) return 0;
-        const clean = durStr.toLowerCase().replace(/min/g, '').trim();
+        const clean = String(durStr).toLowerCase().replace(/min/g, '').trim();
         if (clean.includes(':')) {
           const parts = clean.split(':').map(p => parseInt(p, 10) || 0);
           if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
@@ -1005,19 +1007,20 @@ function MainApp() {
 
       let totalSeconds = 0;
       let hasDuration = false;
-      if (setlist.songs) {
-        setlist.songs.forEach(song => {
-          if (String(song.id) === '-1') {
-            if (song.customDuration && song.customDuration.trim()) {
-              totalSeconds += parseDuration(song.customDuration);
-              hasDuration = true;
-            }
-          } else if (song.duration && song.duration.trim()) {
-            totalSeconds += parseDuration(song.duration);
+      const songsList = Array.isArray(setlist.songs) ? setlist.songs : [];
+
+      songsList.forEach(song => {
+        if (!song) return;
+        if (String(song.id) === '-1') {
+          if (song.customDuration && String(song.customDuration).trim()) {
+            totalSeconds += parseDuration(song.customDuration);
             hasDuration = true;
           }
-        });
-      }
+        } else if (song.duration && String(song.duration).trim()) {
+          totalSeconds += parseDuration(song.duration);
+          hasDuration = true;
+        }
+      });
 
       let totalDur = '';
       if (hasDuration) {
@@ -1033,7 +1036,8 @@ function MainApp() {
 
       // Pré-calcular numeração contígua pulando pausas e anotações
       let songCounter = 0;
-      const processedSongs = (setlist.songs || []).map((song) => {
+      const processedSongs = songsList.map((song) => {
+        if (!song) return { song: {}, numStr: '' };
         const isPause = String(song.id) === '-1';
         const isNote = String(song.id) === '-2';
         let numStr = '';
@@ -1050,32 +1054,39 @@ function MainApp() {
       const col2Songs = processedSongs.slice(half);
 
       const renderSongHtml = (song, numStr) => {
+        if (!song) return '';
         const isPause = String(song.id) === '-1';
         const isNote = String(song.id) === '-2';
+        const sName = String(song.name || '').trim();
+        const sBand = String(song.originalBand || '').trim();
+        const sDur = String(song.duration || '').trim();
+        const sCustDur = String(song.customDuration || '').trim();
+        const sNotes = String(song.customNotes || '').trim();
+
         if (isPause) {
           let html = `<div class="pause-item"><div class="pause-name">----- PAUSA -----`;
-          if (song.customDuration && song.customDuration.trim()) {
-            html += ` <span style="font-size: 8pt; font-weight: normal;">(${song.customDuration.trim()})</span>`;
+          if (sCustDur) {
+            html += ` <span style="font-size: 8pt; font-weight: normal;">(${sCustDur})</span>`;
           }
           html += `</div>`;
-          if (song.customNotes && song.customNotes.trim()) {
-            html += `<div class="pause-obs">${song.customNotes.trim()}</div>`;
+          if (sNotes) {
+            html += `<div class="pause-obs">${sNotes}</div>`;
           }
           html += `</div>`;
           return html;
         } else if (isNote) {
-          return `<div class="note-item"><div class="note-name">${song.customNotes || 'ANOTAÇÃO'}</div></div>`;
+          return `<div class="note-item"><div class="note-name">${sNotes || 'ANOTAÇÃO'}</div></div>`;
         } else {
-          let html = `<div class="song-item"><div class="song-name">${numStr}. ${song.name ? song.name.toUpperCase() : ''}`;
-          if (song.duration && song.duration.trim()) {
-            html += ` <span style="font-size: 8pt; font-weight: normal; color: #6b7280;">(${song.duration.trim()})</span>`;
+          let html = `<div class="song-item"><div class="song-name">${numStr}. ${sName.toUpperCase()}`;
+          if (sDur) {
+            html += ` <span style="font-size: 8pt; font-weight: normal; color: #6b7280;">(${sDur})</span>`;
           }
           html += `</div>`;
-          if (song.originalBand && song.originalBand.trim()) {
-            html += `<div class="song-band">(${song.originalBand.trim()})</div>`;
+          if (sBand) {
+            html += `<div class="song-band">(${sBand})</div>`;
           }
-          if (song.customNotes && song.customNotes.trim()) {
-            html += `<div class="song-obs">Obs: ${song.customNotes.trim()}</div>`;
+          if (sNotes) {
+            html += `<div class="song-obs">Obs: ${sNotes}</div>`;
           }
           html += `</div>`;
           return html;
@@ -1085,7 +1096,7 @@ function MainApp() {
       const col1Html = col1Songs.map((item) => renderSongHtml(item.song, item.numStr)).join('\n');
       const col2Html = col2Songs.map((item) => renderSongHtml(item.song, item.numStr)).join('\n');
 
-      const totalSongsCount = setlist.songs ? setlist.songs.filter(s => String(s.id) !== '-1' && String(s.id) !== '-2').length : 0;
+      const totalSongsCount = songsList.filter(s => s && String(s.id) !== '-1' && String(s.id) !== '-2').length;
 
       // Gerar documento HTML compatível 100% com MS Word (.doc)
       let docContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
@@ -1226,8 +1237,8 @@ function MainApp() {
   <table class="header-box">
     <tr>
       <td class="header-td">
-        <div class="show-title">${(setlist.name || 'SEM NOME').toUpperCase()}</div>
-        <div class="band-title">BANDA: ${(setlist.bandName || 'SEM BANDA').toUpperCase()}</div>
+        <div class="show-title">${String(setlist.name || 'SEM NOME').toUpperCase()}</div>
+        <div class="band-title">BANDA: ${String(setlist.bandName || 'SEM BANDA').toUpperCase()}</div>
         <div class="meta-text">
           ${setlist.date ? `Data: ${setlist.date} &nbsp;|&nbsp; ` : ''}
           ${setlist.local ? `Local: ${setlist.local} &nbsp;|&nbsp; ` : ''}
@@ -1253,16 +1264,21 @@ function MainApp() {
 </body>
 </html>`;
 
-      // 2. Formatar nome do arquivo seguro: nomedabanda - nomedoevento - data - local.doc
-      const cleanBand = (setlist.bandName || 'SEM-BANDA').replace(/[\/:*?"<>|\\]/g, '-').trim();
-      const cleanEvent = (setlist.name || 'SEM-NOME').replace(/[\/:*?"<>|\\]/g, '-').trim();
-      const cleanDate = (setlist.date || 'SEM-DATA').replace(/[\/:*?"<>|\\]/g, '-').trim();
-      const cleanLocal = (setlist.local || '').replace(/[\/:*?"<>|\\]/g, '-').trim();
-      let fileName = `${cleanBand} - ${cleanEvent} - ${cleanDate}`;
-      if (cleanLocal) {
-        fileName += ` - ${cleanLocal}`;
-      }
-      fileName += `.doc`;
+      // Formatar nome do arquivo ASCII seguro
+      const sanitizeFileName = (str) => {
+        if (!str) return '';
+        return String(str)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_-]/g, '_')
+          .replace(/_+/g, '_')
+          .trim();
+      };
+
+      const safeBand = sanitizeFileName(setlist.bandName) || 'banda';
+      const safeEvent = sanitizeFileName(setlist.name) || 'setlist';
+      const safeDate = sanitizeFileName(setlist.date) || 'data';
+      const safeFileName = `${safeBand}_${safeEvent}_${safeDate}.doc`;
 
       const fileContentWithBom = '\ufeff' + docContent;
 
@@ -1271,29 +1287,33 @@ function MainApp() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = fileName;
+        link.download = safeFileName;
         link.click();
         URL.revokeObjectURL(url);
-        Alert.alert('Sucesso', `Arquivo "${fileName}" baixado com sucesso!`);
+        Alert.alert(t('success') || 'Sucesso', `Arquivo "${safeFileName}" baixado com sucesso!`);
       } else {
-        const safeFileName = fileName.replace(/\s+/g, '_');
         const fileUri = `${FileSystem.cacheDirectory}${safeFileName}`;
         
         await FileSystem.writeAsStringAsync(fileUri, fileContentWithBom, { encoding: FileSystem.EncodingType.UTF8 });
 
         if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(fileUri, {
-            mimeType: 'application/msword',
-            dialogTitle: `Exportar Roteiro .DOC: ${setlist.name}`,
-            UTI: 'com.microsoft.word.doc',
-          });
+          try {
+            await Sharing.shareAsync(fileUri, {
+              mimeType: 'application/msword',
+              dialogTitle: `Exportar Roteiro: ${setlist.name || 'Setlist'}`,
+              UTI: 'com.microsoft.word.doc',
+            });
+          } catch (shareErr) {
+            console.warn('Tentativa com mimeType falhou, tentando sem parâmetros:', shareErr);
+            await Sharing.shareAsync(fileUri);
+          }
         } else {
-          Alert.alert('Erro', 'Serviço de compartilhamento de arquivos não disponível.');
+          Alert.alert(t('error') || 'Erro', 'Serviço de compartilhamento de arquivos não disponível.');
         }
       }
     } catch (error) {
       console.error('Erro ao exportar arquivo .doc:', error);
-      Alert.alert('Erro', 'Não foi possível gerar ou exportar o arquivo .doc.');
+      Alert.alert(t('error') || 'Erro', 'Não foi possível gerar ou exportar o arquivo .doc.');
     }
   };
 
