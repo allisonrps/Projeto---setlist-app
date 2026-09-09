@@ -3,63 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setlist Band Manager - Web Editor</title>
+  <title>Setlist Band Manager - Web Editor Pro</title>
+  
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Ionicons (Same as App) -->
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
   <style>
     :root {
       --bg: #0b0f19;
-      --bg-surface: #111827;
-      --bg-card: #1f2937;
-      --bg-input: #111827;
-      --border: #374151;
-      --border-focus: #3b82f6;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --primary-subtle: rgba(59, 130, 246, 0.15);
+      --bg-surface: #131b2e;
+      --bg-card: #17223b;
+      --bg-card-hover: #1e2d4d;
+      --bg-input: #0f172a;
+      --border: #25334d;
+      --border-light: rgba(255, 255, 255, 0.1);
+      --border-focus: #0ea5e9;
+      --primary: #0ea5e9;
+      --primary-hover: #0284c7;
+      --primary-subtle: rgba(14, 165, 233, 0.15);
+      --primary-glow: rgba(14, 165, 233, 0.35);
       --success: #10b981;
       --success-hover: #059669;
+      --success-subtle: rgba(16, 185, 129, 0.15);
       --danger: #ef4444;
       --danger-hover: #dc2626;
+      --danger-subtle: rgba(239, 68, 68, 0.15);
       --warning: #f59e0b;
-      --text: #f9fafb;
-      --text-muted: #9ca3af;
-      --text-dim: #6b7280;
+      --warning-subtle: rgba(245, 158, 11, 0.15);
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
       --chord-color: #38bdf8;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 14px;
-      --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+      --glass-bg: rgba(19, 27, 46, 0.85);
+      --glass-card: rgba(23, 34, 59, 0.75);
     }
 
     [data-theme="light"] {
-      --bg: #f3f4f6;
+      --bg: #f8fafc;
       --bg-surface: #ffffff;
-      --bg-card: #ffffff;
-      --bg-input: #f9fafb;
-      --border: #e5e7eb;
-      --border-focus: #2563eb;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --primary-subtle: rgba(37, 99, 235, 0.1);
+      --bg-card: #f1f5f9;
+      --bg-card-hover: #e2e8f0;
+      --bg-input: #ffffff;
+      --border: #e2e8f0;
+      --border-light: rgba(0, 0, 0, 0.08);
+      --border-focus: #0284c7;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-subtle: rgba(2, 132, 199, 0.1);
+      --primary-glow: rgba(2, 132, 199, 0.25);
       --success: #059669;
       --success-hover: #047857;
+      --success-subtle: rgba(5, 150, 105, 0.1);
       --danger: #dc2626;
       --danger-hover: #b91c1c;
+      --danger-subtle: rgba(220, 38, 38, 0.1);
       --warning: #d97706;
-      --text: #111827;
-      --text-muted: #4b5563;
-      --text-dim: #9ca3af;
+      --warning-subtle: rgba(217, 119, 6, 0.1);
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
       --chord-color: #0284c7;
-      --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+      --glass-bg: rgba(255, 255, 255, 0.9);
+      --glass-card: rgba(241, 245, 249, 0.85);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
@@ -72,47 +99,65 @@
       transition: background-color 0.2s, color 0.2s;
     }
 
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+
     /* Header */
     header {
-      background-color: var(--bg-surface);
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 10px 20px;
+      padding: 10px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      z-index: 10;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       text-decoration: none;
       color: inherit;
     }
 
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--primary), #8b5cf6);
-      border-radius: 8px;
+    .brand-icon-wrapper {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-weight: 900;
-      font-size: 16px;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+      font-size: 20px;
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
 
     .brand-text h1 {
       font-size: 15px;
       font-weight: 900;
-      letter-spacing: 0.5px;
+      letter-spacing: -0.2px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .brand-badge {
@@ -120,48 +165,56 @@
       font-weight: 800;
       background: var(--primary-subtle);
       color: var(--primary);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(59, 130, 246, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--primary-glow);
+      letter-spacing: 0.5px;
     }
 
     .brand-text p {
       font-size: 11px;
       color: var(--text-muted);
+      font-weight: 500;
     }
 
     /* Mode Navigation Switcher */
     .mode-nav {
       display: flex;
       background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 3px;
-      gap: 4px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      gap: 6px;
     }
 
     .mode-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      font-size: 12px;
+      gap: 8px;
+      padding: 7px 18px;
+      font-size: 13px;
       font-weight: 800;
-      border-radius: 4px;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
       background: transparent;
       color: var(--text-muted);
-      transition: all 0.15s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mode-btn ion-icon {
+      font-size: 18px;
     }
 
     .mode-btn:hover {
       color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .mode-btn.active {
-      background: var(--primary);
-      color: #fff;
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      color: #ffffff;
+      box-shadow: 0 2px 10px var(--primary-glow);
     }
 
     .header-actions {
@@ -174,22 +227,28 @@
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      font-size: 12px;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      font-size: 12.5px;
       font-weight: 700;
       border-radius: var(--radius-sm);
-      border: 1px solid transparent;
+      border: 1.5px solid transparent;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
       background: transparent;
       color: var(--text);
       user-select: none;
+      white-space: nowrap;
+    }
+
+    .btn ion-icon {
+      font-size: 18px;
     }
 
     .btn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
+      transform: translateY(-1.5px);
+      box-shadow: var(--shadow-sm);
     }
 
     .btn:active {
@@ -197,28 +256,38 @@
     }
 
     .btn-primary {
-      background-color: var(--primary);
-      color: #fff;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 12px var(--primary-glow);
     }
-    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-hover), #1d4ed8);
+      box-shadow: 0 6px 16px var(--primary-glow);
+    }
 
     .btn-success {
-      background-color: var(--success);
-      color: #fff;
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
-    .btn-success:hover { background-color: var(--success-hover); }
+    .btn-success:hover {
+      background: linear-gradient(135deg, var(--success-hover), #047857);
+    }
 
     .btn-outline {
       border-color: var(--border);
       background-color: var(--bg-card);
+      color: var(--text);
     }
     .btn-outline:hover {
-      border-color: var(--text-muted);
-      background-color: var(--bg);
+      border-color: var(--primary);
+      background-color: var(--bg-card-hover);
+      color: var(--primary);
     }
 
     .btn-ghost {
       color: var(--text-muted);
+      border-color: transparent;
     }
     .btn-ghost:hover {
       color: var(--text);
@@ -226,39 +295,48 @@
     }
 
     .btn-sm {
-      padding: 4px 8px;
-      font-size: 11px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      border-radius: 6px;
+    }
+    .btn-sm ion-icon {
+      font-size: 16px;
     }
 
     .btn-icon {
-      padding: 7px;
-      border-radius: var(--radius-sm);
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .btn-icon ion-icon {
+      font-size: 20px;
     }
 
     /* App Layout */
     .app-body {
       display: flex;
       flex: 1;
-      height: calc(100vh - 57px);
+      height: calc(100vh - 61px);
       overflow: hidden;
     }
 
     /* Sidebar */
     .sidebar {
-      width: 330px;
+      width: 350px;
       background-color: var(--bg-surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      z-index: 10;
     }
 
     .sidebar-header {
-      padding: 12px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      background: var(--glass-bg);
     }
 
     .search-box {
@@ -267,26 +345,32 @@
 
     .search-box input {
       width: 100%;
-      padding: 7px 10px 7px 30px;
+      padding: 9px 12px 9px 36px;
       background-color: var(--bg-input);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
       color: var(--text);
-      font-size: 12px;
+      font-size: 12.5px;
+      font-weight: 500;
       outline: none;
+      transition: all 0.15s ease;
     }
 
     .search-box input:focus {
       border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-subtle);
     }
 
     .search-icon {
       position: absolute;
-      left: 9px;
+      left: 10px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 13px;
+      font-size: 18px;
       color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
     }
 
     .sidebar-meta-bar {
@@ -299,34 +383,55 @@
       font-size: 11px;
       font-weight: 800;
       color: var(--text-muted);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sidebar-count ion-icon {
+      font-size: 15px;
+      color: var(--primary);
     }
 
     .items-container {
       flex: 1;
       overflow-y: auto;
-      padding: 8px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .item-card {
       background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      transition: all 0.15s ease;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
+      overflow: hidden;
+    }
+
+    .item-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: transparent;
+      transition: background 0.2s;
     }
 
     .item-card:hover {
       border-color: var(--primary);
-      background-color: var(--primary-subtle);
+      background-color: var(--bg-card-hover);
+      transform: translateX(2px);
     }
 
     .item-card.active {
@@ -335,17 +440,22 @@
       box-shadow: 0 0 0 1px var(--primary);
     }
 
+    .item-card.active::before {
+      background: var(--primary);
+    }
+
     .item-card-title {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 800;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      padding-right: 50px;
     }
 
     .item-card-subtitle {
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text-muted);
       font-weight: 600;
       white-space: nowrap;
@@ -362,55 +472,66 @@
     }
 
     .tag-badge {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 700;
       background: var(--bg-surface);
       color: var(--text-muted);
-      padding: 1.5px 5px;
-      border-radius: 4px;
+      padding: 2px 7px;
+      border-radius: 5px;
       border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .dur-badge {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 800;
       color: var(--warning);
-      background: rgba(245, 158, 11, 0.1);
-      padding: 1.5px 5px;
-      border-radius: 4px;
+      background: var(--warning-subtle);
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dur-badge ion-icon {
+      font-size: 12px;
     }
 
     .type-badge-show {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 900;
       color: var(--danger);
-      background: rgba(239, 68, 68, 0.15);
-      padding: 1.5px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      text-transform: uppercase;
+      background: var(--danger-subtle);
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      letter-spacing: 0.5px;
     }
 
     .type-badge-ensaio {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 900;
       color: var(--primary);
-      background: rgba(59, 130, 246, 0.15);
-      padding: 1.5px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      text-transform: uppercase;
+      background: var(--primary-subtle);
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--primary-glow);
+      letter-spacing: 0.5px;
     }
 
     .type-badge-repertorio {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 900;
       color: var(--success);
-      background: rgba(16, 185, 129, 0.15);
-      padding: 1.5px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      text-transform: uppercase;
+      background: var(--success-subtle);
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      letter-spacing: 0.5px;
     }
 
     .item-card-actions {
@@ -447,63 +568,88 @@
     }
 
     .empty-icon {
-      font-size: 48px;
-      opacity: 0.5;
+      font-size: 64px;
+      color: var(--text-dim);
+      opacity: 0.6;
+    }
+
+    .empty-state h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .empty-state p {
+      font-size: 13.5px;
+      max-width: 420px;
+      line-height: 1.5;
     }
 
     .editor-inner {
-      padding: 20px;
-      max-width: 1200px;
+      padding: 24px;
+      max-width: 1280px;
       width: 100%;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
 
     /* Form Fields Grid */
     .form-card {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px;
+      background-color: var(--glass-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      box-shadow: var(--shadow);
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .form-grid-3 { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 14px; }
-    .form-grid-4 { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr; gap: 14px; }
-    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid-3 { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 16px; }
+    .form-grid-4 { display: grid; grid-template-columns: 1.6fr 1.2fr 1fr 1fr; gap: 16px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
     }
 
     .form-group label {
       font-size: 11px;
       font-weight: 800;
       color: var(--text-muted);
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group label ion-icon {
+      font-size: 14px;
+      color: var(--primary);
     }
 
     .form-input, .form-select {
       background-color: var(--bg-input);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       color: var(--text);
-      padding: 8px 12px;
+      padding: 9px 12px;
       border-radius: var(--radius-sm);
       font-size: 13px;
+      font-weight: 500;
       outline: none;
-      transition: border-color 0.15s;
+      transition: all 0.15s ease;
     }
 
     .form-input:focus, .form-select:focus {
       border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-subtle);
     }
 
     .form-select {
@@ -515,12 +661,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 16px;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
     }
 
     .summary-pills {
@@ -531,102 +677,160 @@
     }
 
     .summary-pill {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
-      background: var(--bg-surface);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 4px;
+      padding: 5px 12px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
+    }
+
+    .summary-pill ion-icon {
+      font-size: 16px;
+      color: var(--primary);
     }
 
     .summary-pill strong {
       color: var(--primary);
     }
 
-    /* Setlist Songs Table / Roteiro */
+    /* Setlist Songs Roteiro (DRAG AND DROP) */
     .setlist-songs-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--border);
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
 
     .setlist-songs-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 900;
       letter-spacing: 0.5px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+    }
+
+    .setlist-songs-title ion-icon {
+      font-size: 20px;
+      color: var(--primary);
     }
 
     .setlist-songs-tools {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .setlist-songs-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-top: 8px;
+      gap: 8px;
+      margin-top: 10px;
+      min-height: 80px;
     }
 
+    /* Setlist Row & Drag States */
     .setlist-song-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      transition: all 0.15s;
+      border: 1.5px solid var(--border);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
     }
 
     .setlist-song-row:hover {
       border-color: var(--primary);
+      background: var(--bg-card-hover);
     }
 
     .setlist-song-row.is-pause {
-      background: rgba(239, 68, 68, 0.08);
-      border-left: 3.5px solid var(--danger);
+      background: rgba(239, 68, 68, 0.07);
+      border-left: 4px solid var(--danger);
     }
 
     .setlist-song-row.is-note {
-      background: rgba(245, 158, 11, 0.08);
-      border-left: 3.5px solid var(--warning);
+      background: rgba(245, 158, 11, 0.07);
+      border-left: 4px solid var(--warning);
     }
 
-    .song-order-badge {
-      width: 28px;
-      height: 28px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
+    /* Drag & Drop Visuals */
+    .setlist-song-row.dragging {
+      opacity: 0.45;
+      border: 2px dashed var(--primary);
+      transform: scale(0.99);
+      background: var(--primary-subtle);
+    }
+
+    .setlist-song-row.drag-over-top {
+      border-top: 3px solid var(--primary);
+    }
+
+    .setlist-song-row.drag-over-bottom {
+      border-bottom: 3px solid var(--primary);
+    }
+
+    .drag-handle {
+      cursor: grab;
+      color: var(--text-dim);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11.5px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .drag-handle ion-icon {
+      font-size: 22px;
+    }
+
+    .drag-handle:hover {
+      color: var(--primary);
+      background: var(--primary-subtle);
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .song-order-badge {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
       font-weight: 900;
       color: var(--text-muted);
       flex-shrink: 0;
     }
 
+    .song-order-badge ion-icon {
+      font-size: 18px;
+    }
+
     .song-row-title-area {
-      flex: 1.5;
-      min-width: 160px;
+      flex: 1.6;
+      min-width: 170px;
     }
 
     .song-row-title {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 800;
       color: var(--text);
       white-space: nowrap;
@@ -635,26 +839,29 @@
     }
 
     .song-row-band {
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-weight: 500;
     }
 
     .song-row-notes-input {
-      flex: 2;
+      flex: 2.2;
       background: var(--bg-input);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       color: var(--text);
-      padding: 6px 10px;
-      border-radius: 4px;
+      padding: 7px 12px;
+      border-radius: 6px;
       font-size: 12px;
       outline: none;
+      transition: all 0.15s;
     }
 
     .song-row-notes-input:focus {
       border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px var(--primary-subtle);
     }
 
     .song-row-actions {
@@ -669,10 +876,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 12px;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
 
     .tab-buttons {
@@ -681,15 +888,22 @@
     }
 
     .tab-btn {
-      padding: 8px 16px;
-      font-size: 12.5px;
+      padding: 9px 18px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text-muted);
       border-radius: var(--radius-sm);
-      border: 1px solid transparent;
+      border: 1.5px solid transparent;
       cursor: pointer;
       background: transparent;
-      transition: all 0.15s;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn ion-icon {
+      font-size: 18px;
     }
 
     .tab-btn:hover {
@@ -699,13 +913,14 @@
 
     .tab-btn.active {
       color: #fff;
-      background-color: var(--primary);
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      box-shadow: 0 4px 12px var(--primary-glow);
     }
 
     .tab-tools {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .editor-wrapper {
@@ -717,36 +932,38 @@
 
     .code-textarea {
       width: 100%;
-      height: 420px;
+      height: 440px;
       background-color: var(--bg-input);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-md);
       color: var(--text);
-      padding: 14px;
+      padding: 16px;
       font-family: 'Fira Code', monospace;
-      font-size: 13.5px;
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.6;
       resize: vertical;
       outline: none;
       white-space: pre;
+      transition: all 0.15s;
     }
 
     .code-textarea:focus {
       border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-subtle);
     }
 
     /* Links Box */
     .links-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-top: 6px;
+      gap: 10px;
+      margin-top: 8px;
     }
 
     .link-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     /* Modals */
@@ -757,6 +974,8 @@
       right: 0;
       bottom: 0;
       background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -764,7 +983,7 @@
       z-index: 1000;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .modal-overlay.open {
@@ -774,32 +993,47 @@
 
     .modal-card {
       background-color: var(--bg-surface);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-lg);
       width: 100%;
-      max-width: 650px;
+      max-width: 680px;
       max-height: 90vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      box-shadow: var(--shadow-lg);
       overflow: hidden;
+      transform: scale(0.96);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: scale(1);
     }
 
     .modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
+      padding: 16px 22px;
+      border-bottom: 1.5px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: var(--glass-bg);
     }
 
     .modal-header h3 {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-header h3 ion-icon {
+      font-size: 22px;
+      color: var(--primary);
     }
 
     .modal-body {
-      padding: 20px;
+      padding: 22px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -807,12 +1041,13 @@
     }
 
     .modal-footer {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
+      padding: 16px 22px;
+      border-top: 1.5px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 10px;
+      background: var(--glass-bg);
     }
 
     /* Pick Song Item */
@@ -820,26 +1055,37 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px;
+      padding: 10px 14px;
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
       transition: all 0.15s;
     }
 
     .pick-song-item:hover {
       border-color: var(--primary);
+      background: var(--bg-card-hover);
     }
 
-    /* Drag & Drop Zone */
+    /* Drag & Drop File Upload Zone */
     .drop-zone {
       border: 2px dashed var(--border);
       border-radius: var(--radius-md);
-      padding: 30px;
+      padding: 36px 20px;
       text-align: center;
       cursor: pointer;
-      transition: border-color 0.2s, background-color 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drop-zone ion-icon {
+      font-size: 48px;
+      color: var(--primary);
+      transition: transform 0.2s;
     }
 
     .drop-zone:hover, .drop-zone.dragover {
@@ -847,10 +1093,13 @@
       background-color: var(--primary-subtle);
     }
 
+    .drop-zone:hover ion-icon {
+      transform: scale(1.1);
+    }
+
     .drop-zone p {
-      font-size: 13px;
+      font-size: 13.5px;
       color: var(--text-muted);
-      margin-top: 8px;
     }
 
     .drop-zone strong {
@@ -864,20 +1113,25 @@
       right: 24px;
       background-color: var(--bg-surface);
       color: var(--text);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-left: 4px solid var(--success);
-      padding: 12px 18px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       transform: translateY(100px);
       opacity: 0;
-      transition: all 0.25s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 2000;
+    }
+
+    .toast ion-icon {
+      font-size: 22px;
+      color: var(--success);
     }
 
     .toast.show {
@@ -887,22 +1141,22 @@
 
     /* Live Preview Screen */
     .preview-modal .modal-card {
-      max-width: 800px;
-      height: 85vh;
+      max-width: 860px;
+      height: 88vh;
     }
 
     .prompter-view {
-      background-color: #000;
-      color: #fff;
-      padding: 24px;
+      background-color: #000000;
+      color: #ffffff;
+      padding: 28px;
       border-radius: var(--radius-md);
       font-family: 'Fira Code', monospace;
       font-size: 15px;
-      line-height: 1.6;
+      line-height: 1.7;
       white-space: pre-wrap;
       overflow-y: auto;
       flex: 1;
-      border: 1px solid #222;
+      border: 1px solid #222222;
     }
 
     .chord-highlight {
@@ -916,7 +1170,7 @@
       }
       .sidebar {
         width: 100%;
-        height: 240px;
+        height: 250px;
       }
       .form-grid-3, .form-grid-4 {
         grid-template-columns: 1fr;
@@ -929,54 +1183,69 @@
   <!-- Header -->
   <header>
     <a href="#" class="brand">
-      <div class="brand-icon">S</div>
+      <div class="brand-icon-wrapper">
+        <ion-icon name="musical-notes"></ion-icon>
+      </div>
       <div class="brand-text">
-        <h1>Setlist Band Manager <span class="brand-badge">WEB EDITOR</span></h1>
-        <p>Editor e Gerador de Repertório e Setlists para PC</p>
+        <h1>Setlist Band Manager <span class="brand-badge">WEB PRO</span></h1>
+        <p>Editor de Músicas, Cifras e Setlists para PC</p>
       </div>
     </a>
 
     <!-- Mode Switcher -->
     <div class="mode-nav">
-      <button class="mode-btn active" id="modeBtnSongs" onclick="switchMode('songs')">🎵 Músicas</button>
-      <button class="mode-btn" id="modeBtnSetlists" onclick="switchMode('setlists')">📋 Setlists</button>
+      <button class="mode-btn active" id="modeBtnSongs" onclick="switchMode('songs')">
+        <ion-icon name="musical-notes-outline"></ion-icon>
+        MÚSICAS
+      </button>
+      <button class="mode-btn" id="modeBtnSetlists" onclick="switchMode('setlists')">
+        <ion-icon name="list-outline"></ion-icon>
+        SETLISTS
+      </button>
     </div>
 
     <!-- Header Actions -->
     <div class="header-actions">
       <button class="btn btn-outline" onclick="openImportModal()" title="Importar arquivo .json ou código">
-        📥 Importar JSON
+        <ion-icon name="cloud-download-outline"></ion-icon>
+        Importar JSON
       </button>
 
       <!-- Contextual Action Buttons for Songs -->
       <div id="songsHeaderActions" style="display: flex; gap: 8px;">
         <button class="btn btn-outline" onclick="exportCurrentSong()" title="Exportar música ativa">
-          💾 Exportar Música (.json)
+          <ion-icon name="save-outline"></ion-icon>
+          Exportar Música
         </button>
         <button class="btn btn-primary" onclick="addNewSong()">
-          ➕ Nova Música
+          <ion-icon name="add-outline"></ion-icon>
+          Nova Música
         </button>
       </div>
 
       <!-- Contextual Action Buttons for Setlists -->
       <div id="setlistsHeaderActions" style="display: none; gap: 8px;">
         <button class="btn btn-outline" onclick="exportCurrentSetlistDoc()" title="Exportar para Word formatado">
-          📄 Exportar Word (.doc)
+          <ion-icon name="document-text-outline"></ion-icon>
+          Exportar Word (.doc)
         </button>
         <button class="btn btn-outline" onclick="exportCurrentSetlistJson()" title="Exportar setlist ativo">
-          💾 Exportar Setlist (.json)
+          <ion-icon name="download-outline"></ion-icon>
+          Exportar Setlist
         </button>
         <button class="btn btn-primary" onclick="addNewSetlist()">
-          ➕ Novo Setlist
+          <ion-icon name="add-outline"></ion-icon>
+          Novo Setlist
         </button>
       </div>
 
       <button class="btn btn-success" onclick="exportFullBackup()" title="Backup completo de todas as músicas e setlists">
-        📦 Backup Total
+        <ion-icon name="archive-outline"></ion-icon>
+        Backup Total
       </button>
 
       <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="Alternar Tema Claro / Escuro">
-        🌗
+        <ion-icon name="moon-outline" id="themeIcon"></ion-icon>
       </button>
     </div>
   </header>
@@ -988,12 +1257,18 @@
     <div class="sidebar">
       <div class="sidebar-header">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><ion-icon name="search-outline"></ion-icon></span>
           <input type="text" id="searchInput" placeholder="Buscar por título, artista ou tag..." oninput="filterItems()">
         </div>
         <div class="sidebar-meta-bar">
-          <span class="sidebar-count" id="itemsCountLabel">0 MÚSICAS</span>
-          <button class="btn btn-outline btn-sm" id="sidebarAddBtn" onclick="handleSidebarAdd()">+ Adicionar</button>
+          <span class="sidebar-count" id="itemsCountLabel">
+            <ion-icon name="musical-notes-outline"></ion-icon>
+            0 MÚSICAS
+          </span>
+          <button class="btn btn-outline btn-sm" id="sidebarAddBtn" onclick="handleSidebarAdd()">
+            <ion-icon name="add-outline"></ion-icon>
+            Adicionar
+          </button>
         </div>
       </div>
 
@@ -1008,10 +1283,13 @@
       <!-- SONG EDITOR VIEW -->
       <div id="songEditorSection" style="display: flex; flex-direction: column; flex: 1;">
         <div class="empty-state" id="emptyStateSong">
-          <div class="empty-icon">🎸</div>
+          <ion-icon name="musical-notes-outline" class="empty-icon"></ion-icon>
           <h2>Nenhuma música selecionada</h2>
           <p>Selecione uma música da lista ao lado ou crie uma nova para começar a editar letras, cifras e tablaturas no seu PC.</p>
-          <button class="btn btn-primary" onclick="addNewSong()">➕ Criar Primeira Música</button>
+          <button class="btn btn-primary" onclick="addNewSong()">
+            <ion-icon name="add-outline"></ion-icon>
+            Criar Primeira Música
+          </button>
         </div>
 
         <div class="editor-inner" id="songEditorInner" style="display: none;">
@@ -1019,26 +1297,26 @@
           <div class="form-card">
             <div class="form-grid-3">
               <div class="form-group">
-                <label>Nome da Música *</label>
+                <label><ion-icon name="musical-note-outline"></ion-icon> Nome da Música *</label>
                 <input type="text" class="form-input" id="songName" placeholder="Ex: Yellow" oninput="updateCurrentSong('name', this.value)">
               </div>
               <div class="form-group">
-                <label>Banda / Artista Original *</label>
+                <label><ion-icon name="people-outline"></ion-icon> Banda / Artista Original *</label>
                 <input type="text" class="form-input" id="songBand" placeholder="Ex: Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
               </div>
               <div class="form-group">
-                <label>Duração (mm:ss)</label>
+                <label><ion-icon name="time-outline"></ion-icon> Duração (mm:ss)</label>
                 <input type="text" class="form-input" id="songDuration" placeholder="Ex: 04:30" oninput="updateCurrentSong('duration', this.value)">
               </div>
             </div>
 
             <div class="form-grid-3">
               <div class="form-group">
-                <label>Tags / Estilos (separados por vírgula)</label>
+                <label><ion-icon name="pricetag-outline"></ion-icon> Tags / Estilos (separados por vírgula)</label>
                 <input type="text" class="form-input" id="songStyle" placeholder="Ex: pop rock, 2000s, acustico" oninput="updateCurrentSong('style', this.value)">
               </div>
               <div class="form-group">
-                <label>Aba Padrão no Modo Palco</label>
+                <label><ion-icon name="eye-outline"></ion-icon> Aba Padrão no Modo Palco</label>
                 <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
                   <option value="chords">🎼 Cifra</option>
                   <option value="lyrics">📝 Letra</option>
@@ -1046,7 +1324,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>Velocidade Autoscroll</label>
+                <label><ion-icon name="play-forward-outline"></ion-icon> Velocidade Autoscroll</label>
                 <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
                   <option value="none">Pausado / Sem Rolagem</option>
                   <option value="0.5x">0.5x (Lenta)</option>
@@ -1062,10 +1340,22 @@
           <div class="form-card">
             <div class="tabs-header">
               <div class="tab-buttons">
-                <button class="tab-btn active" id="tabBtnChords" onclick="switchSongTab('chords')">🎼 Cifra</button>
-                <button class="tab-btn" id="tabBtnLyrics" onclick="switchSongTab('lyrics')">📝 Letra</button>
-                <button class="tab-btn" id="tabBtnTabs" onclick="switchSongTab('tabs')">🎸 Tablatura</button>
-                <button class="tab-btn" id="tabBtnLinks" onclick="switchSongTab('links')">🔗 Links Úteis</button>
+                <button class="tab-btn active" id="tabBtnChords" onclick="switchSongTab('chords')">
+                  <ion-icon name="musical-notes-outline"></ion-icon>
+                  Cifra
+                </button>
+                <button class="tab-btn" id="tabBtnLyrics" onclick="switchSongTab('lyrics')">
+                  <ion-icon name="document-text-outline"></ion-icon>
+                  Letra
+                </button>
+                <button class="tab-btn" id="tabBtnTabs" onclick="switchSongTab('tabs')">
+                  <ion-icon name="grid-outline"></ion-icon>
+                  Tablatura
+                </button>
+                <button class="tab-btn" id="tabBtnLinks" onclick="switchSongTab('links')">
+                  <ion-icon name="link-outline"></ion-icon>
+                  Links Úteis
+                </button>
               </div>
 
               <div class="tab-tools">
@@ -1075,11 +1365,15 @@
                 </div>
 
                 <div id="tabsTools" style="display: none; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" onclick="insertTabTemplate()">+ Inserir Grade de Cordas</button>
+                  <button class="btn btn-outline btn-sm" onclick="insertTabTemplate()">
+                    <ion-icon name="add-outline"></ion-icon>
+                    Grade de Cordas
+                  </button>
                 </div>
 
                 <button class="btn btn-outline btn-sm" onclick="openPreviewModal()">
-                  👁️ Pré-visualizar no Palco
+                  <ion-icon name="desktop-outline"></ion-icon>
+                  Modo Palco
                 </button>
               </div>
             </div>
@@ -1092,8 +1386,14 @@
             <!-- Links Editor Area -->
             <div id="linksEditorArea" style="display: none;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">LINKS DE VÍDEO, CIFRA OU ÁUDIO:</span>
-                <button class="btn btn-primary btn-sm" onclick="addLinkRow()">+ Adicionar Link</button>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                  <ion-icon name="link-outline" style="color: var(--primary);"></ion-icon>
+                  LINKS DE VÍDEO, CIFRA OU ÁUDIO:
+                </span>
+                <button class="btn btn-primary btn-sm" onclick="addLinkRow()">
+                  <ion-icon name="add-outline"></ion-icon>
+                  Adicionar Link
+                </button>
               </div>
               <div class="links-list" id="linksListContainer">
                 <!-- Rendered by JS -->
@@ -1106,10 +1406,13 @@
       <!-- SETLIST EDITOR VIEW -->
       <div id="setlistEditorSection" style="display: none; flex-direction: column; flex: 1;">
         <div class="empty-state" id="emptyStateSetlist">
-          <div class="empty-icon">📋</div>
+          <ion-icon name="list-outline" class="empty-icon"></ion-icon>
           <h2>Nenhum setlist selecionado</h2>
-          <p>Crie ou selecione um setlist para montar a ordem das músicas do seu show ou ensaio, com pausas, anotações e exportação para Word.</p>
-          <button class="btn btn-primary" onclick="addNewSetlist()">➕ Criar Primeiro Setlist</button>
+          <p>Crie ou selecione um setlist para montar o roteiro das músicas do seu show ou ensaio, com suporte a arrastar e soltar (Drag & Drop), pausas e exportação para Word.</p>
+          <button class="btn btn-primary" onclick="addNewSetlist()">
+            <ion-icon name="add-outline"></ion-icon>
+            Criar Primeiro Setlist
+          </button>
         </div>
 
         <div class="editor-inner" id="setlistEditorInner" style="display: none;">
@@ -1117,15 +1420,15 @@
           <div class="form-card">
             <div class="form-grid-4">
               <div class="form-group">
-                <label>Nome do Setlist / Show *</label>
+                <label><ion-icon name="mic-outline"></ion-icon> Nome do Setlist / Show *</label>
                 <input type="text" class="form-input" id="setlistName" placeholder="Ex: Show no Bar do Rock" oninput="updateCurrentSetlist('name', this.value)">
               </div>
               <div class="form-group">
-                <label>Banda / Projeto *</label>
+                <label><ion-icon name="people-outline"></ion-icon> Banda / Projeto *</label>
                 <input type="text" class="form-input" id="setlistBand" placeholder="Ex: Minha Banda" oninput="updateCurrentSetlist('bandName', this.value)">
               </div>
               <div class="form-group">
-                <label>Tipo</label>
+                <label><ion-icon name="pricetag-outline"></ion-icon> Tipo</label>
                 <select class="form-select" id="setlistType" onchange="updateCurrentSetlist('type', this.value)">
                   <option value="show">🔥 Show</option>
                   <option value="ensaio">🎙️ Ensaio</option>
@@ -1133,22 +1436,22 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>Data</label>
+                <label><ion-icon name="calendar-outline"></ion-icon> Data</label>
                 <input type="text" class="form-input" id="setlistDate" placeholder="Ex: 2026-10-25 ou 25/10/2026" oninput="updateCurrentSetlist('date', this.value)">
               </div>
             </div>
 
             <div class="form-grid-3">
               <div class="form-group">
-                <label>Local / Evento</label>
+                <label><ion-icon name="location-outline"></ion-icon> Local / Evento</label>
                 <input type="text" class="form-input" id="setlistLocal" placeholder="Ex: The Rock Pub" oninput="updateCurrentSetlist('local', this.value)">
               </div>
               <div class="form-group">
-                <label>Cachê / Valor</label>
+                <label><ion-icon name="cash-outline"></ion-icon> Cachê / Valor</label>
                 <input type="text" class="form-input" id="setlistCache" placeholder="Ex: R$ 1.500" oninput="updateCurrentSetlist('cachê', this.value)">
               </div>
               <div class="form-group">
-                <label>Observações Gerais</label>
+                <label><ion-icon name="information-circle-outline"></ion-icon> Observações Gerais</label>
                 <input type="text" class="form-input" id="setlistNotes" placeholder="Ex: Levar cabos extras, passar som às 19h" oninput="updateCurrentSetlist('notes', this.value)">
               </div>
             </div>
@@ -1156,28 +1459,57 @@
             <!-- Summary Bar -->
             <div class="setlist-summary-bar">
               <div class="summary-pills">
-                <span class="summary-pill">🎵 Músicas: <strong id="sumTotalSongs">0</strong></span>
-                <span class="summary-pill">⏱ Duração Estimada: <strong id="sumTotalDuration">00:00</strong></span>
-                <span class="summary-pill" id="sumLocalPill" style="display: none;">📍 <span id="sumLocalText">-</span></span>
-                <span class="summary-pill" id="sumCachePill" style="display: none;">💰 <span id="sumCacheText">-</span></span>
+                <span class="summary-pill">
+                  <ion-icon name="musical-notes-outline"></ion-icon>
+                  Músicas: <strong id="sumTotalSongs">0</strong>
+                </span>
+                <span class="summary-pill">
+                  <ion-icon name="time-outline"></ion-icon>
+                  Duração Estimada: <strong id="sumTotalDuration">00:00</strong>
+                </span>
+                <span class="summary-pill" id="sumLocalPill" style="display: none;">
+                  <ion-icon name="location-outline"></ion-icon>
+                  <span id="sumLocalText">-</span>
+                </span>
+                <span class="summary-pill" id="sumCachePill" style="display: none;">
+                  <ion-icon name="cash-outline"></ion-icon>
+                  <span id="sumCacheText">-</span>
+                </span>
               </div>
               <div style="display: flex; gap: 8px;">
-                <button class="btn btn-outline btn-sm" onclick="exportCurrentSetlistDoc()">📄 Exportar Word (.doc)</button>
-                <button class="btn btn-primary btn-sm" onclick="exportCurrentSetlistJson()">💾 Exportar Setlist (.json)</button>
+                <button class="btn btn-outline btn-sm" onclick="exportCurrentSetlistDoc()">
+                  <ion-icon name="document-text-outline"></ion-icon>
+                  Exportar Word (.doc)
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="exportCurrentSetlistJson()">
+                  <ion-icon name="download-outline"></ion-icon>
+                  Exportar Setlist
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- Setlist Roteiro / Songs List -->
+          <!-- Setlist Roteiro / Songs List with Drag and Drop -->
           <div class="form-card">
             <div class="setlist-songs-header">
               <div class="setlist-songs-title">
-                <span>📑 ROTEIRO DO SHOW / ENSAIO</span>
+                <ion-icon name="reorder-four-outline"></ion-icon>
+                <span>ROTEIRO DO SHOW / ENSAIO</span>
+                <span style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-left: 6px;">(Arraste pelas alças ☰ para reordenar)</span>
               </div>
               <div class="setlist-songs-tools">
-                <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">+ Adicionar Música do Repertório</button>
-                <button class="btn btn-outline btn-sm" onclick="addSpecialItem('pause')">⏸️ + Pausa / Intervalo</button>
-                <button class="btn btn-outline btn-sm" onclick="addSpecialItem('note')">📢 + Anotação / Fala</button>
+                <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                  Adicionar do Repertório
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="addSpecialItem('pause')">
+                  <ion-icon name="pause-circle-outline" style="color: var(--danger);"></ion-icon>
+                  Pausa / Intervalo
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="addSpecialItem('note')">
+                  <ion-icon name="megaphone-outline" style="color: var(--warning);"></ion-icon>
+                  Anotação / Fala
+                </button>
               </div>
             </div>
 
@@ -1196,12 +1528,12 @@
   <div class="modal-overlay" id="importModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>📥 Importar JSON para o PC</h3>
-        <button class="btn btn-ghost btn-icon" onclick="closeImportModal()">✖</button>
+        <h3><ion-icon name="cloud-download-outline"></ion-icon> Importar JSON para o PC</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closeImportModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
       <div class="modal-body">
         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-          <div style="font-size: 28px;">📂</div>
+          <ion-icon name="cloud-upload-outline"></ion-icon>
           <p><strong>Clique para selecionar</strong> ou arraste um arquivo <code>.json</code> exportado pelo app</p>
           <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileSelected(event)">
         </div>
@@ -1216,7 +1548,10 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeImportModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="processImportJson()">Importar Agora</button>
+        <button class="btn btn-primary" onclick="processImportJson()">
+          <ion-icon name="download-outline"></ion-icon>
+          Importar Agora
+        </button>
       </div>
     </div>
   </div>
@@ -1225,20 +1560,26 @@
   <div class="modal-overlay" id="exportModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="exportModalTitle">💾 Exportar JSON</h3>
-        <button class="btn btn-ghost btn-icon" onclick="closeExportModal()">✖</button>
+        <h3 id="exportModalTitle"><ion-icon name="save-outline"></ion-icon> Exportar JSON</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closeExportModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 12.5px; color: var(--text-muted);" id="exportModalDesc">
+        <p style="font-size: 13px; color: var(--text-muted);" id="exportModalDesc">
           Você pode baixar o arquivo <code>.json</code> ou copiar o código para importar no aplicativo do celular:
         </p>
 
-        <textarea class="form-input" id="exportJsonTextarea" rows="10" readonly style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
+        <textarea class="form-input" id="exportJsonTextarea" rows="10" readonly style="font-family: 'Fira Code', monospace; font-size: 12px;"></textarea>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeExportModal()">Fechar</button>
-        <button class="btn btn-outline" onclick="copyExportCode()">📋 Copiar Código</button>
-        <button class="btn btn-primary" id="downloadJsonBtn" onclick="downloadExportFile()">⬇️ Baixar Arquivo .JSON</button>
+        <button class="btn btn-outline" onclick="copyExportCode()">
+          <ion-icon name="copy-outline"></ion-icon>
+          Copiar Código
+        </button>
+        <button class="btn btn-primary" id="downloadJsonBtn" onclick="downloadExportFile()">
+          <ion-icon name="download-outline"></ion-icon>
+          Baixar Arquivo .JSON
+        </button>
       </div>
     </div>
   </div>
@@ -1247,19 +1588,22 @@
   <div class="modal-overlay" id="pickSongModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>🎵 Adicionar Músicas ao Setlist</h3>
-        <button class="btn btn-ghost btn-icon" onclick="closePickSongModal()">✖</button>
+        <h3><ion-icon name="musical-notes-outline"></ion-icon> Adicionar Músicas ao Setlist</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closePickSongModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
       <div class="modal-body">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><ion-icon name="search-outline"></ion-icon></span>
           <input type="text" id="pickSongSearchInput" placeholder="Filtrar músicas do repertório..." oninput="renderPickSongList()">
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);" id="pickSongCountLabel">Músicas disponíveis</span>
-          <button class="btn btn-outline btn-sm" onclick="addAllSongsToSetlist()">+ Adicionar Todas ao Setlist</button>
+          <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);" id="pickSongCountLabel">Músicas disponíveis</span>
+          <button class="btn btn-outline btn-sm" onclick="addAllSongsToSetlist()">
+            <ion-icon name="add-outline"></ion-icon>
+            Adicionar Todas
+          </button>
         </div>
-        <div id="pickSongListContainer" style="display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto;">
+        <div id="pickSongListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;">
           <!-- Rendered by JS -->
         </div>
       </div>
@@ -1272,14 +1616,17 @@
   <!-- Modal: Pré-visualização Modo Palco -->
   <div class="modal-overlay preview-modal" id="previewModal">
     <div class="modal-card">
-      <div class="modal-header" style="background: #000; border-color: #222;">
+      <div class="modal-header" style="background: #000000; border-color: #222222;">
         <div>
-          <h3 id="previewTitle" style="color: #fff; font-size: 16px;">MÚSICA</h3>
-          <p id="previewBand" style="color: #9ca3af; font-size: 11px;">Banda</p>
+          <h3 id="previewTitle" style="color: #ffffff; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+            <ion-icon name="musical-note" style="color: var(--primary);"></ion-icon>
+            MÚSICA
+          </h3>
+          <p id="previewBand" style="color: #94a3b8; font-size: 11.5px; font-weight: 600; margin-top: 2px;">Banda</p>
         </div>
-        <button class="btn btn-ghost btn-icon" style="color: #fff;" onclick="closePreviewModal()">✖</button>
+        <button class="btn btn-ghost btn-icon" style="color: #ffffff;" onclick="closePreviewModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
-      <div class="modal-body" style="background: #000; padding: 14px;">
+      <div class="modal-body" style="background: #000000; padding: 16px;">
         <div class="prompter-view" id="prompterContent">
           <!-- Rendered by JS -->
         </div>
@@ -1289,7 +1636,7 @@
 
   <!-- Toast Notification -->
   <div class="toast" id="toast">
-    <span id="toastIcon">✅</span>
+    <ion-icon name="checkmark-circle" id="toastIcon"></ion-icon>
     <span id="toastMsg">Mensagem</span>
   </div>
 
@@ -1414,9 +1761,13 @@
     let currentExportData = null;
     let currentExportFilename = 'export.json';
 
+    // Drag and Drop state
+    let draggedSongIndex = null;
+
     function init() {
       const savedTheme = localStorage.getItem('setlist_web_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
 
       // Carregar Músicas
       const savedSongs = localStorage.getItem('setlist_web_songs');
@@ -1445,19 +1796,30 @@
       localStorage.setItem('setlist_web_setlists', JSON.stringify(setlists));
     }
 
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.setAttribute('name', theme === 'dark' ? 'sunny-outline' : 'moon-outline');
+      }
+    }
+
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('setlist_web_theme', next);
+      updateThemeIcon(next);
     }
 
-    function showToast(msg, icon = '✅') {
+    function showToast(msg, iconName = 'checkmark-circle', isError = false) {
       const toast = document.getElementById('toast');
       document.getElementById('toastMsg').innerText = msg;
-      document.getElementById('toastIcon').innerText = icon;
+      const toastIcon = document.getElementById('toastIcon');
+      toastIcon.setAttribute('name', iconName);
+      toastIcon.style.color = isError ? 'var(--danger)' : 'var(--success)';
+      toast.style.borderLeftColor = isError ? 'var(--danger)' : 'var(--success)';
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
+      setTimeout(() => toast.classList.remove('show'), 3200);
     }
 
     function switchMode(mode) {
@@ -1518,10 +1880,10 @@
           return matchName || matchBand || matchStyle;
         });
 
-        document.getElementById('itemsCountLabel').innerText = `${songs.length} MÚSICAS`;
+        document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="musical-notes-outline"></ion-icon> ${songs.length} MÚSICAS`;
 
         if (filtered.length === 0) {
-          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhuma música encontrada</div>`;
+          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">Nenhuma música encontrada</div>`;
           return;
         }
 
@@ -1534,13 +1896,17 @@
               <div class="item-card-title">${song.name || 'Sem Título'}</div>
               <div class="item-card-subtitle">${song.originalBand || 'Sem Banda'}</div>
               <div class="item-card-meta">
-                ${song.duration ? `<span class="dur-badge">⏱ ${song.duration}</span>` : ''}
-                ${tags.slice(0, 2).map(t => `<span class="tag-badge">${t}</span>`).join('')}
+                ${song.duration ? `<span class="dur-badge"><ion-icon name="time-outline"></ion-icon> ${song.duration}</span>` : ''}
+                ${tags.slice(0, 2).map(t => `<span class="tag-badge"><ion-icon name="pricetag-outline"></ion-icon> ${t}</span>`).join('')}
                 ${tags.length > 2 ? `<span class="tag-badge">+${tags.length - 2}</span>` : ''}
               </div>
               <div class="item-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="Duplicar">📋</button>
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="Excluir" style="color: var(--danger);">🗑️</button>
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="Duplicar">
+                  <ion-icon name="copy-outline"></ion-icon>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="Excluir" style="color: var(--danger);">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
               </div>
             </div>
           `;
@@ -1556,10 +1922,10 @@
           return matchName || matchBand || matchLocal;
         });
 
-        document.getElementById('itemsCountLabel').innerText = `${setlists.length} SETLISTS`;
+        document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="list-outline"></ion-icon> ${setlists.length} SETLISTS`;
 
         if (filtered.length === 0) {
-          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhum setlist encontrado</div>`;
+          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">Nenhum setlist encontrado</div>`;
           return;
         }
 
@@ -1574,14 +1940,18 @@
               <div class="item-card-title">${st.name || 'Sem Título'}</div>
               <div class="item-card-subtitle">${st.bandName || 'Sem Banda'}</div>
               <div class="item-card-meta">
-                <span class="${typeClass}">${st.type || 'SHOW'}</span>
-                <span class="dur-badge">🎵 ${realSongs.length}</span>
-                ${durStr ? `<span class="tag-badge">⏱ ${durStr}</span>` : ''}
-                ${st.date ? `<span class="tag-badge">📅 ${st.date}</span>` : ''}
+                <span class="${typeClass}">${(st.type || 'SHOW').toUpperCase()}</span>
+                <span class="dur-badge"><ion-icon name="musical-notes-outline"></ion-icon> ${realSongs.length}</span>
+                ${durStr ? `<span class="tag-badge"><ion-icon name="time-outline"></ion-icon> ${durStr}</span>` : ''}
+                ${st.date ? `<span class="tag-badge"><ion-icon name="calendar-outline"></ion-icon> ${st.date}</span>` : ''}
               </div>
               <div class="item-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSetlist(${st.id})" title="Duplicar">📋</button>
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSetlist(${st.id})" title="Excluir" style="color: var(--danger);">🗑️</button>
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSetlist(${st.id})" title="Duplicar">
+                  <ion-icon name="copy-outline"></ion-icon>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSetlist(${st.id})" title="Excluir" style="color: var(--danger);">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
               </div>
             </div>
           `;
@@ -1620,7 +1990,7 @@
       if (currentMode !== 'songs') switchMode('songs');
       renderSidebar();
       renderSongEditor();
-      showToast('Nova música criada!');
+      showToast('Nova música criada!', 'musical-notes-outline');
     }
 
     function duplicateSong(id) {
@@ -1639,7 +2009,7 @@
       saveToStorage();
       renderSidebar();
       renderSongEditor();
-      showToast(`Música "${song.name}" duplicada!`);
+      showToast(`Música "${song.name}" duplicada!`, 'copy-outline');
     }
 
     function deleteSong(id) {
@@ -1656,7 +2026,7 @@
       saveToStorage();
       renderSidebar();
       renderSongEditor();
-      showToast(`Música "${song.name}" removida.`, '🗑️');
+      showToast(`Música "${song.name}" removida.`, 'trash-outline');
     }
 
     function renderSongEditor() {
@@ -1745,7 +2115,7 @@
       const template = `e|---------------------------------------------------|\nB|---------------------------------------------------|\nG|---------------------------------------------------|\nD|---------------------------------------------------|\nA|---------------------------------------------------|\nE|---------------------------------------------------|\n`;
       textarea.value = (textarea.value ? textarea.value + '\n\n' : '') + template;
       handleTextareaChange(textarea.value);
-      showToast('Grade de tablatura inserida!');
+      showToast('Grade de tablatura inserida!', 'grid-outline');
     }
 
     function renderLinksEditor() {
@@ -1756,20 +2126,22 @@
       const links = song.links || [];
 
       if (links.length === 0) {
-        container.innerHTML = `<p style="font-size: 12px; color: var(--text-dim); font-style: italic;">Nenhum link cadastrado para esta música.</p>`;
+        container.innerHTML = `<p style="font-size: 12.5px; color: var(--text-dim); font-style: italic; padding: 12px 0;">Nenhum link cadastrado para esta música.</p>`;
         return;
       }
 
       container.innerHTML = links.map((link, idx) => `
         <div class="link-row">
-          <select class="form-select" style="width: 140px;" onchange="updateLinkType(${idx}, this.value)">
+          <select class="form-select" style="width: 150px;" onchange="updateLinkType(${idx}, this.value)">
             <option value="youtube" ${link.type === 'youtube' ? 'selected' : ''}>🎬 YouTube</option>
             <option value="spotify" ${link.type === 'spotify' ? 'selected' : ''}>🎧 Spotify</option>
             <option value="chords" ${link.type === 'chords' ? 'selected' : ''}>🎼 Cifra Web</option>
             <option value="other" ${link.type === 'other' ? 'selected' : ''}>🔗 Outro</option>
           </select>
           <input type="text" class="form-input" style="flex: 1;" placeholder="https://..." value="${link.url || ''}" oninput="updateLinkUrl(${idx}, this.value)">
-          <button class="btn btn-outline btn-sm" style="color: var(--danger);" onclick="removeLink(${idx})">🗑️</button>
+          <button class="btn btn-outline btn-sm" style="color: var(--danger);" onclick="removeLink(${idx})">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
         </div>
       `).join('');
     }
@@ -1840,7 +2212,7 @@
 
       textarea.value = transposed;
       handleTextareaChange(transposed);
-      showToast(`Tom transposto em ${semitones > 0 ? `+${semitones}` : semitones} semitom!`);
+      showToast(`Tom transposto em ${semitones > 0 ? `+${semitones}` : semitones} semitom!`, 'musical-notes-outline');
     }
 
     /* ----------------------------------------------------
@@ -1872,7 +2244,7 @@
       if (currentMode !== 'setlists') switchMode('setlists');
       renderSidebar();
       renderSetlistEditor();
-      showToast('Novo setlist criado!');
+      showToast('Novo setlist criado!', 'list-outline');
     }
 
     function duplicateSetlist(id) {
@@ -1891,7 +2263,7 @@
       saveToStorage();
       renderSidebar();
       renderSetlistEditor();
-      showToast(`Setlist "${st.name}" duplicado!`);
+      showToast(`Setlist "${st.name}" duplicado!`, 'copy-outline');
     }
 
     function deleteSetlist(id) {
@@ -1908,7 +2280,7 @@
       saveToStorage();
       renderSidebar();
       renderSetlistEditor();
-      showToast(`Setlist "${st.name}" removido.`, '🗑️');
+      showToast(`Setlist "${st.name}" removido.`, 'trash-outline');
     }
 
     function renderSetlistEditor() {
@@ -1965,7 +2337,6 @@
       saveToStorage();
       renderSidebar();
 
-      // Live update summary
       if (field === 'local') {
         const localPill = document.getElementById('sumLocalPill');
         if (value) {
@@ -2013,6 +2384,9 @@
       return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
+    /* ----------------------------------------------------
+       SETLIST ROTEIRO: DRAG AND DROP IMPLEMENTATION
+    ---------------------------------------------------- */
     function renderSetlistSongsList() {
       const container = document.getElementById('setlistSongsListContainer');
       const st = setlists.find(s => s.id === activeSetlistId);
@@ -2021,9 +2395,14 @@
       const list = st.songs || [];
       if (list.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; color: var(--text-dim); padding: 30px; border: 1px dashed var(--border); border-radius: var(--radius-sm);">
-            <p style="font-size: 13px; margin-bottom: 8px;">Nenhuma música adicionada ao roteiro deste setlist.</p>
-            <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">+ Adicionar Música do Repertório</button>
+          <div style="text-align: center; color: var(--text-dim); padding: 36px 20px; border: 2px dashed var(--border); border-radius: var(--radius-md); background: var(--bg-card);">
+            <ion-icon name="musical-notes-outline" style="font-size: 38px; color: var(--primary); margin-bottom: 8px;"></ion-icon>
+            <p style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Nenhuma música no roteiro</p>
+            <p style="font-size: 12.5px; margin-bottom: 14px;">Adicione músicas do seu repertório para montar a ordem de execução do show.</p>
+            <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              Adicionar Música do Repertório
+            </button>
           </div>
         `;
         return;
@@ -2039,39 +2418,135 @@
         let rowClass = 'setlist-song-row';
         if (isPause) {
           rowClass += ' is-pause';
-          badgeContent = '⏸️';
+          badgeContent = '<ion-icon name="pause" style="color: var(--danger);"></ion-icon>';
         } else if (isNote) {
           rowClass += ' is-note';
-          badgeContent = '📢';
+          badgeContent = '<ion-icon name="megaphone" style="color: var(--warning);"></ion-icon>';
         } else {
           badgeContent = String(songCounter++).padStart(2, '0');
         }
 
         return `
-          <div class="${rowClass}">
-            <div class="song-order-badge">${badgeContent}</div>
-
-            <div class="song-row-title-area">
-              <div class="song-row-title">${item.name || 'Sem Título'}</div>
-              <div class="song-row-band">${isPause ? 'Pausa / Intervalo' : (isNote ? 'Anotação / Fala' : (item.originalBand || 'Artista'))}</div>
+          <div class="${rowClass}" 
+               id="songRow_${idx}"
+               draggable="true" 
+               ondragstart="handleRowDragStart(event, ${idx})"
+               ondragover="handleRowDragOver(event, ${idx})"
+               ondragleave="handleRowDragLeave(event, ${idx})"
+               ondrop="handleRowDrop(event, ${idx})"
+               ondragend="handleRowDragEnd(event)">
+            
+            <!-- Drag Handle -->
+            <div class="drag-handle" title="Arraste para reordenar">
+              <ion-icon name="reorder-two-outline"></ion-icon>
             </div>
 
+            <!-- Order Badge -->
+            <div class="song-order-badge">${badgeContent}</div>
+
+            <!-- Title & Info -->
+            <div class="song-row-title-area">
+              <div class="song-row-title">${item.name || 'Sem Título'}</div>
+              <div class="song-row-band">${isPause ? 'Pausa / Intervalo' : (isNote ? 'Anotação / Fala de Palco' : (item.originalBand || 'Artista'))}</div>
+            </div>
+
+            <!-- Duration (Hidden on pure notes) -->
             ${!isNote ? `
               <div style="width: 85px; flex-shrink: 0;">
-                <input type="text" class="form-input" style="padding: 4px 6px; font-size: 11.5px; text-align: center;" placeholder="00:00" value="${item.duration || ''}" oninput="updateSetlistSongItem(${idx}, 'duration', this.value)">
+                <input type="text" class="form-input" style="padding: 6px 8px; font-size: 12px; text-align: center; font-weight: 700;" placeholder="00:00" value="${item.duration || ''}" oninput="updateSetlistSongItem(${idx}, 'duration', this.value)">
               </div>
             ` : ''}
 
-            <input type="text" class="song-row-notes-input" placeholder="${isPause ? 'Ex: Intervalo 15 min para bate-papo' : (isNote ? 'Ex: Agradecer aos patrocinadores...' : 'Obs para este show (ex: Tom G, guitarra com drive)...')}" value="${item.customNotes || ''}" oninput="updateSetlistSongItem(${idx}, 'customNotes', this.value)">
+            <!-- Custom Notes -->
+            <input type="text" class="song-row-notes-input" placeholder="${isPause ? 'Ex: Intervalo 15 min para troca de instrumentos' : (isNote ? 'Ex: Agradecer ao público e patrocinadores...' : 'Obs para este show (ex: Tom G, guitarra com drive, entrar direto)...')}" value="${item.customNotes || ''}" oninput="updateSetlistSongItem(${idx}, 'customNotes', this.value)">
 
+            <!-- Quick Action Buttons -->
             <div class="song-row-actions">
-              <button class="btn btn-outline btn-sm btn-icon" ${idx === 0 ? 'disabled' : ''} onclick="moveSetlistSong(${idx}, -1)" title="Subir">⬆️</button>
-              <button class="btn btn-outline btn-sm btn-icon" ${idx === list.length - 1 ? 'disabled' : ''} onclick="moveSetlistSong(${idx}, 1)" title="Descer">⬇️</button>
-              <button class="btn btn-outline btn-sm btn-icon" style="color: var(--danger);" onclick="removeSetlistSong(${idx})" title="Remover do Setlist">❌</button>
+              <button class="btn btn-outline btn-sm btn-icon" ${idx === 0 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveSetlistSong(${idx}, -1)" title="Subir (1 posição)">
+                <ion-icon name="chevron-up-outline"></ion-icon>
+              </button>
+              <button class="btn btn-outline btn-sm btn-icon" ${idx === list.length - 1 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveSetlistSong(${idx}, 1)" title="Descer (1 posição)">
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </button>
+              <button class="btn btn-outline btn-sm btn-icon" style="color: var(--danger);" onclick="removeSetlistSong(${idx})" title="Remover do Roteiro">
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    /* Drag & Drop Event Handlers */
+    function handleRowDragStart(e, idx) {
+      draggedSongIndex = idx;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', idx);
+      
+      const row = document.getElementById(`songRow_${idx}`);
+      if (row) {
+        setTimeout(() => row.classList.add('dragging'), 0);
+      }
+    }
+
+    function handleRowDragOver(e, idx) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+
+      if (draggedSongIndex === null || draggedSongIndex === idx) return;
+
+      const targetRow = document.getElementById(`songRow_${idx}`);
+      if (!targetRow) return;
+
+      const rect = targetRow.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+
+      if (e.clientY < midY) {
+        targetRow.classList.add('drag-over-top');
+        targetRow.classList.remove('drag-over-bottom');
+      } else {
+        targetRow.classList.add('drag-over-bottom');
+        targetRow.classList.remove('drag-over-top');
+      }
+    }
+
+    function handleRowDragLeave(e, idx) {
+      const targetRow = document.getElementById(`songRow_${idx}`);
+      if (targetRow) {
+        targetRow.classList.remove('drag-over-top', 'drag-over-bottom');
+      }
+    }
+
+    function handleRowDrop(e, targetIdx) {
+      e.preventDefault();
+      const fromIdx = draggedSongIndex;
+      if (fromIdx === null || fromIdx === targetIdx) return;
+
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st || !st.songs) return;
+
+      const targetRow = document.getElementById(`songRow_${targetIdx}`);
+      let insertIdx = targetIdx;
+      if (targetRow && targetRow.classList.contains('drag-over-bottom')) {
+        insertIdx = targetIdx + 1;
+        if (fromIdx < targetIdx) insertIdx -= 1;
+      } else if (fromIdx < targetIdx) {
+        insertIdx = targetIdx;
+      }
+
+      const movedItem = st.songs.splice(fromIdx, 1)[0];
+      st.songs.splice(insertIdx, 0, movedItem);
+
+      saveToStorage();
+      renderSetlistSongsList();
+      showToast(`"${movedItem.name}" reposicionada!`, 'reorder-two-outline');
+    }
+
+    function handleRowDragEnd(e) {
+      draggedSongIndex = null;
+      document.querySelectorAll('.setlist-song-row').forEach(el => {
+        el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+      });
     }
 
     function updateSetlistSongItem(idx, field, value) {
@@ -2105,10 +2580,10 @@
       const st = setlists.find(s => s.id === activeSetlistId);
       if (!st || !st.songs) return;
 
-      st.songs.splice(idx, 1);
+      const removed = st.songs.splice(idx, 1)[0];
       saveToStorage();
       renderSetlistEditor();
-      showToast('Item removido do roteiro.');
+      showToast(`"${removed?.name || 'Item'}" removido do roteiro.`, 'trash-outline');
     }
 
     function addSpecialItem(type) {
@@ -2123,7 +2598,7 @@
           type: 'pause',
           name: 'PAUSA / INTERVALO',
           duration: '00:15',
-          customNotes: 'Intervalo de descanso'
+          customNotes: 'Intervalo de descanso e troca de instrumentos'
         });
       } else if (type === 'note') {
         st.songs.push({
@@ -2138,7 +2613,7 @@
 
       saveToStorage();
       renderSetlistEditor();
-      showToast(`${type === 'pause' ? 'Pausa' : 'Anotação'} inserida no roteiro!`);
+      showToast(`${type === 'pause' ? 'Pausa' : 'Anotação'} inserida no roteiro!`, type === 'pause' ? 'pause-circle-outline' : 'megaphone-outline');
     }
 
     /* ----------------------------------------------------
@@ -2171,7 +2646,7 @@
       document.getElementById('pickSongCountLabel').innerText = `${filtered.length} músicas no repertório`;
 
       if (filtered.length === 0) {
-        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhuma música encontrada no repertório.</p>`;
+        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 24px; font-size: 13px;">Nenhuma música encontrada no repertório.</p>`;
         return;
       }
 
@@ -2181,12 +2656,15 @@
         return `
           <div class="pick-song-item">
             <div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text);">${song.name}</div>
-              <div style="font-size: 11px; color: var(--text-muted);">${song.originalBand} &nbsp;•&nbsp; ⏱ ${song.duration || '--:--'}</div>
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text);">${song.name}</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">${song.originalBand} &nbsp;•&nbsp; ⏱ ${song.duration || '--:--'}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-              ${inSetlistCount > 0 ? `<span class="tag-badge" style="color: var(--primary);">No setlist (${inSetlistCount}x)</span>` : ''}
-              <button class="btn btn-outline btn-sm" onclick="addSongToSetlist(${song.id})">+ Adicionar</button>
+              ${inSetlistCount > 0 ? `<span class="tag-badge" style="color: var(--primary); border-color: var(--primary-glow);"><ion-icon name="checkmark-outline"></ion-icon> No setlist (${inSetlistCount}x)</span>` : ''}
+              <button class="btn btn-outline btn-sm" onclick="addSongToSetlist(${song.id})">
+                <ion-icon name="add-outline"></ion-icon>
+                Adicionar
+              </button>
             </div>
           </div>
         `;
@@ -2217,7 +2695,7 @@
 
       saveToStorage();
       renderPickSongList();
-      showToast(`"${song.name}" adicionada ao setlist!`);
+      showToast(`"${song.name}" adicionada ao setlist!`, 'musical-note-outline');
     }
 
     function addAllSongsToSetlist() {
@@ -2245,7 +2723,7 @@
 
       saveToStorage();
       closePickSongModal();
-      showToast(`${songs.length} músicas adicionadas ao setlist!`);
+      showToast(`${songs.length} músicas adicionadas ao setlist!`, 'musical-notes-outline');
     }
 
     /* ----------------------------------------------------
@@ -2254,7 +2732,7 @@
     function exportCurrentSong() {
       const song = songs.find(s => s.id === activeSongId);
       if (!song) {
-        showToast('Nenhuma música selecionada para exportar.', '⚠️');
+        showToast('Nenhuma música selecionada para exportar.', 'alert-circle-outline', true);
         return;
       }
 
@@ -2278,7 +2756,7 @@
       currentExportFilename = `musica-${safeBand}-${safeSong}.json`;
       currentExportData = exportData;
 
-      document.getElementById('exportModalTitle').innerText = `💾 Exportar Música: ${song.name}`;
+      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="musical-note-outline"></ion-icon> Exportar Música: ${song.name}`;
       document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Aba <em>Músicas ➔ Importar</em>):`;
       document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
 
@@ -2288,7 +2766,7 @@
     function exportCurrentSetlistJson() {
       const st = setlists.find(s => s.id === activeSetlistId);
       if (!st) {
-        showToast('Nenhum setlist selecionado para exportar.', '⚠️');
+        showToast('Nenhum setlist selecionado para exportar.', 'alert-circle-outline', true);
         return;
       }
 
@@ -2326,7 +2804,7 @@
       currentExportFilename = `setlist-${safeBand}-${safeEvent}.json`;
       currentExportData = exportData;
 
-      document.getElementById('exportModalTitle').innerText = `💾 Exportar Setlist: ${st.name}`;
+      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="list-outline"></ion-icon> Exportar Setlist: ${st.name}`;
       document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Tela Inicial ➔ <em>Importar Setlist</em>):`;
       document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
 
@@ -2336,7 +2814,7 @@
     function exportCurrentSetlistDoc() {
       const st = setlists.find(s => s.id === activeSetlistId);
       if (!st) {
-        showToast('Nenhum setlist selecionado para exportar.', '⚠️');
+        showToast('Nenhum setlist selecionado para exportar.', 'alert-circle-outline', true);
         return;
       }
 
@@ -2561,12 +3039,12 @@
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`Documento Word "${filename}" baixado com sucesso!`);
+      showToast(`Documento Word "${filename}" baixado!`, 'document-text-outline');
     }
 
     function exportFullBackup() {
       if (songs.length === 0 && setlists.length === 0) {
-        showToast('Nenhum dado para gerar backup.', '⚠️');
+        showToast('Nenhum dado para gerar backup.', 'alert-circle-outline', true);
         return;
       }
 
@@ -2625,7 +3103,7 @@
       currentExportFilename = `backup-setlists-web-${new Date().toISOString().split('T')[0]}.json`;
       currentExportData = backupData;
 
-      document.getElementById('exportModalTitle').innerText = `📦 Exportar Backup Total (${songs.length} Músicas, ${setlists.length} Setlists)`;
+      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="archive-outline"></ion-icon> Exportar Backup Total (${songs.length} Músicas, ${setlists.length} Setlists)`;
       document.getElementById('exportModalDesc').innerHTML = `Este arquivo contém <strong>${songs.length} músicas e ${setlists.length} setlists</strong>. No app móvel, abra a aba <em>Sobre ➔ Restaurar Backup</em> para restaurar tudo:`;
       document.getElementById('exportJsonTextarea').value = JSON.stringify(backupData, null, 2);
 
@@ -2639,7 +3117,7 @@
     function copyExportCode() {
       const code = document.getElementById('exportJsonTextarea').value;
       navigator.clipboard.writeText(code).then(() => {
-        showToast('Código JSON copiado para a área de transferência!');
+        showToast('Código JSON copiado para a área de transferência!', 'copy-outline');
       });
     }
 
@@ -2653,7 +3131,7 @@
       a.download = currentExportFilename;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`Arquivo "${currentExportFilename}" baixado com sucesso!`);
+      showToast(`Arquivo "${currentExportFilename}" baixado com sucesso!`, 'download-outline');
     }
 
     /* ----------------------------------------------------
@@ -2675,7 +3153,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         document.getElementById('importJsonTextarea').value = e.target.result;
-        showToast(`Arquivo "${file.name}" carregado! Clique em Importar Agora.`);
+        showToast(`Arquivo "${file.name}" carregado! Clique em Importar Agora.`, 'cloud-upload-outline');
       };
       reader.readAsText(file);
     }
@@ -2691,7 +3169,7 @@
         const reader = new FileReader();
         reader.onload = function(evt) {
           document.getElementById('importJsonTextarea').value = evt.target.result;
-          showToast(`Arquivo "${file.name}" carregado!`);
+          showToast(`Arquivo "${file.name}" carregado!`, 'cloud-upload-outline');
         };
         reader.readAsText(file);
       }
@@ -2700,7 +3178,7 @@
     function processImportJson() {
       const rawText = document.getElementById('importJsonTextarea').value.trim();
       if (!rawText) {
-        showToast('Cole o código JSON ou selecione um arquivo.', '⚠️');
+        showToast('Cole o código JSON ou selecione um arquivo.', 'alert-circle-outline', true);
         return;
       }
 
@@ -2716,7 +3194,7 @@
       }
 
       if (!parsed) {
-        showToast('O código fornecido não é um JSON válido.', '❌');
+        showToast('O código fornecido não é um JSON válido.', 'close-circle-outline', true);
         return;
       }
 
@@ -2741,7 +3219,7 @@
         saveToStorage();
         closeImportModal();
         switchMode('songs');
-        showToast(`Música "${newSong.name}" importada com sucesso!`);
+        showToast(`Música "${newSong.name}" importada com sucesso!`, 'musical-notes-outline');
         return;
       }
 
@@ -2763,7 +3241,6 @@
           links: s.links || []
         }));
 
-        // Also add unique songs to general repertoire if not already present
         let addedToRepertoire = 0;
         importedSongs.forEach(impSong => {
           const exists = songs.some(s => s.name.toLowerCase() === impSong.name.toLowerCase() && s.originalBand.toLowerCase() === impSong.originalBand.toLowerCase());
@@ -2790,7 +3267,7 @@
         saveToStorage();
         closeImportModal();
         switchMode('setlists');
-        showToast(`Setlist "${newSetlist.name}" importado com sucesso! ${addedToRepertoire > 0 ? `(${addedToRepertoire} novas músicas salvas no repertório)` : ''}`);
+        showToast(`Setlist "${newSetlist.name}" importado!`, 'list-outline');
         return;
       }
 
@@ -2864,11 +3341,11 @@
         saveToStorage();
         closeImportModal();
         renderAll();
-        showToast(`Backup restaurado! ${importedSongs.length} músicas e ${importedSetlists.length} setlists carregados.`);
+        showToast(`Backup restaurado! ${importedSongs.length} músicas e ${importedSetlists.length} setlists.`, 'archive-outline');
         return;
       }
 
-      showToast('Formato de JSON não reconhecido.', '❌');
+      showToast('Formato de JSON não reconhecido.', 'close-circle-outline', true);
     }
 
     /* ----------------------------------------------------
@@ -2878,7 +3355,7 @@
       const song = songs.find(s => s.id === activeSongId);
       if (!song) return;
 
-      document.getElementById('previewTitle').innerText = (song.name || 'SEM NOME').toUpperCase();
+      document.getElementById('previewTitle').innerHTML = `<ion-icon name="musical-note" style="color: var(--primary);"></ion-icon> ${(song.name || 'SEM NOME').toUpperCase()}`;
       document.getElementById('previewBand').innerText = (song.originalBand || 'BANDA').toUpperCase();
 
       let content = '';
