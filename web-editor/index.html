@@ -1806,6 +1806,28 @@
       }
     ];
 
+    
+    // Bulletproof property extractors
+    function getSongTitle(s) {
+      if (!s) return 'Sem Título';
+      return s.name || s.title || s.songName || s.titulo || s.nome || s.musica || 'Sem Título';
+    }
+
+    function getSongBand(s) {
+      if (!s) return 'Sem Banda';
+      return s.originalBand || s.band || s.bandName || s.artist || s.artista || s.autor || 'Sem Banda';
+    }
+
+    function getSongDuration(s) {
+      if (!s) return '';
+      return s.duration || s.duracao || s.customDuration || '';
+    }
+
+    function getSongStyle(s) {
+      if (!s) return '';
+      return s.style || s.tags || s.genre || s.genero || s.estilo || '';
+    }
+
     let currentMode = 'songs'; // 'songs' | 'setlists'
     let songs = [];
     let setlists = [];
@@ -1843,11 +1865,13 @@
         songs = [...DEFAULT_SAMPLE_SONGS];
       }
 
-      // Normalizar campos das músicas (garante compatibilidade retroativa)
+      // Normalizar campos das músicas (garante compatibilidade retroativa com qualquer exportação)
       songs.forEach((s, idx) => {
         if (!s.id) s.id = Date.now() + idx;
-        if (!s.name && s.title) s.name = s.title;
-        if (!s.originalBand && s.band) s.originalBand = s.band;
+        s.name = getSongTitle(s);
+        s.originalBand = getSongBand(s);
+        s.duration = getSongDuration(s);
+        s.style = getSongStyle(s);
       });
 
       // Carregar Setlists
@@ -1972,8 +1996,8 @@
         container.innerHTML = filtered.map(song => {
           const isActive = song.id === activeSongId;
           const tags = (song.style || song.tags || '').split(',').map(t => t.trim()).filter(Boolean);
-          const displayName = song.name || song.title || 'Sem Título';
-          const displayBand = song.originalBand || song.band || 'Sem Banda';
+          const displayName = getSongTitle(song);
+          const displayBand = getSongBand(song);
 
           return `
             <div class="item-card ${isActive ? 'active' : ''}" onclick="selectSong(${song.id})">
@@ -2782,8 +2806,8 @@
       container.innerHTML = filtered.map(song => {
         const isSelected = selectedSongIdsForSetlist.has(song.id);
         const inSetlistCount = (st?.songs || []).filter(s => s.id === song.id).length;
-        const displayName = song.name || song.title || 'Sem Título';
-        const displayBand = song.originalBand || song.band || 'Sem Banda';
+        const displayName = getSongTitle(song);
+        const displayBand = getSongBand(song);
 
         return `
           <div class="pick-song-item ${isSelected ? 'selected' : ''}" onclick="togglePickSongCheckbox(${song.id})">
