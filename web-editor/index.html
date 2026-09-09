@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
-  <!-- Ionicons (Same as App) -->
+  <!-- Ionicons (Same as Mobile App) -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
@@ -423,7 +423,7 @@
       left: 0;
       top: 0;
       bottom: 0;
-      width: 3px;
+      width: 3.5px;
       background: transparent;
       transition: background 0.2s;
     }
@@ -774,11 +774,11 @@
     }
 
     .setlist-song-row.drag-over-top {
-      border-top: 3px solid var(--primary);
+      border-top: 3.5px solid var(--primary);
     }
 
     .setlist-song-row.drag-over-bottom {
-      border-bottom: 3px solid var(--primary);
+      border-bottom: 3.5px solid var(--primary);
     }
 
     .drag-handle {
@@ -1050,21 +1050,59 @@
       background: var(--glass-bg);
     }
 
-    /* Pick Song Item */
+    /* Pick Song Checkbox Items (Like Mobile App) */
     .pick-song-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
+      gap: 14px;
+      padding: 12px 14px;
       background: var(--bg-card);
       border: 1.5px solid var(--border);
       border-radius: var(--radius-md);
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
     }
 
     .pick-song-item:hover {
       border-color: var(--primary);
       background: var(--bg-card-hover);
+    }
+
+    .pick-song-item.selected {
+      border-color: var(--primary);
+      background: var(--primary-subtle);
+    }
+
+    /* Custom App-like Checkbox */
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+      flex-shrink: 0;
+    }
+
+    .pick-song-item.selected .custom-checkbox {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .custom-checkbox ion-icon {
+      font-size: 16px;
+      color: #ffffff;
+      display: none;
+    }
+
+    .pick-song-item.selected .custom-checkbox ion-icon {
+      display: block;
     }
 
     /* Drag & Drop File Upload Zone */
@@ -1584,9 +1622,9 @@
     </div>
   </div>
 
-  <!-- Modal: Selecionar Música do Repertório para Setlist -->
+  <!-- Modal: Selecionar Música do Repertório com CHECKBOXES (Como no App) -->
   <div class="modal-overlay" id="pickSongModal">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width: 720px;">
       <div class="modal-header">
         <h3><ion-icon name="musical-notes-outline"></ion-icon> Adicionar Músicas ao Setlist</h3>
         <button class="btn btn-ghost btn-icon" onclick="closePickSongModal()"><ion-icon name="close-outline"></ion-icon></button>
@@ -1594,21 +1632,37 @@
       <div class="modal-body">
         <div class="search-box">
           <span class="search-icon"><ion-icon name="search-outline"></ion-icon></span>
-          <input type="text" id="pickSongSearchInput" placeholder="Filtrar músicas do repertório..." oninput="renderPickSongList()">
+          <input type="text" id="pickSongSearchInput" placeholder="Filtrar por nome, banda ou estilo..." oninput="renderPickSongList()">
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);" id="pickSongCountLabel">Músicas disponíveis</span>
-          <button class="btn btn-outline btn-sm" onclick="addAllSongsToSetlist()">
-            <ion-icon name="add-outline"></ion-icon>
-            Adicionar Todas
-          </button>
+        
+        <!-- Selection Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 800; color: var(--primary);" id="pickSelectedCountBadge">0 SELECIONADAS</span>
+            <span style="font-size: 11px; color: var(--text-dim);" id="pickSongTotalCountLabel">(0 disponíveis)</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline btn-sm" onclick="toggleSelectAllPickSongs(true)">
+              <ion-icon name="checkmark-done-outline"></ion-icon>
+              Marcar Todas
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="toggleSelectAllPickSongs(false)">
+              <ion-icon name="close-circle-outline"></ion-icon>
+              Desmarcar
+            </button>
+          </div>
         </div>
+
         <div id="pickSongListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;">
           <!-- Rendered by JS -->
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" onclick="closePickSongModal()">Concluído</button>
+        <button class="btn btn-outline" onclick="closePickSongModal()">Cancelar</button>
+        <button class="btn btn-primary" id="confirmAddSongsBtn" onclick="confirmAddSelectedSongsToSetlist()">
+          <ion-icon name="add-circle-outline"></ion-icon>
+          <span id="confirmAddSongsBtnText">Adicionar Selecionadas (0)</span>
+        </button>
       </div>
     </div>
   </div>
@@ -1764,6 +1818,9 @@
     // Drag and Drop state
     let draggedSongIndex = null;
 
+    // Pick Songs Modal State (Set of song IDs)
+    let selectedSongIdsForSetlist = new Set();
+
     function init() {
       const savedTheme = localStorage.getItem('setlist_web_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1772,15 +1829,40 @@
       // Carregar Músicas
       const savedSongs = localStorage.getItem('setlist_web_songs');
       if (savedSongs) {
-        try { songs = JSON.parse(savedSongs); } catch (e) { songs = [...DEFAULT_SAMPLE_SONGS]; }
+        try { 
+          const parsed = JSON.parse(savedSongs);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            songs = parsed;
+          } else {
+            songs = [...DEFAULT_SAMPLE_SONGS];
+          }
+        } catch (e) { 
+          songs = [...DEFAULT_SAMPLE_SONGS]; 
+        }
       } else {
         songs = [...DEFAULT_SAMPLE_SONGS];
       }
 
+      // Normalizar campos das músicas (garante compatibilidade retroativa)
+      songs.forEach((s, idx) => {
+        if (!s.id) s.id = Date.now() + idx;
+        if (!s.name && s.title) s.name = s.title;
+        if (!s.originalBand && s.band) s.originalBand = s.band;
+      });
+
       // Carregar Setlists
       const savedSetlists = localStorage.getItem('setlist_web_setlists');
       if (savedSetlists) {
-        try { setlists = JSON.parse(savedSetlists); } catch (e) { setlists = [...DEFAULT_SAMPLE_SETLISTS]; }
+        try { 
+          const parsedSt = JSON.parse(savedSetlists);
+          if (Array.isArray(parsedSt) && parsedSt.length > 0) {
+            setlists = parsedSt;
+          } else {
+            setlists = [...DEFAULT_SAMPLE_SETLISTS];
+          }
+        } catch (e) { 
+          setlists = [...DEFAULT_SAMPLE_SETLISTS]; 
+        }
       } else {
         setlists = [...DEFAULT_SAMPLE_SETLISTS];
       }
@@ -1874,10 +1956,10 @@
       if (currentMode === 'songs') {
         const filtered = songs.filter(s => {
           if (!query) return true;
-          const matchName = (s.name || '').toLowerCase().includes(query);
-          const matchBand = (s.originalBand || '').toLowerCase().includes(query);
-          const matchStyle = (s.style || '').toLowerCase().includes(query);
-          return matchName || matchBand || matchStyle;
+          const sName = (s.name || s.title || '').toLowerCase();
+          const sBand = (s.originalBand || s.band || '').toLowerCase();
+          const sStyle = (s.style || s.tags || '').toLowerCase();
+          return sName.includes(query) || sBand.includes(query) || sStyle.includes(query);
         });
 
         document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="musical-notes-outline"></ion-icon> ${songs.length} MÚSICAS`;
@@ -1889,12 +1971,14 @@
 
         container.innerHTML = filtered.map(song => {
           const isActive = song.id === activeSongId;
-          const tags = (song.style || '').split(',').map(t => t.trim()).filter(Boolean);
+          const tags = (song.style || song.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+          const displayName = song.name || song.title || 'Sem Título';
+          const displayBand = song.originalBand || song.band || 'Sem Banda';
 
           return `
             <div class="item-card ${isActive ? 'active' : ''}" onclick="selectSong(${song.id})">
-              <div class="item-card-title">${song.name || 'Sem Título'}</div>
-              <div class="item-card-subtitle">${song.originalBand || 'Sem Banda'}</div>
+              <div class="item-card-title">${displayName}</div>
+              <div class="item-card-subtitle">${displayBand}</div>
               <div class="item-card-meta">
                 ${song.duration ? `<span class="dur-badge"><ion-icon name="time-outline"></ion-icon> ${song.duration}</span>` : ''}
                 ${tags.slice(0, 2).map(t => `<span class="tag-badge"><ion-icon name="pricetag-outline"></ion-icon> ${t}</span>`).join('')}
@@ -2001,7 +2085,7 @@
       const duplicated = {
         ...JSON.parse(JSON.stringify(song)),
         id: newId,
-        name: `${song.name} (Cópia)`
+        name: `${song.name || song.title || 'Música'} (Cópia)`
       };
 
       songs.unshift(duplicated);
@@ -2009,14 +2093,15 @@
       saveToStorage();
       renderSidebar();
       renderSongEditor();
-      showToast(`Música "${song.name}" duplicada!`, 'copy-outline');
+      showToast(`Música "${duplicated.name}" duplicada!`, 'copy-outline');
     }
 
     function deleteSong(id) {
       const song = songs.find(s => s.id === id);
       if (!song) return;
 
-      if (!confirm(`Deseja realmente excluir a música "${song.name}"?`)) return;
+      const songName = song.name || song.title || 'Música';
+      if (!confirm(`Deseja realmente excluir a música "${songName}"?`)) return;
 
       songs = songs.filter(s => s.id !== id);
       if (activeSongId === id) {
@@ -2026,7 +2111,7 @@
       saveToStorage();
       renderSidebar();
       renderSongEditor();
-      showToast(`Música "${song.name}" removida.`, 'trash-outline');
+      showToast(`Música "${songName}" removida.`, 'trash-outline');
     }
 
     function renderSongEditor() {
@@ -2043,10 +2128,10 @@
       emptyState.style.display = 'none';
       editorInner.style.display = 'flex';
 
-      document.getElementById('songName').value = song.name || '';
-      document.getElementById('songBand').value = song.originalBand || '';
+      document.getElementById('songName').value = song.name || song.title || '';
+      document.getElementById('songBand').value = song.originalBand || song.band || '';
       document.getElementById('songDuration').value = song.duration || '';
-      document.getElementById('songStyle').value = song.style || '';
+      document.getElementById('songStyle').value = song.style || song.tags || '';
       document.getElementById('songDefaultView').value = song.defaultView || 'chords';
       document.getElementById('songScrollSpeed').value = song.scrollSpeed || 'none';
 
@@ -2426,6 +2511,9 @@
           badgeContent = String(songCounter++).padStart(2, '0');
         }
 
+        const songTitle = item.name || item.title || 'Sem Título';
+        const songBand = isPause ? 'Pausa / Intervalo' : (isNote ? 'Anotação / Fala de Palco' : (item.originalBand || item.band || 'Artista'));
+
         return `
           <div class="${rowClass}" 
                id="songRow_${idx}"
@@ -2437,7 +2525,7 @@
                ondragend="handleRowDragEnd(event)">
             
             <!-- Drag Handle -->
-            <div class="drag-handle" title="Arraste para reordenar">
+            <div class="drag-handle" title="Arraste para cima ou para baixo para reordenar">
               <ion-icon name="reorder-two-outline"></ion-icon>
             </div>
 
@@ -2446,8 +2534,8 @@
 
             <!-- Title & Info -->
             <div class="song-row-title-area">
-              <div class="song-row-title">${item.name || 'Sem Título'}</div>
-              <div class="song-row-band">${isPause ? 'Pausa / Intervalo' : (isNote ? 'Anotação / Fala de Palco' : (item.originalBand || 'Artista'))}</div>
+              <div class="song-row-title">${songTitle}</div>
+              <div class="song-row-band">${songBand}</div>
             </div>
 
             <!-- Duration (Hidden on pure notes) -->
@@ -2539,7 +2627,7 @@
 
       saveToStorage();
       renderSetlistSongsList();
-      showToast(`"${movedItem.name}" reposicionada!`, 'reorder-two-outline');
+      showToast(`"${movedItem.name || movedItem.title || 'Música'}" reposicionada!`, 'reorder-two-outline');
     }
 
     function handleRowDragEnd(e) {
@@ -2583,7 +2671,7 @@
       const removed = st.songs.splice(idx, 1)[0];
       saveToStorage();
       renderSetlistEditor();
-      showToast(`"${removed?.name || 'Item'}" removido do roteiro.`, 'trash-outline');
+      showToast(`"${removed?.name || removed?.title || 'Item'}" removido do roteiro.`, 'trash-outline');
     }
 
     function addSpecialItem(type) {
@@ -2617,9 +2705,10 @@
     }
 
     /* ----------------------------------------------------
-       PICK SONG MODAL (Add songs from Repertoire to Setlist)
+       PICK SONG MODAL WITH CHECKBOXES (Like Mobile App)
     ---------------------------------------------------- */
     function openPickSongModal() {
+      selectedSongIdsForSetlist.clear();
       document.getElementById('pickSongSearchInput').value = '';
       renderPickSongList();
       document.getElementById('pickSongModal').classList.add('open');
@@ -2630,6 +2719,34 @@
       renderSetlistEditor();
     }
 
+    function togglePickSongCheckbox(songId) {
+      if (selectedSongIdsForSetlist.has(songId)) {
+        selectedSongIdsForSetlist.delete(songId);
+      } else {
+        selectedSongIdsForSetlist.add(songId);
+      }
+      renderPickSongList();
+    }
+
+    function toggleSelectAllPickSongs(selectAll) {
+      const query = (document.getElementById('pickSongSearchInput')?.value || '').toLowerCase().trim();
+      const filtered = songs.filter(s => {
+        if (!query) return true;
+        const sName = (s.name || s.title || '').toLowerCase();
+        const sBand = (s.originalBand || s.band || '').toLowerCase();
+        const sStyle = (s.style || s.tags || '').toLowerCase();
+        return sName.includes(query) || sBand.includes(query) || sStyle.includes(query);
+      });
+
+      if (selectAll) {
+        filtered.forEach(s => selectedSongIdsForSetlist.add(s.id));
+      } else {
+        filtered.forEach(s => selectedSongIdsForSetlist.delete(s.id));
+      }
+
+      renderPickSongList();
+    }
+
     function renderPickSongList() {
       const container = document.getElementById('pickSongListContainer');
       const query = (document.getElementById('pickSongSearchInput')?.value || '').toLowerCase().trim();
@@ -2637,93 +2754,97 @@
 
       const filtered = songs.filter(s => {
         if (!query) return true;
-        const matchName = (s.name || '').toLowerCase().includes(query);
-        const matchBand = (s.originalBand || '').toLowerCase().includes(query);
-        const matchStyle = (s.style || '').toLowerCase().includes(query);
-        return matchName || matchBand || matchStyle;
+        const sName = (s.name || s.title || '').toLowerCase();
+        const sBand = (s.originalBand || s.band || '').toLowerCase();
+        const sStyle = (s.style || s.tags || '').toLowerCase();
+        return sName.includes(query) || sBand.includes(query) || sStyle.includes(query);
       });
 
-      document.getElementById('pickSongCountLabel').innerText = `${filtered.length} músicas no repertório`;
+      const selectedCount = selectedSongIdsForSetlist.size;
+      document.getElementById('pickSelectedCountBadge').innerText = `${selectedCount} SELECIONADA${selectedCount === 1 ? '' : 'S'}`;
+      document.getElementById('pickSongTotalCountLabel').innerText = `(${filtered.length} disponíveis)`;
+      document.getElementById('confirmAddSongsBtnText').innerText = `Adicionar Selecionadas (${selectedCount})`;
+      
+      const confirmBtn = document.getElementById('confirmAddSongsBtn');
+      if (selectedCount === 0) {
+        confirmBtn.style.opacity = '0.5';
+        confirmBtn.style.pointerEvents = 'none';
+      } else {
+        confirmBtn.style.opacity = '1';
+        confirmBtn.style.pointerEvents = 'auto';
+      }
 
       if (filtered.length === 0) {
-        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 24px; font-size: 13px;">Nenhuma música encontrada no repertório.</p>`;
+        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 28px; font-size: 13px;">Nenhuma música encontrada no repertório.</p>`;
         return;
       }
 
       container.innerHTML = filtered.map(song => {
+        const isSelected = selectedSongIdsForSetlist.has(song.id);
         const inSetlistCount = (st?.songs || []).filter(s => s.id === song.id).length;
+        const displayName = song.name || song.title || 'Sem Título';
+        const displayBand = song.originalBand || song.band || 'Sem Banda';
 
         return `
-          <div class="pick-song-item">
-            <div>
-              <div style="font-size: 13.5px; font-weight: 800; color: var(--text);">${song.name}</div>
-              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">${song.originalBand} &nbsp;•&nbsp; ⏱ ${song.duration || '--:--'}</div>
+          <div class="pick-song-item ${isSelected ? 'selected' : ''}" onclick="togglePickSongCheckbox(${song.id})">
+            <!-- Custom App Checkbox -->
+            <div class="custom-checkbox">
+              <ion-icon name="checkmark-sharp"></ion-icon>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              ${inSetlistCount > 0 ? `<span class="tag-badge" style="color: var(--primary); border-color: var(--primary-glow);"><ion-icon name="checkmark-outline"></ion-icon> No setlist (${inSetlistCount}x)</span>` : ''}
-              <button class="btn btn-outline btn-sm" onclick="addSongToSetlist(${song.id})">
-                <ion-icon name="add-outline"></ion-icon>
-                Adicionar
-              </button>
+
+            <!-- Song Info -->
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 13.5px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${displayName}
+              </div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">
+                ${displayBand} &nbsp;•&nbsp; ⏱ ${song.duration || '--:--'}
+              </div>
             </div>
+
+            <!-- Setlist indicator badge -->
+            ${inSetlistCount > 0 ? `
+              <span class="tag-badge" style="color: var(--primary); border-color: var(--primary-glow); flex-shrink: 0;">
+                <ion-icon name="list-outline"></ion-icon> No setlist (${inSetlistCount}x)
+              </span>
+            ` : ''}
           </div>
         `;
       }).join('');
     }
 
-    function addSongToSetlist(songId) {
+    function confirmAddSelectedSongsToSetlist() {
       const st = setlists.find(s => s.id === activeSetlistId);
-      const song = songs.find(s => s.id === songId);
-      if (!st || !song) return;
+      if (!st || selectedSongIdsForSetlist.size === 0) return;
 
       st.songs = st.songs || [];
-      st.songs.push({
-        id: song.id,
-        name: song.name,
-        originalBand: song.originalBand,
-        style: song.style || '',
-        duration: song.duration || '',
-        customNotes: '',
-        customDuration: song.duration || '',
-        defaultView: song.defaultView || 'chords',
-        scrollSpeed: song.scrollSpeed || 'none',
-        lyrics: song.lyrics || '',
-        chords: song.chords || '',
-        tabs: song.tabs || '',
-        links: song.links || []
-      });
+      let addedCount = 0;
 
-      saveToStorage();
-      renderPickSongList();
-      showToast(`"${song.name}" adicionada ao setlist!`, 'musical-note-outline');
-    }
-
-    function addAllSongsToSetlist() {
-      const st = setlists.find(s => s.id === activeSetlistId);
-      if (!st || songs.length === 0) return;
-
-      st.songs = st.songs || [];
+      // Maintain songs order
       songs.forEach(song => {
-        st.songs.push({
-          id: song.id,
-          name: song.name,
-          originalBand: song.originalBand,
-          style: song.style || '',
-          duration: song.duration || '',
-          customNotes: '',
-          customDuration: song.duration || '',
-          defaultView: song.defaultView || 'chords',
-          scrollSpeed: song.scrollSpeed || 'none',
-          lyrics: song.lyrics || '',
-          chords: song.chords || '',
-          tabs: song.tabs || '',
-          links: song.links || []
-        });
+        if (selectedSongIdsForSetlist.has(song.id)) {
+          st.songs.push({
+            id: song.id,
+            name: song.name || song.title || 'Sem Título',
+            originalBand: song.originalBand || song.band || '',
+            style: song.style || song.tags || '',
+            duration: song.duration || '',
+            customNotes: '',
+            customDuration: song.duration || '',
+            defaultView: song.defaultView || 'chords',
+            scrollSpeed: song.scrollSpeed || 'none',
+            lyrics: song.lyrics || '',
+            chords: song.chords || '',
+            tabs: song.tabs || '',
+            links: song.links || []
+          });
+          addedCount++;
+        }
       });
 
       saveToStorage();
       closePickSongModal();
-      showToast(`${songs.length} músicas adicionadas ao setlist!`, 'musical-notes-outline');
+      showToast(`${addedCount} música${addedCount === 1 ? '' : 's'} adicionada${addedCount === 1 ? '' : 's'} ao setlist!`, 'musical-notes-outline');
     }
 
     /* ----------------------------------------------------
@@ -2739,9 +2860,9 @@
       const exportData = {
         app: 'SetlistsAppSong',
         version: 1,
-        name: song.name,
-        originalBand: song.originalBand,
-        style: song.style || '',
+        name: song.name || song.title || '',
+        originalBand: song.originalBand || song.band || '',
+        style: song.style || song.tags || '',
         duration: song.duration || '',
         defaultView: song.defaultView || 'chords',
         scrollSpeed: song.scrollSpeed || 'none',
@@ -2751,12 +2872,12 @@
         links: (song.links || []).map(l => ({ type: l.type, url: l.url }))
       };
 
-      const safeBand = (song.originalBand || 'banda').toLowerCase().replace(/[^a-z0-9]/g, '_');
-      const safeSong = (song.name || 'musica').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const safeBand = (exportData.originalBand || 'banda').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const safeSong = (exportData.name || 'musica').toLowerCase().replace(/[^a-z0-9]/g, '_');
       currentExportFilename = `musica-${safeBand}-${safeSong}.json`;
       currentExportData = exportData;
 
-      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="musical-note-outline"></ion-icon> Exportar Música: ${song.name}`;
+      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="musical-note-outline"></ion-icon> Exportar Música: ${exportData.name}`;
       document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Aba <em>Músicas ➔ Importar</em>):`;
       document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
 
@@ -2781,9 +2902,9 @@
         cachê: st.cachê || '',
         notes: st.notes || '',
         songs: (st.songs || []).map(song => ({
-          name: song.name,
-          originalBand: song.originalBand,
-          style: song.style || '',
+          name: song.name || song.title || '',
+          originalBand: song.originalBand || song.band || '',
+          style: song.style || song.tags || '',
           lyrics: song.lyrics || '',
           chords: song.chords || '',
           tabs: song.tabs || '',
@@ -2849,10 +2970,13 @@
 
           const currentNum = String(songCounter++).padStart(2, '0');
           const dur = item.duration || item.customDuration;
+          const sName = item.name || item.title || 'Sem Título';
+          const sBand = item.originalBand || item.band || '';
+
           return `
             <div class="song-item">
-              <div class="song-name">${currentNum}. ${item.name || 'Sem Título'} ${dur ? `<span style="font-weight: normal; font-size: 8.5pt; color: #6b7280;">(${dur})</span>` : ''}</div>
-              <div class="song-band">${item.originalBand || ''}</div>
+              <div class="song-name">${currentNum}. ${sName} ${dur ? `<span style="font-weight: normal; font-size: 8.5pt; color: #6b7280;">(${dur})</span>` : ''}</div>
+              <div class="song-band">${sBand}</div>
               ${item.customNotes ? `<div class="song-obs">Obs: ${item.customNotes}</div>` : ''}
             </div>
           `;
@@ -3060,9 +3184,9 @@
         bands: [],
         songs: songs.map(s => ({
           id: s.id,
-          name: s.name,
-          originalBand: s.originalBand,
-          style: s.style || '',
+          name: s.name || s.title || '',
+          originalBand: s.originalBand || s.band || '',
+          style: s.style || s.tags || '',
           duration: s.duration || '',
           defaultView: s.defaultView || 'chords',
           scrollSpeed: s.scrollSpeed || 'none',
@@ -3081,9 +3205,9 @@
           cachê: st.cachê || '',
           notes: st.notes || '',
           songs: (st.songs || []).map(song => ({
-            name: song.name,
-            originalBand: song.originalBand,
-            style: song.style || '',
+            name: song.name || song.title || '',
+            originalBand: song.originalBand || song.band || '',
+            style: song.style || song.tags || '',
             lyrics: song.lyrics || '',
             chords: song.chords || '',
             tabs: song.tabs || '',
@@ -3202,9 +3326,9 @@
       if (parsed.app === 'SetlistsAppSong' || (parsed.name && parsed.originalBand && !parsed.songs)) {
         const newSong = {
           id: Date.now(),
-          name: parsed.name || 'Sem Título',
-          originalBand: parsed.originalBand || 'Sem Banda',
-          style: parsed.style || '',
+          name: parsed.name || parsed.title || 'Sem Título',
+          originalBand: parsed.originalBand || parsed.band || 'Sem Banda',
+          style: parsed.style || parsed.tags || '',
           duration: parsed.duration || '',
           defaultView: parsed.defaultView || 'chords',
           scrollSpeed: parsed.scrollSpeed || 'none',
@@ -3227,9 +3351,9 @@
       if (parsed.app === 'SetlistsApp' || (parsed.name && Array.isArray(parsed.songs) && parsed.app !== 'SetlistsAppBackup')) {
         const importedSongs = (parsed.songs || []).map((s, idx) => ({
           id: Date.now() + idx,
-          name: s.name || 'Sem Título',
-          originalBand: s.originalBand || parsed.bandName || 'Sem Banda',
-          style: s.style || '',
+          name: s.name || s.title || 'Sem Título',
+          originalBand: s.originalBand || s.band || parsed.bandName || 'Sem Banda',
+          style: s.style || s.tags || '',
           duration: s.duration || '',
           customNotes: s.customNotes || '',
           customDuration: s.customDuration || s.duration || '',
@@ -3243,7 +3367,7 @@
 
         let addedToRepertoire = 0;
         importedSongs.forEach(impSong => {
-          const exists = songs.some(s => s.name.toLowerCase() === impSong.name.toLowerCase() && s.originalBand.toLowerCase() === impSong.originalBand.toLowerCase());
+          const exists = songs.some(s => (s.name || s.title || '').toLowerCase() === impSong.name.toLowerCase() && (s.originalBand || s.band || '').toLowerCase() === impSong.originalBand.toLowerCase());
           if (!exists) {
             songs.push({ ...impSong });
             addedToRepertoire++;
@@ -3281,9 +3405,9 @@
         if (shouldReplace) {
           songs = importedSongs.map((s, idx) => ({
             id: s.id || (Date.now() + idx),
-            name: s.name || 'Sem Título',
-            originalBand: s.originalBand || 'Sem Banda',
-            style: s.style || '',
+            name: s.name || s.title || 'Sem Título',
+            originalBand: s.originalBand || s.band || 'Sem Banda',
+            style: s.style || s.tags || '',
             duration: s.duration || '',
             defaultView: s.defaultView || 'chords',
             scrollSpeed: s.scrollSpeed || 'none',
@@ -3308,9 +3432,9 @@
           importedSongs.forEach((s, idx) => {
             songs.push({
               id: Date.now() + idx,
-              name: s.name || 'Sem Título',
-              originalBand: s.originalBand || 'Sem Banda',
-              style: s.style || '',
+              name: s.name || s.title || 'Sem Título',
+              originalBand: s.originalBand || s.band || 'Sem Banda',
+              style: s.style || s.tags || '',
               duration: s.duration || '',
               defaultView: s.defaultView || 'chords',
               scrollSpeed: s.scrollSpeed || 'none',
@@ -3355,8 +3479,11 @@
       const song = songs.find(s => s.id === activeSongId);
       if (!song) return;
 
-      document.getElementById('previewTitle').innerHTML = `<ion-icon name="musical-note" style="color: var(--primary);"></ion-icon> ${(song.name || 'SEM NOME').toUpperCase()}`;
-      document.getElementById('previewBand').innerText = (song.originalBand || 'BANDA').toUpperCase();
+      const displayName = (song.name || song.title || 'SEM NOME').toUpperCase();
+      const displayBand = (song.originalBand || song.band || 'BANDA').toUpperCase();
+
+      document.getElementById('previewTitle').innerHTML = `<ion-icon name="musical-note" style="color: var(--primary);"></ion-icon> ${displayName}`;
+      document.getElementById('previewBand').innerText = displayBand;
 
       let content = '';
       if (activeSongTab === 'chords') {
