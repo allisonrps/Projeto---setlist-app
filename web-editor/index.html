@@ -361,6 +361,28 @@
       box-shadow: 0 0 0 3px var(--primary-subtle);
     }
 
+    
+    .clear-search-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 50%;
+      transition: color 0.15s;
+    }
+
+    .clear-search-btn:hover {
+      color: var(--text);
+    }
+
     .search-icon {
       position: absolute;
       left: 10px;
@@ -1997,6 +2019,103 @@
     /* ----------------------------------------------------
        SIDEBAR RENDERING
     ---------------------------------------------------- */
+    
+    function normalizeStr(str) {
+      if (!str) return '';
+      return String(str)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str).replace(/'/g, "\\'");
+    }
+
+    function matchSongSearch(song, query) {
+      if (!query) return true;
+
+      const normQuery = normalizeStr(query);
+      if (!normQuery) return true;
+
+      const title = normalizeStr(getSongTitle(song));
+      const band = normalizeStr(getSongBand(song));
+      const styleRaw = getSongStyle(song);
+      const style = normalizeStr(styleRaw);
+      
+      const tags = styleRaw
+        .split(/[,;\/|]+/)
+        .map(t => normalizeStr(t))
+        .filter(Boolean);
+
+      // If query starts with # (e.g. #pop rock) -> strict tag search
+      if (normQuery.startsWith('#')) {
+        const tagQuery = normQuery.slice(1).trim();
+        if (!tagQuery) return true;
+        return tags.some(t => t.includes(tagQuery));
+      }
+
+      const terms = normQuery.split(/[\s,]+/).filter(Boolean);
+      if (terms.length === 0) return true;
+
+      const combinedText = `${title} ${band} ${style}`;
+
+      return terms.every(term => {
+        const matchInTag = tags.some(tag => tag.includes(term));
+        if (matchInTag) return true;
+        return title.includes(term) || band.includes(term) || combinedText.includes(term);
+      });
+    }
+
+    function matchSetlistSearch(st, query) {
+      if (!query) return true;
+      const normQuery = normalizeStr(query);
+      if (!normQuery) return true;
+
+      const name = normalizeStr(st.name);
+      const band = normalizeStr(st.bandName);
+      const local = normalizeStr(st.local);
+      const type = normalizeStr(st.type);
+      const notes = normalizeStr(st.notes);
+      const songsText = (st.songs || []).map(s => `${getSongTitle(s)} ${getSongBand(s)}`).join(' ');
+      const normSongsText = normalizeStr(songsText);
+
+      const combined = `${name} ${band} ${local} ${type} ${notes} ${normSongsText}`;
+
+      const terms = normQuery.split(/[\s,]+/).filter(Boolean);
+      if (terms.length === 0) return true;
+
+      return terms.every(term => combined.includes(term));
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      if (input) {
+        input.value = '';
+        filterItems();
+        input.focus();
+      }
+    }
+
+    function filterByTag(tag) {
+      const input = document.getElementById('searchInput');
+      if (input) {
+        input.value = tag;
+        filterItems();
+      }
+    }
+
     function renderSidebar() {
       const container = document.getElementById('itemsListContainer');
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
