@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setlist Band Manager - Web Song Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-surface: #111827;
+      --bg-card: #1f2937;
+      --bg-input: #111827;
+      --border: #374151;
+      --border-focus: #3b82f6;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-subtle: rgba(59, 130, 246, 0.15);
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --warning: #f59e0b;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --chord-color: #38bdf8;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --bg: #f3f4f6;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #f9fafb;
+      --border: #e5e7eb;
+      --border-focus: #2563eb;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-subtle: rgba(37, 99, 235, 0.1);
+      --success: #059669;
+      --success-hover: #047857;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --warning: #d97706;
+      --text: #111827;
+      --text-muted: #4b5563;
+      --text-dim: #9ca3af;
+      --chord-color: #0284c7;
+      --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 900;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: var(--primary-subtle);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: transparent;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+
+    .btn-success {
+      background-color: var(--success);
+      color: #fff;
+    }
+    .btn-success:hover { background-color: var(--success-hover); }
+
+    .btn-outline {
+      border-color: var(--border);
+      background-color: var(--bg-card);
+    }
+    .btn-outline:hover {
+      border-color: var(--text-muted);
+      background-color: var(--bg);
+    }
+
+    .btn-ghost {
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover {
+      color: var(--text);
+      background-color: var(--primary-subtle);
+    }
+
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .btn-icon {
+      padding: 7px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* App Layout */
+    .app-body {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 57px);
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 7px 10px 7px 30px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--border-focus);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .song-list-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .song-count {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .songs-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .song-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .song-card:hover {
+      border-color: var(--primary);
+      background-color: var(--primary-subtle);
+    }
+
+    .song-card.active {
+      border-color: var(--primary);
+      background-color: var(--primary-subtle);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .song-card-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-card-band {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .song-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .tag-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      padding: 1.5px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .dur-badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--warning);
+      background: rgba(245, 158, 11, 0.1);
+      padding: 1.5px 5px;
+      border-radius: 4px;
+    }
+
+    .song-card-actions {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      display: none;
+      gap: 4px;
+    }
+
+    .song-card:hover .song-card-actions {
+      display: flex;
+    }
+
+    /* Main Content Area */
+    .editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg);
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--text-muted);
+      padding: 40px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+
+    .editor-inner {
+      padding: 20px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Form Fields Grid */
+    .form-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .form-input, .form-select {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+    }
+
+    .form-select {
+      cursor: pointer;
+    }
+
+    /* Tabs & Code Editor */
+    .tabs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background-color: var(--primary-subtle);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background-color: var(--primary);
+    }
+
+    .tab-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .editor-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .code-textarea {
+      width: 100%;
+      height: 420px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      padding: 14px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13.5px;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      white-space: pre;
+    }
+
+    .code-textarea:focus {
+      border-color: var(--border-focus);
+    }
+
+    /* Links Box */
+    .links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .link-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Drag & Drop Zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      background: var(--bg-card);
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background-color: var(--primary-subtle);
+    }
+
+    .drop-zone p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .drop-zone strong {
+      color: var(--primary);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: var(--bg-surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--success);
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 2000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Live Preview Screen */
+    .preview-modal .modal-card {
+      max-width: 800px;
+      height: 85vh;
+    }
+
+    .prompter-view {
+      background-color: #000;
+      color: #fff;
+      padding: 24px;
+      border-radius: var(--radius-md);
+      font-family: 'Fira Code', monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      flex: 1;
+      border: 1px solid #222;
+    }
+
+    .chord-highlight {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .app-body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: 220px;
+      }
+      .form-grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="#" class="brand">
+      <div class="brand-icon">S</div>
+      <div class="brand-text">
+        <h1>Setlist Band Manager <span class="brand-badge">WEB EDITOR</span></h1>
+        <p>Editor e Gerador de Repertório para PC</p>
+      </div>
+    </a>
+
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="openImportModal()">
+        📥 Importar JSON
+      </button>
+
+      <button class="btn btn-outline" onclick="exportCurrentSong()">
+        💾 Exportar Música (.json)
+      </button>
+
+      <button class="btn btn-success" onclick="exportFullBackup()">
+        📦 Exportar Backup Total
+      </button>
+
+      <button class="btn btn-primary" onclick="addNewSong()">
+        ➕ Nova Música
+      </button>
+
+      <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="Alternar Tema">
+        🌗
+      </button>
+    </div>
+  </header>
+
+  <!-- App Body -->
+  <div class="app-body">
+    
+    <!-- Sidebar: Song List -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Buscar por título, artista ou tag..." oninput="filterSongs()">
+        </div>
+        <div class="song-list-actions">
+          <span class="song-count" id="songCountLabel">0 MÚSICAS</span>
+          <button class="btn btn-outline btn-sm" onclick="addNewSong()">+ Adicionar</button>
+        </div>
+      </div>
+
+      <div class="songs-container" id="songsListContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Main Content Area: Editor -->
+    <div class="editor-container" id="editorContainer">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🎸</div>
+        <h2>Nenhuma música selecionada</h2>
+        <p>Selecione uma música da lista ao lado ou crie uma nova para começar a editar letras e cifras no seu computador.</p>
+        <button class="btn btn-primary" onclick="addNewSong()">➕ Criar Primeira Música</button>
+      </div>
+
+      <div class="editor-inner" id="editorInner" style="display: none;">
+        
+        <!-- Metadata Form -->
+        <div class="form-card">
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Nome da Música *</label>
+              <input type="text" class="form-input" id="songName" placeholder="Ex: Yellow" oninput="updateCurrentSong('name', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Banda / Artista Original *</label>
+              <input type="text" class="form-input" id="songBand" placeholder="Ex: Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Duração (mm:ss)</label>
+              <input type="text" class="form-input" id="songDuration" placeholder="Ex: 04:30" oninput="updateCurrentSong('duration', this.value)">
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Tags / Estilos (separados por vírgula)</label>
+              <input type="text" class="form-input" id="songStyle" placeholder="Ex: pop rock, 2000s, acustico" oninput="updateCurrentSong('style', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Aba Padrão no Modo Palco</label>
+              <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
+                <option value="chords">🎼 Cifra</option>
+                <option value="lyrics">📝 Letra</option>
+                <option value="tabs">🎸 Tablatura</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Velocidade Autoscroll</label>
+              <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
+                <option value="none">Pausado / Sem Rolagem</option>
+                <option value="0.5x">0.5x (Lenta)</option>
+                <option value="1x">1.0x (Normal)</option>
+                <option value="1.5x">1.5x (Rápida)</option>
+                <option value="2x">2.0x (Muito Rápida)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor Tabs -->
+        <div class="form-card">
+          <div class="tabs-header">
+            <div class="tab-buttons">
+              <button class="tab-btn active" id="tabBtnChords" onclick="switchTab('chords')">🎼 Cifra</button>
+              <button class="tab-btn" id="tabBtnLyrics" onclick="switchTab('lyrics')">📝 Letra</button>
+              <button class="tab-btn" id="tabBtnTabs" onclick="switchTab('tabs')">🎸 Tablatura</button>
+              <button class="tab-btn" id="tabBtnLinks" onclick="switchTab('links')">🔗 Links Úteis</button>
+            </div>
+
+            <div class="tab-tools">
+              <!-- Chords Tools -->
+              <div id="chordsTools" style="display: flex; gap: 6px;">
+                <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" title="Diminuir 1 semitom">♭ -1 Semitom</button>
+                <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" title="Aumentar 1 semitom">♯ +1 Semitom</button>
+              </div>
+
+              <!-- Tablatura Tools -->
+              <div id="tabsTools" style="display: none; gap: 6px;">
+                <button class="btn btn-outline btn-sm" onclick="insertTabTemplate()">+ Inserir Grade de Cordas</button>
+              </div>
+
+              <button class="btn btn-outline btn-sm" onclick="openPreviewModal()">
+                👁️ Pré-visualizar no Palco
+              </button>
+            </div>
+          </div>
+
+          <!-- Code Textarea Area -->
+          <div class="editor-wrapper">
+            <textarea class="code-textarea" id="mainTextarea" placeholder="Digite aqui o conteúdo..." oninput="handleTextareaChange(this.value)"></textarea>
+          </div>
+
+          <!-- Links Editor Area -->
+          <div id="linksEditorArea" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">LINKS DE VÍDEO, CIFRA OU ÁUDIO:</span>
+              <button class="btn btn-primary btn-sm" onclick="addLinkRow()">+ Adicionar Link</button>
+            </div>
+            <div class="links-list" id="linksListContainer">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal: Importar JSON -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📥 Importar JSON para o PC</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closeImportModal()">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div style="font-size: 28px;">📂</div>
+          <p><strong>Clique para selecionar</strong> ou arraste um arquivo <code>.json</code> exportado pelo app</p>
+          <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileSelected(event)">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim);">OU COLE O CÓDIGO JSON ABAIXO</span>
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        </div>
+
+        <textarea class="form-input" id="importJsonTextarea" rows="6" placeholder="Cole o código JSON da música ou do backup total aqui..." style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeImportModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="processImportJson()">Importar Agora</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Exportar JSON / Código -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="exportModalTitle">💾 Exportar JSON</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closeExportModal()">✖</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12.5px; color: var(--text-muted);" id="exportModalDesc">
+          Você pode baixar o arquivo <code>.json</code> ou copiar o código para importar no aplicativo do celular:
+        </p>
+
+        <textarea class="form-input" id="exportJsonTextarea" rows="10" readonly style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeExportModal()">Fechar</button>
+        <button class="btn btn-outline" onclick="copyExportCode()">📋 Copiar Código</button>
+        <button class="btn btn-primary" id="downloadJsonBtn" onclick="downloadExportFile()">⬇️ Baixar Arquivo .JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Pré-visualização Modo Palco -->
+  <div class="modal-overlay preview-modal" id="previewModal">
+    <div class="modal-card">
+      <div class="modal-header" style="background: #000; border-color: #222;">
+        <div>
+          <h3 id="previewTitle" style="color: #fff; font-size: 16px;">MÚSICA</h3>
+          <p id="previewBand" style="color: #9ca3af; font-size: 11px;">Banda</p>
+        </div>
+        <button class="btn btn-ghost btn-icon" style="color: #fff;" onclick="closePreviewModal()">✖</button>
+      </div>
+      <div class="modal-body" style="background: #000; padding: 14px;">
+        <div class="prompter-view" id="prompterContent">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Mensagem</span>
+  </div>
+
+  <!-- Application Logic -->
+  <script>
+    const DEFAULT_SAMPLE_SONGS = [
+      {
+        id: 1,
+        name: 'Yellow',
+        originalBand: 'Coldplay',
+        style: 'Pop Rock, Indie Rock, 2000s, Acoustic',
+        duration: '04:29',
+        defaultView: 'chords',
+        scrollSpeed: '1x',
+        links: [{ type: 'youtube', url: 'https://youtube.com' }],
+        lyrics: `[Verse 1]\nLook at the stars\nLook how they shine for you\nAnd everything you do\nYeah, they were all yellow\n\nI came along\nI wrote a song for you\nAnd all the things you do\nAnd it was called "Yellow"\n\n[Chorus]\nYour skin, oh yeah, your skin and bones\nTurn into something beautiful\nYou know, you know I love you so\nYou know I love you so`,
+        chords: `[Intro]\nB   B   F#   F#   E   E   B   B\n\n[Verse 1]\nB\nLook at the stars\n                     F#\nLook how they shine for you\n                   E\nAnd everything you do\n                   B\nYeah, they were all yellow\n\n[Chorus]\nE                      G#m     F#\nYour skin, oh yeah, your skin and bones\nE                G#m      F#\nTurn into something beautiful\nE               G#m     F#         E\nYou know, you know I love you so\n                   B\nYou know I love you so`,
+        tabs: `[Intro Riff - Guitar 1 (Standard Tuning / EADGBE)]:\ne|---------------------------------------------------|\nB|-----4-----4-----4-----4-----2-----2-----2-----2---|\nG|---4-----4-----4-----4-----3-----3-----3-----3-----|\nD|-4-----4-----4-----4-----4-----4-----4-----4-------|\nA|---------------------------------------------------|\nE|---------------------------------------------------|`
+      },
+      {
+        id: 2,
+        name: "Sweet Child O' Mine",
+        originalBand: "Guns N' Roses",
+        style: "Classic Rock, Hard Rock, Pop Rock, 80s",
+        duration: "05:56",
+        defaultView: "chords",
+        scrollSpeed: "1x",
+        links: [],
+        lyrics: `[Verse 1]\nShe's got a smile that it seems to me\nReminds me of childhood memories\nWhere everything was as fresh as the bright blue sky\n\n[Chorus]\nWhoa, oh, oh, sweet child o' mine\nWhoa, oh, oh, oh, sweet love of mine`,
+        chords: `[Intro]\nD   Cadd9   G   D  (x2)\n\n[Verse 1]\nD\nShe's got a smile that it seems to me\nCadd9\nReminds me of childhood memories\nG                                            D\nWhere everything was as fresh as the bright blue sky\n\n[Chorus]\nA5           B5  C5              D\nWhoa, oh, oh, sweet child o' mine\nA5           B5  C5             D\nWhoa, oh, oh, oh, sweet love of mine`,
+        tabs: `[Main Intro Riff - Slash]:\neb|-------15--------14--------12--------14----|\nBb|----15----15--15----15--15----15--15----15-|\nGb|-14---------14--------14--------14---------|\nDb|-------------------------------------------|\nAb|-------------------------------------------|\nEb|-------------------------------------------|`
+      },
+      {
+        id: 3,
+        name: "Wonderwall",
+        originalBand: "Oasis",
+        style: "Britpop, Pop Rock, 90s, Acoustic",
+        duration: "04:18",
+        defaultView: "chords",
+        scrollSpeed: "1x",
+        links: [],
+        lyrics: `[Verse 1]\nToday is gonna be the day\nThat they're gonna throw it back to you\nBy now you should've somehow\nRealized what you gotta do\n\n[Chorus]\nBecause maybe\nYou're gonna be the one that saves me\nAnd after all\nYou're my wonderwall`,
+        chords: `[Intro]\nEm7   G   Dsus4   A7sus4  (x4)\n\n[Verse 1]\nEm7              G\nToday is gonna be the day\n               Dsus4                  A7sus4\nThat they're gonna throw it back to you\nEm7                 G\nBy now you should've somehow\n     Dsus4           A7sus4\nRealized what you gotta do\n\n[Chorus]\n           Cadd9  Em7  G\nBecause maybe\n       Em7                   Cadd9   Em7  G\nYou're gonna be the one that saves me\n    Em7   Cadd9  Em7  G\nAnd after all\n        Em7        Cadd9  Em7  G  Em7\nYou're my wonderwall`,
+        tabs: `[Acoustic Guitar - Capo 2nd Fret]:\nChords used:\nEm7    (022033)\nG      (320033)\nDsus4  (xx0233)\nA7sus4 (x02033)\nCadd9  (x32033)\nD/F#   (200233)`
+      }
+    ];
+
+    let songs = [];
+    let activeSongId = null;
+    let activeTab = 'chords';
+    let currentExportData = null;
+    let currentExportFilename = 'musica.json';
+
+    function init() {
+      const savedTheme = localStorage.getItem('setlist_web_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      const savedSongs = localStorage.getItem('setlist_web_songs');
+      if (savedSongs) {
+        try {
+          songs = JSON.parse(savedSongs);
+        } catch (e) {
+          songs = [...DEFAULT_SAMPLE_SONGS];
+        }
+      } else {
+        songs = [...DEFAULT_SAMPLE_SONGS];
+      }
+
+      if (songs.length > 0) {
+        activeSongId = songs[0].id;
+      }
+
+      renderSidebar();
+      renderEditor();
+    }
+
+    function saveToStorage() {
+      localStorage.setItem('setlist_web_songs', JSON.stringify(songs));
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('setlist_web_theme', next);
+    }
+
+    function showToast(msg, icon = '✅') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      document.getElementById('toastIcon').innerText = icon;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function renderSidebar() {
+      const container = document.getElementById('songsListContainer');
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+      const filtered = songs.filter(s => {
+        if (!query) return true;
+        const matchName = (s.name || '').toLowerCase().includes(query);
+        const matchBand = (s.originalBand || '').toLowerCase().includes(query);
+        const matchStyle = (s.style || '').toLowerCase().includes(query);
+        return matchName || matchBand || matchStyle;
+      });
+
+      document.getElementById('songCountLabel').innerText = `${songs.length} MÚSICAS`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhuma música encontrada</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(song => {
+        const isActive = song.id === activeSongId;
+        const tags = (song.style || '').split(',').map(t => t.trim()).filter(Boolean);
+
+        return `
+          <div class="song-card ${isActive ? 'active' : ''}" onclick="selectSong(${song.id})">
+            <div class="song-card-title">${song.name || 'Sem Título'}</div>
+            <div class="song-card-band">${song.originalBand || 'Sem Banda'}</div>
+            <div class="song-card-meta">
+              ${song.duration ? `<span class="dur-badge">⏱ ${song.duration}</span>` : ''}
+              ${tags.slice(0, 2).map(t => `<span class="tag-badge">${t}</span>`).join('')}
+              ${tags.length > 2 ? `<span class="tag-badge">+${tags.length - 2}</span>` : ''}
+            </div>
+            <div class="song-card-actions">
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="Duplicar">📋</button>
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="Excluir" style="color: var(--danger);">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterSongs() {
+      renderSidebar();
+    }
+
+    function selectSong(id) {
+      activeSongId = id;
+      renderSidebar();
+      renderEditor();
+    }
+
+    function addNewSong() {
+      const newId = Date.now();
+      const newSong = {
+        id: newId,
+        name: 'Nova Música',
+        originalBand: 'Artista / Banda',
+        style: 'rock, pop',
+        duration: '03:30',
+        defaultView: 'chords',
+        scrollSpeed: 'none',
+        lyrics: '',
+        chords: '',
+        tabs: '',
+        links: []
+      };
+
+      songs.unshift(newSong);
+      activeSongId = newId;
+      saveToStorage();
+      renderSidebar();
+      renderEditor();
+      showToast('Nova música criada!');
+    }
+
+    function duplicateSong(id) {
+      const song = songs.find(s => s.id === id);
+      if (!song) return;
+
+      const newId = Date.now();
+      const duplicated = {
+        ...JSON.parse(JSON.stringify(song)),
+        id: newId,
+        name: `${song.name} (Cópia)`
+      };
+
+      songs.unshift(duplicated);
+      activeSongId = newId;
+      saveToStorage();
+      renderSidebar();
+      renderEditor();
+      showToast(`Música "${song.name}" duplicada!`);
+    }
+
+    function deleteSong(id) {
+      const song = songs.find(s => s.id === id);
+      if (!song) return;
+
+      if (!confirm(`Deseja realmente excluir a música "${song.name}"?`)) return;
+
+      songs = songs.filter(s => s.id !== id);
+      if (activeSongId === id) {
+        activeSongId = songs.length > 0 ? songs[0].id : null;
+      }
+
+      saveToStorage();
+      renderSidebar();
+      renderEditor();
+      showToast(`Música "${song.name}" removida.`, '🗑️');
+    }
+
+    function renderEditor() {
+      const emptyState = document.getElementById('emptyState');
+      const editorInner = document.getElementById('editorInner');
+
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) {
+        emptyState.style.display = 'flex';
+        editorInner.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      editorInner.style.display = 'flex';
+
+      document.getElementById('songName').value = song.name || '';
+      document.getElementById('songBand').value = song.originalBand || '';
+      document.getElementById('songDuration').value = song.duration || '';
+      document.getElementById('songStyle').value = song.style || '';
+      document.getElementById('songDefaultView').value = song.defaultView || 'chords';
+      document.getElementById('songScrollSpeed').value = song.scrollSpeed || 'none';
+
+      switchTab(activeTab);
+    }
+
+    function updateCurrentSong(field, value) {
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) return;
+
+      song[field] = value;
+      saveToStorage();
+      renderSidebar();
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) return;
+
+      ['chords', 'lyrics', 'tabs', 'links'].forEach(t => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.className = `tab-btn ${t === tab ? 'active' : ''}`;
+      });
+
+      document.getElementById('chordsTools').style.display = tab === 'chords' ? 'flex' : 'none';
+      document.getElementById('tabsTools').style.display = tab === 'tabs' ? 'flex' : 'none';
+
+      const textarea = document.getElementById('mainTextarea');
+      const linksArea = document.getElementById('linksEditorArea');
+
+      if (tab === 'links') {
+        textarea.style.display = 'none';
+        linksArea.style.display = 'block';
+        renderLinksEditor();
+      } else {
+        textarea.style.display = 'block';
+        linksArea.style.display = 'none';
+
+        if (tab === 'chords') {
+          textarea.value = song.chords || '';
+          textarea.placeholder = 'Digite ou cole a Cifra aqui (ex: Intro, Verso, Refrão com acordes)...';
+        } else if (tab === 'lyrics') {
+          textarea.value = song.lyrics || '';
+          textarea.placeholder = 'Digite ou cole a Letra da música aqui...';
+        } else if (tab === 'tabs') {
+          textarea.value = song.tabs || '';
+          textarea.placeholder = 'Digite ou cole a Tablatura de guitarra/violão aqui...';
+        }
+      }
+    }
+
+    function handleTextareaChange(val) {
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) return;
+
+      if (activeTab === 'chords') song.chords = val;
+      if (activeTab === 'lyrics') song.lyrics = val;
+      if (activeTab === 'tabs') song.tabs = val;
+
+      saveToStorage();
+    }
+
+    function insertTabTemplate() {
+      const textarea = document.getElementById('mainTextarea');
+      const template = `e|---------------------------------------------------|\nB|---------------------------------------------------|\nG|---------------------------------------------------|\nD|---------------------------------------------------|\nA|---------------------------------------------------|\nE|---------------------------------------------------|\n`;
+      textarea.value = (textarea.value ? textarea.value + '\n\n' : '') + template;
+      handleTextareaChange(textarea.value);
+      showToast('Grade de tablatura inserida!');
+    }
+
+    function renderLinksEditor() {
+      const container = document.getElementById('linksListContainer');
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) return;
+
+      const links = song.links || [];
+
+      if (links.length === 0) {
+        container.innerHTML = `<p style="font-size: 12px; color: var(--text-dim); font-style: italic;">Nenhum link cadastrado para esta música.</p>`;
+        return;
+      }
+
+      container.innerHTML = links.map((link, idx) => `
+        <div class="link-row">
+          <select class="form-select" style="width: 140px;" onchange="updateLinkType(${idx}, this.value)">
+            <option value="youtube" ${link.type === 'youtube' ? 'selected' : ''}>🎬 YouTube</option>
+            <option value="spotify" ${link.type === 'spotify' ? 'selected' : ''}>🎧 Spotify</option>
+            <option value="chords" ${link.type === 'chords' ? 'selected' : ''}>🎼 Cifra Web</option>
+            <option value="other" ${link.type === 'other' ? 'selected' : ''}>🔗 Outro</option>
+          </select>
+          <input type="text" class="form-input" style="flex: 1;" placeholder="https://..." value="${link.url || ''}" oninput="updateLinkUrl(${idx}, this.value)">
+          <button class="btn btn-outline btn-sm" style="color: var(--danger);" onclick="removeLink(${idx})">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function addLinkRow() {
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) return;
+
+      song.links = song.links || [];
+      song.links.push({ type: 'youtube', url: '' });
+      saveToStorage();
+      renderLinksEditor();
+    }
+
+    function updateLinkType(idx, type) {
+      const song = songs.find(s => s.id === activeSongId);
+      if (song && song.links && song.links[idx]) {
+        song.links[idx].type = type;
+        saveToStorage();
+      }
+    }
+
+    function updateLinkUrl(idx, url) {
+      const song = songs.find(s => s.id === activeSongId);
+      if (song && song.links && song.links[idx]) {
+        song.links[idx].url = url;
+        saveToStorage();
+      }
+    }
+
+    function removeLink(idx) {
+      const song = songs.find(s => s.id === activeSongId);
+      if (song && song.links) {
+        song.links.splice(idx, 1);
+        saveToStorage();
+        renderLinksEditor();
+      }
+    }
+
+    const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const NOTES_FLAT  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+    function transposeChord(chord, semitones) {
+      return chord.replace(/^[A-G][#b]?/, match => {
+        let idx = NOTES_SHARP.indexOf(match);
+        if (idx === -1) idx = NOTES_FLAT.indexOf(match);
+        if (idx === -1) return match;
+
+        let newIdx = (idx + semitones) % 12;
+        if (newIdx < 0) newIdx += 12;
+        return semitones > 0 ? NOTES_SHARP[newIdx] : NOTES_FLAT[newIdx];
+      });
+    }
+
+    function transposeChords(semitones) {
+      const textarea = document.getElementById('mainTextarea');
+      const text = textarea.value;
+      if (!text) return;
+
+      const chordRegex = /\b[A-G][#b]?(?:m|maj|min|dim|aug|sus[24]?|add[9]?|[245679]|maj7|m7|m7b5|7sus4)?(?:\/[A-G][#b]?)?\b/g;
+
+      const transposed = text.split('\n').map(line => {
+        return line.replace(chordRegex, match => transposeChord(match, semitones));
+      }).join('\n');
+
+      textarea.value = transposed;
+      handleTextareaChange(transposed);
+      showToast(`Tom transposto em ${semitones > 0 ? `+${semitones}` : semitones} semitom!`);
+    }
+
+    function exportCurrentSong() {
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) {
+        showToast('Nenhuma música selecionada para exportar.', '⚠️');
+        return;
+      }
+
+      const exportData = {
+        app: 'SetlistsAppSong',
+        version: 1,
+        name: song.name,
+        originalBand: song.originalBand,
+        style: song.style || '',
+        duration: song.duration || '',
+        defaultView: song.defaultView || 'chords',
+        scrollSpeed: song.scrollSpeed || 'none',
+        lyrics: song.lyrics || '',
+        chords: song.chords || '',
+        tabs: song.tabs || '',
+        links: (song.links || []).map(l => ({ type: l.type, url: l.url }))
+      };
+
+      const safeBand = (song.originalBand || 'banda').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const safeSong = (song.name || 'musica').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      currentExportFilename = `musica-${safeBand}-${safeSong}.json`;
+      currentExportData = exportData;
+
+      document.getElementById('exportModalTitle').innerText = `💾 Exportar Música: ${song.name}`;
+      document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Aba <em>Músicas ➔ Importar</em>):`;
+      document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
+
+      document.getElementById('exportModal').classList.add('open');
+    }
+
+    function exportFullBackup() {
+      if (songs.length === 0) {
+        showToast('Nenhuma música na lista para gerar backup.', '⚠️');
+        return;
+      }
+
+      const backupData = {
+        app: 'SetlistsAppBackup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        summary: {
+          totalBands: 0,
+          totalSongs: songs.length,
+          totalSetlists: 0
+        },
+        bands: [],
+        songs: songs.map(s => ({
+          id: s.id,
+          name: s.name,
+          originalBand: s.originalBand,
+          style: s.style || '',
+          duration: s.duration || '',
+          defaultView: s.defaultView || 'chords',
+          scrollSpeed: s.scrollSpeed || 'none',
+          lyrics: s.lyrics || '',
+          chords: s.chords || '',
+          tabs: s.tabs || '',
+          links: s.links || []
+        })),
+        setlists: []
+      };
+
+      currentExportFilename = `backup-setlists-web-${new Date().toISOString().split('T')[0]}.json`;
+      currentExportData = backupData;
+
+      document.getElementById('exportModalTitle').innerText = `📦 Exportar Backup Total (${songs.length} Músicas)`;
+      document.getElementById('exportModalDesc').innerHTML = `Este arquivo contém <strong>${songs.length} músicas</strong>. No app móvel, abra a aba <em>Sobre ➔ Restaurar Backup</em> para carregar todas de uma só vez:`;
+      document.getElementById('exportJsonTextarea').value = JSON.stringify(backupData, null, 2);
+
+      document.getElementById('exportModal').classList.add('open');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.remove('open');
+    }
+
+    function copyExportCode() {
+      const code = document.getElementById('exportJsonTextarea').value;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast('Código JSON copiado para a área de transferência!');
+      });
+    }
+
+    function downloadExportFile() {
+      if (!currentExportData) return;
+      const jsonStr = JSON.stringify(currentExportData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentExportFilename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Arquivo "${currentExportFilename}" baixado com sucesso!`);
+    }
+
+    function openImportModal() {
+      document.getElementById('importJsonTextarea').value = '';
+      document.getElementById('importModal').classList.add('open');
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('open');
+    }
+
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('importJsonTextarea').value = e.target.result;
+        showToast(`Arquivo "${file.name}" carregado! Clique em Importar Agora.`);
+      };
+      reader.readAsText(file);
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          document.getElementById('importJsonTextarea').value = evt.target.result;
+          showToast(`Arquivo "${file.name}" carregado!`);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    function processImportJson() {
+      const rawText = document.getElementById('importJsonTextarea').value.trim();
+      if (!rawText) {
+        showToast('Cole o código JSON ou selecione um arquivo.', '⚠️');
+        return;
+      }
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(rawText);
+      } catch (e) {
+        const start = rawText.indexOf('{');
+        const end = rawText.lastIndexOf('}');
+        if (start !== -1 && end > start) {
+          try { parsed = JSON.parse(rawText.substring(start, end + 1)); } catch (err) {}
+        }
+      }
+
+      if (!parsed) {
+        showToast('O código fornecido não é um JSON válido.', '❌');
+        return;
+      }
+
+      if (parsed.app === 'SetlistsAppSong' || (parsed.name && parsed.originalBand)) {
+        const newSong = {
+          id: Date.now(),
+          name: parsed.name || 'Sem Título',
+          originalBand: parsed.originalBand || 'Sem Banda',
+          style: parsed.style || '',
+          duration: parsed.duration || '',
+          defaultView: parsed.defaultView || 'chords',
+          scrollSpeed: parsed.scrollSpeed || 'none',
+          lyrics: parsed.lyrics || '',
+          chords: parsed.chords || '',
+          tabs: parsed.tabs || '',
+          links: parsed.links || []
+        };
+
+        songs.unshift(newSong);
+        activeSongId = newSong.id;
+        saveToStorage();
+        closeImportModal();
+        renderSidebar();
+        renderEditor();
+        showToast(`Música "${newSong.name}" importada com sucesso!`);
+        return;
+      }
+
+      if (parsed.app === 'SetlistsAppBackup' || (parsed.songs && Array.isArray(parsed.songs))) {
+        const importedSongs = parsed.songs || [];
+        if (importedSongs.length === 0) {
+          showToast('O backup não contém nenhuma música.', '⚠️');
+          return;
+        }
+
+        const shouldReplace = confirm(`O backup contém ${importedSongs.length} músicas.\n\nDeseja SUBSTITUIR as músicas atuais (OK) ou MESCLAR/ADICIONAR às existentes (Cancelar)?`);
+
+        if (shouldReplace) {
+          songs = importedSongs.map((s, idx) => ({
+            id: s.id || (Date.now() + idx),
+            name: s.name || 'Sem Título',
+            originalBand: s.originalBand || 'Sem Banda',
+            style: s.style || '',
+            duration: s.duration || '',
+            defaultView: s.defaultView || 'chords',
+            scrollSpeed: s.scrollSpeed || 'none',
+            lyrics: s.lyrics || '',
+            chords: s.chords || '',
+            tabs: s.tabs || '',
+            links: s.links || []
+          }));
+        } else {
+          importedSongs.forEach((s, idx) => {
+            songs.push({
+              id: Date.now() + idx,
+              name: s.name || 'Sem Título',
+              originalBand: s.originalBand || 'Sem Banda',
+              style: s.style || '',
+              duration: s.duration || '',
+              defaultView: s.defaultView || 'chords',
+              scrollSpeed: s.scrollSpeed || 'none',
+              lyrics: s.lyrics || '',
+              chords: s.chords || '',
+              tabs: s.tabs || '',
+              links: s.links || []
+            });
+          });
+        }
+
+        activeSongId = songs.length > 0 ? songs[0].id : null;
+        saveToStorage();
+        closeImportModal();
+        renderSidebar();
+        renderEditor();
+        showToast(`${importedSongs.length} músicas importadas com sucesso!`);
+        return;
+      }
+
+      showToast('Formato de JSON desconhecido.', '❌');
+    }
+
+    function openPreviewModal() {
+      const song = songs.find(s => s.id === activeSongId);
+      if (!song) return;
+
+      document.getElementById('previewTitle').innerText = (song.name || 'SEM NOME').toUpperCase();
+      document.getElementById('previewBand').innerText = (song.originalBand || 'BANDA').toUpperCase();
+
+      let content = '';
+      if (activeTab === 'chords') {
+        content = song.chords || '(Nenhuma cifra cadastrada)';
+      } else if (activeTab === 'lyrics') {
+        content = song.lyrics || '(Nenhuma letra cadastrada)';
+      } else if (activeTab === 'tabs') {
+        content = song.tabs || '(Nenhuma tablatura cadastrada)';
+      }
+
+      const chordRegex = /\b[A-G][#b]?(?:m|maj|min|dim|aug|sus[24]?|add[9]?|[245679]|maj7|m7|m7b5|7sus4)?(?:\/[A-G][#b]?)?\b/g;
+      const highlighted = content.replace(chordRegex, match => `<span class="chord-highlight">${match}</span>`);
+
+      document.getElementById('prompterContent').innerHTML = highlighted;
+      document.getElementById('previewModal').classList.add('open');
+    }
+
+    function closePreviewModal() {
+      document.getElementById('previewModal').classList.remove('open');
+    }
+
+    init();
+  </script>
+</body>
+</html>
