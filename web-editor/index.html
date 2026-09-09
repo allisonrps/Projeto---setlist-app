@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setlist Band Manager - Web Song Editor</title>
+  <title>Setlist Band Manager - Web Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -130,6 +130,40 @@
       color: var(--text-muted);
     }
 
+    /* Mode Navigation Switcher */
+    .mode-nav {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .mode-btn:hover {
+      color: var(--text);
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
     .header-actions {
       display: flex;
       align-items: center;
@@ -211,7 +245,7 @@
 
     /* Sidebar */
     .sidebar {
-      width: 320px;
+      width: 330px;
       background-color: var(--bg-surface);
       border-right: 1px solid var(--border);
       display: flex;
@@ -255,19 +289,20 @@
       color: var(--text-dim);
     }
 
-    .song-list-actions {
+    .sidebar-meta-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .song-count {
+    .sidebar-count {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-muted);
+      letter-spacing: 0.5px;
     }
 
-    .songs-container {
+    .items-container {
       flex: 1;
       overflow-y: auto;
       padding: 8px;
@@ -276,7 +311,7 @@
       gap: 6px;
     }
 
-    .song-card {
+    .item-card {
       background-color: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -289,18 +324,18 @@
       position: relative;
     }
 
-    .song-card:hover {
+    .item-card:hover {
       border-color: var(--primary);
       background-color: var(--primary-subtle);
     }
 
-    .song-card.active {
+    .item-card.active {
       border-color: var(--primary);
       background-color: var(--primary-subtle);
       box-shadow: 0 0 0 1px var(--primary);
     }
 
-    .song-card-title {
+    .item-card-title {
       font-size: 13px;
       font-weight: 800;
       color: var(--text);
@@ -309,13 +344,16 @@
       text-overflow: ellipsis;
     }
 
-    .song-card-band {
+    .item-card-subtitle {
       font-size: 11px;
       color: var(--text-muted);
       font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .song-card-meta {
+    .item-card-meta {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -342,7 +380,40 @@
       border-radius: 4px;
     }
 
-    .song-card-actions {
+    .type-badge-show {
+      font-size: 9.5px;
+      font-weight: 900;
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.15);
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      text-transform: uppercase;
+    }
+
+    .type-badge-ensaio {
+      font-size: 9.5px;
+      font-weight: 900;
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.15);
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      text-transform: uppercase;
+    }
+
+    .type-badge-repertorio {
+      font-size: 9.5px;
+      font-weight: 900;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.15);
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      text-transform: uppercase;
+    }
+
+    .item-card-actions {
       position: absolute;
       right: 8px;
       top: 8px;
@@ -350,7 +421,7 @@
       gap: 4px;
     }
 
-    .song-card:hover .song-card-actions {
+    .item-card:hover .item-card-actions {
       display: flex;
     }
 
@@ -402,11 +473,9 @@
       box-shadow: var(--shadow);
     }
 
-    .form-grid-3 {
-      display: grid;
-      grid-template-columns: 2fr 1.5fr 1fr;
-      gap: 14px;
-    }
+    .form-grid-3 { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 14px; }
+    .form-grid-4 { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr; gap: 14px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
     .form-group {
       display: flex;
@@ -433,12 +502,166 @@
       transition: border-color 0.15s;
     }
 
-    .form-input:focus {
+    .form-input:focus, .form-select:focus {
       border-color: var(--border-focus);
     }
 
     .form-select {
       cursor: pointer;
+    }
+
+    /* Setlist Summary Banner */
+    .setlist-summary-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .summary-pills {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .summary-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .summary-pill strong {
+      color: var(--primary);
+    }
+
+    /* Setlist Songs Table / Roteiro */
+    .setlist-songs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .setlist-songs-title {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .setlist-songs-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .setlist-songs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .setlist-song-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+
+    .setlist-song-row:hover {
+      border-color: var(--primary);
+    }
+
+    .setlist-song-row.is-pause {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 3.5px solid var(--danger);
+    }
+
+    .setlist-song-row.is-note {
+      background: rgba(245, 158, 11, 0.08);
+      border-left: 3.5px solid var(--warning);
+    }
+
+    .song-order-badge {
+      width: 28px;
+      height: 28px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-weight: 900;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .song-row-title-area {
+      flex: 1.5;
+      min-width: 160px;
+    }
+
+    .song-row-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-row-band {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-row-notes-input {
+      flex: 2;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .song-row-notes-input:focus {
+      border-color: var(--border-focus);
+    }
+
+    .song-row-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
     }
 
     /* Tabs & Code Editor */
@@ -448,6 +671,8 @@
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
       padding-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .tab-buttons {
@@ -590,6 +815,22 @@
       gap: 10px;
     }
 
+    /* Pick Song Item */
+    .pick-song-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+
+    .pick-song-item:hover {
+      border-color: var(--primary);
+    }
+
     /* Drag & Drop Zone */
     .drop-zone {
       border: 2px dashed var(--border);
@@ -675,9 +916,9 @@
       }
       .sidebar {
         width: 100%;
-        height: 220px;
+        height: 240px;
       }
-      .form-grid-3 {
+      .form-grid-3, .form-grid-4 {
         grid-template-columns: 1fr;
       }
     }
@@ -691,28 +932,50 @@
       <div class="brand-icon">S</div>
       <div class="brand-text">
         <h1>Setlist Band Manager <span class="brand-badge">WEB EDITOR</span></h1>
-        <p>Editor e Gerador de Repertório para PC</p>
+        <p>Editor e Gerador de Repertório e Setlists para PC</p>
       </div>
     </a>
 
+    <!-- Mode Switcher -->
+    <div class="mode-nav">
+      <button class="mode-btn active" id="modeBtnSongs" onclick="switchMode('songs')">🎵 Músicas</button>
+      <button class="mode-btn" id="modeBtnSetlists" onclick="switchMode('setlists')">📋 Setlists</button>
+    </div>
+
+    <!-- Header Actions -->
     <div class="header-actions">
-      <button class="btn btn-outline" onclick="openImportModal()">
+      <button class="btn btn-outline" onclick="openImportModal()" title="Importar arquivo .json ou código">
         📥 Importar JSON
       </button>
 
-      <button class="btn btn-outline" onclick="exportCurrentSong()">
-        💾 Exportar Música (.json)
+      <!-- Contextual Action Buttons for Songs -->
+      <div id="songsHeaderActions" style="display: flex; gap: 8px;">
+        <button class="btn btn-outline" onclick="exportCurrentSong()" title="Exportar música ativa">
+          💾 Exportar Música (.json)
+        </button>
+        <button class="btn btn-primary" onclick="addNewSong()">
+          ➕ Nova Música
+        </button>
+      </div>
+
+      <!-- Contextual Action Buttons for Setlists -->
+      <div id="setlistsHeaderActions" style="display: none; gap: 8px;">
+        <button class="btn btn-outline" onclick="exportCurrentSetlistDoc()" title="Exportar para Word formatado">
+          📄 Exportar Word (.doc)
+        </button>
+        <button class="btn btn-outline" onclick="exportCurrentSetlistJson()" title="Exportar setlist ativo">
+          💾 Exportar Setlist (.json)
+        </button>
+        <button class="btn btn-primary" onclick="addNewSetlist()">
+          ➕ Novo Setlist
+        </button>
+      </div>
+
+      <button class="btn btn-success" onclick="exportFullBackup()" title="Backup completo de todas as músicas e setlists">
+        📦 Backup Total
       </button>
 
-      <button class="btn btn-success" onclick="exportFullBackup()">
-        📦 Exportar Backup Total
-      </button>
-
-      <button class="btn btn-primary" onclick="addNewSong()">
-        ➕ Nova Música
-      </button>
-
-      <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="Alternar Tema">
+      <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="Alternar Tema Claro / Escuro">
         🌗
       </button>
     </div>
@@ -721,125 +984,210 @@
   <!-- App Body -->
   <div class="app-body">
     
-    <!-- Sidebar: Song List -->
+    <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Buscar por título, artista ou tag..." oninput="filterSongs()">
+          <input type="text" id="searchInput" placeholder="Buscar por título, artista ou tag..." oninput="filterItems()">
         </div>
-        <div class="song-list-actions">
-          <span class="song-count" id="songCountLabel">0 MÚSICAS</span>
-          <button class="btn btn-outline btn-sm" onclick="addNewSong()">+ Adicionar</button>
+        <div class="sidebar-meta-bar">
+          <span class="sidebar-count" id="itemsCountLabel">0 MÚSICAS</span>
+          <button class="btn btn-outline btn-sm" id="sidebarAddBtn" onclick="handleSidebarAdd()">+ Adicionar</button>
         </div>
       </div>
 
-      <div class="songs-container" id="songsListContainer">
+      <div class="items-container" id="itemsListContainer">
         <!-- Rendered by JS -->
       </div>
     </div>
 
     <!-- Main Content Area: Editor -->
     <div class="editor-container" id="editorContainer">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">🎸</div>
-        <h2>Nenhuma música selecionada</h2>
-        <p>Selecione uma música da lista ao lado ou crie uma nova para começar a editar letras e cifras no seu computador.</p>
-        <button class="btn btn-primary" onclick="addNewSong()">➕ Criar Primeira Música</button>
-      </div>
+      
+      <!-- SONG EDITOR VIEW -->
+      <div id="songEditorSection" style="display: flex; flex-direction: column; flex: 1;">
+        <div class="empty-state" id="emptyStateSong">
+          <div class="empty-icon">🎸</div>
+          <h2>Nenhuma música selecionada</h2>
+          <p>Selecione uma música da lista ao lado ou crie uma nova para começar a editar letras, cifras e tablaturas no seu PC.</p>
+          <button class="btn btn-primary" onclick="addNewSong()">➕ Criar Primeira Música</button>
+        </div>
 
-      <div class="editor-inner" id="editorInner" style="display: none;">
-        
-        <!-- Metadata Form -->
-        <div class="form-card">
-          <div class="form-grid-3">
-            <div class="form-group">
-              <label>Nome da Música *</label>
-              <input type="text" class="form-input" id="songName" placeholder="Ex: Yellow" oninput="updateCurrentSong('name', this.value)">
+        <div class="editor-inner" id="songEditorInner" style="display: none;">
+          <!-- Metadata Form -->
+          <div class="form-card">
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Nome da Música *</label>
+                <input type="text" class="form-input" id="songName" placeholder="Ex: Yellow" oninput="updateCurrentSong('name', this.value)">
+              </div>
+              <div class="form-group">
+                <label>Banda / Artista Original *</label>
+                <input type="text" class="form-input" id="songBand" placeholder="Ex: Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
+              </div>
+              <div class="form-group">
+                <label>Duração (mm:ss)</label>
+                <input type="text" class="form-input" id="songDuration" placeholder="Ex: 04:30" oninput="updateCurrentSong('duration', this.value)">
+              </div>
             </div>
-            <div class="form-group">
-              <label>Banda / Artista Original *</label>
-              <input type="text" class="form-input" id="songBand" placeholder="Ex: Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
-            </div>
-            <div class="form-group">
-              <label>Duração (mm:ss)</label>
-              <input type="text" class="form-input" id="songDuration" placeholder="Ex: 04:30" oninput="updateCurrentSong('duration', this.value)">
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Tags / Estilos (separados por vírgula)</label>
+                <input type="text" class="form-input" id="songStyle" placeholder="Ex: pop rock, 2000s, acustico" oninput="updateCurrentSong('style', this.value)">
+              </div>
+              <div class="form-group">
+                <label>Aba Padrão no Modo Palco</label>
+                <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
+                  <option value="chords">🎼 Cifra</option>
+                  <option value="lyrics">📝 Letra</option>
+                  <option value="tabs">🎸 Tablatura</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Velocidade Autoscroll</label>
+                <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
+                  <option value="none">Pausado / Sem Rolagem</option>
+                  <option value="0.5x">0.5x (Lenta)</option>
+                  <option value="1x">1.0x (Normal)</option>
+                  <option value="1.5x">1.5x (Rápida)</option>
+                  <option value="2x">2.0x (Muito Rápida)</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div class="form-grid-3">
-            <div class="form-group">
-              <label>Tags / Estilos (separados por vírgula)</label>
-              <input type="text" class="form-input" id="songStyle" placeholder="Ex: pop rock, 2000s, acustico" oninput="updateCurrentSong('style', this.value)">
+          <!-- Editor Tabs -->
+          <div class="form-card">
+            <div class="tabs-header">
+              <div class="tab-buttons">
+                <button class="tab-btn active" id="tabBtnChords" onclick="switchSongTab('chords')">🎼 Cifra</button>
+                <button class="tab-btn" id="tabBtnLyrics" onclick="switchSongTab('lyrics')">📝 Letra</button>
+                <button class="tab-btn" id="tabBtnTabs" onclick="switchSongTab('tabs')">🎸 Tablatura</button>
+                <button class="tab-btn" id="tabBtnLinks" onclick="switchSongTab('links')">🔗 Links Úteis</button>
+              </div>
+
+              <div class="tab-tools">
+                <div id="chordsTools" style="display: flex; gap: 6px;">
+                  <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" title="Diminuir 1 semitom">♭ -1 Semitom</button>
+                  <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" title="Aumentar 1 semitom">♯ +1 Semitom</button>
+                </div>
+
+                <div id="tabsTools" style="display: none; gap: 6px;">
+                  <button class="btn btn-outline btn-sm" onclick="insertTabTemplate()">+ Inserir Grade de Cordas</button>
+                </div>
+
+                <button class="btn btn-outline btn-sm" onclick="openPreviewModal()">
+                  👁️ Pré-visualizar no Palco
+                </button>
+              </div>
             </div>
-            <div class="form-group">
-              <label>Aba Padrão no Modo Palco</label>
-              <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
-                <option value="chords">🎼 Cifra</option>
-                <option value="lyrics">📝 Letra</option>
-                <option value="tabs">🎸 Tablatura</option>
-              </select>
+
+            <!-- Code Textarea Area -->
+            <div class="editor-wrapper">
+              <textarea class="code-textarea" id="mainTextarea" placeholder="Digite aqui o conteúdo..." oninput="handleTextareaChange(this.value)"></textarea>
             </div>
-            <div class="form-group">
-              <label>Velocidade Autoscroll</label>
-              <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
-                <option value="none">Pausado / Sem Rolagem</option>
-                <option value="0.5x">0.5x (Lenta)</option>
-                <option value="1x">1.0x (Normal)</option>
-                <option value="1.5x">1.5x (Rápida)</option>
-                <option value="2x">2.0x (Muito Rápida)</option>
-              </select>
+
+            <!-- Links Editor Area -->
+            <div id="linksEditorArea" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">LINKS DE VÍDEO, CIFRA OU ÁUDIO:</span>
+                <button class="btn btn-primary btn-sm" onclick="addLinkRow()">+ Adicionar Link</button>
+              </div>
+              <div class="links-list" id="linksListContainer">
+                <!-- Rendered by JS -->
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Editor Tabs -->
-        <div class="form-card">
-          <div class="tabs-header">
-            <div class="tab-buttons">
-              <button class="tab-btn active" id="tabBtnChords" onclick="switchTab('chords')">🎼 Cifra</button>
-              <button class="tab-btn" id="tabBtnLyrics" onclick="switchTab('lyrics')">📝 Letra</button>
-              <button class="tab-btn" id="tabBtnTabs" onclick="switchTab('tabs')">🎸 Tablatura</button>
-              <button class="tab-btn" id="tabBtnLinks" onclick="switchTab('links')">🔗 Links Úteis</button>
+      <!-- SETLIST EDITOR VIEW -->
+      <div id="setlistEditorSection" style="display: none; flex-direction: column; flex: 1;">
+        <div class="empty-state" id="emptyStateSetlist">
+          <div class="empty-icon">📋</div>
+          <h2>Nenhum setlist selecionado</h2>
+          <p>Crie ou selecione um setlist para montar a ordem das músicas do seu show ou ensaio, com pausas, anotações e exportação para Word.</p>
+          <button class="btn btn-primary" onclick="addNewSetlist()">➕ Criar Primeiro Setlist</button>
+        </div>
+
+        <div class="editor-inner" id="setlistEditorInner" style="display: none;">
+          <!-- Setlist Metadata -->
+          <div class="form-card">
+            <div class="form-grid-4">
+              <div class="form-group">
+                <label>Nome do Setlist / Show *</label>
+                <input type="text" class="form-input" id="setlistName" placeholder="Ex: Show no Bar do Rock" oninput="updateCurrentSetlist('name', this.value)">
+              </div>
+              <div class="form-group">
+                <label>Banda / Projeto *</label>
+                <input type="text" class="form-input" id="setlistBand" placeholder="Ex: Minha Banda" oninput="updateCurrentSetlist('bandName', this.value)">
+              </div>
+              <div class="form-group">
+                <label>Tipo</label>
+                <select class="form-select" id="setlistType" onchange="updateCurrentSetlist('type', this.value)">
+                  <option value="show">🔥 Show</option>
+                  <option value="ensaio">🎙️ Ensaio</option>
+                  <option value="repertório">📚 Repertório</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Data</label>
+                <input type="text" class="form-input" id="setlistDate" placeholder="Ex: 2026-10-25 ou 25/10/2026" oninput="updateCurrentSetlist('date', this.value)">
+              </div>
             </div>
 
-            <div class="tab-tools">
-              <!-- Chords Tools -->
-              <div id="chordsTools" style="display: flex; gap: 6px;">
-                <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" title="Diminuir 1 semitom">♭ -1 Semitom</button>
-                <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" title="Aumentar 1 semitom">♯ +1 Semitom</button>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Local / Evento</label>
+                <input type="text" class="form-input" id="setlistLocal" placeholder="Ex: The Rock Pub" oninput="updateCurrentSetlist('local', this.value)">
               </div>
-
-              <!-- Tablatura Tools -->
-              <div id="tabsTools" style="display: none; gap: 6px;">
-                <button class="btn btn-outline btn-sm" onclick="insertTabTemplate()">+ Inserir Grade de Cordas</button>
+              <div class="form-group">
+                <label>Cachê / Valor</label>
+                <input type="text" class="form-input" id="setlistCache" placeholder="Ex: R$ 1.500" oninput="updateCurrentSetlist('cachê', this.value)">
               </div>
+              <div class="form-group">
+                <label>Observações Gerais</label>
+                <input type="text" class="form-input" id="setlistNotes" placeholder="Ex: Levar cabos extras, passar som às 19h" oninput="updateCurrentSetlist('notes', this.value)">
+              </div>
+            </div>
 
-              <button class="btn btn-outline btn-sm" onclick="openPreviewModal()">
-                👁️ Pré-visualizar no Palco
-              </button>
+            <!-- Summary Bar -->
+            <div class="setlist-summary-bar">
+              <div class="summary-pills">
+                <span class="summary-pill">🎵 Músicas: <strong id="sumTotalSongs">0</strong></span>
+                <span class="summary-pill">⏱ Duração Estimada: <strong id="sumTotalDuration">00:00</strong></span>
+                <span class="summary-pill" id="sumLocalPill" style="display: none;">📍 <span id="sumLocalText">-</span></span>
+                <span class="summary-pill" id="sumCachePill" style="display: none;">💰 <span id="sumCacheText">-</span></span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline btn-sm" onclick="exportCurrentSetlistDoc()">📄 Exportar Word (.doc)</button>
+                <button class="btn btn-primary btn-sm" onclick="exportCurrentSetlistJson()">💾 Exportar Setlist (.json)</button>
+              </div>
             </div>
           </div>
 
-          <!-- Code Textarea Area -->
-          <div class="editor-wrapper">
-            <textarea class="code-textarea" id="mainTextarea" placeholder="Digite aqui o conteúdo..." oninput="handleTextareaChange(this.value)"></textarea>
-          </div>
-
-          <!-- Links Editor Area -->
-          <div id="linksEditorArea" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">LINKS DE VÍDEO, CIFRA OU ÁUDIO:</span>
-              <button class="btn btn-primary btn-sm" onclick="addLinkRow()">+ Adicionar Link</button>
+          <!-- Setlist Roteiro / Songs List -->
+          <div class="form-card">
+            <div class="setlist-songs-header">
+              <div class="setlist-songs-title">
+                <span>📑 ROTEIRO DO SHOW / ENSAIO</span>
+              </div>
+              <div class="setlist-songs-tools">
+                <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">+ Adicionar Música do Repertório</button>
+                <button class="btn btn-outline btn-sm" onclick="addSpecialItem('pause')">⏸️ + Pausa / Intervalo</button>
+                <button class="btn btn-outline btn-sm" onclick="addSpecialItem('note')">📢 + Anotação / Fala</button>
+              </div>
             </div>
-            <div class="links-list" id="linksListContainer">
+
+            <div class="setlist-songs-list" id="setlistSongsListContainer">
               <!-- Rendered by JS -->
             </div>
           </div>
-
         </div>
-
       </div>
+
     </div>
 
   </div>
@@ -864,7 +1212,7 @@
           <div style="flex: 1; height: 1px; background: var(--border);"></div>
         </div>
 
-        <textarea class="form-input" id="importJsonTextarea" rows="6" placeholder="Cole o código JSON da música ou do backup total aqui..." style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
+        <textarea class="form-input" id="importJsonTextarea" rows="6" placeholder="Cole o código JSON de Música, Setlist ou Backup Total aqui..." style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeImportModal()">Cancelar</button>
@@ -891,6 +1239,32 @@
         <button class="btn btn-outline" onclick="closeExportModal()">Fechar</button>
         <button class="btn btn-outline" onclick="copyExportCode()">📋 Copiar Código</button>
         <button class="btn btn-primary" id="downloadJsonBtn" onclick="downloadExportFile()">⬇️ Baixar Arquivo .JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Selecionar Música do Repertório para Setlist -->
+  <div class="modal-overlay" id="pickSongModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎵 Adicionar Músicas ao Setlist</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closePickSongModal()">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="pickSongSearchInput" placeholder="Filtrar músicas do repertório..." oninput="renderPickSongList()">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);" id="pickSongCountLabel">Músicas disponíveis</span>
+          <button class="btn btn-outline btn-sm" onclick="addAllSongsToSetlist()">+ Adicionar Todas ao Setlist</button>
+        </div>
+        <div id="pickSongListContainer" style="display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto;">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closePickSongModal()">Concluído</button>
       </div>
     </div>
   </div>
@@ -963,37 +1337,112 @@
       }
     ];
 
+    const DEFAULT_SAMPLE_SETLISTS = [
+      {
+        id: 1,
+        name: 'Show Acústico de Abertura',
+        bandName: 'Acoustic Rock Band',
+        type: 'show',
+        date: '2026-10-25',
+        local: 'The Rock Pub',
+        cachê: 'R$ 1.200',
+        notes: 'Passagem de som às 19h. Afinação padrão com violão extra.',
+        songs: [
+          {
+            id: 1,
+            name: 'Yellow',
+            originalBand: 'Coldplay',
+            style: 'Pop Rock, Indie Rock, 2000s, Acoustic',
+            duration: '04:29',
+            customNotes: 'Tom B original - violão afinado meio tom abaixo',
+            customDuration: '04:29',
+            defaultView: 'chords',
+            scrollSpeed: '1x',
+            lyrics: DEFAULT_SAMPLE_SONGS[0].lyrics,
+            chords: DEFAULT_SAMPLE_SONGS[0].chords,
+            tabs: DEFAULT_SAMPLE_SONGS[0].tabs,
+            links: []
+          },
+          {
+            id: 'pause_1',
+            isSpecial: true,
+            type: 'pause',
+            name: 'PAUSA / INTERVALO',
+            duration: '00:15',
+            customNotes: 'Intervalo de 15 minutos para troca de instrumentos'
+          },
+          {
+            id: 3,
+            name: 'Wonderwall',
+            originalBand: 'Oasis',
+            style: 'Britpop, Pop Rock, 90s, Acoustic',
+            duration: '04:18',
+            customNotes: 'Capotraste no 2º traste - puxar refrão com a plateia',
+            customDuration: '04:18',
+            defaultView: 'chords',
+            scrollSpeed: '1x',
+            lyrics: DEFAULT_SAMPLE_SONGS[2].lyrics,
+            chords: DEFAULT_SAMPLE_SONGS[2].chords,
+            tabs: DEFAULT_SAMPLE_SONGS[2].tabs,
+            links: []
+          },
+          {
+            id: 2,
+            name: "Sweet Child O' Mine",
+            originalBand: "Guns N' Roses",
+            style: "Classic Rock, Hard Rock, Pop Rock, 80s",
+            duration: '05:56',
+            customNotes: 'Versão acústica dinâmica - acelerar no final',
+            customDuration: '05:56',
+            defaultView: 'chords',
+            scrollSpeed: '1x',
+            lyrics: DEFAULT_SAMPLE_SONGS[1].lyrics,
+            chords: DEFAULT_SAMPLE_SONGS[1].chords,
+            tabs: DEFAULT_SAMPLE_SONGS[1].tabs,
+            links: []
+          }
+        ]
+      }
+    ];
+
+    let currentMode = 'songs'; // 'songs' | 'setlists'
     let songs = [];
+    let setlists = [];
     let activeSongId = null;
-    let activeTab = 'chords';
+    let activeSetlistId = null;
+    let activeSongTab = 'chords';
     let currentExportData = null;
-    let currentExportFilename = 'musica.json';
+    let currentExportFilename = 'export.json';
 
     function init() {
       const savedTheme = localStorage.getItem('setlist_web_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
 
+      // Carregar Músicas
       const savedSongs = localStorage.getItem('setlist_web_songs');
       if (savedSongs) {
-        try {
-          songs = JSON.parse(savedSongs);
-        } catch (e) {
-          songs = [...DEFAULT_SAMPLE_SONGS];
-        }
+        try { songs = JSON.parse(savedSongs); } catch (e) { songs = [...DEFAULT_SAMPLE_SONGS]; }
       } else {
         songs = [...DEFAULT_SAMPLE_SONGS];
       }
 
-      if (songs.length > 0) {
-        activeSongId = songs[0].id;
+      // Carregar Setlists
+      const savedSetlists = localStorage.getItem('setlist_web_setlists');
+      if (savedSetlists) {
+        try { setlists = JSON.parse(savedSetlists); } catch (e) { setlists = [...DEFAULT_SAMPLE_SETLISTS]; }
+      } else {
+        setlists = [...DEFAULT_SAMPLE_SETLISTS];
       }
 
-      renderSidebar();
-      renderEditor();
+      if (songs.length > 0) activeSongId = songs[0].id;
+      if (setlists.length > 0) activeSetlistId = setlists[0].id;
+
+      renderAll();
     }
 
     function saveToStorage() {
       localStorage.setItem('setlist_web_songs', JSON.stringify(songs));
+      localStorage.setItem('setlist_web_setlists', JSON.stringify(setlists));
     }
 
     function toggleTheme() {
@@ -1011,55 +1460,142 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function renderSidebar() {
-      const container = document.getElementById('songsListContainer');
-      const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('modeBtnSongs').className = `mode-btn ${mode === 'songs' ? 'active' : ''}`;
+      document.getElementById('modeBtnSetlists').className = `mode-btn ${mode === 'setlists' ? 'active' : ''}`;
 
-      const filtered = songs.filter(s => {
-        if (!query) return true;
-        const matchName = (s.name || '').toLowerCase().includes(query);
-        const matchBand = (s.originalBand || '').toLowerCase().includes(query);
-        const matchStyle = (s.style || '').toLowerCase().includes(query);
-        return matchName || matchBand || matchStyle;
-      });
+      document.getElementById('songsHeaderActions').style.display = mode === 'songs' ? 'flex' : 'none';
+      document.getElementById('setlistsHeaderActions').style.display = mode === 'setlists' ? 'flex' : 'none';
 
-      document.getElementById('songCountLabel').innerText = `${songs.length} MÚSICAS`;
+      document.getElementById('songEditorSection').style.display = mode === 'songs' ? 'flex' : 'none';
+      document.getElementById('setlistEditorSection').style.display = mode === 'setlists' ? 'flex' : 'none';
 
-      if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhuma música encontrada</div>`;
-        return;
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchInput').placeholder = mode === 'songs' 
+        ? 'Buscar por título, artista ou tag...' 
+        : 'Buscar setlist por nome, banda ou local...';
+
+      renderSidebar();
+      if (mode === 'songs') {
+        renderSongEditor();
+      } else {
+        renderSetlistEditor();
       }
-
-      container.innerHTML = filtered.map(song => {
-        const isActive = song.id === activeSongId;
-        const tags = (song.style || '').split(',').map(t => t.trim()).filter(Boolean);
-
-        return `
-          <div class="song-card ${isActive ? 'active' : ''}" onclick="selectSong(${song.id})">
-            <div class="song-card-title">${song.name || 'Sem Título'}</div>
-            <div class="song-card-band">${song.originalBand || 'Sem Banda'}</div>
-            <div class="song-card-meta">
-              ${song.duration ? `<span class="dur-badge">⏱ ${song.duration}</span>` : ''}
-              ${tags.slice(0, 2).map(t => `<span class="tag-badge">${t}</span>`).join('')}
-              ${tags.length > 2 ? `<span class="tag-badge">+${tags.length - 2}</span>` : ''}
-            </div>
-            <div class="song-card-actions">
-              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="Duplicar">📋</button>
-              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="Excluir" style="color: var(--danger);">🗑️</button>
-            </div>
-          </div>
-        `;
-      }).join('');
     }
 
-    function filterSongs() {
+    function handleSidebarAdd() {
+      if (currentMode === 'songs') {
+        addNewSong();
+      } else {
+        addNewSetlist();
+      }
+    }
+
+    function filterItems() {
       renderSidebar();
     }
 
+    function renderAll() {
+      renderSidebar();
+      renderSongEditor();
+      renderSetlistEditor();
+    }
+
+    /* ----------------------------------------------------
+       SIDEBAR RENDERING
+    ---------------------------------------------------- */
+    function renderSidebar() {
+      const container = document.getElementById('itemsListContainer');
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+      if (currentMode === 'songs') {
+        const filtered = songs.filter(s => {
+          if (!query) return true;
+          const matchName = (s.name || '').toLowerCase().includes(query);
+          const matchBand = (s.originalBand || '').toLowerCase().includes(query);
+          const matchStyle = (s.style || '').toLowerCase().includes(query);
+          return matchName || matchBand || matchStyle;
+        });
+
+        document.getElementById('itemsCountLabel').innerText = `${songs.length} MÚSICAS`;
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhuma música encontrada</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(song => {
+          const isActive = song.id === activeSongId;
+          const tags = (song.style || '').split(',').map(t => t.trim()).filter(Boolean);
+
+          return `
+            <div class="item-card ${isActive ? 'active' : ''}" onclick="selectSong(${song.id})">
+              <div class="item-card-title">${song.name || 'Sem Título'}</div>
+              <div class="item-card-subtitle">${song.originalBand || 'Sem Banda'}</div>
+              <div class="item-card-meta">
+                ${song.duration ? `<span class="dur-badge">⏱ ${song.duration}</span>` : ''}
+                ${tags.slice(0, 2).map(t => `<span class="tag-badge">${t}</span>`).join('')}
+                ${tags.length > 2 ? `<span class="tag-badge">+${tags.length - 2}</span>` : ''}
+              </div>
+              <div class="item-card-actions">
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="Duplicar">📋</button>
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="Excluir" style="color: var(--danger);">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        // Setlists Mode
+        const filtered = setlists.filter(st => {
+          if (!query) return true;
+          const matchName = (st.name || '').toLowerCase().includes(query);
+          const matchBand = (st.bandName || '').toLowerCase().includes(query);
+          const matchLocal = (st.local || '').toLowerCase().includes(query);
+          return matchName || matchBand || matchLocal;
+        });
+
+        document.getElementById('itemsCountLabel').innerText = `${setlists.length} SETLISTS`;
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhum setlist encontrado</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(st => {
+          const isActive = st.id === activeSetlistId;
+          const typeClass = st.type === 'show' ? 'type-badge-show' : (st.type === 'ensaio' ? 'type-badge-ensaio' : 'type-badge-repertorio');
+          const realSongs = (st.songs || []).filter(s => !s.isSpecial);
+          const durStr = calculateSetlistTotalDuration(st.songs);
+
+          return `
+            <div class="item-card ${isActive ? 'active' : ''}" onclick="selectSetlist(${st.id})">
+              <div class="item-card-title">${st.name || 'Sem Título'}</div>
+              <div class="item-card-subtitle">${st.bandName || 'Sem Banda'}</div>
+              <div class="item-card-meta">
+                <span class="${typeClass}">${st.type || 'SHOW'}</span>
+                <span class="dur-badge">🎵 ${realSongs.length}</span>
+                ${durStr ? `<span class="tag-badge">⏱ ${durStr}</span>` : ''}
+                ${st.date ? `<span class="tag-badge">📅 ${st.date}</span>` : ''}
+              </div>
+              <div class="item-card-actions">
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSetlist(${st.id})" title="Duplicar">📋</button>
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSetlist(${st.id})" title="Excluir" style="color: var(--danger);">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    /* ----------------------------------------------------
+       SONG MANAGEMENT
+    ---------------------------------------------------- */
     function selectSong(id) {
       activeSongId = id;
       renderSidebar();
-      renderEditor();
+      renderSongEditor();
     }
 
     function addNewSong() {
@@ -1081,8 +1617,9 @@
       songs.unshift(newSong);
       activeSongId = newId;
       saveToStorage();
+      if (currentMode !== 'songs') switchMode('songs');
       renderSidebar();
-      renderEditor();
+      renderSongEditor();
       showToast('Nova música criada!');
     }
 
@@ -1101,7 +1638,7 @@
       activeSongId = newId;
       saveToStorage();
       renderSidebar();
-      renderEditor();
+      renderSongEditor();
       showToast(`Música "${song.name}" duplicada!`);
     }
 
@@ -1118,13 +1655,13 @@
 
       saveToStorage();
       renderSidebar();
-      renderEditor();
+      renderSongEditor();
       showToast(`Música "${song.name}" removida.`, '🗑️');
     }
 
-    function renderEditor() {
-      const emptyState = document.getElementById('emptyState');
-      const editorInner = document.getElementById('editorInner');
+    function renderSongEditor() {
+      const emptyState = document.getElementById('emptyStateSong');
+      const editorInner = document.getElementById('songEditorInner');
 
       const song = songs.find(s => s.id === activeSongId);
       if (!song) {
@@ -1143,7 +1680,7 @@
       document.getElementById('songDefaultView').value = song.defaultView || 'chords';
       document.getElementById('songScrollSpeed').value = song.scrollSpeed || 'none';
 
-      switchTab(activeTab);
+      switchSongTab(activeSongTab);
     }
 
     function updateCurrentSong(field, value) {
@@ -1155,8 +1692,8 @@
       renderSidebar();
     }
 
-    function switchTab(tab) {
-      activeTab = tab;
+    function switchSongTab(tab) {
+      activeSongTab = tab;
       const song = songs.find(s => s.id === activeSongId);
       if (!song) return;
 
@@ -1196,9 +1733,9 @@
       const song = songs.find(s => s.id === activeSongId);
       if (!song) return;
 
-      if (activeTab === 'chords') song.chords = val;
-      if (activeTab === 'lyrics') song.lyrics = val;
-      if (activeTab === 'tabs') song.tabs = val;
+      if (activeSongTab === 'chords') song.chords = val;
+      if (activeSongTab === 'lyrics') song.lyrics = val;
+      if (activeSongTab === 'tabs') song.tabs = val;
 
       saveToStorage();
     }
@@ -1272,6 +1809,9 @@
       }
     }
 
+    /* ----------------------------------------------------
+       CHORD TRANSPOSITION
+    ---------------------------------------------------- */
     const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     const NOTES_FLAT  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
@@ -1303,6 +1843,414 @@
       showToast(`Tom transposto em ${semitones > 0 ? `+${semitones}` : semitones} semitom!`);
     }
 
+    /* ----------------------------------------------------
+       SETLIST MANAGEMENT
+    ---------------------------------------------------- */
+    function selectSetlist(id) {
+      activeSetlistId = id;
+      renderSidebar();
+      renderSetlistEditor();
+    }
+
+    function addNewSetlist() {
+      const newId = Date.now();
+      const newSetlist = {
+        id: newId,
+        name: 'Novo Show / Setlist',
+        bandName: 'Minha Banda',
+        type: 'show',
+        date: new Date().toISOString().split('T')[0],
+        local: '',
+        cachê: '',
+        notes: '',
+        songs: []
+      };
+
+      setlists.unshift(newSetlist);
+      activeSetlistId = newId;
+      saveToStorage();
+      if (currentMode !== 'setlists') switchMode('setlists');
+      renderSidebar();
+      renderSetlistEditor();
+      showToast('Novo setlist criado!');
+    }
+
+    function duplicateSetlist(id) {
+      const st = setlists.find(s => s.id === id);
+      if (!st) return;
+
+      const newId = Date.now();
+      const duplicated = {
+        ...JSON.parse(JSON.stringify(st)),
+        id: newId,
+        name: `${st.name} (Cópia)`
+      };
+
+      setlists.unshift(duplicated);
+      activeSetlistId = newId;
+      saveToStorage();
+      renderSidebar();
+      renderSetlistEditor();
+      showToast(`Setlist "${st.name}" duplicado!`);
+    }
+
+    function deleteSetlist(id) {
+      const st = setlists.find(s => s.id === id);
+      if (!st) return;
+
+      if (!confirm(`Deseja realmente excluir o setlist "${st.name}"?`)) return;
+
+      setlists = setlists.filter(s => s.id !== id);
+      if (activeSetlistId === id) {
+        activeSetlistId = setlists.length > 0 ? setlists[0].id : null;
+      }
+
+      saveToStorage();
+      renderSidebar();
+      renderSetlistEditor();
+      showToast(`Setlist "${st.name}" removido.`, '🗑️');
+    }
+
+    function renderSetlistEditor() {
+      const emptyState = document.getElementById('emptyStateSetlist');
+      const editorInner = document.getElementById('setlistEditorInner');
+
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st) {
+        emptyState.style.display = 'flex';
+        editorInner.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      editorInner.style.display = 'flex';
+
+      document.getElementById('setlistName').value = st.name || '';
+      document.getElementById('setlistBand').value = st.bandName || '';
+      document.getElementById('setlistType').value = st.type || 'show';
+      document.getElementById('setlistDate').value = st.date || '';
+      document.getElementById('setlistLocal').value = st.local || '';
+      document.getElementById('setlistCache').value = st.cachê || '';
+      document.getElementById('setlistNotes').value = st.notes || '';
+
+      // Summary Bar Updates
+      const realSongs = (st.songs || []).filter(s => !s.isSpecial);
+      document.getElementById('sumTotalSongs').innerText = realSongs.length;
+      document.getElementById('sumTotalDuration').innerText = calculateSetlistTotalDuration(st.songs) || '00:00';
+
+      const localPill = document.getElementById('sumLocalPill');
+      if (st.local) {
+        localPill.style.display = 'flex';
+        document.getElementById('sumLocalText').innerText = st.local;
+      } else {
+        localPill.style.display = 'none';
+      }
+
+      const cachePill = document.getElementById('sumCachePill');
+      if (st.cachê) {
+        cachePill.style.display = 'flex';
+        document.getElementById('sumCacheText').innerText = st.cachê;
+      } else {
+        cachePill.style.display = 'none';
+      }
+
+      renderSetlistSongsList();
+    }
+
+    function updateCurrentSetlist(field, value) {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st) return;
+
+      st[field] = value;
+      saveToStorage();
+      renderSidebar();
+
+      // Live update summary
+      if (field === 'local') {
+        const localPill = document.getElementById('sumLocalPill');
+        if (value) {
+          localPill.style.display = 'flex';
+          document.getElementById('sumLocalText').innerText = value;
+        } else {
+          localPill.style.display = 'none';
+        }
+      }
+      if (field === 'cachê') {
+        const cachePill = document.getElementById('sumCachePill');
+        if (value) {
+          cachePill.style.display = 'flex';
+          document.getElementById('sumCacheText').innerText = value;
+        } else {
+          cachePill.style.display = 'none';
+        }
+      }
+    }
+
+    function calculateSetlistTotalDuration(songList) {
+      if (!songList || songList.length === 0) return '00:00';
+      let totalSeconds = 0;
+
+      songList.forEach(s => {
+        const dur = s.duration || s.customDuration || '';
+        if (dur.includes(':')) {
+          const parts = dur.split(':');
+          if (parts.length === 2) {
+            const m = parseInt(parts[0], 10) || 0;
+            const sec = parseInt(parts[1], 10) || 0;
+            totalSeconds += (m * 60) + sec;
+          }
+        }
+      });
+
+      if (totalSeconds === 0) return '00:00';
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      }
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function renderSetlistSongsList() {
+      const container = document.getElementById('setlistSongsListContainer');
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st) return;
+
+      const list = st.songs || [];
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-dim); padding: 30px; border: 1px dashed var(--border); border-radius: var(--radius-sm);">
+            <p style="font-size: 13px; margin-bottom: 8px;">Nenhuma música adicionada ao roteiro deste setlist.</p>
+            <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">+ Adicionar Música do Repertório</button>
+          </div>
+        `;
+        return;
+      }
+
+      let songCounter = 1;
+
+      container.innerHTML = list.map((item, idx) => {
+        const isPause = item.isSpecial && item.type === 'pause';
+        const isNote = item.isSpecial && item.type === 'note';
+
+        let badgeContent = '';
+        let rowClass = 'setlist-song-row';
+        if (isPause) {
+          rowClass += ' is-pause';
+          badgeContent = '⏸️';
+        } else if (isNote) {
+          rowClass += ' is-note';
+          badgeContent = '📢';
+        } else {
+          badgeContent = String(songCounter++).padStart(2, '0');
+        }
+
+        return `
+          <div class="${rowClass}">
+            <div class="song-order-badge">${badgeContent}</div>
+
+            <div class="song-row-title-area">
+              <div class="song-row-title">${item.name || 'Sem Título'}</div>
+              <div class="song-row-band">${isPause ? 'Pausa / Intervalo' : (isNote ? 'Anotação / Fala' : (item.originalBand || 'Artista'))}</div>
+            </div>
+
+            ${!isNote ? `
+              <div style="width: 85px; flex-shrink: 0;">
+                <input type="text" class="form-input" style="padding: 4px 6px; font-size: 11.5px; text-align: center;" placeholder="00:00" value="${item.duration || ''}" oninput="updateSetlistSongItem(${idx}, 'duration', this.value)">
+              </div>
+            ` : ''}
+
+            <input type="text" class="song-row-notes-input" placeholder="${isPause ? 'Ex: Intervalo 15 min para bate-papo' : (isNote ? 'Ex: Agradecer aos patrocinadores...' : 'Obs para este show (ex: Tom G, guitarra com drive)...')}" value="${item.customNotes || ''}" oninput="updateSetlistSongItem(${idx}, 'customNotes', this.value)">
+
+            <div class="song-row-actions">
+              <button class="btn btn-outline btn-sm btn-icon" ${idx === 0 ? 'disabled' : ''} onclick="moveSetlistSong(${idx}, -1)" title="Subir">⬆️</button>
+              <button class="btn btn-outline btn-sm btn-icon" ${idx === list.length - 1 ? 'disabled' : ''} onclick="moveSetlistSong(${idx}, 1)" title="Descer">⬇️</button>
+              <button class="btn btn-outline btn-sm btn-icon" style="color: var(--danger);" onclick="removeSetlistSong(${idx})" title="Remover do Setlist">❌</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateSetlistSongItem(idx, field, value) {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st || !st.songs || !st.songs[idx]) return;
+
+      st.songs[idx][field] = value;
+      if (field === 'duration') {
+        st.songs[idx].customDuration = value;
+        document.getElementById('sumTotalDuration').innerText = calculateSetlistTotalDuration(st.songs) || '00:00';
+      }
+      saveToStorage();
+    }
+
+    function moveSetlistSong(idx, direction) {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st || !st.songs) return;
+
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= st.songs.length) return;
+
+      const temp = st.songs[idx];
+      st.songs[idx] = st.songs[targetIdx];
+      st.songs[targetIdx] = temp;
+
+      saveToStorage();
+      renderSetlistSongsList();
+    }
+
+    function removeSetlistSong(idx) {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st || !st.songs) return;
+
+      st.songs.splice(idx, 1);
+      saveToStorage();
+      renderSetlistEditor();
+      showToast('Item removido do roteiro.');
+    }
+
+    function addSpecialItem(type) {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st) return;
+
+      st.songs = st.songs || [];
+      if (type === 'pause') {
+        st.songs.push({
+          id: `pause_${Date.now()}`,
+          isSpecial: true,
+          type: 'pause',
+          name: 'PAUSA / INTERVALO',
+          duration: '00:15',
+          customNotes: 'Intervalo de descanso'
+        });
+      } else if (type === 'note') {
+        st.songs.push({
+          id: `note_${Date.now()}`,
+          isSpecial: true,
+          type: 'note',
+          name: 'ANOTAÇÃO / FALA',
+          duration: '',
+          customNotes: 'Agradecer ao público e apresentar a banda'
+        });
+      }
+
+      saveToStorage();
+      renderSetlistEditor();
+      showToast(`${type === 'pause' ? 'Pausa' : 'Anotação'} inserida no roteiro!`);
+    }
+
+    /* ----------------------------------------------------
+       PICK SONG MODAL (Add songs from Repertoire to Setlist)
+    ---------------------------------------------------- */
+    function openPickSongModal() {
+      document.getElementById('pickSongSearchInput').value = '';
+      renderPickSongList();
+      document.getElementById('pickSongModal').classList.add('open');
+    }
+
+    function closePickSongModal() {
+      document.getElementById('pickSongModal').classList.remove('open');
+      renderSetlistEditor();
+    }
+
+    function renderPickSongList() {
+      const container = document.getElementById('pickSongListContainer');
+      const query = (document.getElementById('pickSongSearchInput')?.value || '').toLowerCase().trim();
+      const st = setlists.find(s => s.id === activeSetlistId);
+
+      const filtered = songs.filter(s => {
+        if (!query) return true;
+        const matchName = (s.name || '').toLowerCase().includes(query);
+        const matchBand = (s.originalBand || '').toLowerCase().includes(query);
+        const matchStyle = (s.style || '').toLowerCase().includes(query);
+        return matchName || matchBand || matchStyle;
+      });
+
+      document.getElementById('pickSongCountLabel').innerText = `${filtered.length} músicas no repertório`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 12px;">Nenhuma música encontrada no repertório.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(song => {
+        const inSetlistCount = (st?.songs || []).filter(s => s.id === song.id).length;
+
+        return `
+          <div class="pick-song-item">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text);">${song.name}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${song.originalBand} &nbsp;•&nbsp; ⏱ ${song.duration || '--:--'}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${inSetlistCount > 0 ? `<span class="tag-badge" style="color: var(--primary);">No setlist (${inSetlistCount}x)</span>` : ''}
+              <button class="btn btn-outline btn-sm" onclick="addSongToSetlist(${song.id})">+ Adicionar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addSongToSetlist(songId) {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      const song = songs.find(s => s.id === songId);
+      if (!st || !song) return;
+
+      st.songs = st.songs || [];
+      st.songs.push({
+        id: song.id,
+        name: song.name,
+        originalBand: song.originalBand,
+        style: song.style || '',
+        duration: song.duration || '',
+        customNotes: '',
+        customDuration: song.duration || '',
+        defaultView: song.defaultView || 'chords',
+        scrollSpeed: song.scrollSpeed || 'none',
+        lyrics: song.lyrics || '',
+        chords: song.chords || '',
+        tabs: song.tabs || '',
+        links: song.links || []
+      });
+
+      saveToStorage();
+      renderPickSongList();
+      showToast(`"${song.name}" adicionada ao setlist!`);
+    }
+
+    function addAllSongsToSetlist() {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st || songs.length === 0) return;
+
+      st.songs = st.songs || [];
+      songs.forEach(song => {
+        st.songs.push({
+          id: song.id,
+          name: song.name,
+          originalBand: song.originalBand,
+          style: song.style || '',
+          duration: song.duration || '',
+          customNotes: '',
+          customDuration: song.duration || '',
+          defaultView: song.defaultView || 'chords',
+          scrollSpeed: song.scrollSpeed || 'none',
+          lyrics: song.lyrics || '',
+          chords: song.chords || '',
+          tabs: song.tabs || '',
+          links: song.links || []
+        });
+      });
+
+      saveToStorage();
+      closePickSongModal();
+      showToast(`${songs.length} músicas adicionadas ao setlist!`);
+    }
+
+    /* ----------------------------------------------------
+       EXPORTS (Song, Setlist, Word Doc, Full Backup)
+    ---------------------------------------------------- */
     function exportCurrentSong() {
       const song = songs.find(s => s.id === activeSongId);
       if (!song) {
@@ -1337,9 +2285,288 @@
       document.getElementById('exportModal').classList.add('open');
     }
 
+    function exportCurrentSetlistJson() {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st) {
+        showToast('Nenhum setlist selecionado para exportar.', '⚠️');
+        return;
+      }
+
+      const exportData = {
+        app: 'SetlistsApp',
+        version: 1,
+        name: st.name,
+        type: st.type || 'show',
+        bandName: st.bandName || '',
+        date: st.date || '',
+        local: st.local || '',
+        cachê: st.cachê || '',
+        notes: st.notes || '',
+        songs: (st.songs || []).map(song => ({
+          name: song.name,
+          originalBand: song.originalBand,
+          style: song.style || '',
+          lyrics: song.lyrics || '',
+          chords: song.chords || '',
+          tabs: song.tabs || '',
+          defaultView: song.defaultView || 'chords',
+          duration: song.duration || '',
+          customNotes: song.customNotes || '',
+          customDuration: song.customDuration || song.duration || '',
+          scrollSpeed: song.scrollSpeed || 'none',
+          links: (song.links || []).map(link => ({
+            type: link.type,
+            url: link.url
+          }))
+        }))
+      };
+
+      const safeBand = (st.bandName || 'banda').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const safeEvent = (st.name || 'setlist').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      currentExportFilename = `setlist-${safeBand}-${safeEvent}.json`;
+      currentExportData = exportData;
+
+      document.getElementById('exportModalTitle').innerText = `💾 Exportar Setlist: ${st.name}`;
+      document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Tela Inicial ➔ <em>Importar Setlist</em>):`;
+      document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
+
+      document.getElementById('exportModal').classList.add('open');
+    }
+
+    function exportCurrentSetlistDoc() {
+      const st = setlists.find(s => s.id === activeSetlistId);
+      if (!st) {
+        showToast('Nenhum setlist selecionado para exportar.', '⚠️');
+        return;
+      }
+
+      const songsList = st.songs || [];
+      const totalSongsCount = songsList.filter(s => !s.isSpecial).length;
+      const totalDur = calculateSetlistTotalDuration(songsList);
+
+      const half = Math.ceil(songsList.length / 2);
+      const col1 = songsList.slice(0, half);
+      const col2 = songsList.slice(half);
+
+      let songCounter = 1;
+
+      const renderColumnHtml = (items) => {
+        return items.map(item => {
+          if (item.isSpecial && item.type === 'pause') {
+            return `
+              <div class="pause-item">
+                <div class="pause-name">⏸️ ${item.name || 'PAUSA / INTERVALO'} ${item.duration ? `(${item.duration})` : ''}</div>
+                ${item.customNotes ? `<div class="pause-obs">${item.customNotes}</div>` : ''}
+              </div>
+            `;
+          }
+          if (item.isSpecial && item.type === 'note') {
+            return `
+              <div class="note-item">
+                <div class="note-name">📢 ${item.name || 'ANOTAÇÃO'}</div>
+                ${item.customNotes ? `<div class="song-obs">${item.customNotes}</div>` : ''}
+              </div>
+            `;
+          }
+
+          const currentNum = String(songCounter++).padStart(2, '0');
+          const dur = item.duration || item.customDuration;
+          return `
+            <div class="song-item">
+              <div class="song-name">${currentNum}. ${item.name || 'Sem Título'} ${dur ? `<span style="font-weight: normal; font-size: 8.5pt; color: #6b7280;">(${dur})</span>` : ''}</div>
+              <div class="song-band">${item.originalBand || ''}</div>
+              ${item.customNotes ? `<div class="song-obs">Obs: ${item.customNotes}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      };
+
+      const col1Html = renderColumnHtml(col1);
+      const col2Html = renderColumnHtml(col2);
+
+      const docContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<meta name="Originator" content="Microsoft Word 15">
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: 21.0cm 29.7cm;
+    margin: 1.2cm 1.2cm 1.2cm 1.2cm;
+    mso-page-orientation: portrait;
+  }
+  body {
+    font-family: Calibri, Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #1f2937;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  table {
+    border-collapse: collapse;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+  }
+  .header-box {
+    width: 100%;
+    border: 1.5pt solid #374151;
+    background-color: #f3f4f6;
+    margin-bottom: 12pt;
+  }
+  .header-td {
+    padding: 8pt 12pt;
+    vertical-align: middle;
+  }
+  .show-title {
+    font-size: 15pt;
+    font-weight: bold;
+    color: #111827;
+    margin: 0 0 2pt 0;
+    text-transform: uppercase;
+  }
+  .band-title {
+    font-size: 10.5pt;
+    font-weight: bold;
+    color: #4b5563;
+    margin: 0 0 4pt 0;
+    text-transform: uppercase;
+  }
+  .meta-text {
+    font-size: 8.5pt;
+    color: #6b7280;
+    margin: 0;
+  }
+  .setlist-grid {
+    width: 100%;
+  }
+  .column-td {
+    width: 48%;
+    vertical-align: top;
+    padding: 0;
+  }
+  .gap-td {
+    width: 4%;
+    vertical-align: top;
+    padding: 0;
+  }
+  .song-item {
+    margin-bottom: 5pt;
+    padding-bottom: 3pt;
+    border-bottom: 0.5pt solid #e5e7eb;
+  }
+  .song-name {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #111827;
+    margin: 0;
+    line-height: 1.15;
+  }
+  .song-band {
+    font-size: 8pt;
+    color: #4b5563;
+    margin: 1pt 0 0 0;
+    line-height: 1.0;
+  }
+  .song-obs {
+    font-size: 8pt;
+    color: #6b7280;
+    font-style: italic;
+    margin: 1pt 0 0 0;
+    line-height: 1.0;
+  }
+  .pause-item {
+    margin-bottom: 5pt;
+    padding: 3pt 6pt;
+    background-color: #fef2f2;
+    border-left: 2.5pt solid #ef4444;
+  }
+  .pause-name {
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #b91c1c;
+    margin: 0;
+  }
+  .pause-obs {
+    font-size: 8pt;
+    color: #dc2626;
+    font-style: italic;
+    margin: 1pt 0 0 0;
+  }
+  .note-item {
+    margin-bottom: 5pt;
+    padding: 3pt 6pt;
+    background-color: #fffbeb;
+    border-left: 2.5pt solid #f59e0b;
+  }
+  .note-name {
+    font-size: 9pt;
+    font-weight: bold;
+    color: #b45309;
+    margin: 0;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <table class="header-box">
+    <tr>
+      <td class="header-td">
+        <div class="show-title">${String(st.name || 'SEM NOME').toUpperCase()}</div>
+        <div class="band-title">BANDA: ${String(st.bandName || 'SEM BANDA').toUpperCase()}</div>
+        <div class="meta-text">
+          ${st.date ? `Data: ${st.date} &nbsp;|&nbsp; ` : ''}
+          ${st.local ? `Local: ${st.local} &nbsp;|&nbsp; ` : ''}
+          Total: ${totalSongsCount} Músicas &nbsp;|&nbsp;
+          Duração: ${totalDur || 'Não informado'}
+          ${st.notes ? `<br>Obs: ${st.notes}` : ''}
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <table class="setlist-grid">
+    <tr>
+      <td class="column-td">
+        ${col1Html}
+      </td>
+      <td class="gap-td"></td>
+      <td class="column-td">
+        ${col2Html}
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+      const safeBand = (st.bandName || 'banda').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const safeEvent = (st.name || 'setlist').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const safeDate = (st.date || 'data').replace(/[^a-z0-9]/g, '_');
+      const filename = `${safeBand}_${safeEvent}_${safeDate}.doc`;
+
+      const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Documento Word "${filename}" baixado com sucesso!`);
+    }
+
     function exportFullBackup() {
-      if (songs.length === 0) {
-        showToast('Nenhuma música na lista para gerar backup.', '⚠️');
+      if (songs.length === 0 && setlists.length === 0) {
+        showToast('Nenhum dado para gerar backup.', '⚠️');
         return;
       }
 
@@ -1350,7 +2577,7 @@
         summary: {
           totalBands: 0,
           totalSongs: songs.length,
-          totalSetlists: 0
+          totalSetlists: setlists.length
         },
         bands: [],
         songs: songs.map(s => ({
@@ -1366,14 +2593,40 @@
           tabs: s.tabs || '',
           links: s.links || []
         })),
-        setlists: []
+        setlists: setlists.map(st => ({
+          id: st.id,
+          name: st.name,
+          type: st.type || 'show',
+          bandName: st.bandName || '',
+          date: st.date || '',
+          local: st.local || '',
+          cachê: st.cachê || '',
+          notes: st.notes || '',
+          songs: (st.songs || []).map(song => ({
+            name: song.name,
+            originalBand: song.originalBand,
+            style: song.style || '',
+            lyrics: song.lyrics || '',
+            chords: song.chords || '',
+            tabs: song.tabs || '',
+            defaultView: song.defaultView || 'chords',
+            duration: song.duration || '',
+            customNotes: song.customNotes || '',
+            customDuration: song.customDuration || song.duration || '',
+            scrollSpeed: song.scrollSpeed || 'none',
+            links: (song.links || []).map(link => ({
+              type: link.type,
+              url: link.url
+            }))
+          }))
+        }))
       };
 
       currentExportFilename = `backup-setlists-web-${new Date().toISOString().split('T')[0]}.json`;
       currentExportData = backupData;
 
-      document.getElementById('exportModalTitle').innerText = `📦 Exportar Backup Total (${songs.length} Músicas)`;
-      document.getElementById('exportModalDesc').innerHTML = `Este arquivo contém <strong>${songs.length} músicas</strong>. No app móvel, abra a aba <em>Sobre ➔ Restaurar Backup</em> para carregar todas de uma só vez:`;
+      document.getElementById('exportModalTitle').innerText = `📦 Exportar Backup Total (${songs.length} Músicas, ${setlists.length} Setlists)`;
+      document.getElementById('exportModalDesc').innerHTML = `Este arquivo contém <strong>${songs.length} músicas e ${setlists.length} setlists</strong>. No app móvel, abra a aba <em>Sobre ➔ Restaurar Backup</em> para restaurar tudo:`;
       document.getElementById('exportJsonTextarea').value = JSON.stringify(backupData, null, 2);
 
       document.getElementById('exportModal').classList.add('open');
@@ -1403,6 +2656,9 @@
       showToast(`Arquivo "${currentExportFilename}" baixado com sucesso!`);
     }
 
+    /* ----------------------------------------------------
+       IMPORT HANDLING (Songs, Setlists & Full Backups)
+    ---------------------------------------------------- */
     function openImportModal() {
       document.getElementById('importJsonTextarea').value = '';
       document.getElementById('importModal').classList.add('open');
@@ -1464,7 +2720,8 @@
         return;
       }
 
-      if (parsed.app === 'SetlistsAppSong' || (parsed.name && parsed.originalBand)) {
+      // 1. Single Song Import
+      if (parsed.app === 'SetlistsAppSong' || (parsed.name && parsed.originalBand && !parsed.songs)) {
         const newSong = {
           id: Date.now(),
           name: parsed.name || 'Sem Título',
@@ -1483,20 +2740,66 @@
         activeSongId = newSong.id;
         saveToStorage();
         closeImportModal();
-        renderSidebar();
-        renderEditor();
+        switchMode('songs');
         showToast(`Música "${newSong.name}" importada com sucesso!`);
         return;
       }
 
-      if (parsed.app === 'SetlistsAppBackup' || (parsed.songs && Array.isArray(parsed.songs))) {
-        const importedSongs = parsed.songs || [];
-        if (importedSongs.length === 0) {
-          showToast('O backup não contém nenhuma música.', '⚠️');
-          return;
-        }
+      // 2. Single Setlist Import
+      if (parsed.app === 'SetlistsApp' || (parsed.name && Array.isArray(parsed.songs) && parsed.app !== 'SetlistsAppBackup')) {
+        const importedSongs = (parsed.songs || []).map((s, idx) => ({
+          id: Date.now() + idx,
+          name: s.name || 'Sem Título',
+          originalBand: s.originalBand || parsed.bandName || 'Sem Banda',
+          style: s.style || '',
+          duration: s.duration || '',
+          customNotes: s.customNotes || '',
+          customDuration: s.customDuration || s.duration || '',
+          defaultView: s.defaultView || 'chords',
+          scrollSpeed: s.scrollSpeed || 'none',
+          lyrics: s.lyrics || '',
+          chords: s.chords || '',
+          tabs: s.tabs || '',
+          links: s.links || []
+        }));
 
-        const shouldReplace = confirm(`O backup contém ${importedSongs.length} músicas.\n\nDeseja SUBSTITUIR as músicas atuais (OK) ou MESCLAR/ADICIONAR às existentes (Cancelar)?`);
+        // Also add unique songs to general repertoire if not already present
+        let addedToRepertoire = 0;
+        importedSongs.forEach(impSong => {
+          const exists = songs.some(s => s.name.toLowerCase() === impSong.name.toLowerCase() && s.originalBand.toLowerCase() === impSong.originalBand.toLowerCase());
+          if (!exists) {
+            songs.push({ ...impSong });
+            addedToRepertoire++;
+          }
+        });
+
+        const newSetlist = {
+          id: Date.now(),
+          name: parsed.name || 'Setlist Importado',
+          bandName: parsed.bandName || '',
+          type: parsed.type || 'show',
+          date: parsed.date || new Date().toISOString().split('T')[0],
+          local: parsed.local || '',
+          cachê: parsed.cachê || '',
+          notes: parsed.notes || '',
+          songs: importedSongs
+        };
+
+        setlists.unshift(newSetlist);
+        activeSetlistId = newSetlist.id;
+        saveToStorage();
+        closeImportModal();
+        switchMode('setlists');
+        showToast(`Setlist "${newSetlist.name}" importado com sucesso! ${addedToRepertoire > 0 ? `(${addedToRepertoire} novas músicas salvas no repertório)` : ''}`);
+        return;
+      }
+
+      // 3. Full Backup Import
+      if (parsed.app === 'SetlistsAppBackup' || (parsed.songs && Array.isArray(parsed.songs) && parsed.setlists && Array.isArray(parsed.setlists))) {
+        const importedSongs = parsed.songs || [];
+        const importedSetlists = parsed.setlists || [];
+
+        const shouldReplace = confirm(`O backup contém ${importedSongs.length} músicas e ${importedSetlists.length} setlists.\n\nDeseja SUBSTITUIR os dados atuais (OK) ou MESCLAR com os existentes (Cancelar)?`);
 
         if (shouldReplace) {
           songs = importedSongs.map((s, idx) => ({
@@ -1511,6 +2814,18 @@
             chords: s.chords || '',
             tabs: s.tabs || '',
             links: s.links || []
+          }));
+
+          setlists = importedSetlists.map((st, idx) => ({
+            id: st.id || (Date.now() + 1000 + idx),
+            name: st.name || 'Setlist',
+            bandName: st.bandName || '',
+            type: st.type || 'show',
+            date: st.date || '',
+            local: st.local || '',
+            cachê: st.cachê || '',
+            notes: st.notes || '',
+            songs: (st.songs || []).map(s => ({ ...s }))
           }));
         } else {
           importedSongs.forEach((s, idx) => {
@@ -1528,20 +2843,37 @@
               links: s.links || []
             });
           });
+
+          importedSetlists.forEach((st, idx) => {
+            setlists.push({
+              id: Date.now() + 1000 + idx,
+              name: st.name || 'Setlist',
+              bandName: st.bandName || '',
+              type: st.type || 'show',
+              date: st.date || '',
+              local: st.local || '',
+              cachê: st.cachê || '',
+              notes: st.notes || '',
+              songs: (st.songs || []).map(s => ({ ...s }))
+            });
+          });
         }
 
         activeSongId = songs.length > 0 ? songs[0].id : null;
+        activeSetlistId = setlists.length > 0 ? setlists[0].id : null;
         saveToStorage();
         closeImportModal();
-        renderSidebar();
-        renderEditor();
-        showToast(`${importedSongs.length} músicas importadas com sucesso!`);
+        renderAll();
+        showToast(`Backup restaurado! ${importedSongs.length} músicas e ${importedSetlists.length} setlists carregados.`);
         return;
       }
 
-      showToast('Formato de JSON desconhecido.', '❌');
+      showToast('Formato de JSON não reconhecido.', '❌');
     }
 
+    /* ----------------------------------------------------
+       LIVE STAGE PREVIEW MODAL
+    ---------------------------------------------------- */
     function openPreviewModal() {
       const song = songs.find(s => s.id === activeSongId);
       if (!song) return;
@@ -1550,11 +2882,11 @@
       document.getElementById('previewBand').innerText = (song.originalBand || 'BANDA').toUpperCase();
 
       let content = '';
-      if (activeTab === 'chords') {
+      if (activeSongTab === 'chords') {
         content = song.chords || '(Nenhuma cifra cadastrada)';
-      } else if (activeTab === 'lyrics') {
+      } else if (activeSongTab === 'lyrics') {
         content = song.lyrics || '(Nenhuma letra cadastrada)';
-      } else if (activeTab === 'tabs') {
+      } else if (activeSongTab === 'tabs') {
         content = song.tabs || '(Nenhuma tablatura cadastrada)';
       }
 
