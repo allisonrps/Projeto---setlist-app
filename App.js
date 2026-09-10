@@ -1177,9 +1177,10 @@ function MainApp() {
   const getAllDataForBackup = async () => {
     const allBands = await bandService.getAll();
     const allSongs = await songService.getAll();
+    const rawSetlists = await setlistService.getAll();
     const allSetlists = await Promise.all(
-      (await setlistService.getAll()).map(async (st) => {
-        const songs = await setlistService.getSongsBySetlistId(st.id);
+      rawSetlists.map(async (st) => {
+        const songs = await setlistService.getSongsForSetlist(st.id);
         return { ...st, songs };
       })
     );

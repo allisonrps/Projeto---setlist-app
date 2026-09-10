@@ -109,6 +109,10 @@ export const setlistService = {
     }
   },
 
+  async getSongsBySetlistId(setlistId) {
+    return this.getSongsForSetlist(setlistId);
+  },
+
   async duplicate(setlistId) {
     try {
       const rawSetlist = await db.getAllAsync('SELECT * FROM setlists WHERE id = ? LIMIT 1;', [setlistId]);
