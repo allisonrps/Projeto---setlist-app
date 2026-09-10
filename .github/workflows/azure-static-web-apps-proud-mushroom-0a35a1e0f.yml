@@ -39,8 +39,8 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROUD_MUSHROOM_0A35A1E0F }}
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          app_location: "web-editor" # App source code path
-          api_location: "" # Api source code path - optional
+          app_location: "/" # App source code path
+          api_location: "api" # Api source code path - optional
           output_location: "" # Built app content directory - optional
           skip_app_build: true # Deploy raw HTML/JS directly
           github_id_token: ${{ steps.idtoken.outputs.result }}
