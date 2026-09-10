@@ -1327,14 +1327,14 @@
         Sincronizar Celular
       </button>
 
-      <button class="btn btn-outline" onclick="openImportModal()" title="Importar arquivo .json ou código">
+      <button class="btn btn-outline" onclick="openImportModal()" title="Importar arquivo de backup .json ou código">
         <ion-icon name="cloud-download-outline"></ion-icon>
-        Importar JSON
+        Importar Backup
       </button>
 
-      <button class="btn btn-success" onclick="exportFullBackup()" title="Backup completo de todas as músicas e setlists">
-        <ion-icon name="archive-outline"></ion-icon>
-        Backup Total
+      <button class="btn btn-outline" onclick="exportFullBackup()" title="Exportar backup completo de todas as músicas e setlists (.json)">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+        Exportar Backup
       </button>
 
       <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="Alternar Tema Claro / Escuro">
@@ -1701,7 +1701,7 @@
   <div class="modal-overlay" id="importModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3><ion-icon name="cloud-download-outline"></ion-icon> Importar JSON para o PC</h3>
+        <h3><ion-icon name="cloud-download-outline"></ion-icon> Importar Backup para o PC</h3>
         <button class="btn btn-ghost btn-icon" onclick="closeImportModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
       <div class="modal-body">
