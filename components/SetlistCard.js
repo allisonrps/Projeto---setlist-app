@@ -184,25 +184,28 @@ export default function SetlistCard({
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
             <View style={{
               backgroundColor: typeColor + '15',
-              borderColor: typeColor + '30',
+              borderColor: typeColor + '35',
               borderWidth: 1,
-              borderRadius: 3,
-              paddingHorizontal: 5,
-              paddingVertical: 1,
+              borderRadius: 10,
+              paddingHorizontal: 6,
+              paddingVertical: 1.5,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 3
+              gap: 3.5,
+              alignSelf: 'flex-start'
             }}>
               <Ionicons 
                 name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                size={8} 
+                size={8.5} 
                 color={typeColor} 
               />
               <Text style={{ 
-                fontSize: 8, 
+                fontSize: 8.5, 
                 fontWeight: '900', 
                 color: typeColor,
-                letterSpacing: 0.2
+                letterSpacing: 0.25,
+                includeFontPadding: false,
+                lineHeight: 11,
               }}>
                 {t(setlist.type).toUpperCase()}
               </Text>
@@ -224,11 +227,11 @@ export default function SetlistCard({
       {expanded && (
         <View style={[styles.expandedContent, { borderTopColor: colors.border }]}>
           
-          {/* Metadados no Expansivo (Músicas, Tempo Estimado, Local, Cachê como tags ultra-compactas) */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+          {/* Metadados no Expansivo (Músicas, Tempo Estimado, Local, Cachê como pílulas compactas) */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 8, alignItems: 'center' }}>
             {/* Total de Músicas */}
-            <View style={[styles.miniInfoBadge, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '25', borderWidth: 1 }]}>
-              <Ionicons name="musical-notes-outline" size={8} color={colors.primary} style={{ marginRight: 2 }} />
+            <View style={[styles.miniInfoBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+              <Ionicons name="musical-notes-outline" size={9.5} color={colors.primary} style={{ marginRight: 3.5 }} />
               <Text style={[styles.miniInfoText, { color: colors.primary }]}>
                 {setlist.songs ? setlist.songs.filter(s => s.id !== -1 && s.id !== -2).length : 0} {t('songsBadge')}
               </Text>
@@ -236,8 +239,8 @@ export default function SetlistCard({
 
             {/* Tempo Estimado */}
             {totalDuration ? (
-              <View style={[styles.miniInfoBadge, { backgroundColor: colors.secondary + '10', borderColor: colors.secondary + '25', borderWidth: 1 }]}>
-                <Ionicons name="time-outline" size={8} color={colors.secondary} style={{ marginRight: 2 }} />
+              <View style={[styles.miniInfoBadge, { backgroundColor: colors.secondary + '15', borderColor: colors.secondary + '35' }]}>
+                <Ionicons name="time-outline" size={9.5} color={colors.secondary} style={{ marginRight: 3.5 }} />
                 <Text style={[styles.miniInfoText, { color: colors.secondary }]}>
                   {totalDuration}
                 </Text>
@@ -246,8 +249,8 @@ export default function SetlistCard({
 
             {/* Local */}
             {setlist.local ? (
-              <View style={[styles.miniInfoBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderColor: colors.border, borderWidth: 1 }]}>
-                <Ionicons name="location-outline" size={8} color={colors.textMuted} style={{ marginRight: 2 }} />
+              <View style={[styles.miniInfoBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }]}>
+                <Ionicons name="location-outline" size={9.5} color={colors.textMuted} style={{ marginRight: 3.5 }} />
                 <Text style={[styles.miniInfoText, { color: colors.textMuted }]}>
                   {setlist.local}
                 </Text>
@@ -256,8 +259,8 @@ export default function SetlistCard({
 
             {/* Cachê */}
             {setlist.type === 'show' && setlist.cachê ? (
-              <View style={[styles.miniInfoBadge, { backgroundColor: colors.success + '10', borderColor: colors.success + '25', borderWidth: 1 }]}>
-                <Ionicons name="cash-outline" size={8} color={colors.success} style={{ marginRight: 2 }} />
+              <View style={[styles.miniInfoBadge, { backgroundColor: colors.success + '15', borderColor: colors.success + '35' }]}>
+                <Ionicons name="cash-outline" size={9.5} color={colors.success} style={{ marginRight: 3.5 }} />
                 <Text style={[styles.miniInfoText, { color: colors.success }]}>
                   R$ {setlist.cachê}
                 </Text>
@@ -605,17 +608,19 @@ const styles = StyleSheet.create({
   },
   miniInfoBadge: {
     flexDirection: 'row',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 3.5,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   miniInfoText: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '800',
+    includeFontPadding: false,
+    lineHeight: 11,
   },
   songsSectionHeader: {
     flexDirection: 'row',

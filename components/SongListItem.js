@@ -516,16 +516,19 @@ const styles = StyleSheet.create({
   },
   songMetaTag: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   songMetaTagText: {
     fontSize: 9,
     fontWeight: '900',
+    includeFontPadding: false,
+    lineHeight: 11,
     textTransform: 'uppercase',
   },
 });
