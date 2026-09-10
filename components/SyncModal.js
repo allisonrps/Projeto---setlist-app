@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   View,
@@ -12,6 +12,7 @@ import {
   Dimensions,
   SafeAreaView,
   ScrollView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -33,7 +34,7 @@ export default function SyncModal({
   const isDark = colors.isDark;
   
   const [permission, requestPermission] = useCameraPermissions();
-  const [activeTab, setActiveTab] = useState('camera'); // 'camera' | 'pin'
+  const [activeTab, setActiveTab] = useState('camera'); // 'camera' | 'generate' | 'pin'
   const [pinInput, setPinInput] = useState('');
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,7 +42,13 @@ export default function SyncModal({
   const [connectedSession, setConnectedSession] = useState(null);
   const [torch, setTorch] = useState(false);
 
-  // When modal opens, auto-request permission if not granted yet
+  // Phone-to-phone QR generation state
+  const [generatingQr, setGeneratingQr] = useState(false);
+  const [generatedSession, setGeneratedSession] = useState(null);
+  const [qrTransferred, setQrTransferred] = useState(false);
+  const pollIntervalRef = useRef(null);
+
+  // Reset states when modal opens
   useEffect(() => {
     if (visible) {
       setScanned(false);
@@ -50,12 +57,107 @@ export default function SyncModal({
       setConnectedSession(null);
       setPinInput('');
       setTorch(false);
+      setGeneratedSession(null);
+      setQrTransferred(false);
 
       if (!permission?.granted) {
         requestPermission();
       }
+    } else {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
     }
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
   }, [visible]);
+
+  // Handle Tab Switch
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setScanned(false);
+    setConnectedSession(null);
+    if (tab === 'generate' && !generatedSession) {
+      handleGenerateQrCode();
+    }
+  };
+
+  // Generate QR Code for another phone to scan
+  const handleGenerateQrCode = async () => {
+    setGeneratingQr(true);
+    setQrTransferred(false);
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+
+    try {
+      // 1. Get local database backup
+      const fullBackup = await getAllDataForBackup();
+
+      // 2. Create session on relay API
+      const createRes = await fetch(`${SYNC_API_DEFAULT}?action=create_session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create_session' }),
+      });
+      const sessionData = await createRes.json();
+
+      if (sessionData && sessionData.success) {
+        const { sessionId, pin } = sessionData;
+
+        // 3. Upload data to session for the other phone to receive
+        await fetch(`${SYNC_API_DEFAULT}?action=send_data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'send_data',
+            sessionId,
+            pin,
+            target: 'app',
+            data: fullBackup,
+          }),
+        });
+
+        const qrPayload = JSON.stringify({
+          app: 'SetlistsAppSync',
+          version: 1,
+          sessionId,
+          pin,
+          action: 'send_to_app',
+          apiUrl: SYNC_API_DEFAULT,
+        });
+
+        setGeneratedSession({ sessionId, pin, qrPayload });
+
+        // 4. Start polling to detect when friend downloads it
+        pollIntervalRef.current = setInterval(async () => {
+          try {
+            const checkRes = await fetch(`${SYNC_API_DEFAULT}?action=status&sessionId=${sessionId}`);
+            const checkData = await checkRes.json();
+            // If data was consumed
+            if (checkData && (checkData.status === 'consumed' || checkData.consumed)) {
+              setQrTransferred(true);
+              clearInterval(pollIntervalRef.current);
+              pollIntervalRef.current = null;
+              Alert.alert('Sucesso! 🎉', 'Seu repertório foi transferido com sucesso para o celular do seu amigo!');
+            }
+          } catch (e) {
+            // silent poll
+          }
+        }, 3000);
+      } else {
+        Alert.alert('Erro', 'Não foi possível gerar a sessão de compartilhamento.');
+      }
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+      Alert.alert('Erro de Conexão', 'Verifique sua conexão com a internet para gerar o QR Code.');
+    } finally {
+      setGeneratingQr(false);
+    }
+  };
 
   // Handle QR Barcode Scan
   const handleBarcodeScanned = async ({ type, data }) => {
@@ -73,15 +175,55 @@ export default function SyncModal({
       }
 
       if (parsed && (parsed.sessionId || parsed.pin)) {
-        setConnectedSession(parsed);
-        setStatusMessage(`Conectado ao Web Editor (PIN: ${parsed.pin || 'OK'})`);
+        // If it's a direct phone-to-phone share (action = 'send_to_app' or from PC send)
+        if (parsed.action === 'send_to_app' || parsed.action === 'send') {
+          // Immediately pull and restore data!
+          await autoPullAndRestore(parsed);
+        } else {
+          // Connected to PC session with choice to send or pull
+          setConnectedSession(parsed);
+          setStatusMessage(`Conectado à Sessão (PIN: ${parsed.pin || 'OK'})`);
+        }
       } else {
-        Alert.alert('QR Code Inválido', 'O código escaneado não é do Setlist Band Manager Web Editor.');
+        Alert.alert('QR Code Inválido', 'O código escaneado não pertence ao Setlist Band Manager.');
         setTimeout(() => setScanned(false), 2000);
       }
     } catch (err) {
-      Alert.alert('Erro', 'Não foi possível ler o QR Code.');
+      Alert.alert('Erro', 'Não foi possível processar o QR Code.');
       setTimeout(() => setScanned(false), 2000);
+    }
+  };
+
+  // Direct auto pull & restore for Phone-to-Phone sharing
+  const autoPullAndRestore = async (sessionInfo) => {
+    setLoading(true);
+    setStatusMessage('Baixando repertório do amigo...');
+
+    try {
+      const apiUrl = sessionInfo.apiUrl || SYNC_API_DEFAULT;
+      const res = await fetch(`${apiUrl}?action=poll_data&pin=${sessionInfo.pin}&sessionId=${sessionInfo.sessionId || ''}&receiver=app`);
+      const result = await res.json();
+
+      if (result && result.success && result.data) {
+        setStatusMessage('Salvando músicas no celular...');
+        await onRestoreBackupData(JSON.stringify(result.data));
+
+        Alert.alert(
+          'Repertório Recebido! 🎉',
+          'Todas as músicas e setlists compartilhados foram importados e salvos no seu aparelho!',
+          [{ text: 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+        );
+      } else {
+        // Fallback to manual choice
+        setConnectedSession(sessionInfo);
+        setStatusMessage(`Conectado (PIN: ${sessionInfo.pin})`);
+      }
+    } catch (err) {
+      console.error('Erro no auto pull:', err);
+      Alert.alert('Erro', 'Não foi possível baixar os dados compartilhados.');
+      setTimeout(() => setScanned(false), 2000);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,20 +231,30 @@ export default function SyncModal({
   const handleConnectByPin = async () => {
     const cleanPin = pinInput.trim().replace(/\s+/g, '');
     if (!cleanPin || cleanPin.length < 4) {
-      Alert.alert('PIN Inválido', 'Digite o código numérico de 6 dígitos exibido na tela do PC.');
+      Alert.alert('PIN Inválido', 'Digite o código numérico de 6 dígitos.');
       return;
     }
 
     setLoading(true);
-    setStatusMessage('Conectando ao Web Editor...');
+    setStatusMessage('Conectando ao código PIN...');
 
     try {
+      // First try to auto-pull (in case a friend sent data with this PIN)
       const res = await fetch(`${SYNC_API_DEFAULT}?action=poll_data&pin=${cleanPin}&receiver=app`);
-      const data = await res.json();
+      const result = await res.json();
 
-      if (data && data.success) {
+      if (result && result.success && result.data) {
+        setStatusMessage('Salvando músicas no celular...');
+        await onRestoreBackupData(JSON.stringify(result.data));
+
+        Alert.alert(
+          'Repertório Recebido! 🎉',
+          'Músicas e setlists importados com sucesso via PIN!',
+          [{ text: 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+        );
+      } else if (result && result.success) {
         setConnectedSession({ pin: cleanPin, apiUrl: SYNC_API_DEFAULT });
-        setStatusMessage(`Conectado à sessão (PIN: ${cleanPin})`);
+        setStatusMessage(`Conectado ao PIN ${cleanPin}`);
       } else {
         Alert.alert('Sessão Não Encontrada', data.error || 'Código PIN incorreto ou expirado.');
       }
@@ -206,8 +358,8 @@ export default function SyncModal({
                 <Ionicons name="qr-code-outline" size={20} color={colors.primary} />
               </View>
               <View>
-                <Text style={[styles.title, { color: colors.text }]}>Sincronizar com Web (PC)</Text>
-                <Text style={[styles.subtitle, { color: colors.textMuted }]}>Conexão instantânea via QR Code</Text>
+                <Text style={[styles.title, { color: colors.text }]}>Sincronizar & Compartilhar</Text>
+                <Text style={[styles.subtitle, { color: colors.textMuted }]}>Web Editor (PC) ou Outro Celular</Text>
               </View>
             </View>
             
@@ -228,12 +380,12 @@ export default function SyncModal({
                 <View style={[styles.connectedBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary }]}>
                   <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
                   <Text style={[styles.connectedText, { color: colors.primary }]}>
-                    {statusMessage || 'PC Conectado com Sucesso!'}
+                    {statusMessage || 'Conectado com Sucesso!'}
                   </Text>
                 </View>
 
                 <Text style={[styles.connectedSubtext, { color: colors.textMuted }]}>
-                  Escolha o sentido da sincronização:
+                  Escolha a ação desejada:
                 </Text>
 
                 {loading ? (
@@ -243,7 +395,7 @@ export default function SyncModal({
                   </View>
                 ) : (
                   <View style={styles.actionsBox}>
-                    {/* Action 1 */}
+                    {/* Action 1: Enviar */}
                     <TouchableOpacity
                       style={[styles.actionBtn, { backgroundColor: colors.primary }]}
                       onPress={handleSendToWeb}
@@ -259,7 +411,7 @@ export default function SyncModal({
                       <Ionicons name="arrow-forward" size={18} color="#ffffffaa" />
                     </TouchableOpacity>
 
-                    {/* Action 2 */}
+                    {/* Action 2: Puxar */}
                     <TouchableOpacity
                       style={[styles.actionBtn, styles.actionBtnSecondary, { borderColor: borderColor, backgroundColor: innerBg }]}
                       onPress={handlePullFromWeb}
@@ -269,8 +421,8 @@ export default function SyncModal({
                         <Ionicons name="cloud-download-outline" size={24} color={colors.primary} />
                       </View>
                       <View style={styles.actionBtnTextCol}>
-                        <Text style={[styles.actionBtnTitle, { color: colors.text }]}>PUXAR DO PC</Text>
-                        <Text style={[styles.actionBtnDesc, { color: colors.textMuted }]}>Baixa as músicas editadas no computador para este celular</Text>
+                        <Text style={[styles.actionBtnTitle, { color: colors.text }]}>PUXAR DO PC / AMIGO</Text>
+                        <Text style={[styles.actionBtnDesc, { color: colors.textMuted }]}>Baixa o repertório compartilhado para este celular</Text>
                       </View>
                       <Ionicons name="arrow-forward" size={18} color={colors.primary} />
                     </TouchableOpacity>
@@ -281,46 +433,60 @@ export default function SyncModal({
                       onPress={() => { setConnectedSession(null); setScanned(false); }}
                     >
                       <Ionicons name="refresh" size={16} color={colors.textMuted} />
-                      <Text style={[styles.rescanBtnText, { color: colors.textMuted }]}>Escanear outro QR Code</Text>
+                      <Text style={[styles.rescanBtnText, { color: colors.textMuted }]}>Escanear outro código</Text>
                     </TouchableOpacity>
                   </View>
                 )}
               </View>
             ) : (
               <>
-                {/* Tabs: Camera vs PIN */}
+                {/* Tabs: Ler QR | Gerar QR | Digitar PIN */}
                 <View style={[styles.tabRow, { backgroundColor: innerBg, borderColor: borderColor }]}>
                   <TouchableOpacity
                     style={[styles.tabBtn, activeTab === 'camera' && [styles.activeTabBtn, { backgroundColor: colors.primary }]]}
-                    onPress={() => setActiveTab('camera')}
+                    onPress={() => handleTabChange('camera')}
                   >
                     <Ionicons
-                      name="camera-outline"
-                      size={17}
+                      name="scan-outline"
+                      size={15}
                       color={activeTab === 'camera' ? '#fff' : colors.textMuted}
                     />
                     <Text style={[styles.tabBtnText, { color: activeTab === 'camera' ? '#fff' : colors.textMuted }]}>
-                      Câmera (QR Code)
+                      Ler QR
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.tabBtn, activeTab === 'generate' && [styles.activeTabBtn, { backgroundColor: colors.primary }]]}
+                    onPress={() => handleTabChange('generate')}
+                  >
+                    <Ionicons
+                      name="share-social-outline"
+                      size={15}
+                      color={activeTab === 'generate' ? '#fff' : colors.textMuted}
+                    />
+                    <Text style={[styles.tabBtnText, { color: activeTab === 'generate' ? '#fff' : colors.textMuted }]}>
+                      Gerar QR
                     </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.tabBtn, activeTab === 'pin' && [styles.activeTabBtn, { backgroundColor: colors.primary }]]}
-                    onPress={() => setActiveTab('pin')}
+                    onPress={() => handleTabChange('pin')}
                   >
                     <Ionicons
                       name="keypad-outline"
-                      size={17}
+                      size={15}
                       color={activeTab === 'pin' ? '#fff' : colors.textMuted}
                     />
                     <Text style={[styles.tabBtnText, { color: activeTab === 'pin' ? '#fff' : colors.textMuted }]}>
-                      Digitar PIN
+                      PIN
                     </Text>
                   </TouchableOpacity>
                 </View>
 
                 {/* TAB 1: CAMERA SCANNER */}
-                {activeTab === 'camera' ? (
+                {activeTab === 'camera' && (
                   <View style={styles.scannerOuter}>
                     {!permission?.granted ? (
                       <View style={[styles.permissionBox, { backgroundColor: innerBg, borderColor: borderColor }]}>
@@ -331,7 +497,7 @@ export default function SyncModal({
                           Acesso à Câmera Necessário
                         </Text>
                         <Text style={[styles.permissionSub, { color: colors.textMuted }]}>
-                          Para ler o QR Code exibido no monitor do computador, precisamos da permissão da câmera.
+                          Para ler o QR Code no monitor do PC ou no celular do seu amigo, precisamos da permissão da câmera.
                         </Text>
                         <TouchableOpacity
                           style={[styles.permissionBtn, { backgroundColor: colors.primary }]}
@@ -376,23 +542,96 @@ export default function SyncModal({
                         <View style={styles.scanInstructionPill}>
                           <Ionicons name="scan" size={14} color="#fff" />
                           <Text style={styles.scanInstructionText}>
-                            Aponte a câmera para o QR Code no PC
+                            Aponte para o QR Code do PC ou do amigo
                           </Text>
                         </View>
                       </View>
                     )}
                   </View>
-                ) : (
-                  /* TAB 2: PIN INPUT */
+                )}
+
+                {/* TAB 2: GERAR QR CODE PARA OUTRO CELULAR */}
+                {activeTab === 'generate' && (
+                  <View style={[styles.generateWrapper, { backgroundColor: innerBg, borderColor: borderColor }]}>
+                    {generatingQr ? (
+                      <View style={styles.generateLoadingBox}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                        <Text style={[styles.generateLoadingText, { color: colors.text }]}>
+                          Preparando repertório e gerando QR Code...
+                        </Text>
+                      </View>
+                    ) : generatedSession ? (
+                      <View style={styles.qrDisplayBox}>
+                        {/* QR Code Image */}
+                        <View style={styles.qrImageContainer}>
+                          <Image
+                            source={{
+                              uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                                generatedSession.qrPayload
+                              )}`,
+                            }}
+                            style={styles.qrImage}
+                            resizeMode="contain"
+                          />
+                        </View>
+
+                        {/* PIN Display */}
+                        <View style={[styles.qrPinBox, { backgroundColor: cardBg, borderColor: borderColor }]}>
+                          <Text style={[styles.qrPinLabel, { color: colors.textMuted }]}>CÓDIGO PIN:</Text>
+                          <Text style={[styles.qrPinValue, { color: colors.primary }]}>
+                            {generatedSession.pin.slice(0, 3)} {generatedSession.pin.slice(3)}
+                          </Text>
+                        </View>
+
+                        {/* Instruction */}
+                        <View style={styles.qrInstructionBox}>
+                          <Ionicons name="phone-portrait-outline" size={18} color={colors.primary} />
+                          <Text style={[styles.qrInstructionText, { color: colors.text }]}>
+                            Peça para seu amigo abrir o app, ir em <Text style={{ fontWeight: '800', color: colors.primary }}>"Ler QR"</Text> e apontar a câmera para esta tela.
+                          </Text>
+                        </View>
+
+                        {/* Status / Regenerate */}
+                        <TouchableOpacity
+                          style={[styles.refreshQrBtn, { borderColor: borderColor }]}
+                          onPress={handleGenerateQrCode}
+                        >
+                          <Ionicons name="refresh" size={16} color={colors.textMuted} />
+                          <Text style={[styles.refreshQrBtnText, { color: colors.textMuted }]}>Gerar Novo Código</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View style={styles.generateEmptyBox}>
+                        <Ionicons name="share-social-outline" size={42} color={colors.primary} />
+                        <Text style={[styles.generateEmptyTitle, { color: colors.text }]}>
+                          Compartilhar com Celular Próximo
+                        </Text>
+                        <Text style={[styles.generateEmptyDesc, { color: colors.textMuted }]}>
+                          Gere um QR Code na tela para enviar todas as suas músicas e setlists diretamente para o aparelho de outro integrante da banda.
+                        </Text>
+                        <TouchableOpacity
+                          style={[styles.generateActionBtn, { backgroundColor: colors.primary }]}
+                          onPress={handleGenerateQrCode}
+                        >
+                          <Ionicons name="qr-code-outline" size={18} color="#fff" />
+                          <Text style={styles.generateActionBtnText}>Gerar QR Code Agora</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {/* TAB 3: PIN INPUT */}
+                {activeTab === 'pin' && (
                   <View style={[styles.pinWrapper, { backgroundColor: innerBg, borderColor: borderColor }]}>
                     <View style={[styles.pinIconCircle, { backgroundColor: colors.primary + '20' }]}>
-                      <Ionicons name="desktop-outline" size={32} color={colors.primary} />
+                      <Ionicons name="keypad-outline" size={30} color={colors.primary} />
                     </View>
                     <Text style={[styles.pinTitle, { color: colors.text }]}>
                       Digite o PIN de 6 Dígitos
                     </Text>
                     <Text style={[styles.pinDesc, { color: colors.textMuted }]}>
-                      Código exibido na tela de sincronização do Web Editor no PC:
+                      Código exibido na tela do PC ou do celular do seu amigo:
                     </Text>
 
                     <TextInput
@@ -416,7 +655,7 @@ export default function SyncModal({
                       ) : (
                         <>
                           <Ionicons name="link-outline" size={20} color="#fff" />
-                          <Text style={styles.connectPinBtnText}>Conectar ao Web Editor</Text>
+                          <Text style={styles.connectPinBtnText}>Conectar e Importar</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -435,23 +674,23 @@ export default function SyncModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.82)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 18,
+    padding: 16,
   },
   card: {
     width: '100%',
     maxWidth: 420,
-    maxHeight: height * 0.88,
+    maxHeight: height * 0.90,
     borderRadius: 22,
     borderWidth: 1.5,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.5,
-    shadowRadius: 24,
-    elevation: 10,
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 20,
   },
   header: {
     flexDirection: 'row',
@@ -459,66 +698,67 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 18,
     paddingVertical: 14,
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 1,
   },
   headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     flex: 1,
   },
   headerIconCircle: {
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 15,
+    fontSize: 15.5,
     fontWeight: '800',
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontWeight: '600',
     marginTop: 1,
   },
   closeBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
   },
   bodyScroll: {
     padding: 16,
+    gap: 14,
   },
   tabRow: {
     flexDirection: 'row',
     padding: 4,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    marginBottom: 16,
-    gap: 6,
+    gap: 4,
   },
   tabBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
-    gap: 6,
+    gap: 5,
+    paddingVertical: 9,
+    borderRadius: 8,
   },
   activeTabBtn: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
   tabBtnText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '800',
   },
   scannerOuter: {
@@ -526,76 +766,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cameraContainer: {
-    width: '100%',
-    height: 280,
+    width: SCANNER_SIZE,
+    height: SCANNER_SIZE,
     borderRadius: 18,
     overflow: 'hidden',
+    position: 'relative',
     borderWidth: 1.5,
     backgroundColor: '#000',
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   reticleContainer: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   reticle: {
-    width: SCANNER_SIZE * 0.75,
-    height: SCANNER_SIZE * 0.75,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    width: SCANNER_SIZE * 0.72,
+    height: SCANNER_SIZE * 0.72,
     position: 'relative',
   },
   corner: {
     position: 'absolute',
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
+    borderColor: '#38bdf8',
   },
-  tl: { top: -2, left: -2, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 10 },
-  tr: { top: -2, right: -2, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 10 },
-  bl: { bottom: -2, left: -2, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 10 },
-  br: { bottom: -2, right: -2, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 10 },
+  tl: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 4 },
+  tr: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 4 },
+  bl: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 4 },
+  br: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 4 },
   torchBtn: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    top: 10,
+    right: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   scanInstructionPill: {
     position: 'absolute',
-    bottom: 14,
+    bottom: 10,
+    left: 10,
+    right: 10,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   scanInstructionText: {
-    color: '#ffffff',
-    fontSize: 11.5,
+    color: '#fff',
+    fontSize: 10.5,
     fontWeight: '700',
   },
   permissionBox: {
-    width: '100%',
     padding: 24,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     textAlign: 'center',
+    width: '100%',
   },
   permissionIconCircle: {
     width: 60,
@@ -606,77 +841,182 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   permissionText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     marginBottom: 6,
     textAlign: 'center',
   },
   permissionSub: {
-    fontSize: 12,
+    fontSize: 12.5,
     textAlign: 'center',
-    lineHeight: 17,
-    marginBottom: 18,
-    paddingHorizontal: 8,
+    lineHeight: 18,
+    marginBottom: 16,
   },
   permissionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 10,
   },
   permissionBtnText: {
     color: '#fff',
     fontSize: 13,
     fontWeight: '800',
   },
-  pinWrapper: {
-    width: '100%',
-    padding: 20,
-    borderRadius: 18,
+  generateWrapper: {
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
   },
+  generateLoadingBox: {
+    padding: 30,
+    alignItems: 'center',
+    gap: 12,
+  },
+  generateLoadingText: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  qrDisplayBox: {
+    alignItems: 'center',
+    width: '100%',
+    gap: 12,
+  },
+  qrImageContainer: {
+    padding: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  qrImage: {
+    width: 175,
+    height: 175,
+  },
+  qrPinBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  qrPinLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  qrPinValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  qrInstructionBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 10,
+  },
+  qrInstructionText: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    flex: 1,
+  },
+  refreshQrBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  refreshQrBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  generateEmptyBox: {
+    padding: 20,
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 10,
+  },
+  generateEmptyTitle: {
+    fontSize: 15.5,
+    fontWeight: '800',
+  },
+  generateEmptyDesc: {
+    fontSize: 12.5,
+    textAlign: 'center',
+    lineHeight: 17,
+  },
+  generateActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 6,
+  },
+  generateActionBtnText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  pinWrapper: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    width: '100%',
+  },
   pinIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   pinTitle: {
-    fontSize: 15,
+    fontSize: 15.5,
     fontWeight: '800',
     marginBottom: 4,
   },
   pinDesc: {
-    fontSize: 11.5,
+    fontSize: 12,
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 16,
+    marginBottom: 14,
   },
   pinInput: {
-    width: '85%',
-    paddingVertical: 12,
+    width: '100%',
+    height: 48,
     borderRadius: 12,
-    borderWidth: 2,
-    fontSize: 26,
+    borderWidth: 1.5,
+    fontSize: 22,
     fontWeight: '900',
     textAlign: 'center',
     letterSpacing: 6,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   connectPinBtn: {
+    width: '100%',
+    height: 44,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    width: '85%',
   },
   connectPinBtnText: {
     color: '#fff',
@@ -684,36 +1024,43 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   connectedContainer: {
-    alignItems: 'center',
-    paddingVertical: 6,
+    gap: 14,
+    width: '100%',
   },
   connectedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    padding: 12,
     borderRadius: 12,
-    borderWidth: 1.5,
-    marginBottom: 10,
+    borderWidth: 1,
   },
   connectedText: {
     fontSize: 13,
     fontWeight: '800',
+    flex: 1,
   },
   connectedSubtext: {
     fontSize: 12.5,
-    marginBottom: 16,
+    fontWeight: '600',
+  },
+  loadingBox: {
+    padding: 24,
+    alignItems: 'center',
+    gap: 10,
+  },
+  loadingText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   actionsBox: {
-    width: '100%',
-    gap: 12,
+    gap: 10,
   },
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 14,
     gap: 12,
   },
   actionBtnSecondary: {
@@ -722,8 +1069,8 @@ const styles = StyleSheet.create({
   actionIconBox: {
     width: 42,
     height: 42,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -731,14 +1078,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionBtnTitle: {
-    fontSize: 13.5,
-    fontWeight: '800',
     color: '#fff',
-    marginBottom: 2,
+    fontSize: 13.5,
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
   actionBtnDesc: {
-    fontSize: 10.5,
-    color: 'rgba(255,255,255,0.85)',
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 2,
     lineHeight: 14,
   },
   rescanBtn: {
@@ -747,20 +1096,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 10,
-    marginTop: 4,
   },
   rescanBtnText: {
     fontSize: 12,
     fontWeight: '700',
-  },
-  loadingBox: {
-    padding: 30,
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
   },
 });
