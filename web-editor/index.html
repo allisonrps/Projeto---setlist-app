@@ -120,63 +120,65 @@
     /* Header */
     header {
       background-color: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 24px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1.5px solid var(--border);
+      padding: 14px 32px;
+      min-height: 80px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 24px;
       z-index: 50;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-md);
+      box-sizing: border-box;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       text-decoration: none;
       color: inherit;
     }
 
-    .brand-icon-wrapper {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, #0ea5e9, #6366f1);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      box-shadow: 0 4px 14px var(--primary-glow);
+    .brand-logo-img {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 4px 18px var(--primary-glow);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background-color: #0f172a;
+      flex-shrink: 0;
     }
 
     .brand-text h1 {
-      font-size: 15px;
+      font-size: 17.5px;
       font-weight: 900;
-      letter-spacing: -0.2px;
+      letter-spacing: -0.3px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      color: var(--text);
     }
 
     .brand-badge {
-      font-size: 10px;
-      font-weight: 800;
+      font-size: 10.5px;
+      font-weight: 900;
       background: var(--primary-subtle);
       color: var(--primary);
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 3px 9px;
+      border-radius: 7px;
       border: 1px solid var(--primary-glow);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
     }
 
     .brand-text p {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
-      font-weight: 500;
+      font-weight: 600;
+      margin-top: 3px;
     }
 
     /* Mode Navigation Switcher */
@@ -184,19 +186,20 @@
       display: flex;
       background: var(--bg-input);
       border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 4px;
-      gap: 6px;
+      border-radius: 14px;
+      padding: 5px;
+      gap: 8px;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.25);
     }
 
     .mode-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 18px;
-      font-size: 13px;
+      padding: 10px 24px;
+      font-size: 13.5px;
       font-weight: 800;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
       background: transparent;
@@ -205,24 +208,36 @@
     }
 
     .mode-btn ion-icon {
-      font-size: 18px;
+      font-size: 19px;
     }
 
     .mode-btn:hover {
       color: var(--text);
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.06);
     }
 
     .mode-btn.active {
-      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      background: linear-gradient(135deg, var(--primary), #2563eb);
       color: #ffffff;
-      box-shadow: 0 2px 10px var(--primary-glow);
+      box-shadow: 0 4px 16px var(--primary-glow);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
+      gap: 12px;
+    }
+
+    .btn-sync-header {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border: none;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.45);
+      font-weight: 800;
       gap: 8px;
+    }
+    .btn-sync-header:hover {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      box-shadow: 0 0 22px rgba(99, 102, 241, 0.65);
     }
 
     /* Buttons */
@@ -231,10 +246,10 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 8px 16px;
-      font-size: 12.5px;
-      font-weight: 700;
-      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 10px;
       border: 1.5px solid transparent;
       cursor: pointer;
       transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -260,17 +275,17 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--primary), #2563eb);
       color: #ffffff;
-      box-shadow: 0 4px 12px var(--primary-glow);
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
     .btn-primary:hover {
       background: linear-gradient(135deg, var(--primary-hover), #1d4ed8);
-      box-shadow: 0 6px 16px var(--primary-glow);
+      box-shadow: 0 6px 18px var(--primary-glow);
     }
 
     .btn-success {
       background: linear-gradient(135deg, var(--success), #059669);
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
     }
     .btn-success:hover {
       background: linear-gradient(135deg, var(--success-hover), #047857);
@@ -297,17 +312,17 @@
     }
 
     .btn-sm {
-      padding: 5px 10px;
-      font-size: 11.5px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
     }
     .btn-sm ion-icon {
       font-size: 16px;
     }
 
     .btn-icon {
-      padding: 8px;
-      border-radius: 8px;
+      padding: 9px;
+      border-radius: 10px;
     }
     .btn-icon ion-icon {
       font-size: 20px;
@@ -317,7 +332,7 @@
     .app-body {
       display: flex;
       flex: 1;
-      height: calc(100vh - 74px);
+      height: calc(100vh - 80px);
       overflow: hidden;
     }
 
@@ -1268,15 +1283,13 @@
 
   <!-- Header -->
   <header>
-    <a href="#" class="brand">
-      <div class="brand-icon-wrapper">
-        <ion-icon name="musical-notes"></ion-icon>
-      </div>
+    <div class="brand">
+      <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../assets/logo.png';">
       <div class="brand-text">
         <h1>Setlist Band Manager <span class="brand-badge">WEB PRO</span></h1>
         <p>Editor de Músicas, Cifras e Setlists para PC</p>
       </div>
-    </a>
+    </div>
 
     <!-- Mode Switcher -->
     <div class="mode-nav">
@@ -1292,8 +1305,8 @@
 
     <!-- Header Actions -->
     <div class="header-actions">
-      <button class="btn btn-primary" onclick="openSyncModal()" title="Sincronizar em Tempo Real com o Celular via QR Code" style="background: linear-gradient(135deg, #0ea5e9, #6366f1); border: none; box-shadow: 0 0 14px rgba(99, 102, 241, 0.45); font-weight: 800; gap: 8px;">
-        <ion-icon name="qr-code-outline" style="font-size: 18px;"></ion-icon>
+      <button class="btn btn-primary btn-sync-header" onclick="openSyncModal()" title="Sincronizar em Tempo Real com o Celular via QR Code">
+        <ion-icon name="qr-code-outline"></ion-icon>
         Sincronizar Celular
       </button>
 
@@ -1303,7 +1316,7 @@
       </button>
 
       <!-- Contextual Action Buttons for Songs -->
-      <div id="songsHeaderActions" style="display: flex; gap: 8px;">
+      <div id="songsHeaderActions" style="display: flex; gap: 10px;">
         <button class="btn btn-outline" onclick="exportCurrentSong()" title="Exportar música ativa">
           <ion-icon name="save-outline"></ion-icon>
           Exportar Música
@@ -1315,7 +1328,7 @@
       </div>
 
       <!-- Contextual Action Buttons for Setlists -->
-      <div id="setlistsHeaderActions" style="display: none; gap: 8px;">
+      <div id="setlistsHeaderActions" style="display: none; gap: 10px;">
         <button class="btn btn-outline" onclick="exportCurrentSetlistDoc()" title="Exportar para Word formatado">
           <ion-icon name="document-text-outline"></ion-icon>
           Exportar Word (.doc)
