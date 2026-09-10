@@ -43,7 +43,8 @@ jobs:
           app_location: "/web-editor" # App source code path
           api_location: "api" # Api source code path - Azure Functions
           output_location: "" # Built app content directory - optional
-          skip_app_build: true # Deploy raw HTML/JS directly without npm build
+          app_build_command: "" # Leave web-editor raw HTML as-is without npm build
+          api_build_command: "npm install" # Install API dependencies
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
 
