@@ -1,9 +1,25 @@
 {
+  "routes": [
+    {
+      "route": "/editor",
+      "rewrite": "/web-editor/index.html"
+    },
+    {
+      "route": "/web-editor",
+      "rewrite": "/web-editor/index.html"
+    },
+    {
+      "route": "/web-editor/*",
+      "rewrite": "/web-editor/index.html"
+    }
+  ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": [
       "/assets/*",
-      "/*.{png,jpg,jpeg,gif,svg,ico,css,js,json}"
+      "/web-editor/assets/*",
+      "/*.{png,jpg,jpeg,gif,svg,ico,css,js,json}",
+      "/web-editor/*.{png,jpg,jpeg,gif,svg,ico,css,js,json}"
     ]
   },
   "mimeTypes": {
