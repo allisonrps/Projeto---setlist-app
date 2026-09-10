@@ -253,8 +253,8 @@ export default function SyncModal({
                         <Ionicons name="cloud-upload-outline" size={24} color="#fff" />
                       </View>
                       <View style={styles.actionBtnTextCol}>
-                        <Text style={styles.actionBtnTitle}>Enviar do Celular ➔ PC</Text>
-                        <Text style={styles.actionBtnDesc}>Sobe todo o seu repertório deste aparelho para o Web Editor no monitor</Text>
+                        <Text style={styles.actionBtnTitle}>ENVIAR PARA PC</Text>
+                        <Text style={styles.actionBtnDesc}>Envia todas as músicas deste celular para o computador</Text>
                       </View>
                       <Ionicons name="arrow-forward" size={18} color="#ffffffaa" />
                     </TouchableOpacity>
@@ -269,8 +269,8 @@ export default function SyncModal({
                         <Ionicons name="cloud-download-outline" size={24} color={colors.primary} />
                       </View>
                       <View style={styles.actionBtnTextCol}>
-                        <Text style={[styles.actionBtnTitle, { color: colors.text }]}>Baixar do PC ➔ Celular</Text>
-                        <Text style={[styles.actionBtnDesc, { color: colors.textMuted }]}>Puxa as músicas e setlists editados no computador para este celular</Text>
+                        <Text style={[styles.actionBtnTitle, { color: colors.text }]}>PUXAR DO PC</Text>
+                        <Text style={[styles.actionBtnDesc, { color: colors.textMuted }]}>Baixa as músicas editadas no computador para este celular</Text>
                       </View>
                       <Ionicons name="arrow-forward" size={18} color={colors.primary} />
                     </TouchableOpacity>
