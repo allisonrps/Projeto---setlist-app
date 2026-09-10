@@ -15,17 +15,30 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
   const { colors } = useTheme();
   const { t } = useLanguage();
   const isDark = colors.isDark;
-  const [activeTab, setActiveTab] = useState(song.defaultView || 'lyrics');
+  const [revealedTab, setRevealedTab] = useState(null);
 
   useEffect(() => {
-    setActiveTab(song.defaultView || 'lyrics');
-  }, [song.defaultView]);
+    if (!expanded) {
+      setRevealedTab(null);
+    }
+  }, [expanded]);
 
   const handleOpenLink = (url) => {
     if (url) {
       Linking.openURL(url).catch((err) => console.error("Couldn't open URL", err));
     }
   };
+
+  const hasLyrics = Boolean(song.lyrics && song.lyrics.trim().length > 0);
+  const hasChords = Boolean(song.chords && song.chords.trim().length > 0);
+  const hasTabs = Boolean(song.tabs && song.tabs.trim().length > 0);
+  const hasAnyContent = hasLyrics || hasChords || hasTabs;
+
+  const contentTabs = [
+    { key: 'lyrics', label: t('lyricsFormLabel'), hasContent: hasLyrics, content: song.lyrics, isMono: false },
+    { key: 'chords', label: t('chordsFormLabel'), hasContent: hasChords, content: song.chords, isMono: true },
+    { key: 'tabs', label: t('tabsFormLabel'), hasContent: hasTabs, content: song.tabs, isMono: true },
+  ];
 
   return (
     <View
@@ -151,70 +164,89 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
             </View>
           ) : null}
 
-          {/* Letra, Cifra ou Tablatura */}
-          {(!song.lyrics?.trim() && !song.chords?.trim() && !song.tabs?.trim()) ? (
-            <View style={styles.lyricsContainer}>
-              <Text style={{ color: colors.textMuted, fontStyle: 'italic', fontSize: 13, paddingVertical: 10 }}>
-                {t('noContentRegistered')}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.lyricsContainer}>
-               <View style={styles.tabHeaderRow}>
-                {[
-                  { key: 'lyrics', label: t('lyricsFormLabel'), icon: 'document-text-outline', hasContent: !!song.lyrics?.trim() },
-                  { key: 'chords', label: t('chordsFormLabel'), icon: 'musical-notes-outline', hasContent: !!song.chords?.trim() },
-                  { key: 'tabs', label: t('tabsFormLabel'), icon: 'list-outline', hasContent: !!song.tabs?.trim() },
-                ].map((tab) => (
+          {/* Tags com Olho Fechado: Letra, Cifra ou Tablatura */}
+          <View style={styles.lyricsContainer}>
+            <View style={styles.tabHeaderRow}>
+              {contentTabs.map((tab) => {
+                const isRevealed = revealedTab === tab.key;
+                return (
                   <Pressable
                     key={tab.key}
                     disabled={!tab.hasContent}
-                    style={[
+                    style={({ pressed }) => [
                       styles.tabButton,
-                      { borderColor: colors.border },
-                      activeTab === tab.key && { backgroundColor: colors.primary, borderColor: colors.primary },
-                      !tab.hasContent && { opacity: 0.25 }
+                      {
+                        borderColor: !tab.hasContent
+                          ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')
+                          : isRevealed
+                          ? colors.primary
+                          : (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)'),
+                        backgroundColor: !tab.hasContent
+                          ? (isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')
+                          : isRevealed
+                          ? (isDark ? colors.primary + '25' : colors.primary + '18')
+                          : (isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.035)'),
+                        opacity: !tab.hasContent ? 0.35 : (pressed ? 0.75 : 1),
+                      }
                     ]}
-                    onPress={() => setActiveTab(tab.key)}
+                    onPress={() => setRevealedTab(prev => prev === tab.key ? null : tab.key)}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                      <Ionicons 
-                        name={tab.icon} 
-                        size={13} 
-                        color={activeTab === tab.key ? '#fff' : (tab.hasContent ? colors.text : colors.textMuted)} 
+                    <View style={styles.tabButtonInner}>
+                      <Ionicons
+                        name={tab.hasContent ? (isRevealed ? "eye-outline" : "eye-off-outline") : "eye-off-outline"}
+                        size={13}
+                        color={!tab.hasContent ? colors.textMuted : isRevealed ? colors.primary : colors.text}
                       />
-                      <Text style={[
-                        styles.tabButtonText,
-                        { color: activeTab === tab.key ? '#fff' : (tab.hasContent ? colors.text : colors.textMuted) }
-                      ]}>
+                      <Text
+                        style={[
+                          styles.tabButtonText,
+                          {
+                            color: !tab.hasContent ? colors.textMuted : isRevealed ? colors.primary : colors.text,
+                            fontWeight: isRevealed ? '900' : '700',
+                          }
+                        ]}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.75}
+                      >
                         {tab.label}
                       </Text>
                     </View>
                   </Pressable>
-                ))}
-              </View>
-
-              {activeTab === 'lyrics' && song.lyrics ? (
-                <View style={[styles.lyricsBox, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
-                  <Text style={[styles.lyricsText, { color: colors.text }]}>{song.lyrics}</Text>
-                </View>
-              ) : null}
-
-              {activeTab === 'chords' && song.chords ? (
-                <View style={[styles.lyricsBox, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
-                  <Text style={[styles.lyricsText, styles.monoText, { color: colors.text }]}>{song.chords}</Text>
-                </View>
-              ) : null}
-
-              {activeTab === 'tabs' && song.tabs ? (
-                <View style={[styles.lyricsBox, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
-                  <Text style={[styles.lyricsText, styles.monoText, { color: colors.text }]}>{song.tabs}</Text>
-                </View>
-              ) : null}
+                );
+              })}
             </View>
-          )}
 
-          {/* Ações de Edição, Exclusão e Modo Palco */}
+            {/* Conteúdo Revelado ao Clicar na Tag com Olho */}
+            {revealedTab && (
+              <View style={[
+                styles.lyricsBox, 
+                { 
+                  backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.025)', 
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)' 
+                }
+              ]}>
+                <Text
+                  style={[
+                    styles.lyricsText,
+                    revealedTab !== 'lyrics' && styles.monoText,
+                    { color: colors.text }
+                  ]}
+                  selectable
+                >
+                  {revealedTab === 'lyrics' ? song.lyrics : revealedTab === 'chords' ? song.chords : song.tabs}
+                </Text>
+              </View>
+            )}
+
+            {!hasAnyContent && (
+              <Text style={{ color: colors.textMuted, fontStyle: 'italic', fontSize: 12, textAlign: 'center', marginVertical: 4 }}>
+                {t('noContentRegistered')}
+              </Text>
+            )}
+          </View>
+
+          {/* Ações de Edição, Exclusão, Compartilhar e Modo Palco */}
           <View style={styles.actionsRow}>
             <Pressable 
               onPress={() => onStartPerformance && onStartPerformance(song)} 
@@ -227,17 +259,15 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
                 }
               ]}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="mic-outline" size={12} color={colors.success} style={{ marginRight: 2.5 }} />
-                <Text 
-                  style={[styles.actionButtonText, { color: colors.success }]}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.7}
-                >
-                  {t('startStage')}
-                </Text>
-              </View>
+              <Ionicons name="mic-outline" size={11} color={colors.success} style={{ marginRight: 2 }} />
+              <Text 
+                style={[styles.actionButtonText, { color: colors.success }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.65}
+              >
+                {t('startStage')}
+              </Text>
             </Pressable>
 
             <Pressable 
@@ -251,17 +281,15 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
                 }
               ]}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="pencil-outline" size={12} color={colors.text} style={{ marginRight: 2.5 }} />
-                <Text 
-                  style={[styles.actionButtonText, { color: colors.text }]}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.7}
-                >
-                  {t('edit')}
-                </Text>
-              </View>
+              <Ionicons name="pencil-outline" size={11} color={colors.text} style={{ marginRight: 2 }} />
+              <Text 
+                style={[styles.actionButtonText, { color: colors.text }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.65}
+              >
+                {t('edit')}
+              </Text>
             </Pressable>
             
             <Pressable 
@@ -275,17 +303,15 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
                 }
               ]}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="share-social-outline" size={12} color={colors.secondary} style={{ marginRight: 2.5 }} />
-                <Text 
-                  style={[styles.actionButtonText, { color: colors.secondary }]}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.7}
-                >
-                  {t('share')}
-                </Text>
-              </View>
+              <Ionicons name="share-social-outline" size={11} color={colors.secondary} style={{ marginRight: 2 }} />
+              <Text 
+                style={[styles.actionButtonText, { color: colors.secondary }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.65}
+              >
+                {t('share')}
+              </Text>
             </Pressable>
 
             <Pressable 
@@ -299,17 +325,15 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
                 }
               ]}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="trash-outline" size={12} color={colors.danger} style={{ marginRight: 2.5 }} />
-                <Text 
-                  style={[styles.actionButtonText, { color: colors.danger }]}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.7}
-                >
-                  {t('delete')}
-                </Text>
-              </View>
+              <Ionicons name="trash-outline" size={11} color={colors.danger} style={{ marginRight: 2 }} />
+              <Text 
+                style={[styles.actionButtonText, { color: colors.danger }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.65}
+              >
+                {t('delete')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -420,6 +444,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 6,
     padding: 12,
+    marginTop: 6,
   },
   lyricsText: {
     fontSize: 13,
@@ -431,38 +456,57 @@ const styles = StyleSheet.create({
   },
   tabHeaderRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 10,
+    gap: 6,
+    marginBottom: 2,
+    width: '100%',
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 6,
-    borderWidth: 1.5,
-    borderRadius: 6,
+    minWidth: 0,
+    paddingVertical: 7,
+    paddingHorizontal: 4,
+    borderWidth: 1.2,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  tabButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    minWidth: 0,
   },
   tabButtonText: {
     fontSize: 11,
     fontWeight: '800',
+    flexShrink: 1,
+    textAlign: 'center',
   },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 5,
     width: '100%',
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1.5,
+    minWidth: 0,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 7,
+    paddingHorizontal: 2,
+    borderRadius: 7,
+    borderWidth: 1.2,
+    overflow: 'hidden',
   },
   actionButtonText: {
-    fontSize: 10.5,
-    fontWeight: '900',
+    fontSize: 9.5,
+    fontWeight: '850',
+    flexShrink: 1,
+    textAlign: 'center',
   },
   favoriteHeaderBtn: {
     paddingHorizontal: 8,
