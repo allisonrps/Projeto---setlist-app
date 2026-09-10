@@ -1310,7 +1310,7 @@
 </head>
 <body>
 
-  <!-- Header -->
+    <!-- Header -->
   <header>
     <div class="brand">
       <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../assets/logo.png';">
@@ -1331,26 +1331,6 @@
         <ion-icon name="cloud-download-outline"></ion-icon>
         Importar JSON
       </button>
-
-      <!-- Contextual Action Buttons for Songs -->
-      <div id="songsHeaderActions" style="display: flex; gap: 10px;">
-        <button class="btn btn-outline" onclick="exportCurrentSong()" title="Exportar música ativa">
-          <ion-icon name="save-outline"></ion-icon>
-          Exportar Música
-        </button>
-      </div>
-
-      <!-- Contextual Action Buttons for Setlists -->
-      <div id="setlistsHeaderActions" style="display: none; gap: 10px;">
-        <button class="btn btn-outline" onclick="exportCurrentSetlistDoc()" title="Exportar para Word formatado">
-          <ion-icon name="document-text-outline"></ion-icon>
-          Exportar Word (.doc)
-        </button>
-        <button class="btn btn-outline" onclick="exportCurrentSetlistJson()" title="Exportar setlist ativo">
-          <ion-icon name="download-outline"></ion-icon>
-          Exportar Setlist
-        </button>
-      </div>
 
       <button class="btn btn-success" onclick="exportFullBackup()" title="Backup completo de todas as músicas e setlists">
         <ion-icon name="archive-outline"></ion-icon>
@@ -2085,19 +2065,23 @@
 
     function switchMode(mode) {
       currentMode = mode;
-      document.getElementById('modeBtnSongs').className = `mode-btn ${mode === 'songs' ? 'active' : ''}`;
-      document.getElementById('modeBtnSetlists').className = `mode-btn ${mode === 'setlists' ? 'active' : ''}`;
+      const btnSongs = document.getElementById('modeBtnSongs');
+      const btnSetlists = document.getElementById('modeBtnSetlists');
+      if (btnSongs) btnSongs.className = 'mode-btn ' + (mode === 'songs' ? 'active' : '');
+      if (btnSetlists) btnSetlists.className = 'mode-btn ' + (mode === 'setlists' ? 'active' : '');
 
-      document.getElementById('songsHeaderActions').style.display = mode === 'songs' ? 'flex' : 'none';
-      document.getElementById('setlistsHeaderActions').style.display = mode === 'setlists' ? 'flex' : 'none';
+      const songSection = document.getElementById('songEditorSection');
+      if (songSection) songSection.style.display = mode === 'songs' ? 'flex' : 'none';
+      const setlistSection = document.getElementById('setlistEditorSection');
+      if (setlistSection) setlistSection.style.display = mode === 'setlists' ? 'flex' : 'none';
 
-      document.getElementById('songEditorSection').style.display = mode === 'songs' ? 'flex' : 'none';
-      document.getElementById('setlistEditorSection').style.display = mode === 'setlists' ? 'flex' : 'none';
-
-      document.getElementById('searchInput').value = '';
-      document.getElementById('searchInput').placeholder = mode === 'songs' 
-        ? 'Buscar por título, artista ou tag...' 
-        : 'Buscar setlist por nome, banda ou local...';
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.placeholder = mode === 'songs' 
+          ? 'Buscar por título, artista ou tag...' 
+          : 'Buscar setlist por nome, banda ou local...';
+      }
 
       renderSidebar();
       if (mode === 'songs') {
@@ -2487,6 +2471,11 @@
         });
 
         document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="musical-notes-outline"></ion-icon> ${songs.length} MÚSICAS`;
+        const addBtnSong = document.getElementById('sidebarAddBtn');
+        if (addBtnSong) {
+          addBtnSong.innerHTML = '<ion-icon name="add-circle-outline"></ion-icon> Nova Música';
+          addBtnSong.title = 'Criar Nova Música';
+        }
 
         if (filtered.length === 0) {
           container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">Nenhuma música encontrada</div>`;
@@ -2531,6 +2520,11 @@
         });
 
         document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="list-outline"></ion-icon> ${setlists.length} SETLISTS`;
+        const addBtnSetlist = document.getElementById('sidebarAddBtn');
+        if (addBtnSetlist) {
+          addBtnSetlist.innerHTML = '<ion-icon name="add-circle-outline"></ion-icon> Novo Setlist';
+          addBtnSetlist.title = 'Criar Novo Setlist';
+        }
 
         if (filtered.length === 0) {
           container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">Nenhum setlist encontrado</div>`;
