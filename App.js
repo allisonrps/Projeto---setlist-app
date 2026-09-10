@@ -29,6 +29,7 @@ import BandCarousel from './components/BandCarousel';
 import SongListItem from './components/SongListItem';
 import SetlistCard from './components/SetlistCard';
 import SettingsModal from './components/SettingsModal';
+import SyncModal from './components/SyncModal';
 import BandModal from './components/BandModal';
 import SongModal from './components/SongModal';
 import SetlistModal from './components/SetlistModal';
@@ -583,6 +584,7 @@ function MainApp() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showImportSongModal, setShowImportSongModal] = useState(false);
   const [showImportBackupModal, setShowImportBackupModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [selectedTutorialFeature, setSelectedTutorialFeature] = useState(null);
 
   // Estados de edição / item ativo
@@ -1169,6 +1171,31 @@ function MainApp() {
       Alert.alert('Erro', 'Não foi possível decodificar o arquivo de música. Verifique a integridade dos dados.');
       return false;
     }
+  };
+
+  
+  const getAllDataForBackup = async () => {
+    const allBands = await bandService.getAll();
+    const allSongs = await songService.getAll();
+    const allSetlists = await Promise.all(
+      (await setlistService.getAll()).map(async (st) => {
+        const songs = await setlistService.getSongsBySetlistId(st.id);
+        return { ...st, songs };
+      })
+    );
+    return {
+      app: 'SetlistsAppBackup',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      summary: {
+        totalBands: allBands.length,
+        totalSongs: allSongs.length,
+        totalSetlists: allSetlists.length
+      },
+      bands: allBands,
+      songs: allSongs,
+      setlists: allSetlists
+    };
   };
 
   const handleBackupAll = async () => {
@@ -2994,6 +3021,19 @@ function MainApp() {
       )}
 
       {/* Modais do Aplicativo */}
+      
+      <SyncModal
+        visible={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        getAllDataForBackup={getAllDataForBackup}
+        onRestoreBackupData={handleRestoreBackup}
+        onSyncSuccess={() => {
+          loadBands();
+          loadSongs();
+          loadSetlists();
+        }}
+      />
+
       <SettingsModal 
         visible={showSettingsModal} 
         onClose={() => setShowSettingsModal(false)} 

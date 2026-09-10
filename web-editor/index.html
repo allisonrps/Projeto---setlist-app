@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
+    <!-- QRCode Generator (Offline/CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- Ionicons (Same as Mobile App) -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -1608,6 +1610,74 @@
 
   </div>
 
+  
+  <!-- Modal: Sincronização em Tempo Real com Celular (Estilo WhatsApp Web) -->
+  <div class="modal-overlay" id="syncModal">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3><ion-icon name="qr-code-outline" style="color: var(--primary);"></ion-icon> Sincronização Direta com o Celular</h3>
+        <button class="btn btn-ghost btn-icon" onclick="closeSyncModal()"><ion-icon name="close-outline"></ion-icon></button>
+      </div>
+
+      <div class="modal-body" style="align-items: center; text-align: center; gap: 20px;">
+        
+        <!-- Mode Tabs: Receber vs Enviar -->
+        <div style="display: flex; gap: 8px; width: 100%; background: var(--bg-card); padding: 4px; border-radius: var(--radius-md); border: 1.5px solid var(--border);">
+          <button id="syncTabReceive" class="tab-btn active" onclick="switchSyncMode('receive')" style="flex: 1; justify-content: center;">
+            <ion-icon name="cloud-download-outline"></ion-icon>
+            Puxar do Celular ➔ PC
+          </button>
+          <button id="syncTabSend" class="tab-btn" onclick="switchSyncMode('send')" style="flex: 1; justify-content: center;">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+            Enviar do PC ➔ Celular
+          </button>
+        </div>
+
+        <div id="syncDescText" style="font-size: 13px; color: var(--text-muted); max-width: 480px; line-height: 1.5;">
+          Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para o QR Code abaixo para transferir todo o seu repertório e setlists instantaneamente.
+        </div>
+
+        <!-- QR Code Display Box -->
+        <div style="position: relative; padding: 18px; background: #ffffff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); display: inline-flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div id="qrcodeContainer" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+            <!-- QR rendered here -->
+          </div>
+          <div style="font-size: 10.5px; font-weight: 800; color: #0f172a; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+            Setlist Band Manager Sync
+          </div>
+        </div>
+
+        <!-- PIN Alternative -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px;">OU DIGITE O CÓDIGO PIN NO APP:</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="syncPinDisplay" style="font-family: 'Fira Code', monospace; font-size: 26px; font-weight: 800; letter-spacing: 4px; color: var(--primary); background: var(--bg-card); padding: 6px 18px; border-radius: var(--radius-md); border: 2px dashed var(--primary);">
+              ------
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="copySyncPin()" title="Copiar Código">
+              <ion-icon name="copy-outline"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Status Indicator -->
+        <div id="syncStatusBox" style="display: flex; align-items: center; gap: 10px; padding: 10px 20px; background: var(--primary-subtle); border: 1.5px solid var(--primary-glow); border-radius: var(--radius-md); font-size: 12.5px; font-weight: 700; color: var(--primary);">
+          <span class="pulse-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--primary); display: inline-block; box-shadow: 0 0 8px var(--primary);"></span>
+          <span id="syncStatusText">Aguardando leitura do celular...</span>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button class="btn btn-ghost btn-sm" onclick="refreshSyncSession()">
+          <ion-icon name="refresh-outline"></ion-icon>
+          Gerar Novo QR Code
+        </button>
+        <button class="btn btn-outline" onclick="closeSyncModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Importar JSON -->
   <div class="modal-overlay" id="importModal">
     <div class="modal-card">
@@ -2008,6 +2078,254 @@
 
     function filterItems() {
       renderSidebar();
+    }
+
+    
+    /* ----------------------------------------------------
+       QR CODE REALTIME SYNC SYSTEM (WhatsApp Web style)
+    ---------------------------------------------------- */
+    let syncSessionId = null;
+    let syncPin = null;
+    let syncPollInterval = null;
+    let syncMode = 'receive'; // 'receive' | 'send'
+    let qrcodeInstance = null;
+
+    function getSyncApiBaseUrl() {
+      // In Azure or Web: use current origin + /api/sync
+      if (window.location.origin && window.location.origin.startsWith('http')) {
+        return window.location.origin + '/api/sync';
+      }
+      // Fallback for local testing or custom proxy
+      return 'https://proud-mushroom-0a35a1e0f.azurestaticapps.net/api/sync';
+    }
+
+    function switchSyncMode(mode) {
+      syncMode = mode;
+      document.getElementById('syncTabReceive').className = `tab-btn ${mode === 'receive' ? 'active' : ''}`;
+      document.getElementById('syncTabSend').className = `tab-btn ${mode === 'send' ? 'active' : ''}`;
+
+      const desc = document.getElementById('syncDescText');
+      if (mode === 'receive') {
+        desc.innerHTML = 'Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para enviar todas as músicas do celular direto para o seu PC.';
+      } else {
+        desc.innerHTML = 'Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para baixar todas as músicas editadas no PC para o celular.';
+        // Upload PC state to session immediately
+        sendPcDataToSyncSession();
+      }
+
+      refreshSyncSession();
+    }
+
+    async function openSyncModal() {
+      document.getElementById('syncModal').classList.add('open');
+      await refreshSyncSession();
+    }
+
+    function closeSyncModal() {
+      if (syncPollInterval) {
+        clearInterval(syncPollInterval);
+        syncPollInterval = null;
+      }
+      document.getElementById('syncModal').classList.remove('open');
+    }
+
+    async function refreshSyncSession() {
+      if (syncPollInterval) clearInterval(syncPollInterval);
+
+      document.getElementById('syncStatusText').innerText = 'Conectando ao servidor de sincronização...';
+      document.getElementById('syncPinDisplay').innerText = '...';
+
+      try {
+        const res = await fetch(getSyncApiBaseUrl() + '?action=create_session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create_session' })
+        });
+        const data = await res.json();
+
+        if (data && data.success) {
+          syncSessionId = data.sessionId;
+          syncPin = data.pin;
+          document.getElementById('syncPinDisplay').innerText = formatPin(syncPin);
+
+          // Generate QR Payload (Contains API URL + Session + Action)
+          const qrPayload = JSON.stringify({
+            app: 'SetlistsAppSync',
+            version: 1,
+            sessionId: syncSessionId,
+            pin: syncPin,
+            action: syncMode,
+            apiUrl: getSyncApiBaseUrl()
+          });
+
+          renderQrCode(qrPayload);
+
+          if (syncMode === 'send') {
+            await sendPcDataToSyncSession();
+          }
+
+          startSyncPolling();
+        } else {
+          document.getElementById('syncStatusText').innerText = 'Aguardando pareamento local...';
+        }
+      } catch (err) {
+        console.warn('Sync API local fallback:', err);
+        // Offline / Fallback PIN generation
+        syncSessionId = 'local_' + Date.now().toString(36);
+        syncPin = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('syncPinDisplay').innerText = formatPin(syncPin);
+        
+        const qrPayload = JSON.stringify({
+          app: 'SetlistsAppSync',
+          version: 1,
+          sessionId: syncSessionId,
+          pin: syncPin,
+          action: syncMode,
+          apiUrl: getSyncApiBaseUrl()
+        });
+        renderQrCode(qrPayload);
+        document.getElementById('syncStatusText').innerText = 'Aguardando leitura do celular...';
+      }
+    }
+
+    function formatPin(pin) {
+      if (!pin) return '------';
+      const str = String(pin).trim();
+      if (str.length === 6) return str.slice(0, 3) + ' ' + str.slice(3);
+      return str;
+    }
+
+    function renderQrCode(payload) {
+      const container = document.getElementById('qrcodeContainer');
+      container.innerHTML = '';
+      try {
+        if (typeof QRCode !== 'undefined') {
+          qrcodeInstance = new QRCode(container, {
+            text: payload,
+            width: 190,
+            height: 190,
+            colorDark: '#0b0f19',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } else {
+          container.innerHTML = '<div style="color: #333; font-size: 11px;">Carregando QR Code...</div>';
+        }
+      } catch (e) {
+        console.error('Error generating QR:', e);
+      }
+    }
+
+    async function sendPcDataToSyncSession() {
+      if (!syncSessionId) return;
+      document.getElementById('syncStatusText').innerText = 'Enviando repertório do PC para o QR Code...';
+
+      const backupData = {
+        app: 'SetlistsAppBackup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        bands: [],
+        songs: songs.map(s => ({ ...s })),
+        setlists: setlists.map(st => ({ ...st }))
+      };
+
+      try {
+        await fetch(getSyncApiBaseUrl() + '?action=send_data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'send_data',
+            sessionId: syncSessionId,
+            pin: syncPin,
+            target: 'app',
+            data: backupData
+          })
+        });
+        document.getElementById('syncStatusText').innerText = 'Dados prontos! Aponte a câmera do app para o QR Code.';
+      } catch (err) {
+        console.warn('Could not post to sync API:', err);
+      }
+    }
+
+    function startSyncPolling() {
+      if (syncPollInterval) clearInterval(syncPollInterval);
+
+      document.getElementById('syncStatusText').innerText = 'Aguardando leitura da câmera do celular...';
+
+      syncPollInterval = setInterval(async () => {
+        if (!syncSessionId) return;
+
+        try {
+          const res = await fetch(`${getSyncApiBaseUrl()}?action=poll_data&sessionId=${syncSessionId}&receiver=web`);
+          const data = await res.json();
+
+          if (data && data.success && data.status === 'received' && data.data) {
+            clearInterval(syncPollInterval);
+            syncPollInterval = null;
+
+            handleReceivedSyncData(data.data);
+          }
+        } catch (e) {
+          // Keep polling silently
+        }
+      }, 1500);
+    }
+
+    function handleReceivedSyncData(payload) {
+      const statusBox = document.getElementById('syncStatusBox');
+      statusBox.style.background = 'var(--success-subtle)';
+      statusBox.style.borderColor = 'var(--success)';
+      statusBox.style.color = 'var(--success)';
+
+      document.getElementById('syncStatusText').innerHTML = '<strong>Conexão Concluída!</strong> Dados recebidos do celular!';
+
+      if (payload && (payload.app === 'SetlistsAppBackup' || payload.songs)) {
+        const newSongs = payload.songs || [];
+        const newSetlists = payload.setlists || [];
+
+        songs = newSongs.map((s, idx) => ({
+          id: s.id || (Date.now() + idx),
+          name: getSongTitle(s),
+          originalBand: getSongBand(s),
+          duration: getSongDuration(s),
+          style: getSongStyle(s),
+          defaultView: s.defaultView || 'chords',
+          scrollSpeed: s.scrollSpeed || 'none',
+          lyrics: s.lyrics || '',
+          chords: s.chords || '',
+          tabs: s.tabs || '',
+          links: s.links || []
+        }));
+
+        setlists = newSetlists.map((st, idx) => ({
+          id: st.id || (Date.now() + 1000 + idx),
+          name: st.name || 'Setlist',
+          bandName: st.bandName || '',
+          type: st.type || 'show',
+          date: st.date || '',
+          local: st.local || '',
+          cachê: st.cachê || '',
+          notes: st.notes || '',
+          songs: (st.songs || []).map(s => ({ ...s }))
+        }));
+
+        if (songs.length > 0) activeSongId = songs[0].id;
+        if (setlists.length > 0) activeSetlistId = setlists[0].id;
+
+        saveToStorage();
+        renderAll();
+
+        setTimeout(() => {
+          closeSyncModal();
+          showToast(`Sincronização concluída! ${songs.length} músicas e ${setlists.length} setlists carregados do celular.`, 'checkmark-circle');
+        }, 1200);
+      }
+    }
+
+    function copySyncPin() {
+      if (!syncPin) return;
+      navigator.clipboard.writeText(syncPin);
+      showToast(`Código PIN ${syncPin} copiado!`, 'copy-outline');
     }
 
     function renderAll() {

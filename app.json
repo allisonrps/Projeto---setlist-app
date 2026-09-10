@@ -28,7 +28,13 @@
     "plugins": [
       "expo-sqlite",
       "expo-status-bar",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita o acesso à câmera para escanear o QR Code de sincronização do Web Editor no PC."
+        }
+      ]
     ],
     "extra": {
       "eas": {
