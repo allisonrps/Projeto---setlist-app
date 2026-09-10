@@ -509,15 +509,18 @@ export default function SyncModal({
                       </View>
                     ) : (
                       <View style={[styles.cameraContainer, { borderColor: borderColor }]}>
-                        <CameraView
-                          style={StyleSheet.absoluteFillObject}
-                          facing="back"
-                          enableTorch={torch}
-                          barcodeScannerSettings={{
-                            barcodeTypes: ['qr'],
-                          }}
-                          onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-                        />
+                        {visible && activeTab === 'camera' && permission?.granted && (
+                          <CameraView
+                            key={`camera-scanner-${visible}-${activeTab}-${torch}`}
+                            style={styles.cameraView}
+                            facing="back"
+                            enableTorch={torch}
+                            barcodeScannerSettings={{
+                              barcodeTypes: ['qr'],
+                            }}
+                            onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+                          />
+                        )}
 
                         {/* Reticle Overlay */}
                         <View style={styles.reticleContainer} pointerEvents="none">
@@ -768,11 +771,14 @@ const styles = StyleSheet.create({
   cameraContainer: {
     width: SCANNER_SIZE,
     height: SCANNER_SIZE,
-    borderRadius: 18,
+    borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
     borderWidth: 1.5,
-    backgroundColor: '#000',
+  },
+  cameraView: {
+    width: '100%',
+    height: '100%',
   },
   reticleContainer: {
     ...StyleSheet.absoluteFillObject,
