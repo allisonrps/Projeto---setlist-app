@@ -422,6 +422,31 @@
       align-items: center;
     }
 
+    
+    .btn-sidebar-add {
+      background: linear-gradient(135deg, var(--primary), #2563eb) !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      font-size: 12px !important;
+      padding: 7px 14px !important;
+      border-radius: 8px !important;
+      border: none !important;
+      box-shadow: 0 3px 12px var(--primary-glow) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      cursor: pointer !important;
+    }
+    .btn-sidebar-add:hover {
+      background: linear-gradient(135deg, var(--primary-hover), #1d4ed8) !important;
+      box-shadow: 0 5px 16px var(--primary-glow) !important;
+      transform: translateY(-1.5px) !important;
+    }
+    .btn-sidebar-add ion-icon {
+      font-size: 16px !important;
+    }
+
     .sidebar-count {
       font-size: 11px;
       font-weight: 800;
@@ -1313,10 +1338,6 @@
           <ion-icon name="save-outline"></ion-icon>
           Exportar Música
         </button>
-        <button class="btn btn-primary" onclick="addNewSong()">
-          <ion-icon name="add-outline"></ion-icon>
-          Nova Música
-        </button>
       </div>
 
       <!-- Contextual Action Buttons for Setlists -->
@@ -1328,10 +1349,6 @@
         <button class="btn btn-outline" onclick="exportCurrentSetlistJson()" title="Exportar setlist ativo">
           <ion-icon name="download-outline"></ion-icon>
           Exportar Setlist
-        </button>
-        <button class="btn btn-primary" onclick="addNewSetlist()">
-          <ion-icon name="add-outline"></ion-icon>
-          Novo Setlist
         </button>
       </div>
 
@@ -1373,9 +1390,9 @@
             <ion-icon name="musical-notes-outline"></ion-icon>
             0 MÚSICAS
           </span>
-          <button class="btn btn-outline btn-sm" id="sidebarAddBtn" onclick="handleSidebarAdd()">
-            <ion-icon name="add-outline"></ion-icon>
-            Adicionar
+          <button class="btn btn-sidebar-add" id="sidebarAddBtn" onclick="handleSidebarAdd()" title="Criar Nova Música">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            Nova Música
           </button>
         </div>
       </div>
