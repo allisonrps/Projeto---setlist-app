@@ -3069,10 +3069,8 @@ function MainApp() {
         onClose={() => setShowSyncModal(false)}
         getAllDataForBackup={getAllDataForBackup}
         onRestoreBackupData={handleRestoreBackup}
-        onSyncSuccess={() => {
-          loadBands();
-          loadSongs();
-          loadSetlists();
+        onSyncSuccess={async () => {
+          await reloadAllData();
         }}
       />
 
