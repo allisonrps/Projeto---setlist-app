@@ -2841,6 +2841,48 @@ function MainApp() {
             ))}
           </View>
 
+          
+          {/* Card de Sincronização Web (QR Code) */}
+          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: '#6366f166', borderWidth: 1.5 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <View style={{ backgroundColor: '#6366f122', padding: 8, borderRadius: 10 }}>
+                <Ionicons name="qr-code-outline" size={24} color="#6366f1" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 2 }]}>Sincronizar com Web Editor (PC)</Text>
+                <Text style={{ fontSize: 11.5, color: colors.textMuted }}>Conecte ao seu computador via QR Code ou PIN</Text>
+              </View>
+            </View>
+            <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: 14 }}>
+              Transfira todo o seu repertório, letras, cifras e setlists entre o aplicativo do celular e o Web Editor no computador com apenas 1 leitura de câmera ou código PIN de 6 dígitos.
+            </Text>
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  backgroundColor: '#6366f1',
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  opacity: pressed ? 0.85 : 1,
+                  shadowColor: '#6366f1',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }
+              ]}
+              onPress={() => setShowSyncModal(true)}
+            >
+              <Ionicons name="scan-outline" size={18} color="#fff" />
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+                ABRIR SINCRONIZADOR QR CODE
+              </Text>
+            </Pressable>
+          </View>
+
           {/* Card de Dicas de Backup */}
           <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <Text style={[styles.aboutSectionTitle, { color: colors.warning }]}>{t('backupTipsTitle')}</Text>
