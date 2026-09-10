@@ -181,25 +181,29 @@
       margin-top: 3px;
     }
 
-    /* Mode Navigation Switcher */
+    /* Mode Navigation Switcher (Segmented Tabs in Sidebar Header) */
     .mode-nav {
       display: flex;
+      width: 100%;
       background: var(--bg-input);
       border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 5px;
-      gap: 8px;
-      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     .mode-btn {
+      flex: 1;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      padding: 10px 24px;
-      font-size: 13.5px;
+      padding: 9px 12px;
+      font-size: 12.5px;
       font-weight: 800;
-      border-radius: 10px;
+      letter-spacing: 0.5px;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
       background: transparent;
@@ -208,7 +212,7 @@
     }
 
     .mode-btn ion-icon {
-      font-size: 19px;
+      font-size: 17px;
     }
 
     .mode-btn:hover {
@@ -219,7 +223,7 @@
     .mode-btn.active {
       background: linear-gradient(135deg, var(--primary), #2563eb);
       color: #ffffff;
-      box-shadow: 0 4px 16px var(--primary-glow);
+      box-shadow: 0 3px 12px var(--primary-glow);
     }
 
     .header-actions {
@@ -1291,18 +1295,6 @@
       </div>
     </div>
 
-    <!-- Mode Switcher -->
-    <div class="mode-nav">
-      <button class="mode-btn active" id="modeBtnSongs" onclick="switchMode('songs')">
-        <ion-icon name="musical-notes-outline"></ion-icon>
-        MÚSICAS
-      </button>
-      <button class="mode-btn" id="modeBtnSetlists" onclick="switchMode('setlists')">
-        <ion-icon name="list-outline"></ion-icon>
-        SETLISTS
-      </button>
-    </div>
-
     <!-- Header Actions -->
     <div class="header-actions">
       <button class="btn btn-primary btn-sync-header" onclick="openSyncModal()" title="Sincronizar em Tempo Real com o Celular via QR Code">
@@ -1360,6 +1352,18 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
+        <!-- Mode Switcher Tabs -->
+        <div class="mode-nav">
+          <button class="mode-btn active" id="modeBtnSongs" onclick="switchMode('songs')">
+            <ion-icon name="musical-notes-outline"></ion-icon>
+            MÚSICAS
+          </button>
+          <button class="mode-btn" id="modeBtnSetlists" onclick="switchMode('setlists')">
+            <ion-icon name="list-outline"></ion-icon>
+            SETLISTS
+          </button>
+        </div>
+
         <div class="search-box">
           <span class="search-icon"><ion-icon name="search-outline"></ion-icon></span>
           <input type="text" id="searchInput" placeholder="Buscar por título, artista ou tag..." oninput="filterItems()">
