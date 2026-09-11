@@ -2560,10 +2560,10 @@ function MainApp() {
               fontWeight: '900', 
               color: selectedSetlistType !== '' ? colors.primary : colors.text 
             }}>
-              {selectedSetlistType === 'show' ? `${t('show').toUpperCase()}S` :
-               selectedSetlistType === 'ensaio' ? `${t('rehearsal').toUpperCase()}S` :
-               selectedSetlistType === 'repertório' ? t('repertoire').toUpperCase() :
-               `FILTRO: TODOS`}
+              {selectedSetlistType === 'show' ? `🎤 ${t('filterShows')}` :
+               selectedSetlistType === 'ensaio' ? `🎸 ${t('filterRehearsals')}` :
+               selectedSetlistType === 'repertório' ? `📋 ${t('filterRepertoire')}` :
+               `${t('filterPrefix')} ${t('filterAll')}`}
             </Text>
           </Pressable>
 
@@ -2774,7 +2774,19 @@ function MainApp() {
             <Text style={[styles.aboutAppTitle, { color: colors.primary }]}>SETLIST BAND MANAGER</Text>
             <Text style={[styles.aboutAppVersion, { color: colors.textMuted }]}>{t('versionText')} 1.1.4</Text>
             
-            <View style={[styles.divider, { backgroundColor: colors.border, width: '100%' }]} />
+            <Pressable 
+              onPress={() => Linking.openURL('https://www.setlistbandmanager.com').catch(err => console.error("Couldn't open URL", err))}
+              style={({ pressed }) => [{ marginTop: 4, marginBottom: 2 }, pressed && { opacity: 0.7 }]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <Ionicons name="globe-outline" size={12} color={colors.primary} />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary, textDecorationLine: 'underline' }}>
+                  www.setlistbandmanager.com
+                </Text>
+              </View>
+            </Pressable>
+
+            <View style={[styles.divider, { backgroundColor: colors.border, width: '100%', marginVertical: 10 }]} />
             
             <Text style={[styles.aboutDeveloperLabel, { color: colors.textMuted }]}>{t('aboutDev')}</Text>
             <Pressable 
@@ -2796,14 +2808,7 @@ function MainApp() {
           </View>
           {/* Card de Funcionalidades com Tutoriais Interativos */}
           <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('aboutFeatures')}</Text>
-              <View style={{ backgroundColor: colors.primary + '15', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                <Text style={{ fontSize: 9.5, fontWeight: '900', color: colors.primary }}>
-                  {t('tapForTutorial') || 'TOQUE PARA O GUIA'}
-                </Text>
-              </View>
-            </View>
+            <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('aboutFeatures')}</Text>
             
             {getFeaturesList(language).map((feature) => (
               <Pressable
@@ -2813,30 +2818,38 @@ function MainApp() {
                   styles.aboutFeatureRow,
                   {
                     backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
-                    padding: 10,
-                    borderRadius: 8,
+                    padding: 12,
+                    borderRadius: 10,
                     borderWidth: 1,
                     borderColor: colors.border,
                     marginBottom: 8,
-                    alignItems: 'center',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
                   },
                   pressed && { opacity: 0.7, transform: [{ scale: 0.99 }] }
                 ]}
               >
-                <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-                  <Ionicons name={feature.icon} size={20} color={colors.primary} />
+                {/* Linha 1: Ícone + Título */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 26, height: 26, borderRadius: 6, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                    <Ionicons name={feature.icon} size={15} color={colors.primary} />
+                  </View>
+                  <Text style={[styles.aboutFeatureTitle, { color: colors.text, fontSize: 13, fontWeight: '800', flex: 1 }]}>
+                    {feature.title}
+                  </Text>
                 </View>
-                <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}>
-                  <Text style={[styles.aboutFeatureTitle, { color: colors.text, fontSize: 12.5 }]}>{feature.title}</Text>
-                  <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted, fontSize: 10.5, marginTop: 1 }]} numberOfLines={2}>
+
+                {/* Linha 2: Descrição na esquerda + Botão de Tutorial na direita */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, gap: 8 }}>
+                  <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted, fontSize: 11, flex: 1, lineHeight: 15 }]} numberOfLines={2}>
                     {feature.subtitle}
                   </Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '12', paddingHorizontal: 7, paddingVertical: 4, borderRadius: 6 }}>
-                  <Text style={{ fontSize: 9, fontWeight: '900', color: colors.primary }}>
-                    TUTORIAL
-                  </Text>
-                  <Ionicons name="chevron-forward" size={11} color={colors.primary} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '15', borderColor: colors.primary + '35', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, flexShrink: 0 }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '900', color: colors.primary }}>
+                      TUTORIAL
+                    </Text>
+                    <Ionicons name="chevron-forward" size={11} color={colors.primary} />
+                  </View>
                 </View>
               </Pressable>
             ))}
@@ -2845,18 +2858,27 @@ function MainApp() {
           
           {/* Card de Sincronização Web (QR Code) */}
           <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: '#6366f166', borderWidth: 1.5 }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <View style={{ backgroundColor: '#6366f122', padding: 8, borderRadius: 10 }}>
-                <Ionicons name="qr-code-outline" size={24} color="#6366f1" />
+            {/* Linha 1: Ícone + WEB EDITOR */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <View style={{ backgroundColor: '#6366f122', padding: 6, borderRadius: 8 }}>
+                <Ionicons name="desktop-outline" size={18} color="#6366f1" />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 2 }]}>Sincronizar com Web Editor (PC)</Text>
-                <Text style={{ fontSize: 11.5, color: colors.textMuted }}>Conecte ao seu computador via QR Code ou PIN</Text>
-              </View>
+              <Text style={{ fontSize: 14, fontWeight: '900', color: '#6366f1', letterSpacing: 0.5 }}>
+                {t('webEditorTitle')}
+              </Text>
             </View>
-            <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: 14 }}>
-              Transfira todo o seu repertório, letras, cifras e setlists entre o aplicativo do celular e o Web Editor no computador com apenas 1 leitura de câmera ou código PIN de 6 dígitos.
+
+            {/* Linha 2: Descrição/Subtítulo */}
+            <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2, marginBottom: 8 }}>
+              {t('webSyncSubtitle')}
             </Text>
+
+            {/* Texto maior mantido */}
+            <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: 14 }}>
+              {t('webSyncDesc')}
+            </Text>
+
+            {/* Botão de Sincronizar mantido */}
             <Pressable
               style={({ pressed }) => [
                 {
@@ -2879,7 +2901,7 @@ function MainApp() {
             >
               <Ionicons name="scan-outline" size={18} color="#fff" />
               <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
-                ABRIR SINCRONIZADOR QR CODE
+                {t('openSyncQrBtn')}
               </Text>
             </Pressable>
           </View>

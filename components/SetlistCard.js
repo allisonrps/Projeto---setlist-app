@@ -207,7 +207,7 @@ export default function SetlistCard({
                 includeFontPadding: false,
                 lineHeight: 11,
               }}>
-                {t(setlist.type).toUpperCase()}
+                {t(setlist.type === 'repertório' || setlist.type === 'repertoire' ? 'repertoire' : setlist.type === 'ensaio' || setlist.type === 'rehearsal' ? 'rehearsal' : 'show').toUpperCase()}
               </Text>
             </View>
           </View>

@@ -305,6 +305,22 @@ const translations = {
     stepByStep: 'COMO USAR PASSO A PASSO:',
     proTip: 'DICA DE OURO:',
     understood: 'ENTENDIDO',
+
+    // Sincronização Web
+    webEditorTitle: 'WEB EDITOR',
+    webSyncSubtitle: 'Conecte ao seu computador via QR Code ou PIN',
+    webSyncDesc: 'Transfira todo o seu repertório, letras, cifras e setlists entre o aplicativo do celular e o Web Editor no computador com apenas 1 leitura de câmera ou código PIN de 6 dígitos.',
+    openSyncQrBtn: 'ABRIR SINCRONIZADOR QR CODE',
+
+    // Filtros e Tipos de Evento
+    filterPrefix: 'FILTRO:',
+    filterAll: 'TODAS',
+    filterShows: 'SHOWS',
+    filterRehearsals: 'ENSAIOS',
+    filterRepertoire: 'REPERTÓRIO',
+    allPlural: 'TODAS',
+    ensaio: 'Ensaio',
+    repertório: 'Repertório',
   },
 
   en: {
@@ -610,6 +626,22 @@ const translations = {
     stepByStep: 'STEP-BY-STEP GUIDE:',
     proTip: 'PRO TIP:',
     understood: 'UNDERSTOOD',
+
+    // Web Sync
+    webEditorTitle: 'WEB EDITOR',
+    webSyncSubtitle: 'Connect to your computer via QR Code or PIN',
+    webSyncDesc: 'Transfer your entire repertoire, lyrics, chords, and setlists between your mobile app and Web Editor on PC using a single camera QR scan or 6-digit PIN code.',
+    openSyncQrBtn: 'OPEN QR CODE SYNC',
+
+    // Setlist Filters & Event Types
+    filterPrefix: 'FILTER:',
+    filterAll: 'ALL',
+    filterShows: 'SHOWS',
+    filterRehearsals: 'REHEARSALS',
+    filterRepertoire: 'REPERTOIRE',
+    allPlural: 'ALL',
+    ensaio: 'Rehearsal',
+    repertório: 'Repertoire',
   },
 
   es: {
@@ -915,6 +947,22 @@ const translations = {
     stepByStep: 'CÓMO USAR PASO A PASO:',
     proTip: 'CONSEJO DE ORO:',
     understood: 'ENTENDIDO',
+
+    // Sincronización Web
+    webEditorTitle: 'WEB EDITOR',
+    webSyncSubtitle: 'Conecte a su computadora mediante código QR o PIN',
+    webSyncDesc: 'Transfiera todo su repertorio, letras, acordes y setlists entre la aplicación móvil y el Web Editor en su computadora con solo 1 escaneo de cámara o código PIN de 6 dígitos.',
+    openSyncQrBtn: 'ABRIR SINCRONIZADOR QR CODE',
+
+    // Filtros y Tipos de Evento
+    filterPrefix: 'FILTRO:',
+    filterAll: 'TODAS',
+    filterShows: 'SHOWS',
+    filterRehearsals: 'ENSAYOS',
+    filterRepertoire: 'REPERTORIO',
+    allPlural: 'TODAS',
+    ensaio: 'Ensayo',
+    repertório: 'Repertorio',
   }
 };
 

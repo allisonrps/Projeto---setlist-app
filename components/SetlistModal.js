@@ -770,7 +770,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                             styles.segmentText,
                             { color: type === item ? '#fff' : colors.textMuted }
                           ]}>
-                            {t(item).toUpperCase()}
+                            {t(item === 'repertório' ? 'repertoire' : item === 'ensaio' ? 'rehearsal' : 'show').toUpperCase()}
                           </Text>
                         </View>
                       </Pressable>
