@@ -32,6 +32,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
   const [activeEditorTab, setActiveEditorTab] = useState('lyrics');
   const [links, setLinks] = useState([{ type: 'youtube', url: '' }]);
   const [showLinksSection, setShowLinksSection] = useState(false);
+  const [showSongDetails, setShowSongDetails] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -53,6 +54,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
             : [{ type: 'youtube', url: '' }]
         );
         setShowLinksSection(false);
+        setShowSongDetails(false);
       } else {
         setName('');
         setOriginalBand('');
@@ -66,6 +68,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
         setActiveEditorTab('lyrics');
         setLinks([{ type: 'youtube', url: '' }]);
         setShowLinksSection(false);
+        setShowSongDetails(false);
       }
     }
   }, [visible, song]);
@@ -182,213 +185,243 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               importantForAutofill="no"
             />
 
-            <View style={styles.rowInputs}>
-              {/* Estilo */}
-              <View style={{ flex: 1.1 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('tagsLabel')}</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    backgroundColor: colors.inputBackground, 
-                    color: colors.inputText,
-                    borderColor: colors.border
-                  }]}
-                  value={style}
-                  onChangeText={setStyle}
-                  autoComplete="off"
-                  importantForAutofill="no"
-                />
+            {/* Seção Ocultável de Detalhes da Música (com Olho Fechado por padrão) */}
+            <View style={[styles.sectionHeaderRow, { marginTop: 6, marginBottom: showSongDetails ? 12 : 8 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="options-outline" size={15} color={colors.primary} />
+                <Text style={[styles.sectionTitle, { color: colors.text, fontSize: 12, fontWeight: '850' }]}>
+                  {t('songDetails')}
+                </Text>
               </View>
-              {/* Duração */}
-              <View style={{ flex: 0.9 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('durationLabel')}</Text>
-                <TextInput
-                  style={[styles.input, { 
-                    backgroundColor: colors.inputBackground, 
-                    color: colors.inputText,
-                    borderColor: colors.border
-                  }]}
-                  value={duration}
-                  onChangeText={setDuration}
-                  keyboardType="numbers-and-punctuation"
-                  autoComplete="off"
-                  importantForAutofill="no"
-                />
-              </View>
-            </View>
 
-            {/* Links de Apoio */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginTop: 12 }}>
-              <Text style={[styles.sectionLabel, { color: colors.text, marginBottom: 0, borderBottomWidth: 0 }]}>
-                {t('supportLinks').toUpperCase()}
-              </Text>
               <Pressable
-                style={({ pressed }) => [{ padding: 4, opacity: pressed ? 0.7 : 1 }]}
-                onPress={() => setShowLinksSection(!showLinksSection)}
+                style={({ pressed }) => [
+                  styles.eyeToggleBtn,
+                  { backgroundColor: colors.border },
+                  pressed && { opacity: 0.7 }
+                ]}
+                onPress={() => setShowSongDetails(!showSongDetails)}
               >
                 <Ionicons 
-                  name={showLinksSection ? "eye-outline" : "eye-off-outline"} 
-                  size={18} 
-                  color={showLinksSection ? colors.primary : colors.textMuted} 
+                  name={showSongDetails ? "eye-outline" : "eye-off-outline"} 
+                  size={16} 
+                  color={colors.text} 
                 />
               </Pressable>
             </View>
 
-            {showLinksSection && (
-              <>
-                {links.map((link, index) => (
-                  <View key={index} style={[styles.linkContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
-                    <View style={styles.linkTypeSelector}>
-                      {['youtube', 'spotify', 'cifras'].map((type) => (
-                        <Pressable
-                          key={type}
-                          style={[
-                            styles.linkTypeButton,
-                            { borderColor: colors.border },
-                            link.type === type && { backgroundColor: colors.primary, borderColor: colors.primary },
-                          ]}
-                          onPress={() => updateLink(index, 'type', type)}
-                        >
-                          <Text style={[
-                            styles.linkTypeButtonText,
-                            { color: link.type === type ? '#fff' : colors.textMuted }
-                          ]}>
-                            {type === 'youtube' ? 'YouTube' : type === 'spotify' ? 'Spotify' : 'Cifras'}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-
+            {showSongDetails && (
+              <View style={[styles.songDetailsContainer, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.015)' }]}>
+                {/* Linha: Tags e Duração */}
+                <View style={styles.rowInputs}>
+                  {/* Estilo */}
+                  <View style={{ flex: 1.1 }}>
+                    <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('tagsLabel')}</Text>
                     <TextInput
                       style={[styles.input, { 
                         backgroundColor: colors.inputBackground, 
                         color: colors.inputText,
-                        borderColor: colors.border,
-                        marginBottom: 8,
-                        borderRadius: 6,
-                        paddingVertical: 10
+                        borderColor: colors.border
                       }]}
-                      value={link.url}
-                      onChangeText={(val) => updateLink(index, 'url', val)}
-                      autoCapitalize="none"
+                      value={style}
+                      onChangeText={setStyle}
                       autoComplete="off"
                       importantForAutofill="no"
                     />
-
-                    {links.length > 1 && (
-                      <Pressable 
-                        style={({ pressed }) => [styles.removeLinkButton, pressed && { opacity: 0.7 }]} 
-                        onPress={() => removeLink(index)}
-                      >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                          <Ionicons name="trash-outline" size={13} color={colors.danger} />
-                          <Text style={[styles.removeLinkText, { color: colors.danger }]}>{t('removeLink')}</Text>
-                        </View>
-                      </Pressable>
-                    )}
                   </View>
-                ))}
-
-                <Pressable 
-                  style={({ pressed }) => [
-                    styles.addLinkButton, 
-                    { borderColor: colors.primary, opacity: pressed ? 0.7 : 1, marginBottom: 8 }
-                  ]} 
-                  onPress={addLinkField}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Ionicons name="add-circle-outline" size={14} color={colors.primary} />
-                    <Text style={[styles.addLinkButtonText, { color: colors.primary }]}>{t('addLink')}</Text>
-                  </View>
-                </Pressable>
-              </>
-            )}
-
-            {/* Visualização Padrão no Palco */}
-            <Text style={[styles.inputLabel, { color: colors.textMuted, marginTop: 8 }]}>{t('defaultViewLabel').toUpperCase()} *</Text>
-            <View style={styles.tabSelectorRow}>
-              {[
-                { key: 'lyrics', label: t('lyricsFormLabel'), icon: 'document-text-outline' },
-                { key: 'chords', label: t('chordsFormLabel'), icon: 'musical-notes-outline' },
-                { key: 'tabs', label: t('tabsFormLabel'), icon: 'list-outline' }
-              ].map(item => (
-                <Pressable
-                  key={item.key}
-                  style={[
-                    styles.tabSelectButton,
-                    { borderColor: colors.border },
-                    defaultView === item.key && { backgroundColor: colors.primary, borderColor: colors.primary }
-                  ]}
-                  onPress={() => setDefaultView(item.key)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                    <Ionicons 
-                      name={item.icon} 
-                      size={13} 
-                      color={defaultView === item.key ? '#fff' : colors.textMuted} 
+                  {/* Duração */}
+                  <View style={{ flex: 0.9 }}>
+                    <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('durationLabel')}</Text>
+                    <TextInput
+                      style={[styles.input, { 
+                        backgroundColor: colors.inputBackground, 
+                        color: colors.inputText,
+                        borderColor: colors.border
+                      }]}
+                      value={duration}
+                      onChangeText={setDuration}
+                      keyboardType="numbers-and-punctuation"
+                      autoComplete="off"
+                      importantForAutofill="no"
                     />
-                    <Text style={[
-                      styles.tabSelectText,
-                      { color: defaultView === item.key ? '#fff' : colors.textMuted }
-                    ]}>
-                      {item.label}
-                    </Text>
                   </View>
-                </Pressable>
-              ))}
-            </View>
+                </View>
 
-            {/* Velocidade de Rolagem Padrão (Autoscroll) */}
-            <Text style={[styles.inputLabel, { color: colors.textMuted, marginTop: 12 }]}>{t('defaultScrollSpeed').toUpperCase()}</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ marginBottom: 12 }}
-              contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
-            >
-              {[
-                { key: 'none', label: 'OFF', isOff: true },
-                { key: '0.5', label: '0.5x' },
-                { key: '1.0', label: '1.0x' },
-                { key: '1.25', label: '1.25x' },
-                { key: '1.5', label: '1.5x' },
-                { key: '1.75', label: '1.75x' },
-                { key: '2.0', label: '2.0x' }
-              ].map(item => (
-                <Pressable
-                  key={item.key}
-                  style={({ pressed }) => [
-                    styles.tabSelectButton,
-                    { 
-                      borderColor: colors.border,
-                      backgroundColor: scrollSpeed === item.key ? colors.primary : colors.cardBackground,
-                      minWidth: 54,
-                      paddingHorizontal: 8,
-                    },
-                    pressed && { opacity: 0.8 }
-                  ]}
-                  onPress={() => setScrollSpeed(item.key)}
+                {/* Links de Apoio */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginTop: 4 }}>
+                  <Text style={[styles.sectionLabel, { color: colors.text, marginBottom: 0, borderBottomWidth: 0, fontSize: 10.5 }]}>
+                    {t('supportLinks').toUpperCase()}
+                  </Text>
+                  <Pressable
+                    style={({ pressed }) => [{ padding: 4, opacity: pressed ? 0.7 : 1 }]}
+                    onPress={() => setShowLinksSection(!showLinksSection)}
+                  >
+                    <Ionicons 
+                      name={showLinksSection ? "eye-outline" : "eye-off-outline"} 
+                      size={16} 
+                      color={showLinksSection ? colors.primary : colors.textMuted} 
+                    />
+                  </Pressable>
+                </View>
+
+                {showLinksSection && (
+                  <>
+                    {links.map((link, index) => (
+                      <View key={index} style={[styles.linkContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
+                        <View style={styles.linkTypeSelector}>
+                          {['youtube', 'spotify', 'cifras'].map((type) => (
+                            <Pressable
+                              key={type}
+                              style={[
+                                styles.linkTypeButton,
+                                { borderColor: colors.border },
+                                link.type === type && { backgroundColor: colors.primary, borderColor: colors.primary },
+                              ]}
+                              onPress={() => updateLink(index, 'type', type)}
+                            >
+                              <Text style={[
+                                styles.linkTypeButtonText,
+                                { color: link.type === type ? '#fff' : colors.textMuted }
+                              ]}>
+                                {type === 'youtube' ? 'YouTube' : type === 'spotify' ? 'Spotify' : t('cifras')}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </View>
+
+                        <TextInput
+                          style={[styles.input, { 
+                            backgroundColor: colors.inputBackground, 
+                            color: colors.inputText,
+                            borderColor: colors.border,
+                            marginBottom: 8,
+                            borderRadius: 6,
+                            paddingVertical: 10
+                          }]}
+                          value={link.url}
+                          onChangeText={(val) => updateLink(index, 'url', val)}
+                          autoCapitalize="none"
+                          autoComplete="off"
+                          importantForAutofill="no"
+                        />
+
+                        {links.length > 1 && (
+                          <Pressable 
+                            style={({ pressed }) => [styles.removeLinkButton, pressed && { opacity: 0.7 }]} 
+                            onPress={() => removeLink(index)}
+                          >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                              <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                              <Text style={[styles.removeLinkText, { color: colors.danger }]}>{t('removeLink')}</Text>
+                            </View>
+                          </Pressable>
+                        )}
+                      </View>
+                    ))}
+
+                    <Pressable 
+                      style={({ pressed }) => [
+                        styles.addLinkButton, 
+                        { borderColor: colors.primary, opacity: pressed ? 0.7 : 1, marginBottom: 8 }
+                      ]} 
+                      onPress={addLinkField}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Ionicons name="add-circle-outline" size={14} color={colors.primary} />
+                        <Text style={[styles.addLinkButtonText, { color: colors.primary }]}>{t('addLink')}</Text>
+                      </View>
+                    </Pressable>
+                  </>
+                )}
+
+                {/* Visualização Padrão no Palco */}
+                <Text style={[styles.inputLabel, { color: colors.textMuted, marginTop: 8 }]}>{t('defaultViewLabel').toUpperCase()} *</Text>
+                <View style={styles.tabSelectorRow}>
+                  {[
+                    { key: 'lyrics', label: t('lyricsFormLabel'), icon: 'document-text-outline' },
+                    { key: 'chords', label: t('chordsFormLabel'), icon: 'musical-notes-outline' },
+                    { key: 'tabs', label: t('tabsFormLabel'), icon: 'list-outline' }
+                  ].map(item => (
+                    <Pressable
+                      key={item.key}
+                      style={[
+                        styles.tabSelectButton,
+                        { borderColor: colors.border },
+                        defaultView === item.key && { backgroundColor: colors.primary, borderColor: colors.primary }
+                      ]}
+                      onPress={() => setDefaultView(item.key)}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                        <Ionicons 
+                          name={item.icon} 
+                          size={13} 
+                          color={defaultView === item.key ? '#fff' : colors.textMuted} 
+                        />
+                        <Text style={[
+                          styles.tabSelectText,
+                          { color: defaultView === item.key ? '#fff' : colors.textMuted }
+                        ]}>
+                          {item.label}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+
+                {/* Velocidade de Rolagem Padrão (Autoscroll) */}
+                <Text style={[styles.inputLabel, { color: colors.textMuted, marginTop: 12 }]}>{t('defaultScrollSpeed').toUpperCase()}</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginBottom: 4 }}
+                  contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
                 >
-                  {item.isOff ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Ionicons name="close-circle-outline" size={13} color={scrollSpeed === item.key ? '#fff' : colors.textMuted} />
-                      <Text style={[
-                        styles.tabSelectText,
-                        { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
-                      ]}>
-                        OFF
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text style={[
-                      styles.tabSelectText,
-                      { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
-                    ]}>
-                      {item.label}
-                    </Text>
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
+                  {[
+                    { key: 'none', label: 'OFF', isOff: true },
+                    { key: '0.5', label: '0.5x' },
+                    { key: '1.0', label: '1.0x' },
+                    { key: '1.25', label: '1.25x' },
+                    { key: '1.5', label: '1.5x' },
+                    { key: '1.75', label: '1.75x' },
+                    { key: '2.0', label: '2.0x' }
+                  ].map(item => (
+                    <Pressable
+                      key={item.key}
+                      style={({ pressed }) => [
+                        styles.tabSelectButton,
+                        { 
+                          borderColor: colors.border,
+                          backgroundColor: scrollSpeed === item.key ? colors.primary : colors.cardBackground,
+                          minWidth: 54,
+                          paddingHorizontal: 8,
+                        },
+                        pressed && { opacity: 0.8 }
+                      ]}
+                      onPress={() => setScrollSpeed(item.key)}
+                    >
+                      {item.isOff ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Ionicons name="close-circle-outline" size={13} color={scrollSpeed === item.key ? '#fff' : colors.textMuted} />
+                          <Text style={[
+                            styles.tabSelectText,
+                            { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
+                          ]}>
+                            OFF
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={[
+                          styles.tabSelectText,
+                          { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
+                        ]}>
+                          {item.label}
+                        </Text>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
             {/* Abas de Edição de Conteúdo */}
             <Text style={[styles.inputLabel, { color: colors.textMuted, marginTop: 8 }]}>{t('editSongContent').toUpperCase()}</Text>
@@ -652,5 +685,28 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontSize: 13,
     lineHeight: 18,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '850',
+    letterSpacing: 0.5,
+  },
+  eyeToggleBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  songDetailsContainer: {
+    borderWidth: 1.0,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
 });

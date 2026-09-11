@@ -155,7 +155,7 @@ export default function SongListItem({ song, onEdit, onDelete, onToggleFavorite,
                         color={link.type === 'youtube' ? '#ef4444' : link.type === 'spotify' ? '#1db954' : colors.primary} 
                       />
                       <Text style={[styles.linkChipText, { color: colors.text }]}>
-                        {link.type === 'youtube' ? 'YouTube' : link.type === 'spotify' ? 'Spotify' : t('chordsFormLabel')}
+                        {link.type === 'youtube' ? 'YouTube' : link.type === 'spotify' ? 'Spotify' : t('cifras')}
                       </Text>
                     </View>
                   </Pressable>

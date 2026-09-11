@@ -416,7 +416,7 @@ export default function PerformanceMode({
                         ? 'YouTube'
                         : link.type === 'spotify'
                         ? 'Spotify'
-                        : t('chordsFormLabel')}
+                        : t('cifras')}
                     </Text>
                   </View>
                 </Pressable>
