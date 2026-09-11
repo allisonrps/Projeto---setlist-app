@@ -2991,7 +2991,8 @@ function MainApp() {
 
       {!dbReady ? (
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: colors.text }]}>{t('loadingDatabase')}</Text>
+          <Image source={require('./assets/logo.png')} style={styles.loadingLogo} resizeMode="contain" />
+          <Text style={styles.loadingText}>{t('loadingDatabase')}</Text>
         </View>
       ) : (
         <View style={styles.container}>
@@ -3598,5 +3599,22 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingLogo: {
+    width: 110,
+    height: 110,
+    marginBottom: 16,
+  },
+  loadingText: {
+    color: '#38bdf8',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
 });
