@@ -17,6 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTheme } from '../hooks/useTheme';
+import { useLanguage } from '../hooks/useLanguage';
 
 const { width, height } = Dimensions.get('window');
 const SCANNER_SIZE = Math.min(width * 0.72, 280);
@@ -31,6 +32,7 @@ export default function SyncModal({
   onSyncSuccess,
 }) {
   const { colors, themeMode } = useTheme();
+  const { t } = useLanguage();
   const isDark = colors.isDark;
   
   const [permission, requestPermission] = useCameraPermissions();
@@ -142,18 +144,18 @@ export default function SyncModal({
               setQrTransferred(true);
               clearInterval(pollIntervalRef.current);
               pollIntervalRef.current = null;
-              Alert.alert('Sucesso! 🎉', 'Seu repertório foi transferido com sucesso para o celular do seu amigo!');
+              Alert.alert(t('transferSuccessTitle'), t('transferSuccessMsg'));
             }
           } catch (e) {
             // silent poll
           }
         }, 3000);
       } else {
-        Alert.alert('Erro', 'Não foi possível gerar a sessão de compartilhamento.');
+        Alert.alert(t('error') || 'Erro', t('sessionGenerateError'));
       }
     } catch (err) {
       console.error('Error generating QR code:', err);
-      Alert.alert('Erro de Conexão', 'Verifique sua conexão com a internet para gerar o QR Code.');
+      Alert.alert(t('connectionErrorTitle'), t('connectionErrorMsg'));
     } finally {
       setGeneratingQr(false);
     }
@@ -182,14 +184,14 @@ export default function SyncModal({
         } else {
           // Connected to PC session with choice to send or pull
           setConnectedSession(parsed);
-          setStatusMessage(`Conectado à Sessão (PIN: ${parsed.pin || 'OK'})`);
+          setStatusMessage(`${t('connectedToSession')} (PIN: ${parsed.pin || 'OK'})`);
         }
       } else {
-        Alert.alert('QR Code Inválido', 'O código escaneado não pertence ao Setlist Band Manager.');
+        Alert.alert(t('invalidQrTitle'), t('invalidQrMsg'));
         setTimeout(() => setScanned(false), 2000);
       }
     } catch (err) {
-      Alert.alert('Erro', 'Não foi possível processar o QR Code.');
+      Alert.alert(t('error') || 'Erro', t('processQrError'));
       setTimeout(() => setScanned(false), 2000);
     }
   };
@@ -197,7 +199,7 @@ export default function SyncModal({
   // Direct auto pull & restore for Phone-to-Phone sharing
   const autoPullAndRestore = async (sessionInfo) => {
     setLoading(true);
-    setStatusMessage('Baixando repertório do amigo...');
+    setStatusMessage(t('pullingData'));
 
     try {
       const apiUrl = sessionInfo.apiUrl || SYNC_API_DEFAULT;
@@ -205,22 +207,22 @@ export default function SyncModal({
       const result = await res.json();
 
       if (result && result.success && result.data) {
-        setStatusMessage('Salvando músicas no celular...');
+        setStatusMessage(t('savingSongsLocally'));
         await onRestoreBackupData(JSON.stringify(result.data));
 
         Alert.alert(
-          'Repertório Recebido! 🎉',
-          'Todas as músicas e setlists compartilhados foram importados e salvos no seu aparelho!',
-          [{ text: 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+          t('repertoireReceivedTitle'),
+          t('repertoireReceivedMsg'),
+          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
         );
       } else {
         // Fallback to manual choice
         setConnectedSession(sessionInfo);
-        setStatusMessage(`Conectado (PIN: ${sessionInfo.pin})`);
+        setStatusMessage(`${t('connectedToPin')} ${sessionInfo.pin}`);
       }
     } catch (err) {
       console.error('Erro no auto pull:', err);
-      Alert.alert('Erro', 'Não foi possível baixar os dados compartilhados.');
+      Alert.alert(t('error') || 'Erro', t('connectionErrorMsg'));
       setTimeout(() => setScanned(false), 2000);
     } finally {
       setLoading(false);
@@ -231,12 +233,12 @@ export default function SyncModal({
   const handleConnectByPin = async () => {
     const cleanPin = pinInput.trim().replace(/\s+/g, '');
     if (!cleanPin || cleanPin.length < 4) {
-      Alert.alert('PIN Inválido', 'Digite o código numérico de 6 dígitos.');
+      Alert.alert(t('invalidPinTitle'), t('invalidPinMsg'));
       return;
     }
 
     setLoading(true);
-    setStatusMessage('Conectando ao código PIN...');
+    setStatusMessage(t('connectingPin'));
 
     try {
       // First try to auto-pull (in case a friend sent data with this PIN)
@@ -244,23 +246,23 @@ export default function SyncModal({
       const result = await res.json();
 
       if (result && result.success && result.data) {
-        setStatusMessage('Salvando músicas no celular...');
+        setStatusMessage(t('savingSongsLocally'));
         await onRestoreBackupData(JSON.stringify(result.data));
 
         Alert.alert(
-          'Repertório Recebido! 🎉',
-          'Músicas e setlists importados com sucesso via PIN!',
-          [{ text: 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+          t('repertoireReceivedTitle'),
+          t('repertoireReceivedPinMsg'),
+          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
         );
       } else if (result && result.success) {
         setConnectedSession({ pin: cleanPin, apiUrl: SYNC_API_DEFAULT });
-        setStatusMessage(`Conectado ao PIN ${cleanPin}`);
+        setStatusMessage(`${t('connectedToPin')} ${cleanPin}`);
       } else {
-        Alert.alert('Sessão Não Encontrada', data.error || 'Código PIN incorreto ou expirado.');
+        Alert.alert(t('sessionNotFoundTitle'), (result && result.error) || t('sessionNotFoundMsg'));
       }
     } catch (err) {
       setConnectedSession({ pin: cleanPin, apiUrl: SYNC_API_DEFAULT });
-      setStatusMessage(`Conectado ao PIN ${cleanPin}`);
+      setStatusMessage(`${t('connectedToPin')} ${cleanPin}`);
     } finally {
       setLoading(false);
     }
@@ -270,11 +272,11 @@ export default function SyncModal({
   const handleSendToWeb = async () => {
     if (!connectedSession) return;
     setLoading(true);
-    setStatusMessage('Coletando repertório e setlists...');
+    setStatusMessage(t('collectingRepertoire'));
 
     try {
       const fullBackup = await getAllDataForBackup();
-      setStatusMessage('Transmitindo dados para a tela do PC...');
+      setStatusMessage(t('transmittingToPc'));
 
       const apiUrl = connectedSession.apiUrl || SYNC_API_DEFAULT;
       const res = await fetch(`${apiUrl}?action=send_data`, {
@@ -292,16 +294,16 @@ export default function SyncModal({
       const result = await res.json();
       if (result && result.success) {
         Alert.alert(
-          'Sucesso! 🎉',
-          `Todos os dados foram transmitidos com sucesso para a tela do Web Editor no PC!`,
-          [{ text: 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+          t('transmittedSuccessTitle'),
+          t('transmittedSuccessMsg'),
+          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
         );
       } else {
-        Alert.alert('Erro na Transmissão', result.error || 'Não foi possível enviar os dados.');
+        Alert.alert(t('transmissionErrorTitle'), (result && result.error) || t('transmissionErrorMsg'));
       }
     } catch (err) {
       console.error('Erro ao enviar dados para o PC:', err);
-      Alert.alert('Erro de Conexão', 'Verifique sua conexão com a internet e tente novamente.');
+      Alert.alert(t('connectionErrorTitle'), t('connectionErrorMsg'));
     } finally {
       setLoading(false);
     }
@@ -311,7 +313,7 @@ export default function SyncModal({
   const handlePullFromWeb = async () => {
     if (!connectedSession) return;
     setLoading(true);
-    setStatusMessage('Buscando dados do Web Editor...');
+    setStatusMessage(t('fetchingWebData'));
 
     try {
       const apiUrl = connectedSession.apiUrl || SYNC_API_DEFAULT;
@@ -319,23 +321,23 @@ export default function SyncModal({
       const result = await res.json();
 
       if (result && result.success && result.data) {
-        setStatusMessage('Atualizando banco de dados no celular...');
+        setStatusMessage(t('updatingDatabaseMsg'));
         await onRestoreBackupData(JSON.stringify(result.data));
         
         Alert.alert(
-          'Sincronização Concluída! 🚀',
-          'Todas as músicas e setlists editados no PC foram importados com sucesso para o seu celular!',
-          [{ text: 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+          t('syncCompletedTitle'),
+          t('syncCompletedMsg'),
+          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
         );
       } else {
         Alert.alert(
-          'Aguardando Dados',
-          'Nenhum dado foi enviado do PC ainda. No Web Editor, clique na aba "Enviar para o Celular".'
+          t('awaitingDataTitle'),
+          t('awaitingDataMsg')
         );
       }
     } catch (err) {
       console.error('Erro ao baixar dados do PC:', err);
-      Alert.alert('Erro de Conexão', 'Não foi possível baixar os dados do PC.');
+      Alert.alert(t('connectionErrorTitle'), t('connectionErrorMsg'));
     } finally {
       setLoading(false);
     }
@@ -358,8 +360,8 @@ export default function SyncModal({
                 <Ionicons name="qr-code-outline" size={20} color={colors.primary} />
               </View>
               <View>
-                <Text style={[styles.title, { color: colors.text }]}>Sincronizar & Compartilhar</Text>
-                <Text style={[styles.subtitle, { color: colors.textMuted }]}>Web Editor (PC) ou Outro Celular</Text>
+                <Text style={[styles.title, { color: colors.text }]}>{t('syncModalTitle')}</Text>
+                <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('syncModalSubtitle')}</Text>
               </View>
             </View>
             
@@ -380,12 +382,12 @@ export default function SyncModal({
                 <View style={[styles.connectedBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary }]}>
                   <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
                   <Text style={[styles.connectedText, { color: colors.primary }]}>
-                    {statusMessage || 'Conectado com Sucesso!'}
+                    {statusMessage || t('connectedSuccess')}
                   </Text>
                 </View>
 
                 <Text style={[styles.connectedSubtext, { color: colors.textMuted }]}>
-                  Escolha a ação desejada:
+                  {t('chooseAction')}
                 </Text>
 
                 {loading ? (
@@ -405,8 +407,8 @@ export default function SyncModal({
                         <Ionicons name="cloud-upload-outline" size={24} color="#fff" />
                       </View>
                       <View style={styles.actionBtnTextCol}>
-                        <Text style={styles.actionBtnTitle}>ENVIAR PARA PC</Text>
-                        <Text style={styles.actionBtnDesc}>Envia todas as músicas deste celular para o computador</Text>
+                        <Text style={styles.actionBtnTitle}>{t('sendToPcTitle')}</Text>
+                        <Text style={styles.actionBtnDesc}>{t('sendToPcDesc')}</Text>
                       </View>
                       <Ionicons name="arrow-forward" size={18} color="#ffffffaa" />
                     </TouchableOpacity>
@@ -421,8 +423,8 @@ export default function SyncModal({
                         <Ionicons name="cloud-download-outline" size={24} color={colors.primary} />
                       </View>
                       <View style={styles.actionBtnTextCol}>
-                        <Text style={[styles.actionBtnTitle, { color: colors.text }]}>PUXAR DO PC / AMIGO</Text>
-                        <Text style={[styles.actionBtnDesc, { color: colors.textMuted }]}>Baixa o repertório compartilhado para este celular</Text>
+                        <Text style={[styles.actionBtnTitle, { color: colors.text }]}>{t('pullFromPcTitle')}</Text>
+                        <Text style={[styles.actionBtnDesc, { color: colors.textMuted }]}>{t('pullFromPcDesc')}</Text>
                       </View>
                       <Ionicons name="arrow-forward" size={18} color={colors.primary} />
                     </TouchableOpacity>
@@ -433,7 +435,7 @@ export default function SyncModal({
                       onPress={() => { setConnectedSession(null); setScanned(false); }}
                     >
                       <Ionicons name="refresh" size={16} color={colors.textMuted} />
-                      <Text style={[styles.rescanBtnText, { color: colors.textMuted }]}>Escanear outro código</Text>
+                      <Text style={[styles.rescanBtnText, { color: colors.textMuted }]}>{t('scanAnotherCode')}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -452,7 +454,7 @@ export default function SyncModal({
                       color={activeTab === 'camera' ? '#fff' : colors.textMuted}
                     />
                     <Text style={[styles.tabBtnText, { color: activeTab === 'camera' ? '#fff' : colors.textMuted }]}>
-                      Ler QR
+                      {t('tabScanQr')}
                     </Text>
                   </TouchableOpacity>
 
@@ -466,7 +468,7 @@ export default function SyncModal({
                       color={activeTab === 'generate' ? '#fff' : colors.textMuted}
                     />
                     <Text style={[styles.tabBtnText, { color: activeTab === 'generate' ? '#fff' : colors.textMuted }]}>
-                      Gerar QR
+                      {t('tabGenerateQr')}
                     </Text>
                   </TouchableOpacity>
 
@@ -480,7 +482,7 @@ export default function SyncModal({
                       color={activeTab === 'pin' ? '#fff' : colors.textMuted}
                     />
                     <Text style={[styles.tabBtnText, { color: activeTab === 'pin' ? '#fff' : colors.textMuted }]}>
-                      PIN
+                      {t('tabPin')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -494,17 +496,17 @@ export default function SyncModal({
                           <Ionicons name="camera-outline" size={32} color={colors.primary} />
                         </View>
                         <Text style={[styles.permissionText, { color: colors.text }]}>
-                          Acesso à Câmera Necessário
+                          {t('cameraPermRequired')}
                         </Text>
                         <Text style={[styles.permissionSub, { color: colors.textMuted }]}>
-                          Para ler o QR Code no monitor do PC ou no celular do seu amigo, precisamos da permissão da câmera.
+                          {t('cameraPermDesc')}
                         </Text>
                         <TouchableOpacity
                           style={[styles.permissionBtn, { backgroundColor: colors.primary }]}
                           onPress={requestPermission}
                         >
                           <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                          <Text style={styles.permissionBtnText}>Permitir Câmera</Text>
+                          <Text style={styles.permissionBtnText}>{t('allowCameraBtn')}</Text>
                         </TouchableOpacity>
                       </View>
                     ) : (
@@ -545,7 +547,7 @@ export default function SyncModal({
                         <View style={styles.scanInstructionPill}>
                           <Ionicons name="scan" size={14} color="#fff" />
                           <Text style={styles.scanInstructionText}>
-                            Aponte para o QR Code do PC ou do amigo
+                            {t('pointCameraInstruction')}
                           </Text>
                         </View>
                       </View>
@@ -560,7 +562,7 @@ export default function SyncModal({
                       <View style={styles.generateLoadingBox}>
                         <ActivityIndicator size="large" color={colors.primary} />
                         <Text style={[styles.generateLoadingText, { color: colors.text }]}>
-                          Preparando repertório e gerando QR Code...
+                          {t('preparingQrCode')}
                         </Text>
                       </View>
                     ) : generatedSession ? (
@@ -580,7 +582,7 @@ export default function SyncModal({
 
                         {/* PIN Display */}
                         <View style={[styles.qrPinBox, { backgroundColor: cardBg, borderColor: borderColor }]}>
-                          <Text style={[styles.qrPinLabel, { color: colors.textMuted }]}>CÓDIGO PIN:</Text>
+                          <Text style={[styles.qrPinLabel, { color: colors.textMuted }]}>{t('pinCodeLabel')}</Text>
                           <Text style={[styles.qrPinValue, { color: colors.primary }]}>
                             {generatedSession.pin.slice(0, 3)} {generatedSession.pin.slice(3)}
                           </Text>
@@ -590,7 +592,7 @@ export default function SyncModal({
                         <View style={styles.qrInstructionBox}>
                           <Ionicons name="phone-portrait-outline" size={18} color={colors.primary} />
                           <Text style={[styles.qrInstructionText, { color: colors.text }]}>
-                            Peça para seu amigo abrir o app, ir em <Text style={{ fontWeight: '800', color: colors.primary }}>"Ler QR"</Text> e apontar a câmera para esta tela.
+                            {t('qrInstruction')}
                           </Text>
                         </View>
 
@@ -600,24 +602,24 @@ export default function SyncModal({
                           onPress={handleGenerateQrCode}
                         >
                           <Ionicons name="refresh" size={16} color={colors.textMuted} />
-                          <Text style={[styles.refreshQrBtnText, { color: colors.textMuted }]}>Gerar Novo Código</Text>
+                          <Text style={[styles.refreshQrBtnText, { color: colors.textMuted }]}>{t('generateNewCode')}</Text>
                         </TouchableOpacity>
                       </View>
                     ) : (
                       <View style={styles.generateEmptyBox}>
                         <Ionicons name="share-social-outline" size={42} color={colors.primary} />
                         <Text style={[styles.generateEmptyTitle, { color: colors.text }]}>
-                          Compartilhar com Celular Próximo
+                          {t('shareWithNearbyPhone')}
                         </Text>
                         <Text style={[styles.generateEmptyDesc, { color: colors.textMuted }]}>
-                          Gere um QR Code na tela para enviar todas as suas músicas e setlists diretamente para o aparelho de outro integrante da banda.
+                          {t('shareWithNearbyPhoneDesc')}
                         </Text>
                         <TouchableOpacity
                           style={[styles.generateActionBtn, { backgroundColor: colors.primary }]}
                           onPress={handleGenerateQrCode}
                         >
                           <Ionicons name="qr-code-outline" size={18} color="#fff" />
-                          <Text style={styles.generateActionBtnText}>Gerar QR Code Agora</Text>
+                          <Text style={styles.generateActionBtnText}>{t('generateQrNowBtn')}</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -631,10 +633,10 @@ export default function SyncModal({
                       <Ionicons name="keypad-outline" size={30} color={colors.primary} />
                     </View>
                     <Text style={[styles.pinTitle, { color: colors.text }]}>
-                      Digite o PIN de 6 Dígitos
+                      {t('enterPinTitle')}
                     </Text>
                     <Text style={[styles.pinDesc, { color: colors.textMuted }]}>
-                      Código exibido na tela do PC ou do celular do seu amigo:
+                      {t('enterPinDesc')}
                     </Text>
 
                     <TextInput
@@ -658,7 +660,7 @@ export default function SyncModal({
                       ) : (
                         <>
                           <Ionicons name="link-outline" size={20} color="#fff" />
-                          <Text style={styles.connectPinBtnText}>Conectar e Importar</Text>
+                          <Text style={styles.connectPinBtnText}>{t('connectByPinBtn')}</Text>
                         </>
                       )}
                     </TouchableOpacity>

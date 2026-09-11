@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setlist Band Manager • O App Definitivo para Músicos, Bandas e Palco</title>
+  <title id="pageTitle">Setlist Band Manager • The Ultimate App for Musicians, Bands & Stage</title>
   
-  <meta name="description" content="Organize o repertório da sua banda, edite cifras no PC com o Web Editor Pro, controle o autoscroll no palco e sincronize tudo via QR Code instantaneamente. 100% offline e gratuito.">
+  <meta id="pageMetaDesc" name="description" content="Organize your band repertoire, edit smart chords on PC with Web Editor Pro, control hands-free autoscroll on stage, and sync everything via QR Code. 100% offline and free.">
   <meta name="theme-color" content="#080c14">
   <link rel="icon" type="image/png" href="assets/logo.png">
 
   <!-- Open Graph / Meta -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Setlist Band Manager • O App Definitivo para Músicos e Bandas">
-  <meta property="og:description" content="Repertório, cifras inteligentes, modo palco com autoscroll e Web Editor Pro no PC sincronizado por QR Code.">
+  <meta property="og:title" content="Setlist Band Manager • The Ultimate App for Musicians and Bands">
+  <meta property="og:description" content="Repertoire, smart chords, full-screen stage mode with autoscroll, and PC Web Editor synced via QR Code.">
   <meta property="og:image" content="assets/logo.png">
 
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
@@ -130,7 +130,7 @@
       left: 0;
       right: 0;
       height: 80px;
-      background: rgba(8, 12, 20, 0.85);
+      background: rgba(8, 12, 20, 0.88);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
@@ -156,8 +156,8 @@
     }
 
     .brand-logo {
-      width: 48px;
-      height: 48px;
+      width: 46px;
+      height: 46px;
       border-radius: 12px;
       object-fit: cover;
       box-shadow: 0 4px 16px var(--primary-glow);
@@ -171,7 +171,7 @@
     }
 
     .brand-title {
-      font-size: 19px;
+      font-size: 18.5px;
       font-weight: 900;
       letter-spacing: -0.4px;
       color: var(--text);
@@ -194,15 +194,15 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 24px;
       list-style: none;
     }
 
     .nav-links a {
       text-decoration: none;
       color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13.5px;
+      font-weight: 700;
       transition: color 0.2s ease;
     }
 
@@ -213,7 +213,40 @@
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+    }
+
+    /* Language Switcher */
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 8px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn:hover {
+      color: var(--text);
+    }
+
+    .lang-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px var(--primary-glow);
     }
 
     /* Buttons */
@@ -222,8 +255,8 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 10px 20px;
-      font-size: 13.5px;
+      padding: 9px 18px;
+      font-size: 13px;
       font-weight: 800;
       border-radius: 12px;
       text-decoration: none;
@@ -1049,21 +1082,28 @@
       </a>
 
       <ul class="nav-links">
-        <li><a href="#recursos">Recursos</a></li>
-        <li><a href="#modo-palco">Modo Palco</a></li>
-        <li><a href="#sincronizacao">Sincronização QR</a></li>
-        <li><a href="#download">Google Play</a></li>
-        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#recursos" data-i18n="navFeatures">Features</a></li>
+        <li><a href="#modo-palco" data-i18n="navStageMode">Stage Mode</a></li>
+        <li><a href="#sincronizacao" data-i18n="navSync">QR Sync</a></li>
+        <li><a href="#download" data-i18n="navDownload">Google Play</a></li>
+        <li><a href="#faq" data-i18n="navFaq">FAQ</a></li>
       </ul>
 
       <div class="nav-actions">
+        <!-- Language Switcher -->
+        <div class="lang-switcher">
+          <button class="lang-btn" id="lang-en" onclick="setLandingLanguage('en')">EN</button>
+          <button class="lang-btn" id="lang-pt" onclick="setLandingLanguage('pt')">PT</button>
+          <button class="lang-btn" id="lang-es" onclick="setLandingLanguage('es')">ES</button>
+        </div>
+
         <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener" class="btn btn-playstore">
           <ion-icon name="logo-google-playstore"></ion-icon>
-          Baixar App
+          <span data-i18n="navBtnDownload">Download App</span>
         </a>
         <a href="editor.html" class="btn btn-primary">
           <ion-icon name="laptop-outline"></ion-icon>
-          Abrir Web Editor
+          <span data-i18n="navBtnEditor">Open Web Editor</span>
         </a>
       </div>
     </div>
@@ -1075,35 +1115,35 @@
       
       <div class="pill-badge">
         <ion-icon name="sparkles"></ion-icon>
-        Aplicativo Mobile & Web Editor Pro para PC
+        <span data-i18n="heroBadge">Mobile App & Pro Web Editor for PC</span>
       </div>
 
-      <h1>
-        O Roteiro Perfeito e Cifras Inteligentes <br>
-        <span class="gradient-text">Para o Palco, Ensaios e Estúdio.</span>
+      <h1 data-i18n="heroTitle">
+        The Perfect Setlist & Smart Chords <br>
+        <span class="gradient-text">For Stage, Rehearsals & Studio.</span>
       </h1>
 
-      <p class="hero-desc">
-        Organize o repertório da sua banda, edite cifras confortavelmente no PC com o Web Editor Pro, controle o autoscroll no palco e sincronize tudo via QR Code instantaneamente. 100% offline, ágil e gratuito.
+      <p class="hero-desc" data-i18n="heroDesc">
+        Organize your band's repertoire, edit chords comfortably on PC with Web Editor Pro, control hands-free autoscroll on stage, and sync everything instantly via QR Code. 100% offline, fast, and free.
       </p>
 
       <div class="hero-cta-group">
         <a href="editor.html" class="btn btn-primary btn-lg">
           <ion-icon name="laptop-outline"></ion-icon>
-          Acessar Web Editor no PC
+          <span data-i18n="heroCtaEditor">Access Web Editor on PC</span>
         </a>
 
         <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener" class="btn btn-playstore btn-lg">
           <ion-icon name="logo-google-playstore"></ion-icon>
-          Baixar no Google Play
+          <span data-i18n="heroCtaPlay">Get it on Google Play</span>
         </a>
       </div>
 
       <div class="hero-trust-bar">
-        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> 100% Gratuito</div>
-        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> Funciona 100% Offline no Palco</div>
-        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> Sincronização em 2s por QR Code</div>
-        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> Exportação Formatada em Word (.doc)</div>
+        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> <span data-i18n="trustFree">100% Free</span></div>
+        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> <span data-i18n="trustOffline">Works 100% Offline on Stage</span></div>
+        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> <span data-i18n="trustSync">2s QR Code Sync</span></div>
+        <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> <span data-i18n="trustDoc">Formatted Word (.doc) Export</span></div>
       </div>
 
       <!-- Live Mockup / Showcase Area -->
@@ -1117,10 +1157,10 @@
             </div>
             <div class="window-title">
               <ion-icon name="musical-notes-outline"></ion-icon>
-              Setlist Band Manager • Web Editor Pro & Modo Palco Sincronizados
+              <span data-i18n="mockupWindowTitle">Setlist Band Manager • Web Editor Pro & Stage Mode Synced</span>
             </div>
             <a href="editor.html" class="btn btn-primary" style="padding: 4px 12px; font-size: 11px;">
-              Experimentar Agora →
+              <span data-i18n="mockupTryBtn">Try it Now →</span>
             </a>
           </div>
 
@@ -1131,11 +1171,11 @@
               <div class="sim-editor-nav">
                 <div>
                   <h3 style="font-size: 18px; font-weight: 800; color: #fff;">Yellow • Coldplay</h3>
-                  <span style="font-size: 12px; color: var(--text-muted);">Tom Original: B (Si Maior) • BPM: 88 • Duração: 04:29</span>
+                  <span style="font-size: 12px; color: var(--text-muted);" data-i18n="simMetaSong">Original Key: B • BPM: 88 • Duration: 04:29</span>
                 </div>
                 <div class="sim-meta-tags">
                   <span class="sim-badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.4);">POP ROCK</span>
-                  <span class="sim-badge" style="color: var(--emerald); border-color: rgba(16, 185, 129, 0.4);">SHOW PRINCIPAL</span>
+                  <span class="sim-badge" style="color: var(--emerald); border-color: rgba(16, 185, 129, 0.4);" data-i18n="simTagMain">MAIN SHOW</span>
                 </div>
               </div>
 
@@ -1158,25 +1198,25 @@ Yeah, they were all yellow.
               <div class="sim-phone-header">
                 <div class="stage-pulse">
                   <span class="pulse-indicator"></span>
-                  MODO PALCO AO VIVO
+                  <span data-i18n="simLiveStage">LIVE STAGE MODE</span>
                 </div>
                 <span style="font-size: 11px; font-weight: 800; color: var(--emerald);">BPM 88 • 4/4</span>
               </div>
 
               <div class="sim-stage-tools">
-                <span>TOM: <strong>B</strong></span>
+                <span><span data-i18n="simKeyLabel">KEY</span>: <strong>B</strong></span>
                 <span>AUTOSCROLL: <strong>1.0x</strong></span>
                 <span>SETLIST: <strong>1 / 14</strong></span>
               </div>
 
               <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; color: #f8fafc; background: #000; padding: 12px; border-radius: 8px; flex: 1;">
-                <span style="color: #38bdf8; font-weight: 800;">[Refrão]</span><br>
+                <span style="color: #38bdf8; font-weight: 800;">[Chorus]</span><br>
                 Your <span style="color: #38bdf8; font-weight: 800;">E</span> skin, oh yeah your <span style="color: #38bdf8; font-weight: 800;">G#m</span> skin and <span style="color: #38bdf8; font-weight: 800;">F#</span> bones,<br>
                 Turn in<span style="color: #38bdf8; font-weight: 800;">E</span>to something <span style="color: #38bdf8; font-weight: 800;">G#m</span> beauti<span style="color: #38bdf8; font-weight: 800;">F#</span>ful...
               </div>
 
               <a href="editor.html" class="btn btn-primary" style="width: 100%; font-size: 12px; padding: 8px;">
-                <ion-icon name="qr-code-outline"></ion-icon> Sincronizar com PC
+                <ion-icon name="qr-code-outline"></ion-icon> <span data-i18n="simSyncBtn">Sync with PC</span>
               </a>
             </div>
 
@@ -1192,9 +1232,9 @@ Yeah, they were all yellow.
     <div class="container">
       
       <div class="section-header">
-        <span class="section-tag">Recursos Profissionais</span>
-        <h2 class="section-title">Tudo o que uma Banda Precisa Antes, Durante e Depois do Show.</h2>
-        <p class="section-desc">Desenvolvido por quem vive o palco: recursos pensados para simplificar a vida de músicos, cantores e bandas de todos os estilos.</p>
+        <span class="section-tag" data-i18n="featSectionTag">Professional Features</span>
+        <h2 class="section-title" data-i18n="featSectionTitle">Everything a Band Needs Before, During, and After the Show.</h2>
+        <p class="section-desc" data-i18n="featSectionDesc">Built by musicians who live the stage: features designed to simplify life for players, vocalists, and bands of any genre.</p>
       </div>
 
       <div class="features-grid">
@@ -1204,8 +1244,8 @@ Yeah, they were all yellow.
           <div class="feature-icon-wrapper icon-blue">
             <ion-icon name="musical-notes"></ion-icon>
           </div>
-          <h3>Modo Palco em Tela Cheia</h3>
-          <p>Visualize cifras, letras ou tablaturas com contraste adaptado para o escuro do palco. Rolagem automática inteligente com ajuste de velocidade e metrônomo visual.</p>
+          <h3 data-i18n="feat1Title">Full-Screen Stage Mode</h3>
+          <p data-i18n="feat1Desc">View chords, lyrics, or tabs with high-contrast stage dark mode. Smart autoscroll with custom speed control and visual metronome.</p>
         </div>
 
         <!-- Feature 2 -->
@@ -1213,8 +1253,8 @@ Yeah, they were all yellow.
           <div class="feature-icon-wrapper icon-cyan">
             <ion-icon name="laptop"></ion-icon>
           </div>
-          <h3>Web Editor Pro no PC</h3>
-          <p>Acelere o cadastro e a formatação de cifras digitando no teclado do seu computador. Cole repertórios inteiros e organize tags em uma tela ampla.</p>
+          <h3 data-i18n="feat2Title">Pro Web Editor on PC</h3>
+          <p data-i18n="feat2Desc">Speed up chord editing using your computer keyboard. Paste full setlists, structure chords, and organize tags on a wide monitor.</p>
         </div>
 
         <!-- Feature 3 -->
@@ -1222,8 +1262,8 @@ Yeah, they were all yellow.
           <div class="feature-icon-wrapper icon-emerald">
             <ion-icon name="qr-code"></ion-icon>
           </div>
-          <h3>Sincronização via QR Code</h3>
-          <p>Estilo WhatsApp Web: sem formulários de cadastro ou senhas. Aponte a câmera do app para o QR Code no PC e transfira suas músicas em 2 segundos.</p>
+          <h3 data-i18n="feat3Title">QR Code Synchronization</h3>
+          <p data-i18n="feat3Desc">WhatsApp Web style: no logins or passwords needed. Scan the QR Code on PC with your mobile camera and transfer songs in 2 seconds.</p>
         </div>
 
         <!-- Feature 4 -->
@@ -1231,8 +1271,8 @@ Yeah, they were all yellow.
           <div class="feature-icon-wrapper icon-purple">
             <ion-icon name="reorder-four"></ion-icon>
           </div>
-          <h3>Setlists com Drag & Drop</h3>
-          <p>Monte roteiros de shows e ensaios arrastando as músicas na ordem desejada. Insira pausas, intervalos e anotações para a banda com cálculo do tempo total.</p>
+          <h3 data-i18n="feat4Title">Drag & Drop Setlists</h3>
+          <p data-i18n="feat4Desc">Build concert and rehearsal setlists by dragging songs into the perfect order. Add pauses, breaks, and band announcements with automatic runtime calculation.</p>
         </div>
 
         <!-- Feature 5 -->
@@ -1240,8 +1280,8 @@ Yeah, they were all yellow.
           <div class="feature-icon-wrapper icon-amber">
             <ion-icon name="document-text"></ion-icon>
           </div>
-          <h3>Exportação Word (.doc) e JSON</h3>
-          <p>Gere documentos formatados para impressão em Word com a lista do show e exporte backups completos em JSON para salvar no Google Drive ou enviar no WhatsApp.</p>
+          <h3 data-i18n="feat5Title">Word (.doc) & JSON Export</h3>
+          <p data-i18n="feat5Desc">Generate print-ready formatted Word (.doc) sheets with band header and export full JSON database backups to store on Google Drive or share on WhatsApp.</p>
         </div>
 
         <!-- Feature 6 -->
@@ -1249,8 +1289,8 @@ Yeah, they were all yellow.
           <div class="feature-icon-wrapper icon-rose">
             <ion-icon name="cloud-offline"></ion-icon>
           </div>
-          <h3>100% Offline & Seguro</h3>
-          <p>Banco de dados SQLite local no aparelho. Não dependa de internet no palco ou no estúdio: suas músicas estarão sempre acessíveis quando você mais precisar.</p>
+          <h3 data-i18n="feat6Title">100% Offline & Secure</h3>
+          <p data-i18n="feat6Desc">Local SQLite database on your device. Never rely on stage Wi-Fi: your music, chords, and setlists are always available when you need them.</p>
         </div>
 
       </div>
@@ -1264,30 +1304,30 @@ Yeah, they were all yellow.
       <div class="split-interactive">
         
         <div class="interactive-content">
-          <span class="section-tag">Performance ao Vivo</span>
-          <h2>Modo Palco: Foco Total na Música, Sem Distrações.</h2>
-          <p class="section-desc">
-            Durante o show, você só precisa do que importa: acordes legíveis, rolagem suave que acompanha seu ritmo e controle total de tonalidade.
+          <span class="section-tag" data-i18n="stageSectionTag">Live Performance</span>
+          <h2 data-i18n="stageSectionTitle">Stage Mode: Total Focus on Music, Zero Distractions.</h2>
+          <p class="section-desc" data-i18n="stageSectionDesc">
+            During the concert, you only need what matters: crystal clear chords, smooth autoscroll following your tempo, and instant key transposition.
           </p>
 
           <ul class="interactive-checklist">
             <li>
               <ion-icon name="checkmark-circle"></ion-icon>
-              <div><strong>Rolagem Automática (Autoscroll):</strong> Ajuste a velocidade de 0.5x a 2.0x e toque sem precisar tirar as mãos do instrumento.</div>
+              <div><strong data-i18n="stageCheck1Title">Automatic Scrolling (Autoscroll):</strong> <span data-i18n="stageCheck1Desc">Adjust speed from 0.5x to 2.0x and perform hands-free without leaving your instrument.</span></div>
             </li>
             <li>
               <ion-icon name="checkmark-circle"></ion-icon>
-              <div><strong>Transposição de Tom Instantânea:</strong> Suba ou desça semitons em 1 clique (+1 / -1) para adaptar ao tom do vocalista.</div>
+              <div><strong data-i18n="stageCheck2Title">Instant Key Transposition:</strong> <span data-i18n="stageCheck2Desc">Shift keys up or down in 1 click (+1 / -1 semitone) to adapt to the singer's vocal range.</span></div>
             </li>
             <li>
               <ion-icon name="checkmark-circle"></ion-icon>
-              <div><strong>Metrônomo Visual & BPM:</strong> Luz pulsante no tempo certo da música para manter a contagem perfeita sem ruído no palco.</div>
+              <div><strong data-i18n="stageCheck3Title">Visual Metronome & BPM:</strong> <span data-i18n="stageCheck3Desc">Pulsing beat indicator on tempo to keep perfect timing without audible clicks on stage.</span></div>
             </li>
           </ul>
 
           <a href="editor.html" class="btn btn-primary btn-lg">
             <ion-icon name="play-circle-outline"></ion-icon>
-            Testar no Web Editor
+            <span data-i18n="stageBtnTest">Test in Web Editor</span>
           </a>
         </div>
 
@@ -1295,24 +1335,24 @@ Yeah, they were all yellow.
         <div class="stage-interactive-box">
           <div class="stage-box-top">
             <div>
-              <span style="font-size: 11px; font-weight: 800; color: var(--cyan); letter-spacing: 1px;">SIMULADOR MODO PALCO</span>
+              <span style="font-size: 11px; font-weight: 800; color: var(--cyan); letter-spacing: 1px;" data-i18n="demoSimTitle">STAGE MODE SIMULATOR</span>
               <h4 style="font-size: 18px; font-weight: 900; margin-top: 2px;">Tempo Perdido • Legião Urbana</h4>
             </div>
-            <span class="sim-badge" id="demoToneBadge" style="background: var(--primary-glow); color: var(--cyan); border-color: var(--cyan);">TOM: C</span>
+            <span class="sim-badge" id="demoToneBadge" style="background: var(--primary-glow); color: var(--cyan); border-color: var(--cyan);">KEY: C</span>
           </div>
 
           <div class="stage-controls-bar">
             <button class="stage-ctrl-btn" onclick="transposeDemo(-1)">
-              <ion-icon name="remove-circle-outline"></ion-icon> -1 Tom
+              <ion-icon name="remove-circle-outline"></ion-icon> <span data-i18n="demoBtnMinusKey">-1 Key</span>
             </button>
             <button class="stage-ctrl-btn" onclick="transposeDemo(1)">
-              <ion-icon name="add-circle-outline"></ion-icon> +1 Tom
+              <ion-icon name="add-circle-outline"></ion-icon> <span data-i18n="demoBtnPlusKey">+1 Key</span>
             </button>
             <button class="stage-ctrl-btn" id="demoScrollBtn" onclick="toggleDemoScroll()">
-              <ion-icon name="play-outline" id="demoScrollIcon"></ion-icon> <span id="demoScrollText">Autoscroll</span>
+              <ion-icon name="play-outline" id="demoScrollIcon"></ion-icon> <span id="demoScrollText" data-i18n="demoBtnScroll">Autoscroll</span>
             </button>
             <button class="stage-ctrl-btn" onclick="resetDemoScroll()">
-              <ion-icon name="refresh-outline"></ion-icon> Topo
+              <ion-icon name="refresh-outline"></ion-icon> <span data-i18n="demoBtnTop">Top</span>
             </button>
           </div>
 
@@ -1356,9 +1396,9 @@ E tão sério e selvagem...
     <div class="container">
       
       <div class="section-header">
-        <span class="section-tag">Conexão em Tempo Real</span>
-        <h2 class="section-title">Sincronização Instantânea via QR Code</h2>
-        <p class="section-desc">Sem login, sem e-mail, sem senhas. Aponte a câmera e o repertório inteiro estará no seu PC em segundos.</p>
+        <span class="section-tag" data-i18n="syncSectionTag">Real-time Connection</span>
+        <h2 class="section-title" data-i18n="syncSectionTitle">Instant QR Code Synchronization</h2>
+        <p class="section-desc" data-i18n="syncSectionDesc">No login, no email, no password. Point your phone camera and your entire repertoire syncs to PC in seconds.</p>
       </div>
 
       <div class="sync-flow-grid">
@@ -1366,22 +1406,22 @@ E tão sério e selvagem...
         <div class="sync-step-card">
           <div class="step-number">1</div>
           <ion-icon name="laptop-outline" class="sync-step-icon"></ion-icon>
-          <h4>Abra o Web Editor no PC</h4>
-          <p>Clique em <strong>Sincronizar Celular</strong> no topo do editor para gerar seu QR Code de pareamento seguro.</p>
+          <h4 data-i18n="syncStep1Title">Open Web Editor on PC</h4>
+          <p data-i18n="syncStep1Desc">Click <strong>Sync Mobile</strong> at the top of the editor to generate your secure pairing QR Code.</p>
         </div>
 
         <div class="sync-step-card">
           <div class="step-number">2</div>
           <ion-icon name="camera-outline" class="sync-step-icon"></ion-icon>
-          <h4>Aponte a Câmera do App</h4>
-          <p>No aplicativo do celular, acesse <strong>Sincronizar com Web</strong> e leia o QR Code exibido no monitor.</p>
+          <h4 data-i18n="syncStep2Title">Point Phone Camera</h4>
+          <p data-i18n="syncStep2Desc">In the mobile app, tap <strong>Sync with Web</strong> and scan the QR Code shown on your PC screen.</p>
         </div>
 
         <div class="sync-step-card">
           <div class="step-number">3</div>
           <ion-icon name="swap-horizontal-outline" class="sync-step-icon"></ion-icon>
-          <h4>Pronto! Envie e Receba</h4>
-          <p>Puxe todas as músicas para o PC para editar e formate cifras à vontade. Ao terminar, envie tudo de volta com 1 clique.</p>
+          <h4 data-i18n="syncStep3Title">Done! Send and Receive</h4>
+          <p data-i18n="syncStep3Desc">Pull all songs to PC to edit chords and format setlists. When finished, send everything back in 1 click.</p>
         </div>
 
       </div>
@@ -1396,17 +1436,17 @@ E tão sério e selvagem...
         
         <div class="playstore-content">
           <span class="pill-badge" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #34d399;">
-            <ion-icon name="logo-android"></ion-icon> Disponível para Android na Play Store
+            <ion-icon name="logo-android"></ion-icon> <span data-i18n="playstoreBadge">Available for Android on Google Play</span>
           </span>
-          <h2>Baixe Agora o Setlist Band Manager</h2>
-          <p>
-            Leve o seu repertório completo para o palco, economize tempo nos ensaios e garanta shows sem imprevistos. Gratuito para sempre.
+          <h2 data-i18n="playstoreTitle">Download Setlist Band Manager Now</h2>
+          <p data-i18n="playstoreDesc">
+            Take your full repertoire to the stage, save rehearsal time, and eliminate onstage surprises. Free forever.
           </p>
 
           <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener" class="play-badge-btn">
             <ion-icon name="logo-google-playstore" class="play-badge-icon"></ion-icon>
             <div class="play-badge-text">
-              <span>Disponível no</span>
+              <span data-i18n="playBadgeGet">GET IT ON</span>
               <strong>Google Play</strong>
             </div>
           </a>
@@ -1414,7 +1454,7 @@ E tão sério e selvagem...
 
         <div class="playstore-qr-box">
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.setlistbandmanager.com" alt="QR Code Google Play">
-          <p>Escaneie para Baixar</p>
+          <p data-i18n="playstoreQrScan">Scan to Download</p>
         </div>
 
       </div>
@@ -1426,59 +1466,59 @@ E tão sério e selvagem...
     <div class="container">
       
       <div class="section-header">
-        <span class="section-tag">Tire suas Dúvidas</span>
-        <h2 class="section-title">Perguntas Frequentes</h2>
+        <span class="section-tag" data-i18n="faqSectionTag">Got Questions?</span>
+        <h2 class="section-title" data-i18n="faqSectionTitle">Frequently Asked Questions</h2>
       </div>
 
       <div class="faq-container">
         
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            <span>O aplicativo precisa de internet durante o show?</span>
+            <span data-i18n="faqQ1">Does the app require internet during live gigs?</span>
             <ion-icon name="chevron-down-outline"></ion-icon>
           </button>
-          <div class="faq-answer">
-            Não! O Setlist Band Manager foi desenvolvido com banco de dados local SQLite. Todas as músicas, cifras e setlists ficam armazenados offline no próprio dispositivo.
+          <div class="faq-answer" data-i18n="faqA1">
+            No! Setlist Band Manager is built with a local SQLite database. All your songs, chords, and setlists remain stored offline on your device.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            <span>O Web Editor no PC é gratuito?</span>
+            <span data-i18n="faqQ2">Is the PC Web Editor free?</span>
             <ion-icon name="chevron-down-outline"></ion-icon>
           </button>
-          <div class="faq-answer">
-            Sim! O Web Editor Pro é 100% gratuito e acessível por qualquer navegador moderno no computador (Chrome, Edge, Firefox, Safari).
+          <div class="faq-answer" data-i18n="faqA2">
+            Yes! The Pro Web Editor is 100% free and accessible from any modern desktop browser (Chrome, Edge, Firefox, Safari).
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            <span>Como funciona a sincronização entre o celular e o PC?</span>
+            <span data-i18n="faqQ3">How does phone and PC synchronization work?</span>
             <ion-icon name="chevron-down-outline"></ion-icon>
           </button>
-          <div class="faq-answer">
-            Basta abrir o Web Editor no PC, clicar em "Sincronizar Celular", abrir o app no smartphone e apontar a câmera para o QR Code. A transferência ocorre em tempo real via conexão segura.
+          <div class="faq-answer" data-i18n="faqA3">
+            Simply open the Web Editor on PC, click "Sync Mobile", open the app on your smartphone, and point the camera at the QR code. Transfer happens in real time over a secure relay.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            <span>Posso exportar o setlist para imprimir e entregar para a banda?</span>
+            <span data-i18n="faqQ4">Can I export setlists to print for band members?</span>
             <ion-icon name="chevron-down-outline"></ion-icon>
           </button>
-          <div class="faq-answer">
-            Sim! O Web Editor e o App possuem exportação direta para arquivo Word (.doc) e visualização limpa, perfeita para impressão do roteiro físico do show.
+          <div class="faq-answer" data-i18n="faqA4">
+            Yes! Both the Web Editor and Mobile App support direct export to clean 2-column Word (.doc) files, perfect for physical stage setlists.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            <span>Como faço backup de todas as minhas cifras e repertório?</span>
+            <span data-i18n="faqQ5">How do I backup my repertoire and chords?</span>
             <ion-icon name="chevron-down-outline"></ion-icon>
           </button>
-          <div class="faq-answer">
-            Você pode clicar no botão "Exportar Backup" no Web Editor ou na aba "Backup / Restaurar" no app para gerar um arquivo .json seguro que pode ser guardado no Google Drive ou enviado por WhatsApp.
+          <div class="faq-answer" data-i18n="faqA5">
+            You can click "Export Backup" in the Web Editor or "Backup / Restore" in the app to produce a secure .json file you can save on Google Drive or send via WhatsApp.
           </div>
         </div>
 
@@ -1490,17 +1530,17 @@ E tão sério e selvagem...
   <!-- Final CTA -->
   <section class="final-cta">
     <div class="container">
-      <h2>Pronto para Elevar o Nível dos Shows da sua Banda?</h2>
-      <p>Acesse o Web Editor no seu computador ou baixe o aplicativo no celular agora mesmo.</p>
+      <h2 data-i18n="finalCtaTitle">Ready to Elevate Your Band's Live Performances?</h2>
+      <p data-i18n="finalCtaDesc">Open the Web Editor on your computer or download the mobile app right now.</p>
 
       <div class="hero-cta-group">
         <a href="editor.html" class="btn btn-primary btn-lg">
           <ion-icon name="laptop-outline"></ion-icon>
-          Abrir Web Editor Pro
+          <span data-i18n="finalCtaBtnEditor">Open Web Editor Pro</span>
         </a>
         <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener" class="btn btn-playstore btn-lg">
           <ion-icon name="logo-google-playstore"></ion-icon>
-          Baixar no Google Play
+          <span data-i18n="finalCtaBtnPlay">Download on Google Play</span>
         </a>
       </div>
     </div>
@@ -1516,52 +1556,393 @@ E tão sério e selvagem...
             <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo" style="width: 40px; height: 40px;" onerror="this.onerror=null; this.src='web-editor/assets/logo.png';">
             <span class="brand-title" style="font-size: 17px;">Setlist Band Manager</span>
           </a>
-          <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6; max-width: 320px;">
-            A solução definitiva para gerenciamento de repertório, cifras e apresentações ao vivo para músicos e bandas.
+          <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6; max-width: 320px;" data-i18n="footerBrandDesc">
+            The definitive solution for repertoire management, smart chords, and live stage performance for musicians and bands.
           </p>
         </div>
 
         <div class="footer-col">
-          <h5>Navegação</h5>
+          <h5 data-i18n="footerColNav">Navigation</h5>
           <ul>
-            <li><a href="#recursos">Recursos</a></li>
-            <li><a href="#modo-palco">Modo Palco</a></li>
-            <li><a href="#sincronizacao">Sincronização QR</a></li>
-            <li><a href="#download">Google Play</a></li>
-            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#recursos" data-i18n="navFeatures">Features</a></li>
+            <li><a href="#modo-palco" data-i18n="navStageMode">Stage Mode</a></li>
+            <li><a href="#sincronizacao" data-i18n="navSync">QR Sync</a></li>
+            <li><a href="#download" data-i18n="navDownload">Google Play</a></li>
+            <li><a href="#faq" data-i18n="navFaq">FAQ</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h5>Ferramentas</h5>
+          <h5 data-i18n="footerColTools">Tools</h5>
           <ul>
-            <li><a href="editor.html">Web Editor Pro (PC)</a></li>
-            <li><a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener">App Android (Google Play)</a></li>
-            <li><a href="editor.html">Exportar Word (.doc)</a></li>
-            <li><a href="editor.html">Backup & Restauração</a></li>
+            <li><a href="editor.html" data-i18n="footerToolEditor">Web Editor Pro (PC)</a></li>
+            <li><a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener" data-i18n="footerToolAndroid">Android App (Google Play)</a></li>
+            <li><a href="editor.html" data-i18n="footerToolDoc">Export Word (.doc)</a></li>
+            <li><a href="editor.html" data-i18n="footerToolBackup">Backup & Restore</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h5>Sobre</h5>
+          <h5 data-i18n="footerColAbout">About</h5>
           <ul>
-            <li><span style="color: var(--emerald);">● Versão 1.1.4 Ativa</span></li>
-            <li><span style="color: var(--text-dim);">100% Offline (SQLite)</span></li>
-            <li><span style="color: var(--text-dim);">Multiplataforma</span></li>
+            <li><span style="color: var(--emerald);" data-i18n="footerVerActive">● Version 1.1.4 Active</span></li>
+            <li><span style="color: var(--text-dim);" data-i18n="footerOfflineBadge">100% Offline (SQLite)</span></li>
+            <li><span style="color: var(--text-dim);" data-i18n="footerCrossBadge">Cross-Platform</span></li>
           </ul>
         </div>
 
       </div>
 
       <div class="footer-bottom">
-        <div>© 2026 Setlist Band Manager. Todos os direitos reservados.</div>
-        <div>Feito por músicos, para músicos. 🎸⚡</div>
+        <div data-i18n="footerCopyright">© 2026 Setlist Band Manager. All rights reserved.</div>
+        <div data-i18n="footerMadeBy">Built by musicians, for musicians. 🎸⚡</div>
       </div>
     </div>
   </footer>
 
-  <!-- Interactive Scripts -->
+  <!-- Interactive Scripts & Localization -->
   <script>
+    const translations = {
+      en: {
+        pageTitle: 'Setlist Band Manager • The Ultimate App for Musicians, Bands & Stage',
+        pageMetaDesc: 'Organize your band repertoire, edit smart chords on PC with Web Editor Pro, control hands-free autoscroll on stage, and sync everything via QR Code. 100% offline and free.',
+        navFeatures: 'Features',
+        navStageMode: 'Stage Mode',
+        navSync: 'QR Sync',
+        navDownload: 'Google Play',
+        navFaq: 'FAQ',
+        navBtnDownload: 'Download App',
+        navBtnEditor: 'Open Web Editor',
+        heroBadge: 'Mobile App & Pro Web Editor for PC',
+        heroTitle: 'The Perfect Setlist & Smart Chords <br><span class="gradient-text">For Stage, Rehearsals & Studio.</span>',
+        heroDesc: "Organize your band's repertoire, edit chords comfortably on PC with Web Editor Pro, control hands-free autoscroll on stage, and sync everything instantly via QR Code. 100% offline, fast, and free.",
+        heroCtaEditor: 'Access Web Editor on PC',
+        heroCtaPlay: 'Get it on Google Play',
+        trustFree: '100% Free',
+        trustOffline: 'Works 100% Offline on Stage',
+        trustSync: '2s QR Code Sync',
+        trustDoc: 'Formatted Word (.doc) Export',
+        mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro & Stage Mode Synced',
+        mockupTryBtn: 'Try it Now →',
+        simMetaSong: 'Original Key: B • BPM: 88 • Duration: 04:29',
+        simTagMain: 'MAIN SHOW',
+        simLiveStage: 'LIVE STAGE MODE',
+        simKeyLabel: 'KEY',
+        simSyncBtn: 'Sync with PC',
+        featSectionTag: 'Professional Features',
+        featSectionTitle: 'Everything a Band Needs Before, During, and After the Show.',
+        featSectionDesc: 'Built by musicians who live the stage: features designed to simplify life for players, vocalists, and bands of any genre.',
+        feat1Title: 'Full-Screen Stage Mode',
+        feat1Desc: 'View chords, lyrics, or tabs with high-contrast stage dark mode. Smart autoscroll with custom speed control and visual metronome.',
+        feat2Title: 'Pro Web Editor on PC',
+        feat2Desc: 'Speed up chord editing using your computer keyboard. Paste full setlists, structure chords, and organize tags on a wide monitor.',
+        feat3Title: 'QR Code Synchronization',
+        feat3Desc: 'WhatsApp Web style: no logins or passwords needed. Scan the QR Code on PC with your mobile camera and transfer songs in 2 seconds.',
+        feat4Title: 'Drag & Drop Setlists',
+        feat4Desc: 'Build concert and rehearsal setlists by dragging songs into the perfect order. Add pauses, breaks, and band announcements with automatic runtime calculation.',
+        feat5Title: 'Word (.doc) & JSON Export',
+        feat5Desc: 'Generate print-ready formatted Word (.doc) sheets with band header and export full JSON database backups to store on Google Drive or share on WhatsApp.',
+        feat6Title: '100% Offline & Secure',
+        feat6Desc: 'Local SQLite database on your device. Never rely on stage Wi-Fi: your music, chords, and setlists are always available when you need them.',
+        stageSectionTag: 'Live Performance',
+        stageSectionTitle: 'Stage Mode: Total Focus on Music, Zero Distractions.',
+        stageSectionDesc: 'During the concert, you only need what matters: crystal clear chords, smooth autoscroll following your tempo, and instant key transposition.',
+        stageCheck1Title: 'Automatic Scrolling (Autoscroll):',
+        stageCheck1Desc: 'Adjust speed from 0.5x to 2.0x and perform hands-free without leaving your instrument.',
+        stageCheck2Title: 'Instant Key Transposition:',
+        stageCheck2Desc: "Shift keys up or down in 1 click (+1 / -1 semitone) to adapt to the singer's vocal range.",
+        stageCheck3Title: 'Visual Metronome & BPM:',
+        stageCheck3Desc: 'Pulsing beat indicator on tempo to keep perfect timing without audible clicks on stage.',
+        stageBtnTest: 'Test in Web Editor',
+        demoSimTitle: 'STAGE MODE SIMULATOR',
+        demoBtnMinusKey: '-1 Key',
+        demoBtnPlusKey: '+1 Key',
+        demoBtnScroll: 'Autoscroll',
+        demoBtnScrollPause: 'Pause',
+        demoBtnTop: 'Top',
+        demoKeyPrefix: 'KEY',
+        syncSectionTag: 'Real-time Connection',
+        syncSectionTitle: 'Instant QR Code Synchronization',
+        syncSectionDesc: 'No login, no email, no password. Point your phone camera and your entire repertoire syncs to PC in seconds.',
+        syncStep1Title: 'Open Web Editor on PC',
+        syncStep1Desc: 'Click <strong>Sync Mobile</strong> at the top of the editor to generate your secure pairing QR Code.',
+        syncStep2Title: 'Point Phone Camera',
+        syncStep2Desc: 'In the mobile app, tap <strong>Sync with Web</strong> and scan the QR Code shown on your PC screen.',
+        syncStep3Title: 'Done! Send and Receive',
+        syncStep3Desc: 'Pull all songs to PC to edit chords and format setlists. When finished, send everything back in 1 click.',
+        playstoreBadge: 'Available for Android on Google Play',
+        playstoreTitle: 'Download Setlist Band Manager Now',
+        playstoreDesc: 'Take your full repertoire to the stage, save rehearsal time, and eliminate onstage surprises. Free forever.',
+        playBadgeGet: 'GET IT ON',
+        playstoreQrScan: 'Scan to Download',
+        faqSectionTag: 'Got Questions?',
+        faqSectionTitle: 'Frequently Asked Questions',
+        faqQ1: 'Does the app require internet during live gigs?',
+        faqA1: 'No! Setlist Band Manager is built with a local SQLite database. All your songs, chords, and setlists remain stored offline on your device.',
+        faqQ2: 'Is the PC Web Editor free?',
+        faqA2: 'Yes! The Pro Web Editor is 100% free and accessible from any modern desktop browser (Chrome, Edge, Firefox, Safari).',
+        faqQ3: 'How does phone and PC synchronization work?',
+        faqA3: 'Simply open the Web Editor on PC, click "Sync Mobile", open the app on your smartphone, and point the camera at the QR code. Transfer happens in real time over a secure relay.',
+        faqQ4: 'Can I export setlists to print for band members?',
+        faqA4: 'Yes! Both the Web Editor and Mobile App support direct export to clean 2-column Word (.doc) files, perfect for physical stage setlists.',
+        faqQ5: 'How do I backup my repertoire and chords?',
+        faqA5: 'You can click "Export Backup" in the Web Editor or "Backup / Restore" in the app to produce a secure .json file you can save on Google Drive or send via WhatsApp.',
+        finalCtaTitle: "Ready to Elevate Your Band's Live Performances?",
+        finalCtaDesc: 'Open the Web Editor on your computer or download the mobile app right now.',
+        finalCtaBtnEditor: 'Open Web Editor Pro',
+        finalCtaBtnPlay: 'Download on Google Play',
+        footerBrandDesc: 'The definitive solution for repertoire management, smart chords, and live stage performance for musicians and bands.',
+        footerColNav: 'Navigation',
+        footerColTools: 'Tools',
+        footerToolEditor: 'Web Editor Pro (PC)',
+        footerToolAndroid: 'Android App (Google Play)',
+        footerToolDoc: 'Export Word (.doc)',
+        footerToolBackup: 'Backup & Restore',
+        footerColAbout: 'About',
+        footerVerActive: '● Version 1.1.4 Active',
+        footerOfflineBadge: '100% Offline (SQLite)',
+        footerCrossBadge: 'Cross-Platform',
+        footerCopyright: '© 2026 Setlist Band Manager. All rights reserved.',
+        footerMadeBy: 'Built by musicians, for musicians. 🎸⚡'
+      },
+      pt: {
+        pageTitle: 'Setlist Band Manager • O App Definitivo para Músicos, Bandas e Palco',
+        pageMetaDesc: 'Organize o repertório da sua banda, edite cifras no PC com o Web Editor Pro, controle o autoscroll no palco e sincronize tudo via QR Code instantaneamente. 100% offline e gratuito.',
+        navFeatures: 'Recursos',
+        navStageMode: 'Modo Palco',
+        navSync: 'Sincronização QR',
+        navDownload: 'Google Play',
+        navFaq: 'FAQ',
+        navBtnDownload: 'Baixar App',
+        navBtnEditor: 'Abrir Web Editor',
+        heroBadge: 'Aplicativo Mobile & Web Editor Pro para PC',
+        heroTitle: 'O Roteiro Perfeito e Cifras Inteligentes <br><span class="gradient-text">Para o Palco, Ensaios e Estúdio.</span>',
+        heroDesc: 'Organize o repertório da sua banda, edite cifras confortavelmente no PC com o Web Editor Pro, controle o autoscroll no palco e sincronize tudo via QR Code instantaneamente. 100% offline, ágil e gratuito.',
+        heroCtaEditor: 'Acessar Web Editor no PC',
+        heroCtaPlay: 'Baixar no Google Play',
+        trustFree: '100% Gratuito',
+        trustOffline: 'Funciona 100% Offline no Palco',
+        trustSync: 'Sincronização em 2s por QR Code',
+        trustDoc: 'Exportação Formatada em Word (.doc)',
+        mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro & Modo Palco Sincronizados',
+        mockupTryBtn: 'Experimentar Agora →',
+        simMetaSong: 'Tom Original: B (Si Maior) • BPM: 88 • Duração: 04:29',
+        simTagMain: 'SHOW PRINCIPAL',
+        simLiveStage: 'MODO PALCO AO VIVO',
+        simKeyLabel: 'TOM',
+        simSyncBtn: 'Sincronizar com PC',
+        featSectionTag: 'Recursos Profissionais',
+        featSectionTitle: 'Tudo o que uma Banda Precisa Antes, Durante e Depois do Show.',
+        featSectionDesc: 'Desenvolvido por quem vive o palco: recursos pensados para simplificar a vida de músicos, cantores e bandas de todos os estilos.',
+        feat1Title: 'Modo Palco em Tela Cheia',
+        feat1Desc: 'Visualize cifras, letras ou tablaturas com contraste adaptado para o escuro do palco. Rolagem automática inteligente com ajuste de velocidade e metrônomo visual.',
+        feat2Title: 'Web Editor Pro no PC',
+        feat2Desc: 'Acelere o cadastro e a formatação de cifras digitando no teclado do seu computador. Cole repertórios inteiros e organize tags em uma tela ampla.',
+        feat3Title: 'Sincronização via QR Code',
+        feat3Desc: 'Estilo WhatsApp Web: sem formulários de cadastro ou senhas. Aponte a câmera do app para o QR Code no PC e transfira suas músicas em 2 segundos.',
+        feat4Title: 'Setlists com Drag & Drop',
+        feat4Desc: 'Monte roteiros de shows e ensaios arrastando as músicas na ordem desejada. Insira pausas, intervalos e anotações para a banda com cálculo do tempo total.',
+        feat5Title: 'Exportação Word (.doc) e JSON',
+        feat5Desc: 'Gere documentos formatados para impressão em Word com a lista do show e exporte backups completos em JSON para salvar no Google Drive ou enviar no WhatsApp.',
+        feat6Title: '100% Offline & Seguro',
+        feat6Desc: 'Banco de dados SQLite local no aparelho. Não dependa de internet no palco ou no estúdio: suas músicas estarão sempre acessíveis quando você mais precisar.',
+        stageSectionTag: 'Performance ao Vivo',
+        stageSectionTitle: 'Modo Palco: Foco Total na Música, Sem Distrações.',
+        stageSectionDesc: 'Durante o show, você só precisa do que importa: acordes legíveis, rolagem suave que acompanha seu ritmo e controle total de tonalidade.',
+        stageCheck1Title: 'Rolagem Automática (Autoscroll):',
+        stageCheck1Desc: 'Ajuste a velocidade de 0.5x a 2.0x e toque sem precisar tirar as mãos do instrumento.',
+        stageCheck2Title: 'Transposição de Tom Instantânea:',
+        stageCheck2Desc: 'Suba ou desça semitons em 1 clique (+1 / -1) para adaptar ao tom do vocalista.',
+        stageCheck3Title: 'Metrônomo Visual & BPM:',
+        stageCheck3Desc: 'Luz pulsante no tempo certo da música para manter a contagem perfeita sem ruído no palco.',
+        stageBtnTest: 'Testar no Web Editor',
+        demoSimTitle: 'SIMULADOR MODO PALCO',
+        demoBtnMinusKey: '-1 Tom',
+        demoBtnPlusKey: '+1 Tom',
+        demoBtnScroll: 'Autoscroll',
+        demoBtnScrollPause: 'Pausar',
+        demoBtnTop: 'Topo',
+        demoKeyPrefix: 'TOM',
+        syncSectionTag: 'Conexão em Tempo Real',
+        syncSectionTitle: 'Sincronização Instantânea via QR Code',
+        syncSectionDesc: 'Sem login, sem e-mail, sem senhas. Aponte a câmera e o repertório inteiro estará no seu PC em segundos.',
+        syncStep1Title: 'Abra o Web Editor no PC',
+        syncStep1Desc: 'Clique em <strong>Sincronizar Celular</strong> no topo do editor para gerar seu QR Code de pareamento seguro.',
+        syncStep2Title: 'Aponte a Câmera do App',
+        syncStep2Desc: 'No aplicativo do celular, acesse <strong>Sincronizar com Web</strong> e leia o QR Code exibido no monitor.',
+        syncStep3Title: 'Pronto! Envie e Receba',
+        syncStep3Desc: 'Puxe todas as músicas para o PC para editar e formate cifras à vontade. Ao terminar, envie tudo de volta com 1 clique.',
+        playstoreBadge: 'Disponível para Android na Play Store',
+        playstoreTitle: 'Baixe Agora o Setlist Band Manager',
+        playstoreDesc: 'Leve o seu repertório completo para o palco, economize tempo nos ensaios e garanta shows sem imprevistos. Gratuito para sempre.',
+        playBadgeGet: 'Disponível no',
+        playstoreQrScan: 'Escaneie para Baixar',
+        faqSectionTag: 'Tire suas Dúvidas',
+        faqSectionTitle: 'Perguntas Frequentes',
+        faqQ1: 'O aplicativo precisa de internet durante o show?',
+        faqA1: 'Não! O Setlist Band Manager foi desenvolvido com banco de dados local SQLite. Todas as músicas, cifras e setlists ficam armazenados offline no próprio dispositivo.',
+        faqQ2: 'O Web Editor no PC é gratuito?',
+        faqA2: 'Sim! O Web Editor Pro é 100% gratuito e acessível por qualquer navegador moderno no computador (Chrome, Edge, Firefox, Safari).',
+        faqQ3: 'Como funciona a sincronização entre o celular e o PC?',
+        faqA3: 'Basta abrir o Web Editor no PC, clicar em "Sincronizar Celular", abrir o app no smartphone e apontar a câmera para o QR Code. A transferência ocorre em tempo real via conexão segura.',
+        faqQ4: 'Posso exportar o setlist para imprimir e entregar para a banda?',
+        faqA4: 'Sim! O Web Editor e o App possuem exportação direta para arquivo Word (.doc) e visualização limpa, perfeita para impressão do roteiro físico do show.',
+        faqQ5: 'Como faço backup de todas as minhas cifras e repertório?',
+        faqA5: 'Você pode clicar no botão "Exportar Backup" no Web Editor ou na aba "Backup / Restaurar" no app para gerar um arquivo .json seguro que pode ser guardado no Google Drive ou enviado por WhatsApp.',
+        finalCtaTitle: 'Pronto para Elevar o Nível dos Shows da sua Banda?',
+        finalCtaDesc: 'Acesse o Web Editor no seu computador ou baixe o aplicativo no celular agora mesmo.',
+        finalCtaBtnEditor: 'Abrir Web Editor Pro',
+        finalCtaBtnPlay: 'Baixar no Google Play',
+        footerBrandDesc: 'A solução definitiva para gerenciamento de repertório, cifras e apresentações ao vivo para músicos e bandas.',
+        footerColNav: 'Navegação',
+        footerColTools: 'Ferramentas',
+        footerToolEditor: 'Web Editor Pro (PC)',
+        footerToolAndroid: 'App Android (Google Play)',
+        footerToolDoc: 'Exportar Word (.doc)',
+        footerToolBackup: 'Backup & Restauração',
+        footerColAbout: 'Sobre',
+        footerVerActive: '● Versão 1.1.4 Ativa',
+        footerOfflineBadge: '100% Offline (SQLite)',
+        footerCrossBadge: 'Multiplataforma',
+        footerCopyright: '© 2026 Setlist Band Manager. Todos os direitos reservados.',
+        footerMadeBy: 'Feito por músicos, para músicos. 🎸⚡'
+      },
+      es: {
+        pageTitle: 'Setlist Band Manager • La App Definitiva para Músicos, Bandas y Escenario',
+        pageMetaDesc: 'Organice el repertorio de su banda, edite acordes en la PC con Web Editor Pro, controle el desplazamiento automático en el escenario y sincronice todo mediante código QR. 100% offline y gratis.',
+        navFeatures: 'Funcionalidades',
+        navStageMode: 'Modo Escenario',
+        navSync: 'Sincronización QR',
+        navDownload: 'Google Play',
+        navFaq: 'Preguntas Frecuentes',
+        navBtnDownload: 'Descargar App',
+        navBtnEditor: 'Abrir Web Editor',
+        heroBadge: 'App Móvil y Web Editor Pro para PC',
+        heroTitle: 'El Setlist Perfecto y Acordes Inteligentes <br><span class="gradient-text">Para el Escenario, Ensayos y Estudio.</span>',
+        heroDesc: 'Organice el repertorio de su banda, edite acordes cómodamente en la PC con Web Editor Pro, controle el autoscroll en vivo y sincronice todo al instante mediante código QR. 100% offline, rápido y gratuito.',
+        heroCtaEditor: 'Acceder a Web Editor en PC',
+        heroCtaPlay: 'Descargar en Google Play',
+        trustFree: '100% Gratis',
+        trustOffline: 'Funciona 100% Offline en Escenario',
+        trustSync: 'Sincronización en 2s por QR',
+        trustDoc: 'Exportación a Word (.doc)',
+        mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro y Modo Escenario Sincronizados',
+        mockupTryBtn: 'Probar Ahora →',
+        simMetaSong: 'Tono Original: B (Si Mayor) • BPM: 88 • Duración: 04:29',
+        simTagMain: 'SHOW PRINCIPAL',
+        simLiveStage: 'MODO ESCENARIO EN VIVO',
+        simKeyLabel: 'TONO',
+        simSyncBtn: 'Sincronizar con PC',
+        featSectionTag: 'Funcionalidades Profesionales',
+        featSectionTitle: 'Todo lo que una Banda Necesita Antes, Durante y Después del Show.',
+        featSectionDesc: 'Creado por músicos para músicos: funciones diseñadas para simplificar los conciertos de vocalistas, instrumentistas y bandas de cualquier estilo.',
+        feat1Title: 'Modo Escenario en Pantalla Completa',
+        feat1Desc: 'Visualice acordes, letras o tablaturas con contraste optimizado para el escenario oscuro. Desplazamiento automático inteligente y metrónomo visual.',
+        feat2Title: 'Web Editor Pro en la PC',
+        feat2Desc: 'Acelere la edición de acordes usando el teclado de su computadora. Pegue repertorios completos y organice etiquetas en pantalla grande.',
+        feat3Title: 'Sincronización mediante Código QR',
+        feat3Desc: 'Estilo WhatsApp Web: sin registros ni contraseñas. Apunte la cámara de la app al código QR en la PC y transfiera canciones en 2 segundos.',
+        feat4Title: 'Setlists con Arrastrar y Soltar',
+        feat4Desc: 'Arme listas de shows y ensayos arrastrando canciones en el orden deseado. Agregue pausas, descansos y anuncios con cálculo automático de duración.',
+        feat5Title: 'Exportación a Word (.doc) y JSON',
+        feat5Desc: 'Genere documentos formateados para imprimir en Word con la lista del show y exporte copias de seguridad en JSON para guardar en Google Drive o WhatsApp.',
+        feat6Title: '100% Offline y Seguro',
+        feat6Desc: 'Base de datos SQLite local en el dispositivo. No dependa de internet en el escenario o estudio: su música siempre disponible cuando la necesite.',
+        stageSectionTag: 'Actuación en Vivo',
+        stageSectionTitle: 'Modo Escenario: Enfoque Total en la Música, Cero Distracciones.',
+        stageSectionDesc: 'Durante el show solo necesita lo esencial: acordes legibles, desplazamiento suave a su ritmo y transposición de tono instantánea.',
+        stageCheck1Title: 'Desplazamiento Automático (Autoscroll):',
+        stageCheck1Desc: 'Ajuste la velocidad de 0.5x a 2.0x y toque con manos libres sin soltar su instrumento.',
+        stageCheck2Title: 'Transposición de Tono Instantánea:',
+        stageCheck2Desc: 'Suba o baje semitonos en 1 clic (+1 / -1) para adaptar al rango vocal del cantante.',
+        stageCheck3Title: 'Metrónomo Visual y BPM:',
+        stageCheck3Desc: 'Indicador de pulso a tempo para mantener el compás perfecto sin ruido en el escenario.',
+        stageBtnTest: 'Probar en Web Editor',
+        demoSimTitle: 'SIMULADOR MODO ESCENARIO',
+        demoBtnMinusKey: '-1 Tono',
+        demoBtnPlusKey: '+1 Tono',
+        demoBtnScroll: 'Autoscroll',
+        demoBtnScrollPause: 'Pausar',
+        demoBtnTop: 'Inicio',
+        demoKeyPrefix: 'TONO',
+        syncSectionTag: 'Conexión en Tiempo Real',
+        syncSectionTitle: 'Sincronización Instantánea mediante Código QR',
+        syncSectionDesc: 'Sin login, sin correos, sin contraseñas. Apunte la cámara del celular y todo su repertorio estará en la PC en segundos.',
+        syncStep1Title: 'Abra el Web Editor en la PC',
+        syncStep1Desc: 'Haga clic en <strong>Sincronizar Celular</strong> arriba en el editor para generar su código QR de emparejamiento seguro.',
+        syncStep2Title: 'Apunte la Cámara de la App',
+        syncStep2Desc: 'En la app del celular, abra <strong>Sincronizar con Web</strong> y escanee el código QR que se muestra en el monitor.',
+        syncStep3Title: '¡Listo! Envíe y Reciba',
+        syncStep3Desc: 'Descargue todas las canciones a la PC para editar acordes a gusto. Al terminar, envíe todo de vuelta con 1 clic.',
+        playstoreBadge: 'Disponible para Android en Google Play',
+        playstoreTitle: 'Descargue Ahora Setlist Band Manager',
+        playstoreDesc: 'Lleve todo su repertorio al escenario, ahorre tiempo en ensayos y asegure shows impecables. Gratis para siempre.',
+        playBadgeGet: 'DISPONIBLE EN',
+        playstoreQrScan: 'Escanear para Descargar',
+        faqSectionTag: '¿Tiene Dudas?',
+        faqSectionTitle: 'Preguntas Frecuentes',
+        faqQ1: '¿La aplicación necesita internet durante el concierto?',
+        faqA1: '¡No! Setlist Band Manager fue desarrollado con base de datos local SQLite. Todas las canciones, acordes y setlists se guardan offline en el dispositivo.',
+        faqQ2: '¿El Web Editor en la PC es gratuito?',
+        faqA2: '¡Sí! El Web Editor Pro es 100% gratuito y accesible desde cualquier navegador moderno de escritorio (Chrome, Edge, Firefox, Safari).',
+        faqQ3: '¿Cómo funciona la sincronización entre el celular y la PC?',
+        faqA3: 'Abra el Web Editor en la PC, haga clic en "Sincronizar Celular", abra la app en el smartphone y apunte la cámara al código QR. La transferencia se realiza en tiempo real.',
+        faqQ4: '¿Puedo exportar el setlist para imprimir y entregar a la banda?',
+        faqA4: '¡Sí! Tanto el Web Editor como la App cuentan con exportación directa a archivos Word (.doc) en formato de 2 columnas limpio, perfecto para imprimir.',
+        faqQ5: '¿Cómo hago una copia de seguridad de mis canciones y acordes?',
+        faqA5: 'Haga clic en "Exportar Respaldo" en el Web Editor o en "Respaldo / Restaurar" en la app para generar un archivo .json seguro para guardar en Google Drive o WhatsApp.',
+        finalCtaTitle: '¿Listo para Llevar los Shows de su Banda al Siguiente Nivel?',
+        finalCtaDesc: 'Abra el Web Editor en su computadora o descargue la app en su celular ahora mismo.',
+        finalCtaBtnEditor: 'Abrir Web Editor Pro',
+        finalCtaBtnPlay: 'Descargar en Google Play',
+        footerBrandDesc: 'La solución definitiva para gestión de repertorio, acordes inteligentes y presentaciones en vivo para músicos y bandas.',
+        footerColNav: 'Navegación',
+        footerColTools: 'Herramientas',
+        footerToolEditor: 'Web Editor Pro (PC)',
+        footerToolAndroid: 'App Android (Google Play)',
+        footerToolDoc: 'Exportar Word (.doc)',
+        footerToolBackup: 'Respaldo y Restauración',
+        footerColAbout: 'Acerca de',
+        footerVerActive: '● Versión 1.1.4 Activa',
+        footerOfflineBadge: '100% Offline (SQLite)',
+        footerCrossBadge: 'Multiplataforma',
+        footerCopyright: '© 2026 Setlist Band Manager. Todos os direitos reservados.',
+        footerMadeBy: 'Creado por músicos, para músicos. 🎸⚡'
+      }
+    };
+
+    let currentLanguage = 'en';
+
+    function setLandingLanguage(lang) {
+      if (!translations[lang]) lang = 'en';
+      currentLanguage = lang;
+      localStorage.setItem('sbm_landing_lang', lang);
+      document.documentElement.lang = lang === 'pt' ? 'pt-BR' : (lang === 'es' ? 'es-ES' : 'en');
+
+      // Update active button state
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('lang-' + lang);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const dict = translations[lang];
+
+      // Update document title and meta description
+      if (dict.pageTitle) document.title = dict.pageTitle;
+      const metaDesc = document.getElementById('pageMetaDesc');
+      if (metaDesc && dict.pageMetaDesc) metaDesc.setAttribute('content', dict.pageMetaDesc);
+
+      // Update elements with data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+
+      // Update Tone Badge prefix if needed
+      updateToneBadge();
+    }
+
     // FAQ Accordion Toggle
     function toggleFaq(button) {
       const item = button.parentElement;
@@ -1575,17 +1956,17 @@ E tão sério e selvagem...
     // Interactive Stage Demo Transpose & Autoscroll
     const chromaticScale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     let currentToneOffset = 0;
-    const baseChords = {
-      c1: 'C', c2: 'Am7', c3: 'Bm', c4: 'Em',
-      c5: 'C', c6: 'Am7', c7: 'Bm', c8: 'Em',
-      c9: 'C', c10: 'Am7', c11: 'Bm', c12: 'Em',
-      c13: 'C', c14: 'Am7', c15: 'Bm', c16: 'Em'
-    };
+
+    function updateToneBadge() {
+      const rootNote = chromaticScale[currentToneOffset];
+      const dict = translations[currentLanguage] || translations.en;
+      const prefix = dict.demoKeyPrefix || 'KEY';
+      document.getElementById('demoToneBadge').innerText = prefix + ': ' + rootNote;
+    }
 
     function transposeDemo(step) {
       currentToneOffset = (currentToneOffset + step + 12) % 12;
-      const rootNote = chromaticScale[currentToneOffset];
-      document.getElementById('demoToneBadge').innerText = 'TOM: ' + rootNote;
+      updateToneBadge();
     }
 
     let demoScrollTimer = null;
@@ -1593,14 +1974,15 @@ E tão sério e selvagem...
       const pane = document.getElementById('demoScrollPane');
       const text = document.getElementById('demoScrollText');
       const icon = document.getElementById('demoScrollIcon');
+      const dict = translations[currentLanguage] || translations.en;
 
       if (demoScrollTimer) {
         clearInterval(demoScrollTimer);
         demoScrollTimer = null;
-        text.innerText = 'Autoscroll';
+        text.innerText = dict.demoBtnScroll || 'Autoscroll';
         icon.setAttribute('name', 'play-outline');
       } else {
-        text.innerText = 'Pausar';
+        text.innerText = dict.demoBtnScrollPause || 'Pause';
         icon.setAttribute('name', 'pause-outline');
         demoScrollTimer = setInterval(() => {
           if (pane.scrollTop + pane.clientHeight >= pane.scrollHeight) {
@@ -1616,6 +1998,10 @@ E tão sério e selvagem...
       const pane = document.getElementById('demoScrollPane');
       pane.scrollTop = 0;
     }
+
+    // Initialize default language (English by default, or persisted preference)
+    const initialLang = localStorage.getItem('sbm_landing_lang') || 'en';
+    setLandingLanguage(initialLang);
   </script>
 
 </body>

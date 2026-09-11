@@ -1313,7 +1313,7 @@
     <!-- Header -->
   <header>
     <div class="brand">
-      <a href="../index.html" title="Voltar à Página Inicial" style="display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;">
+      <a href="index.html" title="Voltar à Página Inicial" style="display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;">
       <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../assets/logo.png';">
       <div class="brand-text">
         <h1>Setlist Band Manager <span class="brand-badge">WEB EDITOR</span></h1>
@@ -3471,20 +3471,14 @@
       const renderColumnHtml = (items) => {
         return items.map(item => {
           if (item.isSpecial && item.type === 'pause') {
-            return `
-              <div class="pause-item">
-                <div class="pause-name">⏸️ ${item.name || 'PAUSA / INTERVALO'} ${item.duration ? `(${item.duration})` : ''}</div>
-                ${item.customNotes ? `<div class="pause-obs">${item.customNotes}</div>` : ''}
-              </div>
-            `;
+            let html = `<div style="font-size: 9pt; font-weight: bold; color: #b91c1c; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fef2f2; border-left: 2pt solid #ef4444;">⏸️ ${item.name || 'PAUSA / INTERVALO'}${item.duration ? ` (${item.duration})` : ''}</div>`;
+            if (item.customNotes) {
+              html += `<div style="font-size: 7.5pt; color: #dc2626; font-style: italic; margin-left: 10pt; margin-top: 1pt; margin-bottom: 3pt;">Obs: ${item.customNotes}</div>`;
+            }
+            return html;
           }
           if (item.isSpecial && item.type === 'note') {
-            return `
-              <div class="note-item">
-                <div class="note-name">📢 ${item.name || 'ANOTAÇÃO'}</div>
-                ${item.customNotes ? `<div class="song-obs">${item.customNotes}</div>` : ''}
-              </div>
-            `;
+            return `<div style="font-size: 9pt; font-weight: bold; color: #b45309; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fffbeb; border-left: 2pt solid #f59e0b;">📢 ${item.name || item.customNotes || 'ANOTAÇÃO'}</div>`;
           }
 
           const currentNum = String(songCounter++).padStart(2, '0');
@@ -3492,18 +3486,26 @@
           const sName = item.name || item.title || 'Sem Título';
           const sBand = item.originalBand || item.band || '';
 
-          return `
-            <div class="song-item">
-              <div class="song-name">${currentNum}. ${sName} ${dur ? `<span style="font-weight: normal; font-size: 8.5pt; color: #6b7280;">(${dur})</span>` : ''}</div>
-              <div class="song-band">${sBand}</div>
-              ${item.customNotes ? `<div class="song-obs">Obs: ${item.customNotes}</div>` : ''}
-            </div>
-          `;
-        }).join('');
+          let html = `<div style="font-size: 9.5pt; line-height: 1.35; margin-bottom: 3.5pt;"><strong>${currentNum}. ${sName.toUpperCase()}</strong>`;
+          if (sBand) {
+            html += ` <span style="font-weight: normal; color: #444444;">(${sBand})</span>`;
+          }
+          if (dur) {
+            html += ` <span style="font-weight: normal; color: #555555;">(${dur})</span>`;
+          }
+          html += `</div>`;
+          if (item.customNotes) {
+            html += `<div style="font-size: 7.5pt; color: #666666; font-style: italic; margin-left: 14pt; margin-top: 1pt; margin-bottom: 3pt;">Obs: ${item.customNotes}</div>`;
+          }
+          return html;
+        }).join('\n');
       };
 
       const col1Html = renderColumnHtml(col1);
       const col2Html = renderColumnHtml(col2);
+
+      const currentBand = (bands || []).find(b => b.name === st.bandName);
+      const bandLogo = (currentBand && currentBand.logo) || st.bandLogo || '';
 
       const docContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head>
@@ -3528,8 +3530,8 @@
   }
   body {
     font-family: Calibri, Arial, Helvetica, sans-serif;
-    font-size: 11pt;
-    color: #1f2937;
+    font-size: 9.5pt;
+    color: #000000;
     background-color: #ffffff;
     margin: 0;
     padding: 0;
@@ -3539,130 +3541,36 @@
     mso-table-lspace: 0pt;
     mso-table-rspace: 0pt;
   }
-  .header-box {
-    width: 100%;
-    border: 1.5pt solid #374151;
-    background-color: #f3f4f6;
-    margin-bottom: 12pt;
-  }
-  .header-td {
-    padding: 8pt 12pt;
-    vertical-align: middle;
-  }
-  .show-title {
-    font-size: 15pt;
-    font-weight: bold;
-    color: #111827;
-    margin: 0 0 2pt 0;
-    text-transform: uppercase;
-  }
-  .band-title {
-    font-size: 10.5pt;
-    font-weight: bold;
-    color: #4b5563;
-    margin: 0 0 4pt 0;
-    text-transform: uppercase;
-  }
-  .meta-text {
-    font-size: 8.5pt;
-    color: #6b7280;
-    margin: 0;
-  }
-  .setlist-grid {
-    width: 100%;
-  }
-  .column-td {
-    width: 48%;
-    vertical-align: top;
-    padding: 0;
-  }
-  .gap-td {
-    width: 4%;
-    vertical-align: top;
-    padding: 0;
-  }
-  .song-item {
-    margin-bottom: 5pt;
-    padding-bottom: 3pt;
-    border-bottom: 0.5pt solid #e5e7eb;
-  }
-  .song-name {
-    font-size: 10pt;
-    font-weight: bold;
-    color: #111827;
-    margin: 0;
-    line-height: 1.15;
-  }
-  .song-band {
-    font-size: 8pt;
-    color: #4b5563;
-    margin: 1pt 0 0 0;
-    line-height: 1.0;
-  }
-  .song-obs {
-    font-size: 8pt;
-    color: #6b7280;
-    font-style: italic;
-    margin: 1pt 0 0 0;
-    line-height: 1.0;
-  }
-  .pause-item {
-    margin-bottom: 5pt;
-    padding: 3pt 6pt;
-    background-color: #fef2f2;
-    border-left: 2.5pt solid #ef4444;
-  }
-  .pause-name {
-    font-size: 9.5pt;
-    font-weight: bold;
-    color: #b91c1c;
-    margin: 0;
-  }
-  .pause-obs {
-    font-size: 8pt;
-    color: #dc2626;
-    font-style: italic;
-    margin: 1pt 0 0 0;
-  }
-  .note-item {
-    margin-bottom: 5pt;
-    padding: 3pt 6pt;
-    background-color: #fffbeb;
-    border-left: 2.5pt solid #f59e0b;
-  }
-  .note-name {
-    font-size: 9pt;
-    font-weight: bold;
-    color: #b45309;
-    margin: 0;
-    font-style: italic;
-  }
 </style>
 </head>
 <body>
-  <table class="header-box">
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 14pt; border: none;">
     <tr>
-      <td class="header-td">
-        <div class="show-title">${String(st.name || 'SEM NOME').toUpperCase()}</div>
-        <div class="band-title">BANDA: ${String(st.bandName || 'SEM BANDA').toUpperCase()}</div>
-        <div class="meta-text">
-          ${st.date ? `Data: ${st.date} &nbsp;|&nbsp; ` : ''}
-          ${st.local ? `Local: ${st.local} &nbsp;|&nbsp; ` : ''}
-          Total: ${totalSongsCount} Músicas &nbsp;|&nbsp;
-          Duração: ${totalDur || 'Não informado'}
-          ${st.notes ? `<br>Obs: ${st.notes}` : ''}
+      ${bandLogo ? `
+      <td style="width: 60px; vertical-align: middle; padding-right: 12px;">
+        <img src="${bandLogo}" width="52" height="52" style="border-radius: 50%; object-fit: cover; border: 1.5pt solid #000000; display: block;" />
+      </td>` : ''}
+      <td style="vertical-align: middle;">
+        <div style="font-size: 15pt; font-weight: 800; color: #000000; text-transform: uppercase; margin: 0 0 2pt 0; letter-spacing: 0.5px;">
+          ${String(st.name || 'SETLIST').toUpperCase()}
+        </div>
+        <div style="font-size: 9pt; color: #4b5563; font-weight: 500; margin: 0;">
+          ${st.date ? `🗓️ ${st.date} &nbsp;|&nbsp; ` : ''}
+          ${st.local ? `📍 ${st.local} &nbsp;|&nbsp; ` : ''}
+          🎤 ${totalSongsCount} ${totalSongsCount === 1 ? 'Música' : 'Músicas'} &nbsp;|&nbsp;
+          ⏱️ ${totalDur || '00:00'}
+          ${st.notes ? ` &nbsp;|&nbsp; 📝 ${st.notes}` : ''}
         </div>
       </td>
     </tr>
   </table>
 
-  <table class="setlist-grid">
+  <table style="width: 100%; border-collapse: collapse; border: 1.5pt solid #000000;">
     <tr>
-      <td class="column-td">
+      <td style="width: 50%; vertical-align: top; padding: 6pt 10pt; border-right: 1.5pt solid #000000;">
         ${col1Html}
       </td>
-      <td class="gap-td"></td>
-      <td class="column-td">
+      <td style="width: 50%; vertical-align: top; padding: 6pt 10pt;">
         ${col2Html}
       </td>
     </tr>
