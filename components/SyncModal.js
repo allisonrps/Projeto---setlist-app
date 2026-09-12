@@ -22,13 +22,15 @@ import { useLanguage } from '../hooks/useLanguage';
 const { width, height } = Dimensions.get('window');
 const SCANNER_SIZE = Math.min(width * 0.72, 280);
 
-const SYNC_API_DEFAULT = 'https://proud-mushroom-0a35a1e0f.azurestaticapps.net/api/sync';
+const SYNC_API_DEFAULT = 'https://www.setlistbandmanager.com/api/sync';
 
 export default function SyncModal({
   visible,
   onClose,
   getAllDataForBackup,
   onRestoreBackupData,
+  onImportSong,
+  onImportSetlist,
   onSyncSuccess,
 }) {
   const { colors, themeMode } = useTheme();
@@ -49,6 +51,63 @@ export default function SyncModal({
   const [generatedSession, setGeneratedSession] = useState(null);
   const [qrTransferred, setQrTransferred] = useState(false);
   const pollIntervalRef = useRef(null);
+
+  // Helper to process imported payload (Song, Setlist, or Full Backup)
+  const processImportedPayload = async (payload) => {
+    if (!payload) return null;
+    let dataObj = payload;
+    if (typeof payload === 'string') {
+      try {
+        dataObj = JSON.parse(payload);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    if (dataObj.app === 'SetlistsAppSong') {
+      setStatusMessage(t('savingSongsLocally'));
+      if (onImportSong) {
+        await onImportSong(JSON.stringify(dataObj));
+      }
+      return { type: 'song', name: dataObj.name };
+    } else if (dataObj.app === 'SetlistsApp') {
+      setStatusMessage(t('savingSongsLocally'));
+      if (onImportSetlist) {
+        await onImportSetlist(JSON.stringify(dataObj));
+      }
+      return { type: 'setlist', name: dataObj.name };
+    } else {
+      setStatusMessage(t('savingSongsLocally'));
+      if (onRestoreBackupData) {
+        await onRestoreBackupData(JSON.stringify(dataObj));
+      }
+      return { type: 'backup' };
+    }
+  };
+
+  // Helper to show success alert based on imported item
+  const showImportSuccessAlert = (resInfo) => {
+    if (!resInfo) return;
+    if (resInfo.type === 'song') {
+      Alert.alert(
+        t('success') || 'Sucesso',
+        (t('songImportedSuccess') || 'Música "{name}" importada com sucesso!').replace('{name}', resInfo.name || ''),
+        [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+      );
+    } else if (resInfo.type === 'setlist') {
+      Alert.alert(
+        t('success') || 'Sucesso',
+        (t('setlistImportedSuccess') || 'Setlist "{name}" importado com sucesso!').replace('{name}', resInfo.name || ''),
+        [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+      );
+    } else {
+      Alert.alert(
+        t('repertoireReceivedTitle'),
+        t('repertoireReceivedMsg'),
+        [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
+      );
+    }
+  };
 
   // Reset states when modal opens
   useEffect(() => {
@@ -99,19 +158,15 @@ export default function SyncModal({
       // 1. Get local database backup
       const fullBackup = await getAllDataForBackup();
 
-      // 2. Create session on relay API
-      const createRes = await fetch(`${SYNC_API_DEFAULT}?action=create_session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_session' }),
-      });
+      // 2. Create session on relay API via GET
+      const createRes = await fetch(`${SYNC_API_DEFAULT}?action=create_session`);
       const sessionData = await createRes.json();
 
       if (sessionData && sessionData.success) {
         const { sessionId, pin } = sessionData;
 
         // 3. Upload data to session for the other phone to receive
-        await fetch(`${SYNC_API_DEFAULT}?action=send_data`, {
+        const sendRes = await fetch(`${SYNC_API_DEFAULT}?action=send_data`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -122,6 +177,11 @@ export default function SyncModal({
             data: fullBackup,
           }),
         });
+        const sendResult = await sendRes.json();
+
+        if (!sendResult || !sendResult.success) {
+          throw new Error(sendResult?.error || 'Falha ao enviar dados para a sessão');
+        }
 
         const qrPayload = JSON.stringify({
           app: 'SetlistsAppSync',
@@ -167,6 +227,18 @@ export default function SyncModal({
     setScanned(true);
 
     try {
+      // 1. Direct offline check (if QR directly contains the JSON data)
+      if (data && (data.includes('SetlistsAppSong') || data.includes('SetlistsApp') || data.includes('SetlistsAppBackup'))) {
+        try {
+          const directObj = JSON.parse(data);
+          const resInfo = await processImportedPayload(directObj);
+          if (resInfo) {
+            showImportSuccessAlert(resInfo);
+            return;
+          }
+        } catch (e) {}
+      }
+
       let parsed = null;
       try {
         parsed = JSON.parse(data);
@@ -177,7 +249,7 @@ export default function SyncModal({
       }
 
       if (parsed && (parsed.sessionId || parsed.pin)) {
-        // If it's a direct phone-to-phone share (action = 'send_to_app' or from PC send)
+        // If it's a direct share (action = 'send_to_app' or from PC send)
         if (parsed.action === 'send_to_app' || parsed.action === 'send') {
           // Immediately pull and restore data!
           await autoPullAndRestore(parsed);
@@ -207,14 +279,12 @@ export default function SyncModal({
       const result = await res.json();
 
       if (result && result.success && result.data) {
-        setStatusMessage(t('savingSongsLocally'));
-        await onRestoreBackupData(JSON.stringify(result.data));
-
-        Alert.alert(
-          t('repertoireReceivedTitle'),
-          t('repertoireReceivedMsg'),
-          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
-        );
+        const resInfo = await processImportedPayload(result.data);
+        if (resInfo) {
+          showImportSuccessAlert(resInfo);
+        } else {
+          Alert.alert(t('error') || 'Erro', t('processQrError'));
+        }
       } else {
         // Fallback to manual choice
         setConnectedSession(sessionInfo);
@@ -241,19 +311,17 @@ export default function SyncModal({
     setStatusMessage(t('connectingPin'));
 
     try {
-      // First try to auto-pull (in case a friend sent data with this PIN)
+      // First try to auto-pull (in case another phone sent data with this PIN)
       const res = await fetch(`${SYNC_API_DEFAULT}?action=poll_data&pin=${cleanPin}&receiver=app`);
       const result = await res.json();
 
       if (result && result.success && result.data) {
-        setStatusMessage(t('savingSongsLocally'));
-        await onRestoreBackupData(JSON.stringify(result.data));
-
-        Alert.alert(
-          t('repertoireReceivedTitle'),
-          t('repertoireReceivedPinMsg'),
-          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
-        );
+        const resInfo = await processImportedPayload(result.data);
+        if (resInfo) {
+          showImportSuccessAlert(resInfo);
+        } else {
+          Alert.alert(t('error') || 'Erro', t('processQrError'));
+        }
       } else if (result && result.success) {
         setConnectedSession({ pin: cleanPin, apiUrl: SYNC_API_DEFAULT });
         setStatusMessage(`${t('connectedToPin')} ${cleanPin}`);

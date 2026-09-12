@@ -30,6 +30,8 @@ import SongListItem from './components/SongListItem';
 import SetlistCard from './components/SetlistCard';
 import SettingsModal from './components/SettingsModal';
 import SyncModal from './components/SyncModal';
+import ShareQrModal from './components/ShareQrModal';
+import ShareOptionsModal from './components/ShareOptionsModal';
 import BandModal from './components/BandModal';
 import SongModal from './components/SongModal';
 import SetlistModal from './components/SetlistModal';
@@ -585,6 +587,10 @@ function MainApp() {
   const [showImportSongModal, setShowImportSongModal] = useState(false);
   const [showImportBackupModal, setShowImportBackupModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showShareQrModal, setShowShareQrModal] = useState(false);
+  const [showShareOptionsModal, setShowShareOptionsModal] = useState(false);
+  const [shareOptionsItem, setShareOptionsItem] = useState(null);
+  const [shareQrItem, setShareQrItem] = useState(null);
   const [selectedTutorialFeature, setSelectedTutorialFeature] = useState(null);
 
   // Estados de edição / item ativo
@@ -898,7 +904,8 @@ function MainApp() {
     }
   };
 
-  const handleShareSetlist = async (setlist) => {
+      const handleShareSetlist = (setlist) => {
+    if (!setlist) return;
     try {
       const exportData = {
         app: 'SetlistsApp',
@@ -929,80 +936,21 @@ function MainApp() {
         }))
       };
 
-      const jsonStr = JSON.stringify(exportData, null, 2);
-
-      // Função para remover acentos, caracteres especiais e forçar minúsculo
-      const formatString = (str) => {
-        if (!str) return '';
-        return str
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-zA-Z0-9]/g, '')
-          .toLowerCase()
-          .trim();
-      };
-
-      const fileDate = (setlist.date || new Date().toISOString().split('T')[0]).replace(/[\/\s]/g, '-').toLowerCase();
-      const fileBand = formatString(setlist.bandName) || 'sembanda';
-      const fileEvent = formatString(setlist.name) || 'semnome';
-      const fileName = `${fileDate}-${fileBand}-${fileEvent}.json`;
-
-      if (Platform.OS === 'web') {
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
-
-        if (navigator.clipboard) {
-          await navigator.clipboard.writeText(JSON.stringify(exportData));
-          Alert.alert('Sucesso', `Arquivo "${fileName}" baixado e código copiado para a área de transferência!`);
-        } else {
-          Alert.alert('Sucesso', `Arquivo "${fileName}" baixado com sucesso!`);
-        }
-      } else {
-        try {
-          const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-          await FileSystem.writeAsStringAsync(fileUri, jsonStr, { encoding: FileSystem.EncodingType.UTF8 });
-
-          if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(fileUri, {
-              mimeType: 'application/json',
-              dialogTitle: `Compartilhar Setlist: ${setlist.name}`,
-              UTI: 'public.json',
-            });
-          } else {
-            throw new Error('Serviço de compartilhamento de arquivos não disponível');
-          }
-        } catch (shareErr) {
-          console.warn('Falha ao compartilhar arquivo físico, usando texto:', shareErr);
-          
-          // Fallback para compartilhamento de texto apenas com cabeçalho
-          let readableText = `📋 SETLIST: ${setlist.name || 'Sem Nome'}\n`;
-          readableText += `🎸 Banda: ${setlist.bandName || 'Sem Banda'}\n`;
-          if (setlist.date) readableText += `📅 Data: ${setlist.date}\n`;
-          if (setlist.local) readableText += `📍 Local: ${setlist.local}\n`;
-          if (setlist.notes) readableText += `📝 Obs: ${setlist.notes}\n`;
-
-          readableText += `\n--------------------------------------------\n`;
-          readableText += `CÓDIGO DE IMPORTAÇÃO:\n`;
-          readableText += JSON.stringify(exportData);
-
-          await Share.share({
-            title: `Compartilhar Setlist: ${setlist.name}`,
-            message: readableText,
-          });
-        }
-      }
+      setShareOptionsItem({
+        type: 'setlist',
+        title: setlist.name || 'Setlist',
+        subtitle: setlist.bandName || '',
+        data: exportData,
+      });
+      setShowShareOptionsModal(true);
     } catch (error) {
-      console.error('Erro ao compartilhar setlist:', error);
-      Alert.alert('Erro', 'Não foi possível compartilhar o setlist.');
+      console.error('Erro ao abrir opções de compartilhamento do setlist:', error);
+      Alert.alert(t('error') || 'Erro', 'Não foi possível preparar o compartilhamento.');
     }
   };
 
-  const handleShareSong = async (song) => {
+  const handleShareSong = (song) => {
+    if (!song) return;
     try {
       const exportData = {
         app: 'SetlistsAppSong',
@@ -1022,72 +970,116 @@ function MainApp() {
         }))
       };
 
-      const jsonStr = JSON.stringify(exportData, null, 2);
+      setShareOptionsItem({
+        type: 'song',
+        title: song.name || 'Música',
+        subtitle: song.originalBand || '',
+        data: exportData,
+      });
+      setShowShareOptionsModal(true);
+    } catch (error) {
+      console.error('Erro ao abrir opções de compartilhamento da música:', error);
+      Alert.alert(t('error') || 'Erro', 'Não foi possível preparar o compartilhamento.');
+    }
+  };
 
-      const formatString = (str) => {
-        if (!str) return '';
-        return str
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-zA-Z0-9]/g, '')
-          .toLowerCase()
-          .trim();
-      };
+  const handleSelectShareOption = async (option) => {
+    if (!shareOptionsItem) return;
+    const currentItem = { ...shareOptionsItem };
+    setShowShareOptionsModal(false);
 
-      const fileBand = formatString(song.originalBand) || 'sembanda';
-      const fileSong = formatString(song.name) || 'semnome';
-      const fileName = `musica-${fileBand}-${fileSong}.json`;
+    if (option === 'qr') {
+      setShareQrItem(currentItem);
+      setTimeout(() => {
+        setShowShareQrModal(true);
+      }, 100);
+    } else if (option === 'json') {
+      try {
+        const jsonStr = JSON.stringify(currentItem.data, null, 2);
+        const formatString = (str) => {
+          if (!str) return '';
+          return str
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .toLowerCase()
+            .trim();
+        };
 
-      if (Platform.OS === 'web') {
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
-
-        if (navigator.clipboard) {
-          await navigator.clipboard.writeText(JSON.stringify(exportData));
-          Alert.alert('Sucesso', `Arquivo "${fileName}" baixado e código copiado para a área de transferência!`);
+        let fileName = 'item.json';
+        if (currentItem.type === 'song') {
+          const fileBand = formatString(currentItem.data.originalBand) || 'sembanda';
+          const fileSong = formatString(currentItem.data.name) || 'semnome';
+          fileName = `musica-${fileBand}-${fileSong}.json`;
         } else {
-          Alert.alert('Sucesso', `Arquivo "${fileName}" baixado com sucesso!`);
+          const fileDate = (currentItem.data.date || new Date().toISOString().split('T')[0]).replace(/[\/\s]/g, '-').toLowerCase();
+          const fileBand = formatString(currentItem.data.bandName) || 'sembanda';
+          const fileEvent = formatString(currentItem.data.name) || 'semnome';
+          fileName = `${fileDate}-${fileBand}-${fileEvent}.json`;
         }
-      } else {
-        try {
+
+        if (Platform.OS === 'web') {
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          URL.revokeObjectURL(url);
+
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(JSON.stringify(currentItem.data));
+            Alert.alert(t('success') || 'Sucesso', `Arquivo "${fileName}" baixado e código copiado!`);
+          } else {
+            Alert.alert(t('success') || 'Sucesso', `Arquivo "${fileName}" baixado com sucesso!`);
+          }
+        } else {
           const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-          await FileSystem.writeAsStringAsync(fileUri, jsonStr, { encoding: FileSystem.EncodingType.UTF8 });
+          await FileSystem.writeAsStringAsync(fileUri, jsonStr, { encoding: 'utf8' });
 
           if (await Sharing.isAvailableAsync()) {
             await Sharing.shareAsync(fileUri, {
               mimeType: 'application/json',
-              dialogTitle: `Compartilhar Música: ${song.name}`,
+              dialogTitle: `${t('shareTitle')}: ${currentItem.title}`,
               UTI: 'public.json',
             });
           } else {
             throw new Error('Serviço de compartilhamento de arquivos não disponível');
           }
-        } catch (shareErr) {
-          console.warn('Falha ao compartilhar arquivo físico, usando texto:', shareErr);
-          
-          let readableText = `🎵 MÚSICA: ${song.name || 'Sem Nome'}\n`;
+        }
+      } catch (err) {
+        console.error('Erro ao compartilhar arquivo JSON:', err);
+        Alert.alert(t('error') || 'Erro', 'Não foi possível compartilhar o arquivo.');
+      }
+    } else if (option === 'text') {
+      try {
+        let readableText = '';
+        if (currentItem.type === 'song') {
+          const song = currentItem.data;
+          readableText = `🎵 MÚSICA: ${song.name || 'Sem Nome'}\n`;
           readableText += `🎸 Banda: ${song.originalBand || 'Sem Banda'}\n`;
           if (song.style) readableText += `🏷️ Tags: ${song.style}\n`;
           if (song.duration) readableText += `⏱ Duração: ${song.duration}\n`;
-
-          readableText += `\n--------------------------------------------\n`;
-          readableText += `CÓDIGO DE IMPORTAÇÃO:\n`;
-          readableText += JSON.stringify(exportData);
-
-          await Share.share({
-            title: `Compartilhar Música: ${song.name}`,
-            message: readableText,
-          });
+        } else {
+          const setlist = currentItem.data;
+          readableText = `📋 SETLIST: ${setlist.name || 'Sem Nome'}\n`;
+          readableText += `🎸 Banda: ${setlist.bandName || 'Sem Banda'}\n`;
+          if (setlist.date) readableText += `📅 Data: ${setlist.date}\n`;
+          if (setlist.local) readableText += `📍 Local: ${setlist.local}\n`;
+          if (setlist.notes) readableText += `📝 Obs: ${setlist.notes}\n`;
         }
+
+        readableText += `\n--------------------------------------------\n`;
+        readableText += `CÓDIGO DE IMPORTAÇÃO:\n`;
+        readableText += JSON.stringify(currentItem.data);
+
+        await Share.share({
+          title: `Compartilhar: ${currentItem.title}`,
+          message: readableText,
+        });
+      } catch (err) {
+        console.error('Erro ao compartilhar texto:', err);
       }
-    } catch (error) {
-      console.error('Erro ao compartilhar música:', error);
-      Alert.alert('Erro', 'Não foi possível compartilhar a música.');
     }
   };
 
@@ -1427,7 +1419,7 @@ function MainApp() {
     }
   };
 
-  const handleExportDoc = async (setlist) => {
+    const handleExportDoc = async (setlist) => {
     try {
       if (!setlist) return;
 
@@ -1501,7 +1493,6 @@ function MainApp() {
         const isNote = String(song.id) === '-2';
         const sName = String(song.name || song.title || '').trim();
         const sBand = String(song.originalBand || song.band || '').trim();
-        const sDur = String(song.duration || song.customDuration || '').trim();
         const sCustDur = String(song.customDuration || '').trim();
         const sNotes = String(song.customNotes || '').trim();
 
@@ -1516,10 +1507,7 @@ function MainApp() {
         } else {
           let html = `<div style="font-size: 9.5pt; line-height: 1.35; margin-bottom: 3.5pt;"><strong>${numStr}. ${sName.toUpperCase()}</strong>`;
           if (sBand) {
-            html += ` <span style="font-weight: normal; color: #444444;">(${sBand})</span>`;
-          }
-          if (sDur) {
-            html += ` <span style="font-weight: normal; color: #555555;">(${sDur})</span>`;
+            html += ` <span style="font-size: 7.5pt; font-weight: normal; color: #555555;">(${sBand})</span>`;
           }
           html += `</div>`;
           if (sNotes) {
@@ -1636,7 +1624,7 @@ function MainApp() {
       } else {
         const fileUri = `${FileSystem.cacheDirectory}${safeFileName}`;
         
-        await FileSystem.writeAsStringAsync(fileUri, fileContentWithBom, { encoding: FileSystem.EncodingType.UTF8 });
+        await FileSystem.writeAsStringAsync(fileUri, fileContentWithBom, { encoding: 'utf8' });
 
         if (await Sharing.isAvailableAsync()) {
           try {
@@ -2675,7 +2663,7 @@ function MainApp() {
           <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, alignItems: 'center' }]}>
             <Image source={require('./assets/logo.png')} style={styles.aboutLogo} />
             <Text style={[styles.aboutAppTitle, { color: colors.primary }]}>SETLIST BAND MANAGER</Text>
-            <Text style={[styles.aboutAppVersion, { color: colors.textMuted }]}>{t('versionText')} 1.1.4</Text>
+            <Text style={[styles.aboutAppVersion, { color: colors.textMuted }]}>{t('versionText')} 1.1.5</Text>
             
             <Pressable 
               onPress={() => Linking.openURL('https://www.setlistbandmanager.com').catch(err => console.error("Couldn't open URL", err))}
@@ -3084,6 +3072,25 @@ function MainApp() {
         visible={!!selectedTutorialFeature}
         onClose={() => setSelectedTutorialFeature(null)}
         feature={selectedTutorialFeature}
+      />
+
+      <ShareOptionsModal
+        visible={showShareOptionsModal}
+        onClose={() => {
+          setShowShareOptionsModal(false);
+          setShareOptionsItem(null);
+        }}
+        item={shareOptionsItem}
+        onSelectOption={handleSelectShareOption}
+      />
+
+      <ShareQrModal
+        visible={showShareQrModal}
+        onClose={() => {
+          setShowShareQrModal(false);
+          setShareQrItem(null);
+        }}
+        item={shareQrItem}
       />
     </KeyboardAvoidingView>
   );
