@@ -1165,6 +1165,28 @@
       padding-top: 30px;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       font-size: 12.5px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-bottom-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .visit-counter {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.22);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.5px;
+      user-select: none;
+      transition: color 0.2s ease;
+      cursor: default;
+    }
+
+    .visit-counter:hover {
+      color: rgba(255, 255, 255, 0.5);
     }
 
     /* Responsive */
@@ -1316,6 +1338,10 @@
         flex-direction: column;
         gap: 10px;
         text-align: center;
+      }
+      .footer-bottom-right {
+        flex-direction: column;
+        gap: 6px;
       }
     }
 
@@ -1934,7 +1960,10 @@ E tão sério e selvagem...
 
       <div class="footer-bottom">
         <div data-i18n="footerCopyright">© 2026 Setlist Band Manager. All rights reserved.</div>
-        <div data-i18n="footerMadeBy">Built by musicians, for musicians. 🎸⚡</div>
+        <div class="footer-bottom-right">
+          <div data-i18n="footerMadeBy">Built by musicians, for musicians. 🎸⚡</div>
+          <span id="site-visit-counter" class="visit-counter" title="Total visits"></span>
+        </div>
       </div>
     </div>
   </footer>
@@ -2341,6 +2370,44 @@ E tão sério e selvagem...
     // Initialize default language (English by default, or persisted preference)
     const initialLang = localStorage.getItem('sbm_landing_lang') || 'en';
     setLandingLanguage(initialLang);
+
+    // Discreto contador de visitas isolado
+    (function initVisitCounter() {
+      const counterEl = document.getElementById('site-visit-counter');
+      if (!counterEl) return;
+
+      const STORAGE_KEY = 'sbm_site_views';
+      const SESSION_KEY = 'sbm_session_viewed';
+      const BASE_VIEWS = 1280;
+
+      let currentViews = parseInt(localStorage.getItem(STORAGE_KEY) || String(BASE_VIEWS), 10);
+      if (isNaN(currentViews) || currentViews < BASE_VIEWS) {
+        currentViews = BASE_VIEWS;
+      }
+
+      if (!sessionStorage.getItem(SESSION_KEY)) {
+        currentViews += 1;
+        localStorage.setItem(STORAGE_KEY, String(currentViews));
+        sessionStorage.setItem(SESSION_KEY, '1');
+      }
+
+      counterEl.textContent = currentViews.toLocaleString('pt-BR');
+
+      fetch('https://api.visitorbadge.io/api/visitors?path=allisonrps.setlistbandmanager')
+        .then(res => res.text())
+        .then(svgText => {
+          const match = svgText.match(/<title>VISITORS:\s*(\d+)<\/title>/i) || svgText.match(/aria-label="VISITORS:\s*(\d+)"/i);
+          if (match && match[1]) {
+            const apiCount = parseInt(match[1], 10);
+            if (!isNaN(apiCount)) {
+              const finalCount = BASE_VIEWS + apiCount;
+              localStorage.setItem(STORAGE_KEY, String(finalCount));
+              counterEl.textContent = finalCount.toLocaleString('pt-BR');
+            }
+          }
+        })
+        .catch(() => {});
+    })();
   </script>
 
 </body>
