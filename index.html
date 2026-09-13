@@ -129,8 +129,8 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 80px;
-      background: rgba(8, 12, 20, 0.88);
+      height: 64px;
+      background: rgba(8, 12, 20, 0.92);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
@@ -150,20 +150,21 @@
     .brand-link {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       text-decoration: none;
       color: inherit;
     }
 
     .brand-logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       object-fit: cover;
       box-shadow: 0 4px 16px var(--primary-glow);
       border: 2px solid rgba(255, 255, 255, 0.18);
       background-color: #0f172a;
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
     }
 
     .brand-link:hover .brand-logo {
@@ -171,49 +172,24 @@
     }
 
     .brand-title {
-      font-size: 18.5px;
+      font-size: clamp(16px, 4.5vw, 19px);
       font-weight: 900;
       letter-spacing: -0.4px;
       color: var(--text);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .brand-badge {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       background: var(--primary-glow);
       color: var(--cyan);
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
       border: 1px solid rgba(56, 189, 248, 0.35);
       letter-spacing: 0.6px;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 13.5px;
-      font-weight: 700;
-      transition: color 0.2s ease;
-    }
-
-    .nav-links a:hover {
-      color: var(--cyan);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     /* Language Switcher */
@@ -343,8 +319,8 @@
       width: 110%;
       height: 110%;
       background: url('assets/band_silhouette.jpg') center center / cover no-repeat;
-      filter: brightness(0.4) contrast(1.25) saturate(1.4);
-      opacity: 0.55;
+      filter: brightness(0.85) contrast(1.15) saturate(1.5);
+      opacity: 0.85;
     }
 
     .stage-spotlights {
@@ -417,13 +393,13 @@
     .stage-atmosphere-overlay {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at 50% 60%, transparent 20%, rgba(8, 12, 20, 0.6) 70%, var(--bg-body) 100%);
+      background: radial-gradient(ellipse at 50% 60%, transparent 45%, rgba(8, 12, 20, 0.45) 80%, var(--bg-body) 100%);
     }
 
     .stage-gradient-fade {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, rgba(8, 12, 20, 0.72) 0%, rgba(8, 12, 20, 0.6) 40%, rgba(8, 12, 20, 0.92) 85%, var(--bg-body) 100%);
+      background: linear-gradient(to bottom, rgba(8, 12, 20, 0.35) 0%, rgba(8, 12, 20, 0.15) 30%, rgba(8, 12, 20, 0.78) 75%, var(--bg-body) 100%);
     }
 
     @keyframes stageCameraOrbit {
@@ -470,7 +446,7 @@
 
     /* Hero Section */
     .hero {
-      padding-top: 185px;
+      padding-top: 135px;
       padding-bottom: 90px;
       text-align: center;
       position: relative;
@@ -1201,53 +1177,32 @@
 
         @media (max-width: 768px) {
       header.site-header {
-        height: auto;
-        padding: 10px 0 12px 0;
+        height: 60px;
+        padding: 0 8px;
       }
       .nav-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        padding: 0 12px;
-      }
-      .brand-link {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-      }
-      .brand-logo {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        flex-shrink: 0;
-      }
-      .brand-title {
-        font-size: clamp(18px, 5.2vw, 22px);
-        font-weight: 900;
-        letter-spacing: -0.4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1;
-        justify-content: flex-start;
-      }
-      .brand-badge {
-        font-size: 10px;
-        font-weight: 900;
-        padding: 2px 7px;
-      }
-      .nav-links {
-        display: none;
-      }
-      .nav-actions {
-        width: 100%;
-        display: flex;
+        flex-direction: row;
         align-items: center;
         justify-content: space-between;
         gap: 6px;
-        flex-wrap: nowrap;
+        padding: 0 4px;
+      }
+      .brand-link {
+        gap: 8px;
+        flex: 1;
+      }
+      .brand-logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+      }
+      .brand-title {
+        font-size: clamp(15px, 4.4vw, 18px);
+        gap: 6px;
+      }
+      .brand-badge {
+        font-size: 9px;
+        padding: 1px 5px;
       }
       .lang-switcher {
         padding: 2px;
@@ -1255,26 +1210,14 @@
         flex-shrink: 0;
       }
       .lang-btn {
-        font-size: 10.5px;
-        padding: 4px 6px;
+        font-size: 10px;
+        padding: 3px 5px;
       }
-      .nav-actions .btn {
-        padding: 7px 8px;
-        font-size: 11.5px;
-        gap: 5px;
-        border-radius: 10px;
-        flex: 1;
-        justify-content: center;
-        white-space: nowrap;
-      }
-      .nav-actions .btn ion-icon {
-        font-size: 14px;
-      }
-      
+
       /* Spacing adjustments on mobile */
       .hero {
-        padding-top: 165px;
-        padding-bottom: 50px;
+        padding-top: 110px;
+        padding-bottom: 45px;
       }
       .pill-badge {
         font-size: 11px;
@@ -1313,7 +1256,7 @@
 
       /* Sections Spacing */
       section {
-        padding: 50px 0 !important;
+        padding: 45px 0 !important;
       }
       .section-tag {
         font-size: 10.5px;
@@ -1375,16 +1318,10 @@
 
     @media (max-width: 380px) {
       .brand-title {
-        font-size: 16px;
-      }
-      .nav-actions .btn span {
-        font-size: 10px;
-      }
-      .nav-actions .btn {
-        padding: 6px 4px;
+        font-size: 14px;
       }
       .hero h1 {
-        font-size: 24px;
+        font-size: 23px;
       }
     }
   </style>
@@ -1407,30 +1344,11 @@
         </div>
       </a>
 
-      <ul class="nav-links">
-        <li><a href="#recursos" data-i18n="navFeatures">Features</a></li>
-        <li><a href="#modo-palco" data-i18n="navStageMode">Stage Mode</a></li>
-        <li><a href="#sincronizacao" data-i18n="navSync">QR Sync</a></li>
-        <li><a href="#download" data-i18n="navDownload">Google Play</a></li>
-        <li><a href="#faq" data-i18n="navFaq">FAQ</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <!-- Language Switcher -->
-        <div class="lang-switcher">
-          <button class="lang-btn" id="lang-en" onclick="setLandingLanguage('en')">EN</button>
-          <button class="lang-btn" id="lang-pt" onclick="setLandingLanguage('pt')">PT</button>
-          <button class="lang-btn" id="lang-es" onclick="setLandingLanguage('es')">ES</button>
-        </div>
-
-        <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" rel="noopener" class="btn btn-playstore">
-          <ion-icon name="logo-google-playstore"></ion-icon>
-          <span data-i18n="navBtnDownload">Download App</span>
-        </a>
-        <a href="editor.html" class="btn btn-primary">
-          <ion-icon name="laptop-outline"></ion-icon>
-          <span data-i18n="navBtnEditor">Open Web Editor</span>
-        </a>
+      <!-- Language Switcher beside Brand Name -->
+      <div class="lang-switcher">
+        <button class="lang-btn" id="lang-en" onclick="setLandingLanguage('en')">EN</button>
+        <button class="lang-btn" id="lang-pt" onclick="setLandingLanguage('pt')">PT</button>
+        <button class="lang-btn" id="lang-es" onclick="setLandingLanguage('es')">ES</button>
       </div>
     </div>
   </header>
