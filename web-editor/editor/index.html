@@ -3919,7 +3919,7 @@
       document.getElementById('exportModal').classList.add('open');
     }
 
-    function exportCurrentSetlistDoc() {
+        function exportCurrentSetlistDoc() {
       const st = setlists.find(s => s.id === activeSetlistId);
       if (!st) {
         showToast('Nenhum setlist selecionado para exportar.', 'alert-circle-outline', true);
@@ -3950,16 +3950,12 @@
           }
 
           const currentNum = String(songCounter++).padStart(2, '0');
-          const dur = item.duration || item.customDuration;
           const sName = item.name || item.title || 'Sem Título';
           const sBand = item.originalBand || item.band || '';
 
           let html = `<div style="font-size: 9.5pt; line-height: 1.35; margin-bottom: 3.5pt;"><strong>${currentNum}. ${sName.toUpperCase()}</strong>`;
           if (sBand) {
-            html += ` <span style="font-weight: normal; color: #444444;">(${sBand})</span>`;
-          }
-          if (dur) {
-            html += ` <span style="font-weight: normal; color: #555555;">(${dur})</span>`;
+            html += ` <span style="font-size: 7.5pt; font-weight: normal; color: #555555;">(${sBand})</span>`;
           }
           html += `</div>`;
           if (item.customNotes) {

@@ -224,6 +224,8 @@ const translations = {
     // Modo Palco (Performance)
     pause: 'PAUSA',
     pauseTitle: 'PAUSA / INTERVALO',
+    note: 'ANOTAÇÃO',
+    noteTitle: 'ANOTAÇÃO / OBSERVAÇÃO',
     rehearsalReport: 'ROTEIRO COMPLETO',
     noLyrics: 'Nenhuma letra cadastrada para esta música.',
     noChords: 'Nenhuma cifra cadastrada para esta música.',
@@ -638,6 +640,8 @@ const translations = {
     // Stage Performance Mode
     pause: 'PAUSE',
     pauseTitle: 'PAUSE / BREAK',
+    note: 'NOTE',
+    noteTitle: 'NOTE / ANNOTATION',
     rehearsalReport: 'FULL SETLIST',
     noLyrics: 'No lyrics registered for this song.',
     noChords: 'No chords registered for this song.',
@@ -1052,6 +1056,8 @@ const translations = {
     // Modo Escenario (Performance)
     pause: 'PAUSA',
     pauseTitle: 'PAUSA / INTERVALO',
+    note: 'NOTA',
+    noteTitle: 'NOTA / ANOTACIÓN',
     rehearsalReport: 'SETLIST COMPLETO',
     noLyrics: 'Ninguna letra registrada para esta canción.',
     noChords: 'Ningún acorde registrado para esta canción.',

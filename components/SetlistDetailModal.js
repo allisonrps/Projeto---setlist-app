@@ -213,14 +213,14 @@ export default function SetlistDetailModal({
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                             <Ionicons name="pause-circle-outline" size={13} color={colors.secondary} />
                             <Text style={[styles.songName, { color: colors.secondary, fontWeight: '950' }]}>
-                              {t('pauseTitle').toUpperCase()}
+                              {(t('pauseTitle') || 'PAUSE').toUpperCase()}
                             </Text>
                           </View>
                         ) : isNote ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                             <Ionicons name="document-text-outline" size={13} color={colors.warning} />
                             <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
-                              {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
+                              {song.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}
                             </Text>
                           </View>
                         ) : (

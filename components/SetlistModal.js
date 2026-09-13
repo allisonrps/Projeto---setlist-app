@@ -386,7 +386,7 @@ export function DraggableSortableList({
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                         <Ionicons name="pause-circle-outline" size={12} color={colors.secondary} />
                         <Text style={{ color: colors.secondary, fontWeight: '950', fontSize: 12 }}>
-                          PAUSA
+                          {t('pause') || 'PAUSE'}
                         </Text>
                         <Ionicons name="create-outline" size={11} color={colors.secondary} style={{ opacity: 0.8 }} />
                       </View>
@@ -399,7 +399,7 @@ export function DraggableSortableList({
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                         <Ionicons name="document-text-outline" size={12} color={colors.warning} />
                         <Text style={{ color: colors.warning, fontWeight: '950', fontSize: 12, fontStyle: 'italic', flex: 1 }} numberOfLines={1}>
-                          {song.customNotes || 'Anotação / Aviso'}
+                          {song.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}
                         </Text>
                         <Ionicons name="create-outline" size={11} color={colors.warning} style={{ opacity: 0.8 }} />
                       </View>

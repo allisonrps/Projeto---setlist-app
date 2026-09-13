@@ -319,7 +319,7 @@
       width: 110%;
       height: 110%;
       background: url('assets/band_silhouette.jpg') center center / cover no-repeat;
-      filter: brightness(0.85) contrast(1.15) saturate(1.5);
+      filter: brightness(0.85) contrast(1.18) hue-rotate(185deg) saturate(1.8);
       opacity: 0.85;
     }
 
@@ -353,10 +353,10 @@
       animation: sweepPurple 18s ease-in-out infinite alternate;
     }
 
-    .spot-amber {
+    .spot-teal {
       left: 48%;
-      background: linear-gradient(to bottom, rgba(251, 191, 36, 0.55) 0%, rgba(245, 158, 11, 0.25) 50%, transparent 100%);
-      animation: sweepAmber 12s ease-in-out infinite alternate;
+      background: linear-gradient(to bottom, rgba(16, 185, 129, 0.65) 0%, rgba(5, 150, 105, 0.3) 50%, transparent 100%);
+      animation: sweepTeal 12s ease-in-out infinite alternate;
     }
 
     .spot-laser {
@@ -432,8 +432,11 @@
       100% { transform: rotate(22deg) scaleY(1.1); opacity: 0.4; }
     }
 
-    @keyframes sweepAmber {
+    @keyframes sweepTeal {
       0% { transform: rotate(-12deg) scaleY(1); opacity: 0.35; }
+      50% { transform: rotate(26deg) scaleY(1.25); opacity: 0.65; }
+      100% { transform: rotate(-12deg) scaleY(1); opacity: 0.35; }
+    }
       50% { transform: rotate(26deg) scaleY(1.25); opacity: 0.6; }
       100% { transform: rotate(-12deg) scaleY(1); opacity: 0.35; }
     }
@@ -446,7 +449,7 @@
 
     /* Hero Section */
     .hero {
-      padding-top: 135px;
+      padding-top: 175px;
       padding-bottom: 90px;
       text-align: center;
       position: relative;
@@ -1216,7 +1219,7 @@
 
       /* Spacing adjustments on mobile */
       .hero {
-        padding-top: 110px;
+        padding-top: 160px;
         padding-bottom: 45px;
       }
       .pill-badge {
@@ -1361,7 +1364,7 @@
       <div class="stage-spotlights">
         <div class="spotlight spot-cyan"></div>
         <div class="spotlight spot-purple"></div>
-        <div class="spotlight spot-amber"></div>
+        <div class="spotlight spot-teal"></div>
         <div class="spotlight spot-laser"></div>
       </div>
       
@@ -1507,7 +1510,7 @@
               <div class="sim-editor-nav">
                 <div>
                   <h3 style="font-size: 18px; font-weight: 800; color: #fff;">Yellow • Coldplay</h3>
-                  <span style="font-size: 12px; color: var(--text-muted);" data-i18n="simMetaSong">Original Key: B • BPM: 88 • Duration: 04:29</span>
+                  <span style="font-size: 12px; color: var(--text-muted);" data-i18n="simMetaSong">Original Key: B • Duration: 04:29</span>
                 </div>
                 <div class="sim-meta-tags">
                   <span class="sim-badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.4);">POP ROCK</span>
@@ -1536,7 +1539,7 @@ Yeah, they were all yellow.
                   <span class="pulse-indicator"></span>
                   <span data-i18n="simLiveStage">LIVE STAGE MODE</span>
                 </div>
-                <span style="font-size: 11px; font-weight: 800; color: var(--emerald);">BPM 88 • 4/4</span>
+                <span style="font-size: 11px; font-weight: 800; color: var(--emerald);">POP ROCK • 04:29</span>
               </div>
 
               <div class="sim-stage-tools">
@@ -1581,7 +1584,7 @@ Yeah, they were all yellow.
             <ion-icon name="musical-notes"></ion-icon>
           </div>
           <h3 data-i18n="feat1Title">Full-Screen Stage Mode</h3>
-          <p data-i18n="feat1Desc">View chords, lyrics, or tabs with high-contrast stage dark mode. Smart autoscroll with custom speed control and visual metronome.</p>
+          <p data-i18n="feat1Desc">View chords, lyrics, or tabs with high-contrast stage dark mode. Smart autoscroll with custom speed control and zoom formatting.</p>
         </div>
 
         <!-- Feature 2 -->
@@ -1657,7 +1660,7 @@ Yeah, they were all yellow.
             </li>
             <li>
               <ion-icon name="checkmark-circle"></ion-icon>
-              <div><strong data-i18n="stageCheck3Title">Visual Metronome & BPM:</strong> <span data-i18n="stageCheck3Desc">Pulsing beat indicator on tempo to keep perfect timing without audible clicks on stage.</span></div>
+              <div><strong data-i18n="stageCheck3Title">Multi-View & Font Zoom:</strong> <span data-i18n="stageCheck3Desc">Switch seamlessly between chords, full lyrics, and tabs with customizable font sizes for any distance.</span></div>
             </li>
           </ul>
 
@@ -1960,7 +1963,7 @@ E tão sério e selvagem...
         trustDoc: 'Formatted Word (.doc) Export',
         mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro & Stage Mode Synced',
         mockupTryBtn: 'Try it Now →',
-        simMetaSong: 'Original Key: B • BPM: 88 • Duration: 04:29',
+        simMetaSong: 'Original Key: B • Duration: 04:29',
         simTagMain: 'MAIN SHOW',
         simLiveStage: 'LIVE STAGE MODE',
         simKeyLabel: 'KEY',
@@ -1969,7 +1972,7 @@ E tão sério e selvagem...
         featSectionTitle: 'Everything a Band Needs Before, During, and After the Show.',
         featSectionDesc: 'Built by musicians who live the stage: features designed to simplify life for players, vocalists, and bands of any genre.',
         feat1Title: 'Full-Screen Stage Mode',
-        feat1Desc: 'View chords, lyrics, or tabs with high-contrast stage dark mode. Smart autoscroll with custom speed control and visual metronome.',
+        feat1Desc: 'View chords, lyrics, or tabs with high-contrast stage dark mode. Smart autoscroll with custom speed control and zoom formatting.',
         feat2Title: 'Pro Web Editor on PC',
         feat2Desc: 'Speed up chord editing using your computer keyboard. Paste full setlists, structure chords, and organize tags on a wide monitor.',
         feat3Title: 'QR Code Synchronization',
@@ -1987,8 +1990,8 @@ E tão sério e selvagem...
         stageCheck1Desc: 'Adjust speed from 0.5x to 2.0x and perform hands-free without leaving your instrument.',
         stageCheck2Title: 'Instant Key Transposition:',
         stageCheck2Desc: "Shift keys up or down in 1 click (+1 / -1 semitone) to adapt to the singer's vocal range.",
-        stageCheck3Title: 'Visual Metronome & BPM:',
-        stageCheck3Desc: 'Pulsing beat indicator on tempo to keep perfect timing without audible clicks on stage.',
+        stageCheck3Title: 'Multi-View & Font Zoom:',
+        stageCheck3Desc: 'Switch seamlessly between chords, full lyrics, and tabs with customizable font sizes for any distance.',
         stageBtnTest: 'Test in Web Editor',
         demoSimTitle: 'STAGE MODE SIMULATOR',
         demoBtnMinusKey: '-1 Key',
@@ -2062,7 +2065,7 @@ E tão sério e selvagem...
         trustDoc: 'Exportação Formatada em Word (.doc)',
         mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro & Modo Palco Sincronizados',
         mockupTryBtn: 'Experimentar Agora →',
-        simMetaSong: 'Tom Original: B (Si Maior) • BPM: 88 • Duração: 04:29',
+        simMetaSong: 'Tom Original: B (Si Maior) • Duração: 04:29',
         simTagMain: 'SHOW PRINCIPAL',
         simLiveStage: 'MODO PALCO AO VIVO',
         simKeyLabel: 'TOM',
@@ -2071,7 +2074,7 @@ E tão sério e selvagem...
         featSectionTitle: 'Tudo o que uma Banda Precisa Antes, Depois e Durante o Show.',
         featSectionDesc: 'Desenvolvido por quem vive o palco: recursos pensados para simplificar a vida de músicos, cantores e bandas de todos os estilos.',
         feat1Title: 'Modo Palco em Tela Cheia',
-        feat1Desc: 'Visualize cifras, letras ou tablaturas com contraste adaptado para o escuro do palco. Rolagem automática inteligente com ajuste de velocidade e metrônomo visual.',
+        feat1Desc: 'Visualize cifras, letras ou tablaturas com contraste adaptado para o escuro do palco. Rolagem automática inteligente com ajuste de velocidade e zoom.',
         feat2Title: 'Web Editor Pro no PC',
         feat2Desc: 'Acelere o cadastro e a formatação de cifras digitando no teclado do seu computador. Cole repertórios inteiros e organize tags em uma tela ampla.',
         feat3Title: 'Sincronização via QR Code',
@@ -2089,8 +2092,8 @@ E tão sério e selvagem...
         stageCheck1Desc: 'Ajuste a velocidade de 0.5x a 2.0x e toque sem precisar tirar as mãos do instrumento.',
         stageCheck2Title: 'Transposição de Tom Instantânea:',
         stageCheck2Desc: 'Suba ou desça semitons em 1 clique (+1 / -1) para adaptar ao tom do vocalista.',
-        stageCheck3Title: 'Metrônomo Visual & BPM:',
-        stageCheck3Desc: 'Luz pulsante no tempo certo da música para manter a contagem perfeita sem ruído no palco.',
+        stageCheck3Title: 'Multi-Visualização e Zoom:',
+        stageCheck3Desc: 'Alterne com facilidade entre cifras, letras e tablaturas com ajuste de tamanho de fonte para qualquer distância.',
         stageBtnTest: 'Testar no Web Editor',
         demoSimTitle: 'SIMULADOR MODO PALCO',
         demoBtnMinusKey: '-1 Tom',
@@ -2164,7 +2167,7 @@ E tão sério e selvagem...
         trustDoc: 'Exportación a Word (.doc)',
         mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro y Modo Escenario Sincronizados',
         mockupTryBtn: 'Probar Ahora →',
-        simMetaSong: 'Tono Original: B (Si Mayor) • BPM: 88 • Duración: 04:29',
+        simMetaSong: 'Tono Original: B (Si Mayor) • Duración: 04:29',
         simTagMain: 'SHOW PRINCIPAL',
         simLiveStage: 'MODO ESCENARIO EN VIVO',
         simKeyLabel: 'TONO',
@@ -2173,7 +2176,7 @@ E tão sério e selvagem...
         featSectionTitle: 'Todo lo que una Banda Necesita Antes, Durante y Después del Show.',
         featSectionDesc: 'Creado por músicos para músicos: funciones diseñadas para simplificar los conciertos de vocalistas, instrumentistas y bandas de cualquier estilo.',
         feat1Title: 'Modo Escenario en Pantalla Completa',
-        feat1Desc: 'Visualice acordes, letras o tablaturas con contraste optimizado para el escenario oscuro. Desplazamiento automático inteligente y metrónomo visual.',
+        feat1Desc: 'Visualice acordes, letras o tablaturas con contraste optimizado para el escenario oscuro. Desplazamiento automático inteligente y zoom.',
         feat2Title: 'Web Editor Pro en la PC',
         feat2Desc: 'Acelere la edición de acordes usando el teclado de su computadora. Pegue repertorios completos y organice etiquetas en pantalla grande.',
         feat3Title: 'Sincronización mediante Código QR',
@@ -2191,8 +2194,8 @@ E tão sério e selvagem...
         stageCheck1Desc: 'Ajuste la velocidad de 0.5x a 2.0x y toque con manos libres sin soltar su instrumento.',
         stageCheck2Title: 'Transposición de Tono Instantánea:',
         stageCheck2Desc: 'Suba o baje semitonos en 1 clic (+1 / -1) para adaptar al rango vocal del cantante.',
-        stageCheck3Title: 'Metrónomo Visual y BPM:',
-        stageCheck3Desc: 'Indicador de pulso a tempo para mantener el compás perfecto sin ruido en el escenario.',
+        stageCheck3Title: 'Multi-Visualización y Zoom:',
+        stageCheck3Desc: 'Cambia fácilmente entre acordes, letras y tablaturas con tamaño de letra personalizable para cualquier distancia.',
         stageBtnTest: 'Probar en Web Editor',
         demoSimTitle: 'SIMULADOR MODO ESCENARIO',
         demoBtnMinusKey: '-1 Tono',

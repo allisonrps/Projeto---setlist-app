@@ -452,7 +452,7 @@ export default function PerformanceMode({
               : (currentSong.id === -1 
                 ? `⏸ ${t('pauseTitle').toUpperCase()}` 
                 : (currentSong.id === -2 
-                  ? `📝 ${currentSong.customNotes || 'ANOTAÇÃO'}` 
+                  ? `📝 ${currentSong.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}` 
                   : `${currentSong.name} - ${currentSong.originalBand}`))} 
             style={[styles.marqueeHeaderText, { 
               color: showSongList 
@@ -631,7 +631,7 @@ export default function PerformanceMode({
                         fontWeight: '900',
                         color: colors.secondary
                       }}>
-                        PAUSA
+                        {t('pause') || 'PAUSE'}
                       </Text>
                     ) : isNote ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -643,7 +643,7 @@ export default function PerformanceMode({
                           fontStyle: 'italic',
                           flex: 1
                         }} numberOfLines={1}>
-                          {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
+                          {song.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}
                         </Text>
                       </View>
                     ) : (
@@ -771,7 +771,7 @@ export default function PerformanceMode({
               <View style={styles.pauseTimerContainer}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
                   <Ionicons name="document-text-outline" size={fontSize + 8} color={colors.warning} />
-                  <Text style={[styles.pauseTitle, { color: colors.warning, fontSize: fontSize + 10 }]}>{t('noteItem') || 'ANOTAÇÃO / OBSERVAÇÃO'}</Text>
+                  <Text style={[styles.pauseTitle, { color: colors.warning, fontSize: fontSize + 10 }]}>{t('noteTitle') || t('noteItem') || 'NOTE / ANNOTATION'}</Text>
                 </View>
                 
                 {currentSong.customNotes ? (

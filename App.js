@@ -1570,13 +1570,13 @@ function MainApp() {
         const sNotes = String(song.customNotes || '').trim();
 
         if (isPause) {
-          let html = `<div style="font-size: 9pt; font-weight: bold; color: #b91c1c; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fef2f2; border-left: 2pt solid #ef4444;">⏸️ ${sName || 'PAUSA / INTERVALO'}${sCustDur ? ` (${sCustDur})` : ''}</div>`;
+          let html = `<div style="font-size: 9pt; font-weight: bold; color: #b91c1c; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fef2f2; border-left: 2pt solid #ef4444;">⏸️ ${sName || t('pauseTitle') || 'PAUSE / BREAK'}${sCustDur ? ` (${sCustDur})` : ''}</div>`;
           if (sNotes) {
             html += `<div style="font-size: 7.5pt; color: #dc2626; font-style: italic; margin-left: 10pt; margin-top: 1pt; margin-bottom: 3pt;">Obs: ${sNotes}</div>`;
           }
           return html;
         } else if (isNote) {
-          return `<div style="font-size: 9pt; font-weight: bold; color: #b45309; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fffbeb; border-left: 2pt solid #f59e0b;">📢 ${sNotes || sName || 'ANOTAÇÃO'}</div>`;
+          return `<div style="font-size: 9pt; font-weight: bold; color: #b45309; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fffbeb; border-left: 2pt solid #f59e0b;">📢 ${sNotes || sName || t('noteTitle') || 'NOTE / ANNOTATION'}</div>`;
         } else {
           let html = `<div style="font-size: 9.5pt; line-height: 1.35; margin-bottom: 3.5pt;"><strong>${numStr}. ${sName.toUpperCase()}</strong>`;
           if (sBand) {

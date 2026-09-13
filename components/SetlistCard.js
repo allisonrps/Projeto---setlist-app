@@ -357,7 +357,7 @@ export default function SetlistCard({
                       {isPause ? (
                         <View>
                           <Text style={[styles.songName, { color: colors.secondary, fontWeight: '900', fontSize: 12 }]}>
-                            PAUSA
+                            {t('pause') || 'PAUSE'}
                           </Text>
                           {song.customNotes ? (
                             <Text style={{ fontSize: 10, color: colors.textMuted, fontStyle: 'italic', marginTop: 1 }}>
@@ -369,7 +369,7 @@ export default function SetlistCard({
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                           <Ionicons name="document-text-outline" size={12} color={colors.warning} />
                           <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontSize: 12, fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
-                            {song.customNotes || 'ANOTAÇÃO / OBSERVAÇÃO'}
+                            {song.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}
                           </Text>
                         </View>
                       ) : (
