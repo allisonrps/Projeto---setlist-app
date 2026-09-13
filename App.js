@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import { createTables } from './database/database';
 import { ThemeProvider, useTheme } from './hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +33,7 @@ import SettingsModal from './components/SettingsModal';
 import SyncModal from './components/SyncModal';
 import ShareQrModal from './components/ShareQrModal';
 import ShareOptionsModal from './components/ShareOptionsModal';
+import ImportOptionsModal from './components/ImportOptionsModal';
 import BandModal from './components/BandModal';
 import SongModal from './components/SongModal';
 import SetlistModal from './components/SetlistModal';
@@ -589,6 +591,8 @@ function MainApp() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showShareQrModal, setShowShareQrModal] = useState(false);
   const [showShareOptionsModal, setShowShareOptionsModal] = useState(false);
+  const [showImportOptionsModal, setShowImportOptionsModal] = useState(false);
+  const [importOptionsType, setImportOptionsType] = useState('song');
   const [shareOptionsItem, setShareOptionsItem] = useState(null);
   const [shareQrItem, setShareQrItem] = useState(null);
   const [selectedTutorialFeature, setSelectedTutorialFeature] = useState(null);
@@ -946,6 +950,75 @@ function MainApp() {
     } catch (error) {
       console.error('Erro ao abrir opções de compartilhamento do setlist:', error);
       Alert.alert(t('error') || 'Erro', 'Não foi possível preparar o compartilhamento.');
+    }
+  };
+
+  const handleOpenImportOptions = (type) => {
+    setImportOptionsType(type);
+    setShowImportOptionsModal(true);
+  };
+
+  const handleSelectImportOption = async (option) => {
+    const currentType = importOptionsType;
+    setShowImportOptionsModal(false);
+
+    if (option === 'qr') {
+      setTimeout(() => {
+        setShowSyncModal(true);
+      }, 100);
+    } else if (option === 'file') {
+      try {
+        const result = await DocumentPicker.getDocumentAsync({
+          type: 'application/json',
+          copyToCacheDirectory: true,
+        });
+
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+          return;
+        }
+
+        const fileUri = result.assets[0].uri;
+        let fileContent = '';
+
+        if (Platform.OS === 'web') {
+          const file = result.assets[0].file;
+          if (file) {
+            fileContent = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.onerror = (err) => reject(err);
+              reader.readAsText(file);
+            });
+          }
+        } else {
+          fileContent = await FileSystem.readAsStringAsync(fileUri, {
+            encoding: FileSystem.EncodingType.UTF8,
+          });
+        }
+
+        if (fileContent && fileContent.trim()) {
+          if (currentType === 'song') {
+            await handleImportSong(fileContent);
+          } else if (currentType === 'setlist') {
+            await handleImportSetlist(fileContent);
+          } else if (currentType === 'backup') {
+            await handleRestoreBackup(fileContent);
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao ler arquivo selecionado:', err);
+        Alert.alert(t('importErrorTitle') || 'Erro', t('fileReadError') || 'Não foi possível ler o arquivo.');
+      }
+    } else if (option === 'text') {
+      setTimeout(() => {
+        if (currentType === 'song') {
+          setShowImportSongModal(true);
+        } else if (currentType === 'setlist') {
+          setShowImportModal(true);
+        } else if (currentType === 'backup') {
+          setShowImportBackupModal(true);
+        }
+      }, 100);
     }
   };
 
@@ -2130,7 +2203,7 @@ function MainApp() {
                 styles.quickAddButton,
                 { backgroundColor: colors.secondary + '20', borderColor: colors.secondary + '60', borderWidth: 1, transform: [{ scale: pressed ? 0.95 : 1 }] }
               ]}
-              onPress={() => setShowImportSongModal(true)}
+              onPress={() => handleOpenImportOptions('song')}
             >
               <Text style={[styles.quickAddText, { color: colors.secondary }]}>{t('importBtnText')}</Text>
             </Pressable>
@@ -2381,7 +2454,7 @@ function MainApp() {
                 styles.quickAddButton,
                 { backgroundColor: colors.secondary + '20', borderColor: colors.secondary + '60', borderWidth: 1, transform: [{ scale: pressed ? 0.95 : 1 }] }
               ]}
-              onPress={() => setShowImportModal(true)}
+              onPress={() => handleOpenImportOptions('setlist')}
             >
               <Text style={[styles.quickAddText, { color: colors.secondary }]}>{t('importBtnText')}</Text>
             </Pressable>
@@ -2859,7 +2932,7 @@ function MainApp() {
                     opacity: pressed ? 0.8 : 1,
                   }
                 ]}
-                onPress={() => setShowImportBackupModal(true)}
+                onPress={() => handleOpenImportOptions('backup')}
               >
                 <Ionicons name="download-outline" size={14} color={colors.primary} />
                 <Text style={{ color: colors.primary, fontSize: 10.5, fontWeight: '900' }}>
@@ -3072,6 +3145,13 @@ function MainApp() {
         visible={!!selectedTutorialFeature}
         onClose={() => setSelectedTutorialFeature(null)}
         feature={selectedTutorialFeature}
+      />
+
+      <ImportOptionsModal
+        visible={showImportOptionsModal}
+        onClose={() => setShowImportOptionsModal(false)}
+        type={importOptionsType}
+        onSelectOption={handleSelectImportOption}
       />
 
       <ShareOptionsModal
