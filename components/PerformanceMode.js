@@ -278,18 +278,18 @@ export default function PerformanceMode({
         {/* 1. Controles Superiores Ultra Compactos (Única Linha) */}
         <View style={[styles.stageTopControls, { borderBottomColor: colors.border, backgroundColor: colors.cardBackground }]}>
           
-          {/* Botão de Fechar com X */}
+          {/* Botão Circular de Fechar */}
           <Pressable 
             style={({ pressed }) => [
-              styles.stageExitBtn, 
-              { backgroundColor: colors.danger + '22', borderColor: colors.danger, borderWidth: 1.5, opacity: pressed ? 0.7 : 1 }
+              styles.circleBtn, 
+              { backgroundColor: colors.danger + '22', opacity: pressed ? 0.7 : 1 }
             ]} 
             onPress={onClose}
           >
-            <Ionicons name="close" size={16} color={colors.danger} />
+            <Ionicons name="close" size={18} color={colors.danger} />
           </Pressable>
 
-          {/* Botões Quadrados de Seleção de Aba (Letra, Cifra, Tablatura) */}
+          {/* Botões Circulares de Seleção de Aba (Letra, Cifra, Tablatura) */}
           {currentSong.id !== -1 && (
             <View style={styles.stageTabButtonsRow}>
               {[
@@ -301,9 +301,9 @@ export default function PerformanceMode({
                   key={tab.key}
                   disabled={showSongList || !tab.hasContent}
                   style={({ pressed }) => [
-                    styles.squareTabBtn,
-                    { borderColor: colors.border, backgroundColor: colors.background },
-                    activeView === tab.key && { backgroundColor: colors.primary, borderColor: colors.primary },
+                    styles.circleBtn,
+                    { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
+                    activeView === tab.key && { backgroundColor: colors.primary },
                     (showSongList || !tab.hasContent) && { opacity: 0.15 },
                     pressed && !showSongList && tab.hasContent && { opacity: 0.8 }
                   ]}
@@ -311,7 +311,7 @@ export default function PerformanceMode({
                 >
                   <Ionicons 
                     name={activeView === tab.key ? tab.iconActive : tab.icon} 
-                    size={16} 
+                    size={17} 
                     color={activeView === tab.key ? '#fff' : (tab.hasContent ? colors.text : colors.textMuted)} 
                   />
                 </Pressable>
@@ -319,17 +319,15 @@ export default function PerformanceMode({
             </View>
           )}
 
-          {/* Ajustes de Tamanho da Fonte (A- A+), Velocidade de Rolagem (📜) e Links (🔗) */}
+          {/* Ajustes Circulares de Tamanho da Fonte (A- A+), Rolagem e Links */}
           <View style={styles.fontSizeControlsRow}>
             {currentSong.id !== -1 && (
               <Pressable 
                 disabled={showSongList}
                 style={({ pressed }) => [
-                  styles.squareLinkToggleBtn, 
+                  styles.circleBtn, 
                   { 
-                    backgroundColor: colors.border, 
-                    borderColor: currentScrollSpeed !== 'none' ? '#10b981' : '#ef4444',
-                    borderWidth: 2,
+                    backgroundColor: currentScrollSpeed !== 'none' ? '#10b98125' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
                     opacity: showSongList ? 0.15 : (pressed ? 0.75 : 1) 
                   }
                 ]} 
@@ -338,7 +336,7 @@ export default function PerformanceMode({
                 {currentScrollSpeed === 'none' ? (
                   <Ionicons name="play-outline" size={16} color={colors.text} />
                 ) : (
-                  <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981' }}>{`${currentScrollSpeed}x`}</Text>
+                  <Text style={{ fontSize: 10.5, fontWeight: '900', color: '#10b981' }}>{`${currentScrollSpeed}x`}</Text>
                 )}
               </Pressable>
             )}
@@ -347,10 +345,9 @@ export default function PerformanceMode({
               <Pressable 
                 disabled={showSongList}
                 style={({ pressed }) => [
-                  styles.squareLinkToggleBtn, 
+                  styles.circleBtn, 
                   { 
-                    backgroundColor: showLinks ? colors.primary : colors.border, 
-                    borderColor: showLinks ? colors.primary : colors.border,
+                    backgroundColor: showLinks ? colors.primary : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
                     opacity: showSongList ? 0.15 : (pressed ? 0.75 : 1) 
                   }
                 ]} 
@@ -362,21 +359,21 @@ export default function PerformanceMode({
 
             <Pressable 
               style={({ pressed }) => [
-                styles.squareFontBtn, 
-                { backgroundColor: colors.border, opacity: pressed ? 0.75 : 1 }
+                styles.circleBtn, 
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.75 : 1 }
               ]} 
               onPress={() => adjustFontSize(-2)}
             >
-              <Text style={[styles.squareFontBtnText, { color: colors.text }]}>A-</Text>
+              <Text style={[styles.circleFontBtnText, { color: colors.text }]}>A-</Text>
             </Pressable>
             <Pressable 
               style={({ pressed }) => [
-                styles.squareFontBtn, 
-                { backgroundColor: colors.border, opacity: pressed ? 0.75 : 1 }
+                styles.circleBtn, 
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.75 : 1 }
               ]} 
               onPress={() => adjustFontSize(2)}
             >
-              <Text style={[styles.squareFontBtnText, { color: colors.text }]}>A+</Text>
+              <Text style={[styles.circleFontBtnText, { color: colors.text }]}>A+</Text>
             </Pressable>
           </View>
         </View>
@@ -432,12 +429,12 @@ export default function PerformanceMode({
               style={({ pressed }) => [
                 {
                   marginRight: 10,
-                  width: 32,
-                  height: 32,
-                  borderRadius: 6,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  backgroundColor: colors.border,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
                   opacity: pressed ? 0.7 : 1,
                 }
               ]}
@@ -466,23 +463,21 @@ export default function PerformanceMode({
 
         {/* 2.5 Barra de Avaliação Rápida do Modo Ensaio */}
         {isEnsaio && currentSong && currentSong.id !== -1 && currentSong.id !== -2 && !showSongList && (
-          <View style={[styles.rehearsalRatingBar, { borderBottomColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }]}>
+          <View style={[styles.rehearsalRatingBar, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }]}>
             <Text style={[styles.rehearsalRatingLabel, { color: colors.textMuted }]}>
               {t('rating') || 'AVALIAÇÃO'}:
             </Text>
-            <View style={{ flexDirection: 'row', gap: 6, flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', gap: 8, flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
               <Pressable
                 onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, currentSong.id, activeIndex, currentSong.rehearsalStatus === 'green' ? 'none' : 'green')}
                 style={[
                   styles.rehearsalRatingPill,
                   {
-                    backgroundColor: currentSong.rehearsalStatus === 'green' ? colors.success : colors.success + '15',
-                    borderColor: colors.success,
-                    borderWidth: 1.5,
+                    backgroundColor: currentSong.rehearsalStatus === 'green' ? colors.success : colors.success + '20',
                   }
                 ]}
               >
-                <Ionicons name="checkmark-circle" size={12} color={currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success} />
+                <Ionicons name="checkmark-circle" size={13} color={currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success} />
                 <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success }]}>
                   PRONTA
                 </Text>
@@ -493,13 +488,11 @@ export default function PerformanceMode({
                 style={[
                   styles.rehearsalRatingPill,
                   {
-                    backgroundColor: currentSong.rehearsalStatus === 'yellow' ? '#eab308' : '#eab30815',
-                    borderColor: '#eab308',
-                    borderWidth: 1.5,
+                    backgroundColor: currentSong.rehearsalStatus === 'yellow' ? '#eab308' : '#eab30820',
                   }
                 ]}
               >
-                <Ionicons name="alert-circle" size={12} color={currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308'} />
+                <Ionicons name="alert-circle" size={13} color={currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308'} />
                 <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308' }]}>
                   REVISAR
                 </Text>
@@ -510,13 +503,11 @@ export default function PerformanceMode({
                 style={[
                   styles.rehearsalRatingPill,
                   {
-                    backgroundColor: currentSong.rehearsalStatus === 'red' ? colors.danger : colors.danger + '15',
-                    borderColor: colors.danger,
-                    borderWidth: 1.5,
+                    backgroundColor: currentSong.rehearsalStatus === 'red' ? colors.danger : colors.danger + '20',
                   }
                 ]}
               >
-                <Ionicons name="close-circle" size={12} color={currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger} />
+                <Ionicons name="close-circle" size={13} color={currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger} />
                 <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger }]}>
                   AJUSTAR
                 </Text>
@@ -562,17 +553,14 @@ export default function PerformanceMode({
                     {
                       paddingVertical: 10,
                       paddingHorizontal: 12,
-                      borderRadius: 8,
+                      borderRadius: 14,
                       marginBottom: 8,
-                      borderWidth: 1.5,
+                      borderWidth: 0,
                       flexDirection: 'row',
                       alignItems: 'center',
                       backgroundColor: isActive 
-                        ? (colors.primary + '18') 
-                        : (isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'),
-                      borderColor: isActive 
-                        ? colors.primary 
-                        : colors.border,
+                        ? (colors.primary + '20') 
+                        : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
                     }
                   ]}
                 >
@@ -581,9 +569,9 @@ export default function PerformanceMode({
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, song.id, idx, song.rehearsalStatus)}
                       style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
+                        width: 30,
+                        height: 30,
+                        borderRadius: 15,
                         backgroundColor: badgeColor,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -600,9 +588,9 @@ export default function PerformanceMode({
                     </Pressable>
                   ) : (
                     <View style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
+                      width: 30,
+                      height: 30,
+                      borderRadius: 15,
                       backgroundColor: badgeColor,
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -834,26 +822,26 @@ export default function PerformanceMode({
           </ScrollView>
         )}
 
-        {/* 4. Navegação Inferior (Setas Gigantes e Progresso Centralizado) */}
-        <View style={[styles.navigationBar, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
+        {/* 4. Navegação Inferior Circular e Sem Borda */}
+        <View style={[styles.navigationBar, { backgroundColor: colors.background }]}>
           <Pressable
             disabled={showSongList || activeIndex === 0}
             style={({ pressed }) => [
-              styles.navButton,
-              { backgroundColor: colors.cardBackground, borderColor: colors.border },
+              styles.navCircleBtn,
+              { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
               (showSongList || activeIndex === 0) && { opacity: 0.15 },
-              pressed && !showSongList && activeIndex > 0 && { transform: [{ scale: 0.96 }], backgroundColor: colors.border }
+              pressed && !showSongList && activeIndex > 0 && { transform: [{ scale: 0.94 }], backgroundColor: colors.primary + '30' }
             ]}
             onPress={handlePrev}
           >
-            <Text style={[styles.navButtonText, { color: colors.text }]}>◀</Text>
+            <Ionicons name="chevron-back" size={26} color={colors.text} />
           </Pressable>
 
           <Pressable
             onPress={() => setShowSongList(!showSongList)}
             style={({ pressed }) => [
               styles.bottomProgressBox, 
-              { backgroundColor: colors.primary + '12', borderColor: colors.primary + '25' },
+              { backgroundColor: colors.primary + '18' },
               pressed && { opacity: 0.7 }
             ]}
           >
@@ -865,14 +853,14 @@ export default function PerformanceMode({
           <Pressable
             disabled={showSongList || activeIndex === songs.length - 1}
             style={({ pressed }) => [
-              styles.navButton,
-              { backgroundColor: colors.cardBackground, borderColor: colors.border },
+              styles.navCircleBtn,
+              { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
               (showSongList || activeIndex === songs.length - 1) && { opacity: 0.15 },
-              pressed && !showSongList && activeIndex < songs.length - 1 && { transform: [{ scale: 0.96 }], backgroundColor: colors.border }
+              pressed && !showSongList && activeIndex < songs.length - 1 && { transform: [{ scale: 0.94 }], backgroundColor: colors.primary + '30' }
             ]}
             onPress={handleNext}
           >
-            <Text style={[styles.navButtonText, { color: colors.text }]}>▶</Text>
+            <Ionicons name="chevron-forward" size={26} color={colors.text} />
           </Pressable>
         </View>
 
@@ -892,66 +880,34 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 44,
     paddingBottom: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 0,
   },
-  stageExitBtn: {
+  circleBtn: {
     width: 38,
     height: 38,
-    borderRadius: 6,
+    borderRadius: 19,
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stageExitBtnText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  stageTabButtonsRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  squareTabBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  squareTabBtnText: {
-    fontSize: 16,
-  },
-  fontSizeControlsRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  squareFontBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  squareFontBtnText: {
+  circleFontBtnText: {
     fontSize: 12,
     fontWeight: '900',
   },
-  squareLinkToggleBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
+  stageTabButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
-  squareLinkToggleBtnText: {
-    fontSize: 16,
+  fontSizeControlsRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
   marqueeHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 0,
     height: 56,
   },
   marqueeHeaderText: {
@@ -966,13 +922,13 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 0,
   },
   linkButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1.5,
+    borderRadius: 16,
+    borderWidth: 0,
   },
   linkButtonText: {
     fontSize: 11,
@@ -1007,35 +963,32 @@ const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     paddingBottom: Platform.OS === 'ios' ? 48 : 38,
-    borderTopWidth: 1.5,
-    gap: 12,
+    borderTopWidth: 0,
+    gap: 14,
     alignItems: 'center',
   },
-  navButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  navButtonText: {
-    fontWeight: '900',
-    fontSize: 20,
-    letterSpacing: 0.8,
-  },
-  bottomProgressBox: {
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
+  navCircleBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 72,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  bottomProgressBox: {
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    borderWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
     height: 48,
   },
   bottomProgressText: {
@@ -1118,7 +1071,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 0,
   },
   rehearsalRatingLabel: {
     fontSize: 10.5,
@@ -1128,9 +1081,10 @@ const styles = StyleSheet.create({
   rehearsalRatingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 0,
     gap: 4,
   },
   rehearsalRatingText: {

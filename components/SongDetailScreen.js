@@ -394,7 +394,7 @@ export default function SongDetailScreen({
               onPress={handlePlayStage}
               hitSlop={6}
             >
-              <Ionicons name="play" size={17} color="#ffffff" style={{ marginLeft: 2 }} />
+              <Ionicons name="mic" size={18} color="#ffffff" />
             </Pressable>
           </View>
         </View>
