@@ -36,6 +36,7 @@ import ShareOptionsModal from './components/ShareOptionsModal';
 import ImportOptionsModal from './components/ImportOptionsModal';
 import BandModal from './components/BandModal';
 import SongModal from './components/SongModal';
+import SongDetailScreen from './components/SongDetailScreen';
 import SetlistModal from './components/SetlistModal';
 import SetlistDetailModal from './components/SetlistDetailModal';
 import PerformanceMode from './components/PerformanceMode';
@@ -600,6 +601,7 @@ function MainApp() {
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
   const [editingSong, setEditingSong] = useState(null);
+  const [activeSongDetail, setActiveSongDetail] = useState(null);
   const [editingSetlist, setEditingSetlist] = useState(null);
   const [activeSetlist, setActiveSetlist] = useState(null);
 
@@ -770,8 +772,9 @@ function MainApp() {
   const handleSaveSong = async (songData) => {
     try {
       let songId;
-      if (editingSong) {
-        songId = editingSong.id;
+      const targetId = songData.id || (editingSong && editingSong.id);
+      if (targetId) {
+        songId = targetId;
         await songService.update(
           songId,
           songData.name,
@@ -804,14 +807,14 @@ function MainApp() {
       await reloadAllData();
       setShowSongModal(false);
       setEditingSong(null);
+      setActiveSongDetail(null);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar a música.');
     }
   };
 
   const handleEditSong = (song) => {
-    setEditingSong(song);
-    setShowSongModal(true);
+    setActiveSongDetail(song);
   };
 
   const handleDeleteSong = (id) => {
@@ -827,6 +830,7 @@ function MainApp() {
             try {
               await songService.delete(id);
               await reloadAllData();
+              setActiveSongDetail(null);
             } catch (error) {
               Alert.alert(t('importErrorTitle'), t('deleteSongError'));
             }
@@ -2212,7 +2216,7 @@ function MainApp() {
                 styles.quickAddButton,
                 { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
               ]}
-              onPress={() => { setEditingSong(null); setShowSongModal(true); }}
+              onPress={() => setActiveSongDetail({})}
             >
               <Text style={styles.quickAddText}>{t('addSong')}</Text>
             </Pressable>
@@ -2396,13 +2400,8 @@ function MainApp() {
               <SongListItem
                 key={song.id}
                 song={song}
-                onEdit={handleEditSong}
-                onDelete={handleDeleteSong}
+                onSelect={(selectedSong) => setActiveSongDetail(selectedSong)}
                 onToggleFavorite={handleToggleFavoriteSong}
-                onStartPerformance={handleStartSongPerformance}
-                expanded={expandedSongIds.includes(song.id)}
-                onToggleExpand={() => handleToggleExpandSong(song.id)}
-                onShare={handleShareSong}
                 sortBy={songSortBy}
               />
             ))
@@ -3074,11 +3073,15 @@ function MainApp() {
         band={editingBand}
       />
 
-      <SongModal
-        visible={showSongModal}
-        onClose={() => { setShowSongModal(false); setEditingSong(null); }}
+      <SongDetailScreen
+        visible={!!activeSongDetail}
+        song={activeSongDetail}
+        onBack={() => setActiveSongDetail(null)}
         onSave={handleSaveSong}
-        song={editingSong}
+        onDelete={handleDeleteSong}
+        onShare={handleShareSong}
+        onStartPerformance={handleStartSongPerformance}
+        onToggleFavorite={handleToggleFavoriteSong}
       />
 
       <SetlistModal
@@ -3107,8 +3110,7 @@ function MainApp() {
         onClose={() => { setShowPerformanceMode(false); setActiveSetlist(null); }}
         setlist={activeSetlist ? (setlists.find(s => s.id === activeSetlist.id) || activeSetlist) : null}
         onEditSong={(song) => {
-          setEditingSong(song);
-          setShowSongModal(true);
+          setActiveSongDetail(song);
         }}
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
@@ -3245,8 +3247,8 @@ const styles = StyleSheet.create({
   searchInput: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1.5,
+    borderRadius: 14,
+    borderWidth: 0,
     fontSize: 15,
     marginBottom: 16,
     shadowColor: '#000',
@@ -3262,9 +3264,9 @@ const styles = StyleSheet.create({
   },
   smallFilterChip: {
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    borderWidth: 1,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 0,
     borderColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
@@ -3272,8 +3274,8 @@ const styles = StyleSheet.create({
   sortChipButton: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1.2,
+    borderRadius: 10,
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -3291,7 +3293,8 @@ const styles = StyleSheet.create({
   eyeButtonNextToSearch: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 14,
+    borderWidth: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -3317,8 +3320,8 @@ const styles = StyleSheet.create({
   quickAddButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1.5,
+    borderRadius: 10,
+    borderWidth: 0,
     borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
