@@ -1975,13 +1975,13 @@
     
     // Bulletproof property extractors
     function getSongTitle(s) {
-      if (!s) return 'Sem Título';
-      return s.name || s.title || s.songName || s.titulo || s.nome || s.musica || 'Sem Título';
+      if (!s) return t('defaultUntitled');
+      return s.name || s.title || s.songName || s.titulo || s.nome || s.musica || t('defaultUntitled');
     }
 
     function getSongBand(s) {
-      if (!s) return 'Sem Banda';
-      return s.originalBand || s.band || s.bandName || s.artist || s.artista || s.autor || 'Sem Banda';
+      if (!s) return t('defaultUnknownBand');
+      return s.originalBand || s.band || s.bandName || s.artist || s.artista || s.autor || t('defaultUnknownBand');
     }
 
     function getSongDuration(s) {
@@ -1998,444 +1998,564 @@
     /* ----------------------------------------------------
        INTERNATIONALIZATION (i18n) DICTIONARY
     ---------------------------------------------------- */
-    let currentLang = localStorage.getItem('setlist_editor_lang') || 'en';
+    let currentLang = localStorage.getItem('setlist_editor_lang') || localStorage.getItem('sbm_landing_lang') || 'en';
 
         const translations = {
-      en: {
-        pageTitle: 'Setlist Band Manager - Web Editor Pro',
-        brandBadge: 'WEB EDITOR',
-        btnSyncHeader: 'Sync Mobile',
-        btnSyncHeaderTitle: 'Sync in Real-time with Phone via QR Code',
-        btnImportBackup: 'Import Backup',
-        btnImportBackupTitle: 'Import backup .json file or code',
-        btnExportBackup: 'Export Backup',
-        btnExportBackupTitle: 'Export full backup of all songs and setlists (.json)',
-        toggleTheme: 'Toggle Light / Dark Theme',
-        backToHome: 'Back to Home Page',
-        tabSongs: 'SONGS',
-        tabSetlists: 'SETLISTS',
-        searchSongsPlaceholder: 'Search by title, artist, or tag...',
-        searchSetlistsPlaceholder: 'Search setlist by name, band, or venue...',
-        songsCountLabel: '{count} SONGS',
-        setlistsCountLabel: '{count} SETLISTS',
-        btnNewSong: 'New Song',
-        btnNewSetlist: 'New Setlist',
-        emptySongTitle: 'No song selected',
-        emptySongDesc: 'Select a song from the sidebar or create a new one to edit chords, lyrics, and tabs on your PC.',
-        btnCreateFirstSong: 'Create First Song',
-        emptySetlistTitle: 'No setlist selected',
-        emptySetlistDesc: 'Create or select a setlist to organize your concert or rehearsal repertoire with Drag & Drop, pauses, and Word export.',
-        btnCreateFirstSetlist: 'Create First Setlist',
-        songNameLabel: 'Song Name *',
-        songNamePlaceholder: 'e.g. Yellow',
-        originalBandLabel: 'Original Artist / Band *',
-        originalBandPlaceholder: 'e.g. Coldplay',
-        durationLabel: 'Duration (mm:ss)',
-        durationPlaceholder: 'e.g. 04:30',
-        tagsLabel: 'Tags / Styles (comma separated)',
-        tagsPlaceholder: 'e.g. pop rock, 2000s, acoustic',
-        defaultViewLabel: 'Default Stage View',
-        viewChords: '🎼 Chords',
-        viewLyrics: '📝 Lyrics',
-        viewTabs: '🎸 Tabs',
-        scrollSpeedLabel: 'Autoscroll Speed',
-        speedNone: 'Paused / Off',
-        speed05: '0.5x (Slow)',
-        speed10: '1.0x (Normal)',
-        speed15: '1.5x (Fast)',
-        speed20: '2.0x (Very Fast)',
-        tabChords: 'Chords',
-        tabLyrics: 'Lyrics',
-        tabTabs: 'Tabs',
-        tabLinks: 'Support Links',
-        transposeKey: 'Transpose Key:',
-        btnMinusKey: '♭ -1 Key',
-        btnPlusKey: '♯ +1 Key',
-        insertTabGrid: 'String Grid',
-        btnStageMode: 'Stage Mode',
-        placeholderChords: 'Type or paste Chords here (e.g. Intro, Verse, Chorus with chords)...',
-        placeholderLyrics: 'Type or paste song Lyrics here...',
-        placeholderTabs: 'Type or paste guitar/bass Tablature here...',
-        linksHeading: 'VIDEO, AUDIO & CHORDS LINKS:',
-        btnAddLink: 'Add Link',
-        noLinks: 'No links registered for this song.',
-        btnDuplicate: 'Duplicate',
-        btnDelete: 'Delete',
-        setlistNameLabel: 'Setlist / Show Name *',
-        setlistNamePlaceholder: 'e.g. Rock Bar Show',
-        responsibleBandLabel: 'Band / Project *',
-        responsibleBandPlaceholder: 'e.g. My Band',
-        typeLabel: 'Event Type',
-        typeShow: '🔥 Show',
-        typeRehearsal: '🎙️ Rehearsal',
-        typeRepertoire: '📚 Repertoire',
-        dateLabel: 'Date',
-        datePlaceholder: 'e.g. 2026-10-25 or 25/10/2026',
-        localLabel: 'Venue / Location',
-        localPlaceholder: 'e.g. The Rock Pub',
-        cacheLabel: 'Cache / Fee',
-        cachePlaceholder: 'e.g. $ 1,500',
-        notesLabel: 'General Notes & Reminders',
-        notesPlaceholder: 'e.g. Bring extra cables, sound check at 7pm',
-        sumSongs: 'Songs:',
-        sumDuration: 'Estimated Duration:',
-        btnExportDoc: 'Export Word (.doc)',
-        btnExportSetlist: 'Export Setlist',
-        setlistRoteiroTitle: 'CONCERT / REHEARSAL REPERTOIRE',
-        setlistDragHelp: '(Drag handles ☰ to reorder)',
-        btnAddFromRepertoire: 'Add from Repertoire',
-        btnAddPause: 'Pause / Break',
-        btnAddNote: 'Announcement / Note',
-        noSongsInSetlist: 'No songs in this setlist yet. Click "Add from Repertoire" above!',
-        pauseTitle: 'PAUSE / BREAK',
-        noteTitle: 'ANNOUNCEMENT / NOTE',
-        customNotesPlaceholder: 'Show notes, key adjustments, vocal cues...',
-        pauseCustomNotesPlaceholder: 'e.g. 15 min break for instrument swap',
-        noteCustomNotesPlaceholder: 'e.g. Thank audience and sponsors...',
-        songCustomNotesPlaceholder: 'Notes for this gig (e.g. Key G, drive guitar, direct entry)...',
-        btnMoveUp: 'Move Up (1 position)',
-        btnMoveDown: 'Move Down (1 position)',
-        btnRemoveFromSetlist: 'Remove from Setlist',
-        syncModalTitle: 'Direct Real-Time Phone Sync',
-        syncTabReceive: 'PULL FROM PHONE',
-        syncTabSend: 'SEND TO PHONE',
-        syncDescReceive: 'Open the app on your phone, go to <strong>Sync with Web</strong> and point the camera at this QR Code to transfer all songs from phone to PC.',
-        syncDescSend: 'Open the app on your phone, go to <strong>Sync with Web</strong> and point the camera at this QR Code to download all songs edited on PC to phone.',
-        syncPinLabel: 'OR TYPE PIN IN APP:',
-        syncConnecting: 'Connecting to sync server...',
-        syncWaitingPhone: 'Waiting for phone connection...',
-        syncSendingPc: 'Sending PC repertoire to QR Code session...',
-        syncDataReceived: 'Data received! Updating Web Editor...',
-        syncDataSent: 'Data sent successfully to phone!',
-        btnRefreshQr: 'Generate New QR Code',
-        btnClose: 'Close',
-        btnCancel: 'Cancel',
-        importModalTitle: 'Import Backup to PC',
-        dropZoneText: '<strong>Click to select</strong> or drag a <code>.json</code> file exported from the app',
-        dropZoneOr: 'OR PASTE JSON CODE BELOW',
-        placeholderImport: 'Paste Song, Setlist or Full Backup JSON code here...',
-        btnImportNow: 'Import Now',
-        exportModalTitle: 'Export JSON',
-        exportModalDesc: 'Download the <code>.json</code> file or copy the code to import into the mobile app:',
-        btnCopyCode: 'Copy Code',
-        btnDownloadJson: 'Download .JSON File',
-        btnExportQr: 'Generate QR Code for Phone',
-        pickSongModalTitle: 'Add Songs to Setlist',
-        pickSongSearchPlaceholder: 'Filter by name, band or style...',
-        pickSelectedCount: '{count} SELECTED',
-        pickAvailableCount: '({count} available)',
-        btnSelectAll: 'Select All',
-        btnDeselect: 'Deselect',
-        btnAddSelected: 'Add Selected ({count})',
-        noSongsFoundPicker: 'No songs found in repertoire.',
-        inSetlistBadge: 'In setlist ({count}x)',
-        toastNewSongCreated: 'New song created!',
-        toastSongDuplicated: 'Song "{name}" duplicated!',
-        toastSongDeleted: 'Song "{name}" deleted.',
-        toastNewSetlistCreated: 'New setlist created!',
-        toastSetlistDuplicated: 'Setlist "{name}" duplicated!',
-        toastSetlistDeleted: 'Setlist "{name}" deleted.',
-        toastSpecialAdded: '{type} added to setlist!',
-        toastTabTemplate: 'Tablature grid inserted!',
-        toastDocDownloaded: 'Word document "{name}" downloaded!',
-        toastBackupDownloaded: 'Full backup downloaded!',
-        toastImportSuccess: 'Imported successfully! {songs} songs, {setlists} setlists.',
-        confirmDeleteSong: 'Do you really want to delete the song "{name}"?',
-        confirmDeleteSetlist: 'Do you really want to delete the setlist "{name}"?',
-        docTotalSongsLabel: 'Songs',
-        docTotalSongSingle: 'Song',
-      },
-      pt: {
-        pageTitle: 'Setlist Band Manager - Web Editor Pro',
-        brandBadge: 'WEB EDITOR',
-        btnSyncHeader: 'Sincronizar Celular',
-        btnSyncHeaderTitle: 'Sincronizar em Tempo Real com o Celular via QR Code',
-        btnImportBackup: 'Importar Backup',
-        btnImportBackupTitle: 'Importar arquivo de backup .json ou código',
-        btnExportBackup: 'Exportar Backup',
-        btnExportBackupTitle: 'Exportar backup completo de todas as músicas e setlists (.json)',
-        toggleTheme: 'Alternar Tema Claro / Escuro',
-        backToHome: 'Voltar à Página Inicial',
-        tabSongs: 'MÚSICAS',
-        tabSetlists: 'SETLISTS',
-        searchSongsPlaceholder: 'Buscar por título, artista ou tag...',
-        searchSetlistsPlaceholder: 'Buscar setlist por nome, banda ou local...',
-        songsCountLabel: '{count} MÚSICAS',
-        setlistsCountLabel: '{count} SETLISTS',
-        btnNewSong: 'Nova Música',
-        btnNewSetlist: 'Novo Setlist',
-        emptySongTitle: 'Nenhuma música selecionada',
-        emptySongDesc: 'Selecione uma música da lista ao lado ou crie uma nova para começar a editar letras, cifras e tablaturas no seu PC.',
-        btnCreateFirstSong: 'Criar Primeira Música',
-        emptySetlistTitle: 'Nenhum setlist selecionado',
-        emptySetlistDesc: 'Crie ou selecione um setlist para montar o roteiro das músicas do seu show ou ensaio, com suporte a arrastar e soltar (Drag & Drop), pausas e exportação para Word.',
-        btnCreateFirstSetlist: 'Criar Primeiro Setlist',
-        songNameLabel: 'Nome da Música *',
-        songNamePlaceholder: 'Ex: Yellow',
-        originalBandLabel: 'Banda / Artista Original *',
-        originalBandPlaceholder: 'Ex: Coldplay',
-        durationLabel: 'Duração (mm:ss)',
-        durationPlaceholder: 'Ex: 04:30',
-        tagsLabel: 'Tags / Estilos (separados por vírgula)',
-        tagsPlaceholder: 'Ex: pop rock, 2000s, acustico',
-        defaultViewLabel: 'Aba Padrão no Modo Palco',
-        viewChords: '🎼 Cifra',
-        viewLyrics: '📝 Letra',
-        viewTabs: '🎸 Tablatura',
-        scrollSpeedLabel: 'Velocidade Autoscroll',
-        speedNone: 'Pausado / Sem Rolagem',
-        speed05: '0.5x (Lenta)',
-        speed10: '1.0x (Normal)',
-        speed15: '1.5x (Rápida)',
-        speed20: '2.0x (Muito Rápida)',
-        tabChords: 'Cifra',
-        tabLyrics: 'Letra',
-        tabTabs: 'Tablatura',
-        tabLinks: 'Links Úteis',
-        transposeKey: 'Transpor Tom:',
-        btnMinusKey: '♭ -1 Semitom',
-        btnPlusKey: '♯ +1 Semitom',
-        insertTabGrid: 'Grade de Cordas',
-        btnStageMode: 'Modo Palco',
-        placeholderChords: 'Digite ou cole a Cifra aqui (ex: Intro, Verso, Refrão com acordes)...',
-        placeholderLyrics: 'Digite ou cole a Letra da música aqui...',
-        placeholderTabs: 'Digite ou cole a Tablatura de guitarra/violão aqui...',
-        linksHeading: 'LINKS DE VÍDEO, CIFRA OU ÁUDIO:',
-        btnAddLink: 'Adicionar Link',
-        noLinks: 'Nenhum link cadastrado para esta música.',
-        btnDuplicate: 'Duplicar',
-        btnDelete: 'Excluir',
-        setlistNameLabel: 'Nome do Setlist / Show *',
-        setlistNamePlaceholder: 'Ex: Show no Bar do Rock',
-        responsibleBandLabel: 'Banda / Projeto *',
-        responsibleBandPlaceholder: 'Ex: Minha Banda',
-        typeLabel: 'Tipo de Evento',
-        typeShow: '🔥 Show',
-        typeRehearsal: '🎙️ Ensaio',
-        typeRepertoire: '📚 Repertório',
-        dateLabel: 'Data',
-        datePlaceholder: 'Ex: 2026-10-25 ou 25/10/2026',
-        localLabel: 'Local / Evento',
-        localPlaceholder: 'Ex: The Rock Pub',
-        cacheLabel: 'Cachê / Valor',
-        cachePlaceholder: 'Ex: R$ 1.500',
-        notesLabel: 'Observações Gerais',
-        notesPlaceholder: 'Ex: Levar cabos extras, passar som às 19h',
-        sumSongs: 'Músicas:',
-        sumDuration: 'Duração Estimada:',
-        btnExportDoc: 'Exportar Word (.doc)',
-        btnExportSetlist: 'Exportar Setlist',
-        setlistRoteiroTitle: 'ROTEIRO DO SHOW / ENSAIO',
-        setlistDragHelp: '(Arraste pelas alças ☰ para reordenar)',
-        btnAddFromRepertoire: 'Adicionar do Repertório',
-        btnAddPause: 'Pausa / Intervalo',
-        btnAddNote: 'Anotação / Fala',
-        noSongsInSetlist: 'Nenhuma música adicionada a este setlist ainda. Clique em "Adicionar do Repertório" acima!',
-        pauseTitle: 'PAUSA / INTERVALO',
-        noteTitle: 'ANOTAÇÃO / FALA',
-        customNotesPlaceholder: 'Observações, afinação, avisos para a banda...',
-        pauseCustomNotesPlaceholder: 'Ex: Intervalo 15 min para troca de instrumentos',
-        noteCustomNotesPlaceholder: 'Ex: Agradecer ao público e patrocinadores...',
-        songCustomNotesPlaceholder: 'Obs para este show (ex: Tom G, guitarra com drive, entrar direto)...',
-        btnMoveUp: 'Subir (1 posição)',
-        btnMoveDown: 'Descer (1 posição)',
-        btnRemoveFromSetlist: 'Remover do Roteiro',
-        syncModalTitle: 'Sincronização Direta com o Celular',
-        syncTabReceive: 'PUXAR DO CELULAR',
-        syncTabSend: 'ENVIAR PARA O CELULAR',
-        syncDescReceive: 'Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para enviar todas as músicas do celular direto para o seu PC.',
-        syncDescSend: 'Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para baixar todas as músicas editadas no PC para o celular.',
-        syncPinLabel: 'OU DIGITE O CÓDIGO PIN NO APP:',
-        syncConnecting: 'Conectando ao servidor de sincronização...',
-        syncWaitingPhone: 'Aguardando leitura do celular...',
-        syncSendingPc: 'Enviando repertório do PC para o QR Code...',
-        syncDataReceived: 'Dados recebidos! Atualizando Web Editor...',
-        syncDataSent: 'Dados transmitidos com sucesso para o celular!',
-        btnRefreshQr: 'Gerar Novo QR Code',
-        btnClose: 'Fechar',
-        btnCancel: 'Cancelar',
-        importModalTitle: 'Importar Backup para o PC',
-        dropZoneText: '<strong>Clique para selecionar</strong> ou arraste um arquivo <code>.json</code> exportado pelo app',
-        dropZoneOr: 'OU COLE O CÓDIGO JSON ABAIXO',
-        placeholderImport: 'Cole o código JSON de Música, Setlist ou Backup Total aqui...',
-        btnImportNow: 'Importar Agora',
-        exportModalTitle: 'Exportar JSON',
-        exportModalDesc: 'Você pode baixar o arquivo <code>.json</code> ou copiar o código para importar no aplicativo do celular:',
-        btnCopyCode: 'Copiar Código',
-        btnDownloadJson: 'Baixar Arquivo .JSON',
-        btnExportQr: 'Gerar QR Code para Celular',
-        pickSongModalTitle: 'Adicionar Músicas ao Setlist',
-        pickSongSearchPlaceholder: 'Filtrar por nome, banda ou estilo...',
-        pickSelectedCount: '{count} SELECIONADAS',
-        pickAvailableCount: '({count} disponíveis)',
-        btnSelectAll: 'Marcar Todas',
-        btnDeselect: 'Desmarcar',
-        btnAddSelected: 'Adicionar Selecionadas ({count})',
-        noSongsFoundPicker: 'Nenhuma música encontrada no repertório.',
-        inSetlistBadge: 'No setlist ({count}x)',
-        toastNewSongCreated: 'Nova música criada!',
-        toastSongDuplicated: 'Música "{name}" duplicada!',
-        toastSongDeleted: 'Música "{name}" removida.',
-        toastNewSetlistCreated: 'Novo setlist criado!',
-        toastSetlistDuplicated: 'Setlist "{name}" duplicado!',
-        toastSetlistDeleted: 'Setlist "{name}" removido.',
-        toastSpecialAdded: '{type} inserido no roteiro!',
-        toastTabTemplate: 'Grade de tablatura inserida!',
-        toastDocDownloaded: 'Documento Word "{name}" baixado!',
-        toastBackupDownloaded: 'Backup completo baixado!',
-        toastImportSuccess: 'Importação concluída! {songs} músicas, {setlists} setlists.',
-        confirmDeleteSong: 'Deseja realmente excluir a música "{name}"?',
-        confirmDeleteSetlist: 'Deseja realmente excluir o setlist "{name}"?',
-        docTotalSongsLabel: 'Músicas',
-        docTotalSongSingle: 'Música',
-      },
-      es: {
-        pageTitle: 'Setlist Band Manager - Web Editor Pro',
-        brandBadge: 'WEB EDITOR',
-        btnSyncHeader: 'Sincronizar Celular',
-        btnSyncHeaderTitle: 'Sincronizar en Tiempo Real con el Celular vía QR',
-        btnImportBackup: 'Importar Respaldo',
-        btnImportBackupTitle: 'Importar archivo de respaldo .json o código',
-        btnExportBackup: 'Exportar Respaldo',
-        btnExportBackupTitle: 'Exportar respaldo completo de canciones y setlists (.json)',
-        toggleTheme: 'Cambiar Tema Claro / Oscuro',
-        backToHome: 'Volver a la Página Principal',
-        tabSongs: 'CANCIONES',
-        tabSetlists: 'SETLISTS',
-        searchSongsPlaceholder: 'Buscar por título, artista o etiqueta...',
-        searchSetlistsPlaceholder: 'Buscar setlist por nombre, banda o lugar...',
-        songsCountLabel: '{count} CANCIONES',
-        setlistsCountLabel: '{count} SETLISTS',
-        btnNewSong: 'Nueva Canción',
-        btnNewSetlist: 'Nuevo Setlist',
-        emptySongTitle: 'Ninguna canción seleccionada',
-        emptySongDesc: 'Selecciona una canción de la barra lateral o crea una nueva para editar acordes, letras y tablaturas en tu PC.',
-        btnCreateFirstSong: 'Crear Primera Canción',
-        emptySetlistTitle: 'Ningún setlist seleccionado',
-        emptySetlistDesc: 'Crea o selecciona un setlist para organizar el repertorio de tu show o ensayo con Drag & Drop, pausas y exportación a Word.',
-        btnCreateFirstSetlist: 'Crear Primer Setlist',
-        songNameLabel: 'Nombre de la Canción *',
-        songNamePlaceholder: 'Ej: Yellow',
-        originalBandLabel: 'Banda / Artista Original *',
-        originalBandPlaceholder: 'Ej: Coldplay',
-        durationLabel: 'Duración (mm:ss)',
-        durationPlaceholder: 'Ej: 04:30',
-        tagsLabel: 'Etiquetas / Estilos (separados por comas)',
-        tagsPlaceholder: 'Ej: pop rock, 2000s, acústico',
-        defaultViewLabel: 'Vista Predeterminada en Escenario',
-        viewChords: '🎼 Acordes',
-        viewLyrics: '📝 Letra',
-        viewTabs: '🎸 Tablatura',
-        scrollSpeedLabel: 'Velocidad de Autoscroll',
-        speedNone: 'Pausado / Sin Desplazamiento',
-        speed05: '0.5x (Lenta)',
-        speed10: '1.0x (Normal)',
-        speed15: '1.5x (Rápida)',
-        speed20: '2.0x (Muy Rápida)',
-        tabChords: 'Acordes',
-        tabLyrics: 'Letra',
-        tabTabs: 'Tablatura',
-        tabLinks: 'Enlaces Útiles',
-        transposeKey: 'Transponer Tono:',
-        btnMinusKey: '♭ -1 Tono',
-        btnPlusKey: '♯ +1 Tono',
-        insertTabGrid: 'Insertar Tablatura',
-        btnStageMode: 'Modo Escenario',
-        placeholderChords: 'Escribe o pega los acordes aquí...',
-        placeholderLyrics: 'Escribe o pega la letra de la canción aquí...',
-        placeholderTabs: 'Escribe o pega la tablatura aquí...',
-        linksHeading: 'ENLACES DE VIDEO, AUDIO Y CIFRAS:',
-        btnAddLink: 'Agregar Enlace',
-        noLinks: 'No hay enlaces registrados para esta canción.',
-        btnDuplicate: 'Duplicar',
-        btnDelete: 'Eliminar',
-        setlistNameLabel: 'Nombre del Setlist / Show *',
-        setlistNamePlaceholder: 'Ej: Show en Bar Rock',
-        responsibleBandLabel: 'Banda / Proyecto *',
-        responsibleBandPlaceholder: 'Ej: Mi Banda',
-        typeLabel: 'Tipo de Evento',
-        typeShow: '🔥 Show',
-        typeRehearsal: '🎙️ Ensayo',
-        typeRepertoire: '📚 Repertorio',
-        dateLabel: 'Fecha',
-        datePlaceholder: 'Ej: 2026-10-25 o 25/10/2026',
-        localLabel: 'Lugar / Evento',
-        localPlaceholder: 'Ej: The Rock Pub',
-        cacheLabel: 'Caché / Honorarios',
-        cachePlaceholder: 'Ej: $ 1.500',
-        notesLabel: 'Notas y Avisos Generales',
-        notesPlaceholder: 'Ej: Traer cables extra, prueba de sonido a las 19h',
-        sumSongs: 'Canciones:',
-        sumDuration: 'Duración Estimada:',
-        btnExportDoc: 'Exportar Word (.doc)',
-        btnExportSetlist: 'Exportar Setlist',
-        setlistRoteiroTitle: 'REPERTORIO DEL SHOW / ENSAYO',
-        setlistDragHelp: '(Arrastra por ☰ para reordenar)',
-        btnAddFromRepertoire: 'Agregar del Repertorio',
-        btnAddPause: 'Pausa / Descanso',
-        btnAddNote: 'Aviso / Nota',
-        noSongsInSetlist: 'Aún no hay canciones en este setlist. ¡Haz clic en "Agregar del Repertorio" arriba!',
-        pauseTitle: 'PAUSA / DESCANSO',
-        noteTitle: 'AVISO / NOTA',
-        customNotesPlaceholder: 'Notas de ensayo, tono, afinación...',
-        pauseCustomNotesPlaceholder: 'Ej: Descanso 15 min para cambio de instrumentos',
-        noteCustomNotesPlaceholder: 'Ej: Agradecer al público y patrocinadores...',
-        songCustomNotesPlaceholder: 'Obs para este show (ej: Tono G, guitarra con drive, entrar directo)...',
-        btnMoveUp: 'Subir (1 posición)',
-        btnMoveDown: 'Bajar (1 posición)',
-        btnRemoveFromSetlist: 'Eliminar del Repertorio',
-        syncModalTitle: 'Sincronización Directa con Celular',
-        syncTabReceive: 'EXTRAER DEL CELULAR',
-        syncTabSend: 'ENVIAR AL CELULAR',
-        syncDescReceive: 'Abre la app en el móvil, ve a <strong>Sincronizar con Web</strong> y apunta la cámara a este código QR para transferir todas las canciones a tu PC.',
-        syncDescSend: 'Abre la app en el móvil, ve a <strong>Sincronizar con Web</strong> y apunta la cámara a este código QR para descargar las canciones editadas en tu PC al móvil.',
-        syncPinLabel: 'O ESCRIBE EL CÓDIGO PIN EN LA APP:',
-        syncConnecting: 'Conectando con el servidor de sincronización...',
-        syncWaitingPhone: 'Esperando escaneo del móvil...',
-        syncSendingPc: 'Enviando repertorio del PC a la sesión QR...',
-        syncDataReceived: '¡Datos recibidos! Actualizando Web Editor...',
-        syncDataSent: '¡Datos transmitidos con éxito al móvil!',
-        btnRefreshQr: 'Generar Nuevo Código QR',
-        btnClose: 'Cerrar',
-        btnCancel: 'Cancelar',
-        importModalTitle: 'Importar Respaldo al PC',
-        dropZoneText: '<strong>Haz clic para seleccionar</strong> o arrastra un archivo <code>.json</code> exportado de la app',
-        dropZoneOr: 'O PEGA EL CÓDIGO JSON ABAJO',
-        placeholderImport: 'Pega el código JSON de Canción, Setlist o Respaldo aquí...',
-        btnImportNow: 'Importar Ahora',
-        exportModalTitle: 'Exportar JSON',
-        exportModalDesc: 'Puedes descargar el archivo <code>.json</code> o copiar el código para importarlo en tu móvil:',
-        btnCopyCode: 'Copiar Código',
-        btnDownloadJson: 'Descargar Archivo .JSON',
-        btnExportQr: 'Generar Código QR para Celular',
-        pickSongModalTitle: 'Agregar Canciones al Setlist',
-        pickSongSearchPlaceholder: 'Filtrar por nombre, banda o estilo...',
-        pickSelectedCount: '{count} SELECCIONADAS',
-        pickAvailableCount: '({count} disponibles)',
-        btnSelectAll: 'Seleccionar Todas',
-        btnDeselect: 'Deseleccionar',
-        btnAddSelected: 'Agregar Seleccionadas ({count})',
-        noSongsFoundPicker: 'No se encontraron canciones en el repertorio.',
-        inSetlistBadge: 'En setlist ({count}x)',
-        toastNewSongCreated: '¡Nueva canción creada!',
-        toastSongDuplicated: '¡Canción "{name}" duplicada!',
-        toastSongDeleted: 'Canción "{name}" eliminada.',
-        toastNewSetlistCreated: '¡Nuevo setlist creado!',
-        toastSetlistDuplicated: '¡Setlist "{name}" duplicado!',
-        toastSetlistDeleted: 'Setlist "{name}" eliminado.',
-        toastSpecialAdded: '¡{type} insertado en el repertorio!',
-        toastTabTemplate: '¡Tablatura insertada!',
-        toastDocDownloaded: '¡Documento Word "{name}" descargado!',
-        toastBackupDownloaded: '¡Respaldo completo descargado!',
-        toastImportSuccess: '¡Importación completada! {songs} canciones, {setlists} setlists.',
-        confirmDeleteSong: '¿Realmente deseas eliminar la canción "{name}"?',
-        confirmDeleteSetlist: '¿Realmente deseas eliminar el setlist "{name}"?',
-        docTotalSongsLabel: 'Canciones',
-        docTotalSongSingle: 'Canción',
-      }
-    };
+  "en": {
+    "pageTitle": "Setlist Band Manager - Web Editor Pro",
+    "brandBadge": "WEB EDITOR",
+    "btnSyncHeader": "Sync Mobile",
+    "btnSyncHeaderTitle": "Sync in Real-time with Phone via QR Code",
+    "btnImportBackup": "Import Backup",
+    "btnImportBackupTitle": "Import backup .json file or code",
+    "btnExportBackup": "Export Backup",
+    "btnExportBackupTitle": "Export full backup of all songs and setlists (.json)",
+    "toggleTheme": "Toggle Light / Dark Theme",
+    "backToHome": "Back to Home Page",
+    "tabSongs": "SONGS",
+    "tabSetlists": "SETLISTS",
+    "searchSongsPlaceholder": "Search by title, artist, or tag...",
+    "searchSetlistsPlaceholder": "Search setlist by name, band, or venue...",
+    "songsCountLabel": "{count} SONGS",
+    "songsCountLabelSingle": "1 SONG",
+    "setlistsCountLabel": "{count} SETLISTS",
+    "setlistsCountLabelSingle": "1 SETLIST",
+    "btnNewSong": "New Song",
+    "btnNewSetlist": "New Setlist",
+    "emptySongTitle": "No song selected",
+    "emptySongDesc": "Select a song from the sidebar or create a new one to edit chords, lyrics, and tabs on your PC.",
+    "btnCreateFirstSong": "Create First Song",
+    "emptySetlistTitle": "No setlist selected",
+    "emptySetlistDesc": "Create or select a setlist to organize your concert or rehearsal repertoire with Drag & Drop, pauses, and Word export.",
+    "btnCreateFirstSetlist": "Create First Setlist",
+    "songNameLabel": "Song Name *",
+    "songNamePlaceholder": "e.g. Yellow",
+    "originalBandLabel": "Original Artist / Band *",
+    "originalBandPlaceholder": "e.g. Coldplay",
+    "durationLabel": "Duration (mm:ss)",
+    "durationPlaceholder": "e.g. 04:30",
+    "tagsLabel": "Tags / Styles (comma separated)",
+    "tagsPlaceholder": "e.g. pop rock, 2000s, acoustic",
+    "defaultViewLabel": "Default Stage View",
+    "viewChords": "🎼 Chords",
+    "viewLyrics": "📝 Lyrics",
+    "viewTabs": "🎸 Tabs",
+    "scrollSpeedLabel": "Autoscroll Speed",
+    "speedNone": "Paused / Off",
+    "speed05": "0.5x (Slow)",
+    "speed10": "1.0x (Normal)",
+    "speed15": "1.5x (Fast)",
+    "speed20": "2.0x (Very Fast)",
+    "tabChords": "Chords",
+    "tabLyrics": "Lyrics",
+    "tabTabs": "Tabs",
+    "tabLinks": "Support Links",
+    "transposeKey": "Transpose Key:",
+    "btnMinusKey": "♭ -1 Key",
+    "btnPlusKey": "♯ +1 Key",
+    "insertTabGrid": "String Grid",
+    "btnStageMode": "Stage Mode",
+    "placeholderChords": "Type or paste Chords here (e.g. Intro, Verse, Chorus with chords)...",
+    "placeholderLyrics": "Type or paste song Lyrics here...",
+    "placeholderTabs": "Type or paste guitar/bass Tablature here...",
+    "linksHeading": "VIDEO, AUDIO & CHORDS LINKS:",
+    "btnAddLink": "Add Link",
+    "noLinks": "No links registered for this song.",
+    "btnDuplicate": "Duplicate",
+    "btnDelete": "Delete",
+    "setlistNameLabel": "Setlist / Show Name *",
+    "setlistNamePlaceholder": "e.g. Rock Bar Show",
+    "responsibleBandLabel": "Band / Project *",
+    "responsibleBandPlaceholder": "e.g. My Band",
+    "typeLabel": "Event Type",
+    "typeShow": "🔥 Show",
+    "typeRehearsal": "🎙️ Rehearsal",
+    "typeRepertoire": "📚 Repertoire",
+    "dateLabel": "Date",
+    "datePlaceholder": "e.g. 2026-10-25 or 25/10/2026",
+    "localLabel": "Venue / Location",
+    "localPlaceholder": "e.g. The Rock Pub",
+    "cacheLabel": "Cache / Fee",
+    "cachePlaceholder": "e.g. $ 1,500",
+    "notesLabel": "General Notes & Reminders",
+    "notesPlaceholder": "e.g. Bring extra cables, sound check at 7pm",
+    "sumSongs": "Songs:",
+    "sumDuration": "Estimated Duration:",
+    "btnExportDoc": "Export Word (.doc)",
+    "btnExportSetlist": "Export Setlist",
+    "setlistRoteiroTitle": "CONCERT / REHEARSAL REPERTOIRE",
+    "setlistDragHelp": "(Drag handles ☰ to reorder)",
+    "btnAddFromRepertoire": "Add from Repertoire",
+    "btnAddPause": "Pause / Break",
+    "btnAddNote": "Announcement / Note",
+    "noSongsInSetlist": "No songs in this setlist yet. Click \"Add from Repertoire\" above!",
+    "pauseTitle": "PAUSE / BREAK",
+    "noteTitle": "ANNOUNCEMENT / NOTE",
+    "customNotesPlaceholder": "Show notes, key adjustments, vocal cues...",
+    "pauseCustomNotesPlaceholder": "e.g. 15 min break for instrument swap",
+    "noteCustomNotesPlaceholder": "e.g. Thank audience and sponsors...",
+    "songCustomNotesPlaceholder": "Notes for this gig (e.g. Key G, drive guitar, direct entry)...",
+    "btnMoveUp": "Move Up (1 position)",
+    "btnMoveDown": "Move Down (1 position)",
+    "btnRemoveFromSetlist": "Remove from Setlist",
+    "syncModalTitle": "Direct Real-Time Phone Sync",
+    "syncTabReceive": "PULL FROM PHONE",
+    "syncTabSend": "SEND TO PHONE",
+    "syncDescReceive": "Open the app on your phone, go to <strong>Sync with Web</strong> and point the camera at this QR Code to transfer all songs from phone to PC.",
+    "syncDescSend": "Open the app on your phone, go to <strong>Sync with Web</strong> and point the camera at this QR Code to download all songs edited on PC to phone.",
+    "syncPinLabel": "OR TYPE PIN IN APP:",
+    "syncConnecting": "Connecting to sync server...",
+    "syncWaitingLocal": "Waiting for local pairing...",
+    "syncWaitingPhone": "Waiting for phone connection...",
+    "syncSendingPc": "Sending PC repertoire to QR Code session...",
+    "syncDataReceived": "Data received! Updating Web Editor...",
+    "syncDataSent": "Data sent successfully to phone!",
+    "syncReadyScan": "Data ready! Point app camera at QR Code.",
+    "syncWaitingCamera": "Waiting for phone camera scan...",
+    "syncConnected": "<strong>Connected!</strong> Data received from phone!",
+    "syncPreparingQr": "Preparing QR Code for selected item...",
+    "syncCompletedToast": "Sync completed! {songs} songs and {setlists} setlists loaded from phone.",
+    "syncPinCopied": "PIN code {pin} copied!",
+    "btnRefreshQr": "Generate New QR Code",
+    "btnClose": "Close",
+    "btnCancel": "Cancel",
+    "importModalTitle": "Import Backup to PC",
+    "dropZoneText": "<strong>Click to select</strong> or drag a <code>.json</code> file exported from the app",
+    "dropZoneOr": "OR PASTE JSON CODE BELOW",
+    "placeholderImport": "Paste Song, Setlist or Full Backup JSON code here...",
+    "btnImportNow": "Import Now",
+    "exportModalTitle": "Export JSON",
+    "exportModalDesc": "Download the <code>.json</code> file or copy the code to import into the mobile app:",
+    "exportSongTitle": "Export Song: {name}",
+    "exportSongDesc": "JSON code ready to import into Setlist Band Manager (Tab <em>Songs ➔ Import</em>):",
+    "exportSetlistTitle": "Export Setlist: {name}",
+    "exportSetlistDesc": "JSON code ready to import into Setlist Band Manager (Home ➔ <em>Import Setlist</em>):",
+    "exportBackupTitle": "Export Full Backup ({songs} Songs, {setlists} Setlists)",
+    "exportBackupDesc": "This file contains <strong>{songs} songs and {setlists} setlists</strong>. In the mobile app, open <em>About ➔ Restore Backup</em> to restore everything:",
+    "btnCopyCode": "Copy Code",
+    "btnDownloadJson": "Download .JSON File",
+    "btnExportQr": "Generate QR Code for Phone",
+    "pickSongModalTitle": "Add Songs to Setlist",
+    "pickSongSearchPlaceholder": "Filter by name, band or style...",
+    "pickSelectedCount": "{count} SELECTED",
+    "pickAvailableCount": "({count} available)",
+    "btnSelectAll": "Select All",
+    "btnDeselect": "Deselect",
+    "btnAddSelected": "Add Selected ({count})",
+    "noSongsFoundPicker": "No songs found in repertoire.",
+    "inSetlistBadge": "In setlist ({count}x)",
+    "defaultNewSong": "New Song",
+    "defaultUnknownArtist": "Unknown Artist",
+    "defaultNewSetlist": "New Show / Setlist",
+    "defaultUntitled": "Untitled",
+    "defaultUnknownBand": "Unknown Band",
+    "itemPause": "Pause",
+    "itemNote": "Note",
+    "toastNewSongCreated": "New song created!",
+    "toastSongDuplicated": "Song \"{name}\" duplicated!",
+    "toastSongDeleted": "Song \"{name}\" deleted.",
+    "toastNewSetlistCreated": "New setlist created!",
+    "toastSetlistDuplicated": "Setlist \"{name}\" duplicated!",
+    "toastSetlistDeleted": "Setlist \"{name}\" deleted.",
+    "toastSpecialAdded": "{type} inserted into setlist!",
+    "toastTabTemplate": "Tablature grid inserted!",
+    "toastKeyTransposed": "Key transposed by {semitones} semitone(s)!",
+    "toastItemReordered": "\"{name}\" repositioned!",
+    "toastItemRemoved": "\"{name}\" removed from setlist.",
+    "toastSongsAddedToSetlist": "{count} song(s) added to setlist!",
+    "toastNoSongToExport": "No song selected to export.",
+    "toastNoSetlistToExport": "No setlist selected to export.",
+    "toastNoDataToBackup": "No data to generate backup.",
+    "toastDocDownloaded": "Word document \"{name}\" downloaded!",
+    "toastBackupDownloaded": "Full backup downloaded!",
+    "toastJsonCopied": "JSON code copied to clipboard!",
+    "toastQrGenerated": "QR Code generated! Point mobile camera to Sync -> Scan QR.",
+    "toastSyncError": "Error connecting to sync server.",
+    "toastFileDownloaded": "File \"{name}\" downloaded successfully!",
+    "toastFileLoaded": "File \"{name}\" loaded! Click Import Now.",
+    "toastPleasePasteJson": "Paste JSON code or select a file.",
+    "toastInvalidJson": "The provided code is not valid JSON.",
+    "toastSongImported": "Song \"{name}\" imported successfully!",
+    "toastSetlistImported": "Setlist \"{name}\" imported!",
+    "toastBackupRestored": "Backup restored! {songs} songs and {setlists} setlists.",
+    "toastUnrecognizedJson": "Unrecognized JSON format.",
+    "confirmDeleteSong": "Do you really want to delete the song \"{name}\"?",
+    "confirmDeleteSetlist": "Do you really want to delete the setlist \"{name}\"?",
+    "confirmBackupMergeOrReplace": "The backup contains {songs} songs and {setlists} setlists.\n\nClick OK to REPLACE current data, or Cancel to MERGE with existing data.",
+    "docTotalSongsLabel": "Songs",
+    "docTotalSongSingle": "Song"
+  },
+  "pt": {
+    "pageTitle": "Setlist Band Manager - Web Editor Pro",
+    "brandBadge": "WEB EDITOR",
+    "btnSyncHeader": "Sincronizar Celular",
+    "btnSyncHeaderTitle": "Sincronize em Tempo Real com o Celular via QR Code",
+    "btnImportBackup": "Importar Backup",
+    "btnImportBackupTitle": "Importar arquivo .json ou código de backup",
+    "btnExportBackup": "Exportar Backup",
+    "btnExportBackupTitle": "Exportar backup completo de todas as músicas e setlists (.json)",
+    "toggleTheme": "Alternar Tema Claro / Escuro",
+    "backToHome": "Voltar para a Página Inicial",
+    "tabSongs": "MÚSICAS",
+    "tabSetlists": "SETLISTS",
+    "searchSongsPlaceholder": "Buscar por título, artista ou tag...",
+    "searchSetlistsPlaceholder": "Buscar setlist por nome, banda ou local...",
+    "songsCountLabel": "{count} MÚSICAS",
+    "songsCountLabelSingle": "1 MÚSICA",
+    "setlistsCountLabel": "{count} SETLISTS",
+    "setlistsCountLabelSingle": "1 SETLIST",
+    "btnNewSong": "Nova Música",
+    "btnNewSetlist": "Novo Setlist",
+    "emptySongTitle": "Nenhuma música selecionada",
+    "emptySongDesc": "Selecione uma música na barra lateral ou crie uma nova para editar cifras, letras e tablaturas no seu PC.",
+    "btnCreateFirstSong": "Criar Primeira Música",
+    "emptySetlistTitle": "Nenhum setlist selecionado",
+    "emptySetlistDesc": "Crie ou selecione um setlist para organizar o repertório do seu show ou ensaio com Drag & Drop, pausas e exportação para Word.",
+    "btnCreateFirstSetlist": "Criar Primeiro Setlist",
+    "songNameLabel": "Nome da Música *",
+    "songNamePlaceholder": "Ex: Yellow",
+    "originalBandLabel": "Artista / Banda Original *",
+    "originalBandPlaceholder": "Ex: Coldplay",
+    "durationLabel": "Duração (mm:ss)",
+    "durationPlaceholder": "Ex: 04:30",
+    "tagsLabel": "Tags / Estilos (separados por vírgula)",
+    "tagsPlaceholder": "Ex: pop rock, anos 2000, acústico",
+    "defaultViewLabel": "Aba Padrão no Modo Palco",
+    "viewChords": "🎼 Cifra",
+    "viewLyrics": "📝 Letra",
+    "viewTabs": "🎸 Tablatura",
+    "scrollSpeedLabel": "Velocidade de Rolagem Automática",
+    "speedNone": "Pausado / Desativado",
+    "speed05": "0.5x (Lento)",
+    "speed10": "1.0x (Normal)",
+    "speed15": "1.5x (Rápido)",
+    "speed20": "2.0x (Muito Rápido)",
+    "tabChords": "Cifras",
+    "tabLyrics": "Letra",
+    "tabTabs": "Tablaturas",
+    "tabLinks": "Links de Apoio",
+    "transposeKey": "Mudar Tom:",
+    "btnMinusKey": "♭ -1 Semitom",
+    "btnPlusKey": "♯ +1 Semitom",
+    "insertTabGrid": "Grade de Cordas",
+    "btnStageMode": "Modo Palco",
+    "placeholderChords": "Digite ou cole a Cifra aqui (ex: Intro, Verso, Refrão com os acordes posicionados)...",
+    "placeholderLyrics": "Digite ou cole a Letra da música aqui...",
+    "placeholderTabs": "Digite ou cole a Tablatura de violão, guitarra ou baixo aqui...",
+    "linksHeading": "LINKS DE VÍDEO, ÁUDIO E CIFRA:",
+    "btnAddLink": "Adicionar Link",
+    "noLinks": "Nenhum link cadastrado para esta música.",
+    "btnDuplicate": "Duplicar",
+    "btnDelete": "Excluir",
+    "setlistNameLabel": "Nome do Setlist / Show *",
+    "setlistNamePlaceholder": "Ex: Show Rock Bar",
+    "responsibleBandLabel": "Banda / Projeto *",
+    "responsibleBandPlaceholder": "Ex: Minha Banda",
+    "typeLabel": "Tipo de Evento",
+    "typeShow": "🔥 Show",
+    "typeRehearsal": "🎙️ Ensaio",
+    "typeRepertoire": "📚 Repertório",
+    "dateLabel": "Data",
+    "datePlaceholder": "Ex: 2026-10-25 ou 25/10/2026",
+    "localLabel": "Local / Endereço",
+    "localPlaceholder": "Ex: The Rock Pub",
+    "cacheLabel": "Cachê / Valor",
+    "cachePlaceholder": "Ex: R$ 1.500",
+    "notesLabel": "Anotações Gerais & Lembretes",
+    "notesPlaceholder": "Ex: Levar cabos extras, passagem de som às 19h",
+    "sumSongs": "Músicas:",
+    "sumDuration": "Duração Estimada:",
+    "btnExportDoc": "Exportar Word (.doc)",
+    "btnExportSetlist": "Exportar Setlist",
+    "setlistRoteiroTitle": "ROTEIRO DO SHOW / ENSAIO",
+    "setlistDragHelp": "(Arraste pelo ícone ☰ para reordenar)",
+    "btnAddFromRepertoire": "Adicionar do Repertório",
+    "btnAddPause": "Pausa / Intervalo",
+    "btnAddNote": "Anotação / Fala",
+    "noSongsInSetlist": "Nenhuma música neste setlist ainda. Clique em \"Adicionar do Repertório\" acima!",
+    "pauseTitle": "PAUSA / INTERVALO",
+    "noteTitle": "ANOTAÇÃO / FALA",
+    "customNotesPlaceholder": "Notas para o show, afinação, avisos vocais...",
+    "pauseCustomNotesPlaceholder": "Ex: 15 min de intervalo para troca de instrumentos",
+    "noteCustomNotesPlaceholder": "Ex: Agradecer ao público e patrocinadores...",
+    "songCustomNotesPlaceholder": "Notas para este show (ex: Tom G, guitarra drive, entrada direta)...",
+    "btnMoveUp": "Subir (1 posição)",
+    "btnMoveDown": "Descer (1 posição)",
+    "btnRemoveFromSetlist": "Remover do Setlist",
+    "syncModalTitle": "Sincronização Direta com o Celular",
+    "syncTabReceive": "PUXAR DO CELULAR",
+    "syncTabSend": "ENVIAR AO CELULAR",
+    "syncDescReceive": "Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para transferir todas as músicas do celular para o PC.",
+    "syncDescSend": "Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para baixar no celular tudo o que você editou no PC.",
+    "syncPinLabel": "OU DIGITE O CÓDIGO PIN NO APP:",
+    "syncConnecting": "Conectando ao servidor de sincronização...",
+    "syncWaitingLocal": "Aguardando pareamento local...",
+    "syncWaitingPhone": "Aguardando conexão do celular...",
+    "syncSendingPc": "Enviando repertório do PC para o QR Code...",
+    "syncDataReceived": "Dados recebidos! Atualizando Web Editor...",
+    "syncDataSent": "Dados enviados com sucesso para o celular!",
+    "syncReadyScan": "Dados prontos! Aponte a câmera do app para o QR Code.",
+    "syncWaitingCamera": "Aguardando leitura da câmera do celular...",
+    "syncConnected": "<strong>Conexão Concluída!</strong> Dados recebidos do celular!",
+    "syncPreparingQr": "Preparando QR Code do item selecionado...",
+    "syncCompletedToast": "Sincronização concluída! {songs} músicas e {setlists} setlists carregados do celular.",
+    "syncPinCopied": "Código PIN {pin} copiado!",
+    "btnRefreshQr": "Gerar Novo QR Code",
+    "btnClose": "Fechar",
+    "btnCancel": "Cancelar",
+    "importModalTitle": "Importar Backup para o PC",
+    "dropZoneText": "<strong>Clique para selecionar</strong> ou arraste um arquivo <code>.json</code> exportado do app",
+    "dropZoneOr": "OU COLE O CÓDIGO JSON ABAIXO",
+    "placeholderImport": "Cole o código JSON de Música, Setlist ou Backup Geral aqui...",
+    "btnImportNow": "Importar Agora",
+    "exportModalTitle": "Exportar JSON",
+    "exportModalDesc": "Você pode baixar o arquivo <code>.json</code> ou copiar o código para importar no aplicativo do celular:",
+    "exportSongTitle": "Exportar Música: {name}",
+    "exportSongDesc": "Código JSON pronto para importar no Setlist Band Manager (Aba <em>Músicas ➔ Importar</em>):",
+    "exportSetlistTitle": "Exportar Setlist: {name}",
+    "exportSetlistDesc": "Código JSON pronto para importar no Setlist Band Manager (Tela Inicial ➔ <em>Importar Setlist</em>):",
+    "exportBackupTitle": "Exportar Backup Total ({songs} Músicas, {setlists} Setlists)",
+    "exportBackupDesc": "Este arquivo contém <strong>{songs} músicas e {setlists} setlists</strong>. No app móvel, abra a aba <em>Sobre ➔ Restaurar Backup</em> para restaurar tudo:",
+    "btnCopyCode": "Copiar Código",
+    "btnDownloadJson": "Baixar Arquivo .JSON",
+    "btnExportQr": "Gerar QR Code para o Celular",
+    "pickSongModalTitle": "Adicionar Músicas ao Setlist",
+    "pickSongSearchPlaceholder": "Filtrar por nome, banda ou estilo...",
+    "pickSelectedCount": "{count} SELECCIONADAS",
+    "pickAvailableCount": "({count} disponíveis)",
+    "btnSelectAll": "Selecionar Todas",
+    "btnDeselect": "Desmarcar Todas",
+    "btnAddSelected": "Adicionar Selecionadas ({count})",
+    "noSongsFoundPicker": "Nenhuma música encontrada no repertório.",
+    "inSetlistBadge": "No roteiro ({count}x)",
+    "defaultNewSong": "Nova Música",
+    "defaultUnknownArtist": "Artista Desconhecido",
+    "defaultNewSetlist": "Novo Show / Setlist",
+    "defaultUntitled": "Sem Título",
+    "defaultUnknownBand": "Sem Banda",
+    "itemPause": "Pausa",
+    "itemNote": "Anotação",
+    "toastNewSongCreated": "Nova música criada!",
+    "toastSongDuplicated": "Música \"{name}\" duplicada!",
+    "toastSongDeleted": "Música \"{name}\" excluída.",
+    "toastNewSetlistCreated": "Novo setlist criado!",
+    "toastSetlistDuplicated": "Setlist \"{name}\" duplicado!",
+    "toastSetlistDeleted": "Setlist \"{name}\" excluído.",
+    "toastSpecialAdded": "{type} inserida no roteiro!",
+    "toastTabTemplate": "Grade de tablatura inserida!",
+    "toastKeyTransposed": "Tom transposto em {semitones} semitom(ns)!",
+    "toastItemReordered": "\"{name}\" reposicionada!",
+    "toastItemRemoved": "\"{name}\" removido do roteiro.",
+    "toastSongsAddedToSetlist": "{count} música(s) adicionada(s) ao setlist!",
+    "toastNoSongToExport": "Nenhuma música selecionada para exportar.",
+    "toastNoSetlistToExport": "Nenhum setlist selecionado para exportar.",
+    "toastNoDataToBackup": "Nenhum dado para gerar backup.",
+    "toastDocDownloaded": "Documento Word \"{name}\" baixado!",
+    "toastBackupDownloaded": "Backup completo baixado!",
+    "toastJsonCopied": "Código JSON copiado para a área de transferência!",
+    "toastQrGenerated": "QR Code gerado! Aponte a câmera do celular em Sincronizar -> Ler QR.",
+    "toastSyncError": "Erro ao conectar ao servidor de sincronização.",
+    "toastFileDownloaded": "Arquivo \"{name}\" baixado com sucesso!",
+    "toastFileLoaded": "Arquivo \"{name}\" carregado! Clique em Importar Agora.",
+    "toastPleasePasteJson": "Cole o código JSON ou selecione um arquivo.",
+    "toastInvalidJson": "O código fornecido não é um JSON válido.",
+    "toastSongImported": "Música \"{name}\" importada com sucesso!",
+    "toastSetlistImported": "Setlist \"{name}\" importado!",
+    "toastBackupRestored": "Backup restaurado! {songs} músicas e {setlists} setlists.",
+    "toastUnrecognizedJson": "Formato de JSON não reconhecido.",
+    "confirmDeleteSong": "Deseja realmente excluir a música \"{name}\"?",
+    "confirmDeleteSetlist": "Deseja realmente excluir o setlist \"{name}\"?",
+    "confirmBackupMergeOrReplace": "O backup contém {songs} músicas e {setlists} setlists.\n\nDeseja SUBSTITUIR os dados atuais (OK) ou MESCLAR com os existentes (Cancelar)?",
+    "docTotalSongsLabel": "Músicas",
+    "docTotalSongSingle": "Música"
+  },
+  "es": {
+    "pageTitle": "Setlist Band Manager - Web Editor Pro",
+    "brandBadge": "WEB EDITOR",
+    "btnSyncHeader": "Sincronizar Móvil",
+    "btnSyncHeaderTitle": "Sincroniza en Tiempo Real con el Móvil vía Código QR",
+    "btnImportBackup": "Importar Respaldo",
+    "btnImportBackupTitle": "Importar archivo .json o código de respaldo",
+    "btnExportBackup": "Exportar Respaldo",
+    "btnExportBackupTitle": "Exportar respaldo completo de canciones y setlists (.json)",
+    "toggleTheme": "Alternar Tema Claro / Oscuro",
+    "backToHome": "Volver a la Página Principal",
+    "tabSongs": "CANCIONES",
+    "tabSetlists": "SETLISTS",
+    "searchSongsPlaceholder": "Buscar por título, artista o etiqueta...",
+    "searchSetlistsPlaceholder": "Buscar setlist por nombre, banda o lugar...",
+    "songsCountLabel": "{count} CANCIONES",
+    "songsCountLabelSingle": "1 CANCIÓN",
+    "setlistsCountLabel": "{count} SETLISTS",
+    "setlistsCountLabelSingle": "1 SETLIST",
+    "btnNewSong": "Nueva Canción",
+    "btnNewSetlist": "Nuevo Setlist",
+    "emptySongTitle": "Ninguna canción seleccionada",
+    "emptySongDesc": "Selecciona una canción en la barra lateral o crea una nueva para editar acordes, letras y tablaturas en tu PC.",
+    "btnCreateFirstSong": "Crear Primera Canción",
+    "emptySetlistTitle": "Ningún setlist seleccionado",
+    "emptySetlistDesc": "Crea o selecciona un setlist para organizar tu repertorio de concierto o ensayo con Drag & Drop, pausas y exportación a Word.",
+    "btnCreateFirstSetlist": "Crear Primer Setlist",
+    "songNameLabel": "Nombre de la Canción *",
+    "songNamePlaceholder": "Ej: Yellow",
+    "originalBandLabel": "Artista / Banda Original *",
+    "originalBandPlaceholder": "Ej: Coldplay",
+    "durationLabel": "Duración (mm:ss)",
+    "durationPlaceholder": "Ej: 04:30",
+    "tagsLabel": "Etiquetas / Géneros (separados por coma)",
+    "tagsPlaceholder": "Ej: pop rock, 2000s, acústico",
+    "defaultViewLabel": "Pestaña Predeterminada en Modo Escenario",
+    "viewChords": "🎼 Acordes",
+    "viewLyrics": "📝 Letra",
+    "viewTabs": "🎸 Tablatura",
+    "scrollSpeedLabel": "Velocidad de Desplazamiento Automático",
+    "speedNone": "Pausado / Desactivado",
+    "speed05": "0.5x (Lento)",
+    "speed10": "1.0x (Normal)",
+    "speed15": "1.5x (Rápido)",
+    "speed20": "2.0x (Muy Rápido)",
+    "tabChords": "Acordes",
+    "tabLyrics": "Letra",
+    "tabTabs": "Tablaturas",
+    "tabLinks": "Enlaces de Apoyo",
+    "transposeKey": "Cambiar Tono:",
+    "btnMinusKey": "♭ -1 Semitono",
+    "btnPlusKey": "♯ +1 Semitono",
+    "insertTabGrid": "Rejilla de Cuerdas",
+    "btnStageMode": "Modo Escenario",
+    "placeholderChords": "Escribe o pega los Acordes aquí (ej: Intro, Verso, Coro con los acordes posicionados)...",
+    "placeholderLyrics": "Escribe o pega la Letra de la canción aquí...",
+    "placeholderTabs": "Escribe o pega la Tablatura de guitarra o bajo aquí...",
+    "linksHeading": "ENLACES DE VIDEO, AUDIO Y ACORDES:",
+    "btnAddLink": "Agregar Enlace",
+    "noLinks": "No hay enlaces registrados para esta canción.",
+    "btnDuplicate": "Duplicar",
+    "btnDelete": "Eliminar",
+    "setlistNameLabel": "Nombre del Setlist / Concierto *",
+    "setlistNamePlaceholder": "Ej: Show Rock Bar",
+    "responsibleBandLabel": "Banda / Proyecto *",
+    "responsibleBandPlaceholder": "Ej: Mi Banda",
+    "typeLabel": "Tipo de Evento",
+    "typeShow": "🔥 Concierto",
+    "typeRehearsal": "🎙️ Ensayo",
+    "typeRepertoire": "📚 Repertorio",
+    "dateLabel": "Fecha",
+    "datePlaceholder": "Ej: 2026-10-25 o 25/10/2026",
+    "localLabel": "Lugar / Dirección",
+    "localPlaceholder": "Ej: The Rock Pub",
+    "cacheLabel": "Caché / Honorarios",
+    "cachePlaceholder": "Ej: $ 1.500",
+    "notesLabel": "Notas Generales y Recordatorios",
+    "notesPlaceholder": "Ej: Llevar cables extra, prueba de sonido a las 19h",
+    "sumSongs": "Canciones:",
+    "sumDuration": "Duración Estimada:",
+    "btnExportDoc": "Exportar Word (.doc)",
+    "btnExportSetlist": "Exportar Setlist",
+    "setlistRoteiroTitle": "REPERTORIO DEL CONCIERTO / ENSAYO",
+    "setlistDragHelp": "(Arrastra el icono ☰ para reordenar)",
+    "btnAddFromRepertoire": "Agregar del Repertorio",
+    "btnAddPause": "Pausa / Descanso",
+    "btnAddNote": "Anotación / Habla",
+    "noSongsInSetlist": "No hay canciones en este setlist aún. ¡Haz clic en \"Agregar del Repertorio\" arriba!",
+    "pauseTitle": "PAUSA / DESCANSO",
+    "noteTitle": "ANOTACIÓN / HABLA",
+    "customNotesPlaceholder": "Notas para el concierto, ajustes de tono, notas de voz...",
+    "pauseCustomNotesPlaceholder": "Ej: 15 min de descanso para cambio de instrumentos",
+    "noteCustomNotesPlaceholder": "Ej: Agradecer al público y patrocinadores...",
+    "songCustomNotesPlaceholder": "Notas para este concierto (ej: Tono G, guitarra drive, entrada directa)...",
+    "btnMoveUp": "Subir (1 posición)",
+    "btnMoveDown": "Bajar (1 position)",
+    "btnRemoveFromSetlist": "Eliminar del Setlist",
+    "syncModalTitle": "Sincronización Directa con Celular",
+    "syncTabReceive": "TRAER DEL CELULAR",
+    "syncTabSend": "ENVIAR AL CELULAR",
+    "syncDescReceive": "Abre la app en tu móvil, ve a <strong>Sincronizar con Web</strong> y apunta la cámara a este Código QR para transferir todas las canciones del móvil al PC.",
+    "syncDescSend": "Abre la app en tu móvil, ve a <strong>Sincronizar con Web</strong> y apunta la cámara a este Código QR para descargar en tu móvil todo lo que editaste en el PC.",
+    "syncPinLabel": "O ESCRIBE EL CÓDIGO PIN EN LA APP:",
+    "syncConnecting": "Conectando al servidor de sincronización...",
+    "syncWaitingLocal": "Esperando emparejamiento local...",
+    "syncWaitingPhone": "Esperando conexión del móvil...",
+    "syncSendingPc": "Enviando repertorio del PC a la sesión QR...",
+    "syncDataReceived": "¡Datos recibidos! Actualizando Web Editor...",
+    "syncDataSent": "¡Datos enviados con éxito al móvil!",
+    "syncReadyScan": "¡Datos listos! Apunta la cámara de la app al Código QR.",
+    "syncWaitingCamera": "Esperando lectura de la cámara del móvil...",
+    "syncConnected": "<strong>¡Conexión Completada!</strong> ¡Datos recibidos del móvil!",
+    "syncPreparingQr": "Preparando Código QR del elemento seleccionado...",
+    "syncCompletedToast": "¡Sincronización completada! {songs} canciones y {setlists} setlists cargados del móvil.",
+    "syncPinCopied": "¡Código PIN {pin} copiado!",
+    "btnRefreshQr": "Generar Nuevo Código QR",
+    "btnClose": "Cerrar",
+    "btnCancel": "Cancelar",
+    "importModalTitle": "Importar Respaldo al PC",
+    "dropZoneText": "<strong>Haz clic para seleccionar</strong> o arrastra un archivo <code>.json</code> exportado de la app",
+    "dropZoneOr": "O PEGA EL CÓDIGO JSON ABAJO",
+    "placeholderImport": "Pega el código JSON de Canción, Setlist o Respaldo aquí...",
+    "btnImportNow": "Importar Ahora",
+    "exportModalTitle": "Exportar JSON",
+    "exportModalDesc": "Puedes descargar el archivo <code>.json</code> o copiar el código para importarlo en tu móvil:",
+    "exportSongTitle": "Exportar Canción: {name}",
+    "exportSongDesc": "Código JSON listo para importar en Setlist Band Manager (Pestaña <em>Canciones ➔ Importar</em>):",
+    "exportSetlistTitle": "Exportar Setlist: {name}",
+    "exportSetlistDesc": "Código JSON listo para importar en Setlist Band Manager (Pantalla Inicial ➔ <em>Importar Setlist</em>):",
+    "exportBackupTitle": "Exportar Respaldo Completo ({songs} Canciones, {setlists} Setlists)",
+    "exportBackupDesc": "Este archivo contiene <strong>{songs} canciones y {setlists} setlists</strong>. En la app móvil, abre <em>Acerca de ➔ Restaurar Respaldo</em> para restaurar todo:",
+    "btnCopyCode": "Copiar Código",
+    "btnDownloadJson": "Descargar Archivo .JSON",
+    "btnExportQr": "Generar Código QR para Celular",
+    "pickSongModalTitle": "Agregar Canciones al Setlist",
+    "pickSongSearchPlaceholder": "Filtrar por nombre, banda o estilo...",
+    "pickSelectedCount": "{count} SELECCIONADAS",
+    "pickAvailableCount": "({count} disponibles)",
+    "btnSelectAll": "Seleccionar Todas",
+    "btnDeselect": "Deseleccionar",
+    "btnAddSelected": "Agregar Seleccionadas ({count})",
+    "noSongsFoundPicker": "No se encontraron canciones en el repertorio.",
+    "inSetlistBadge": "En setlist ({count}x)",
+    "defaultNewSong": "Nueva Canción",
+    "defaultUnknownArtist": "Artista Desconocido",
+    "defaultNewSetlist": "Nuevo Show / Setlist",
+    "defaultUntitled": "Sin Título",
+    "defaultUnknownBand": "Sin Banda",
+    "itemPause": "Pausa",
+    "itemNote": "Anotación",
+    "toastNewSongCreated": "¡Nueva canción creada!",
+    "toastSongDuplicated": "¡Canción \"{name}\" duplicada!",
+    "toastSongDeleted": "Canción \"{name}\" eliminada.",
+    "toastNewSetlistCreated": "¡Nuevo setlist creado!",
+    "toastSetlistDuplicated": "¡Setlist \"{name}\" duplicado!",
+    "toastSetlistDeleted": "Setlist \"{name}\" eliminado.",
+    "toastSpecialAdded": "¡{type} insertado en el repertorio!",
+    "toastTabTemplate": "¡Tablatura insertada!",
+    "toastKeyTransposed": "¡Tono transpuesto en {semitones} semitono(s)!",
+    "toastItemReordered": "¡\"{name}\" reposicionada!",
+    "toastItemRemoved": "¡\"{name}\" eliminado del repertorio!",
+    "toastSongsAddedToSetlist": "¡{count} canción(es) agregada(s) al setlist!",
+    "toastNoSongToExport": "Ninguna canción seleccionada para exportar.",
+    "toastNoSetlistToExport": "Ningún setlist seleccionado para exportar.",
+    "toastNoDataToBackup": "No hay datos para generar respaldo.",
+    "toastDocDownloaded": "¡Documento Word \"{name}\" descargado!",
+    "toastBackupDownloaded": "¡Respaldo completo descargado!",
+    "toastJsonCopied": "¡Código JSON copiado al portapapeles!",
+    "toastQrGenerated": "¡Código QR generado! Apunta la cámara en Sincronizar -> Leer QR.",
+    "toastSyncError": "Error al conectar al servidor de sincronización.",
+    "toastFileDownloaded": "¡Archivo \"{name}\" descargado con éxito!",
+    "toastFileLoaded": "¡Archivo \"{name}\" cargado! Haz clic en Importar Ahora.",
+    "toastPleasePasteJson": "Pega el código JSON o selecciona un archivo.",
+    "toastInvalidJson": "El código proporcionado no es un JSON válido.",
+    "toastSongImported": "¡Canción \"{name}\" importada con éxito!",
+    "toastSetlistImported": "¡Setlist \"{name}\" importado!",
+    "toastBackupRestored": "¡Respaldo restaurado! {songs} canciones y {setlists} setlists.",
+    "toastUnrecognizedJson": "Formato de JSON no reconocido.",
+    "confirmDeleteSong": "¿Realmente deseas eliminar la canción \"{name}\"?",
+    "confirmDeleteSetlist": "¿Realmente deseas eliminar el setlist \"{name}\"?",
+    "confirmBackupMergeOrReplace": "El respaldo contiene {songs} canciones y {setlists} setlists.\n\n¿Deseas REEMPLAZAR los datos actuales (Aceptar) o COMBINAR con los existentes (Cancelar)?",
+    "docTotalSongsLabel": "Canciones",
+    "docTotalSongSingle": "Canción"
+  }
+};
 
-        function t(key, params = {}) {
+    function t(key, params = {}) {
       const dict = translations[currentLang] || translations.en;
       let text = dict[key] || (translations.en && translations.en[key]) || key;
       for (const [pKey, pVal] of Object.entries(params)) {
@@ -2448,6 +2568,7 @@
       if (!translations[lang]) lang = 'en';
       currentLang = lang;
       localStorage.setItem('setlist_editor_lang', lang);
+      localStorage.setItem('sbm_landing_lang', lang);
       const sel = document.getElementById('langSelector');
       if (sel) sel.value = lang;
       document.documentElement.setAttribute('lang', lang === 'pt' ? 'pt-BR' : (lang === 'es' ? 'es-ES' : 'en'));
@@ -2539,7 +2660,7 @@
     let selectedSongIdsForSetlist = new Set();
 
     function init() {
-      currentLang = localStorage.getItem('setlist_editor_lang') || 'en';
+      currentLang = localStorage.getItem('setlist_editor_lang') || localStorage.getItem('sbm_landing_lang') || 'en';
       const langSel = document.getElementById('langSelector');
       if (langSel) langSel.value = currentLang;
       applyStaticTranslations();
@@ -2721,7 +2842,7 @@
     async function refreshSyncSession() {
       if (syncPollInterval) clearInterval(syncPollInterval);
 
-      document.getElementById('syncStatusText').innerText = 'Conectando ao servidor de sincronização...';
+      document.getElementById('syncStatusText').innerText = t('syncConnecting');
       document.getElementById('syncPinDisplay').innerText = '...';
 
       try {
@@ -2751,7 +2872,7 @@
 
           startSyncPolling();
         } else {
-          document.getElementById('syncStatusText').innerText = 'Aguardando pareamento local...';
+          document.getElementById('syncStatusText').innerText = t('syncWaitingLocal');
         }
       } catch (err) {
         console.warn('Sync API local fallback:', err);
@@ -2769,7 +2890,7 @@
           apiUrl: getSyncApiBaseUrl()
         });
         renderQrCode(qrPayload);
-        document.getElementById('syncStatusText').innerText = 'Aguardando leitura do celular...';
+        document.getElementById('syncStatusText').innerText = t('syncWaitingPhone');
       }
     }
 
@@ -2803,7 +2924,7 @@
 
     async function sendPcDataToSyncSession() {
       if (!syncSessionId) return;
-      document.getElementById('syncStatusText').innerText = 'Enviando repertório do PC para o QR Code...';
+      document.getElementById('syncStatusText').innerText = t('syncSendingPc');
 
       const backupData = {
         app: 'SetlistsAppBackup',
@@ -2835,7 +2956,7 @@
     function startSyncPolling() {
       if (syncPollInterval) clearInterval(syncPollInterval);
 
-      document.getElementById('syncStatusText').innerText = 'Aguardando leitura da câmera do celular...';
+      document.getElementById('syncStatusText').innerText = t('syncWaitingCamera');
 
       syncPollInterval = setInterval(async () => {
         if (!syncSessionId) return;
@@ -2862,7 +2983,7 @@
       statusBox.style.borderColor = 'var(--success)';
       statusBox.style.color = 'var(--success)';
 
-      document.getElementById('syncStatusText').innerHTML = '<strong>Conexão Concluída!</strong> Dados recebidos do celular!';
+      document.getElementById('syncStatusText').innerHTML = t('syncConnected');
 
       if (payload && (payload.app === 'SetlistsAppBackup' || payload.songs)) {
         const newSongs = payload.songs || [];
@@ -2902,7 +3023,7 @@
 
         setTimeout(() => {
           closeSyncModal();
-          showToast(`Sincronização concluída! ${songs.length} músicas e ${setlists.length} setlists carregados do celular.`, 'checkmark-circle');
+          showToast(t('syncCompletedToast', { songs: songs.length, setlists: setlists.length }), 'checkmark-circle');
         }, 1200);
       }
     }
@@ -2910,7 +3031,7 @@
     function copySyncPin() {
       if (!syncPin) return;
       navigator.clipboard.writeText(syncPin);
-      showToast(`Código PIN ${syncPin} copiado!`, 'copy-outline');
+      showToast(t('syncPinCopied', { pin: syncPin }), 'copy-outline');
     }
 
     function renderAll() {
@@ -3136,7 +3257,7 @@
       const newId = Date.now();
       const newSong = {
         id: newId,
-        name: 'Nova Música',
+        name: t('defaultNewSong'),
         originalBand: 'Artista / Banda',
         style: 'rock, pop',
         duration: '03:30',
@@ -3377,7 +3498,7 @@
 
       textarea.value = transposed;
       handleTextareaChange(transposed);
-      showToast(`Tom transposto em ${semitones > 0 ? `+${semitones}` : semitones} semitom!`, 'musical-notes-outline');
+      showToast(t('toastKeyTransposed', { semitones: semitones > 0 ? '+' + semitones : semitones }), 'musical-notes-outline');
     }
 
     /* ----------------------------------------------------
@@ -3393,7 +3514,7 @@
       const newId = Date.now();
       const newSetlist = {
         id: newId,
-        name: 'Novo Show / Setlist',
+        name: t('defaultNewSetlist'),
         bandName: 'Minha Banda',
         type: 'show',
         date: new Date().toISOString().split('T')[0],
@@ -3590,7 +3711,7 @@
           badgeContent = String(songCounter++).padStart(2, '0');
         }
 
-        const songTitle = item.name || item.title || 'Sem Título';
+        const songTitle = item.name || item.title || t('defaultUntitled');
         const songBand = isPause ? t('btnAddPause') : (isNote ? t('btnAddNote') : (item.originalBand || item.band || ''));
 
         return `
@@ -3706,7 +3827,7 @@
 
       saveToStorage();
       renderSetlistSongsList();
-      showToast(`"${movedItem.name || movedItem.title || 'Música'}" reposicionada!`, 'reorder-two-outline');
+      showToast(t('toastItemReordered', { name: movedItem.name || movedItem.title || t('defaultUntitled') }), 'reorder-two-outline');
     }
 
     function handleRowDragEnd(e) {
@@ -3750,7 +3871,7 @@
       const removed = st.songs.splice(idx, 1)[0];
       saveToStorage();
       renderSetlistEditor();
-      showToast(`"${removed?.name || removed?.title || 'Item'}" removido do roteiro.`, 'trash-outline');
+      showToast(t('toastItemRemoved', { name: removed?.name || removed?.title || t('defaultUntitled') }), 'trash-outline');
     }
 
     function addSpecialItem(type) {
@@ -3780,7 +3901,7 @@
 
       saveToStorage();
       renderSetlistEditor();
-      showToast(`${type === 'pause' ? 'Pausa' : 'Anotação'} inserida no roteiro!`, type === 'pause' ? 'pause-circle-outline' : 'megaphone-outline');
+      showToast(t('toastSpecialAdded', { type: type === 'pause' ? t('itemPause') : t('itemNote') }), type === 'pause' ? 'pause-circle-outline' : 'megaphone-outline');
     }
 
     /* ----------------------------------------------------
@@ -3923,7 +4044,7 @@
 
       saveToStorage();
       closePickSongModal();
-      showToast(`${addedCount} música${addedCount === 1 ? '' : 's'} adicionada${addedCount === 1 ? '' : 's'} ao setlist!`, 'musical-notes-outline');
+      showToast(t('toastSongsAddedToSetlist', { count: addedCount }), 'musical-notes-outline');
     }
 
     /* ----------------------------------------------------
@@ -3932,7 +4053,7 @@
     function exportCurrentSong() {
       const song = songs.find(s => s.id === activeSongId);
       if (!song) {
-        showToast('Nenhuma música selecionada para exportar.', 'alert-circle-outline', true);
+        showToast(t('toastNoSongToExport'), 'alert-circle-outline', true);
         return;
       }
 
@@ -3956,8 +4077,8 @@
       currentExportFilename = `musica-${safeBand}-${safeSong}.json`;
       currentExportData = exportData;
 
-      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="musical-note-outline"></ion-icon> Exportar Música: ${exportData.name}`;
-      document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Aba <em>Músicas ➔ Importar</em>):`;
+      document.getElementById('exportModalTitle').innerHTML = '<ion-icon name="musical-note-outline"></ion-icon> ' + t('exportSongTitle', { name: exportData.name });
+      document.getElementById('exportModalDesc').innerHTML = t('exportSongDesc');
       document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
 
       document.getElementById('exportModal').classList.add('open');
@@ -3966,7 +4087,7 @@
     function exportCurrentSetlistJson() {
       const st = setlists.find(s => s.id === activeSetlistId);
       if (!st) {
-        showToast('Nenhum setlist selecionado para exportar.', 'alert-circle-outline', true);
+        showToast(t('toastNoSetlistToExport'), 'alert-circle-outline', true);
         return;
       }
 
@@ -4004,8 +4125,8 @@
       currentExportFilename = `setlist-${safeBand}-${safeEvent}.json`;
       currentExportData = exportData;
 
-      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="list-outline"></ion-icon> Exportar Setlist: ${st.name}`;
-      document.getElementById('exportModalDesc').innerHTML = `Código JSON pronto para importar no Setlist Band Manager (Tela Inicial ➔ <em>Importar Setlist</em>):`;
+      document.getElementById('exportModalTitle').innerHTML = '<ion-icon name="list-outline"></ion-icon> ' + t('exportSetlistTitle', { name: st.name });
+      document.getElementById('exportModalDesc').innerHTML = t('exportSetlistDesc');
       document.getElementById('exportJsonTextarea').value = JSON.stringify(exportData, null, 2);
 
       document.getElementById('exportModal').classList.add('open');
@@ -4014,7 +4135,7 @@
         function exportCurrentSetlistDoc() {
       const st = setlists.find(s => s.id === activeSetlistId);
       if (!st) {
-        showToast('Nenhum setlist selecionado para exportar.', 'alert-circle-outline', true);
+        showToast(t('toastNoSetlistToExport'), 'alert-circle-outline', true);
         return;
       }
 
@@ -4042,7 +4163,7 @@
           }
 
           const currentNum = String(songCounter++).padStart(2, '0');
-          const sName = item.name || item.title || 'Sem Título';
+          const sName = item.name || item.title || t('defaultUntitled');
           const sBand = item.originalBand || item.band || '';
 
           let html = `<div style="font-size: 9.5pt; line-height: 1.35; margin-bottom: 3.5pt;"><strong>${currentNum}. ${sName.toUpperCase()}</strong>`;
@@ -4151,7 +4272,7 @@
 
     function exportFullBackup() {
       if (songs.length === 0 && setlists.length === 0) {
-        showToast('Nenhum dado para gerar backup.', 'alert-circle-outline', true);
+        showToast(t('toastNoDataToBackup'), 'alert-circle-outline', true);
         return;
       }
 
@@ -4210,8 +4331,8 @@
       currentExportFilename = `backup-setlists-web-${new Date().toISOString().split('T')[0]}.json`;
       currentExportData = backupData;
 
-      document.getElementById('exportModalTitle').innerHTML = `<ion-icon name="archive-outline"></ion-icon> Exportar Backup Total (${songs.length} Músicas, ${setlists.length} Setlists)`;
-      document.getElementById('exportModalDesc').innerHTML = `Este arquivo contém <strong>${songs.length} músicas e ${setlists.length} setlists</strong>. No app móvel, abra a aba <em>Sobre ➔ Restaurar Backup</em> para restaurar tudo:`;
+      document.getElementById('exportModalTitle').innerHTML = '<ion-icon name="archive-outline"></ion-icon> ' + t('exportBackupTitle', { songs: songs.length, setlists: setlists.length });
+      document.getElementById('exportModalDesc').innerHTML = t('exportBackupDesc', { songs: songs.length, setlists: setlists.length });
       document.getElementById('exportJsonTextarea').value = JSON.stringify(backupData, null, 2);
 
       document.getElementById('exportModal').classList.add('open');
@@ -4224,7 +4345,7 @@
     function copyExportCode() {
       const code = document.getElementById('exportJsonTextarea').value;
       navigator.clipboard.writeText(code).then(() => {
-        showToast('Código JSON copiado para a área de transferência!', 'copy-outline');
+        showToast(t('toastJsonCopied'), 'copy-outline');
       });
     }
 
@@ -4234,7 +4355,7 @@
       closeExportModal();
       openSyncModal();
       
-      document.getElementById('syncStatusText').innerText = 'Preparando QR Code do item selecionado...';
+      document.getElementById('syncStatusText').innerText = t('syncPreparingQr');
       try {
         const res = await fetch(getSyncApiBaseUrl() + '?action=create_session');
         const data = await res.json();
@@ -4266,11 +4387,11 @@
 
           renderQrCode(qrPayload);
           startSyncPolling();
-          showToast('QR Code gerado! Aponte a câmera do celular em Sincronizar -> Ler QR.', 'qr-code-outline');
+          showToast(t('toastQrGenerated'), 'qr-code-outline');
         }
       } catch (e) {
         console.error('Erro ao gerar QR Code para exportação:', e);
-        showToast('Erro ao conectar ao servidor de sincronização.', 'alert-circle-outline', true);
+        showToast(t('toastSyncError'), 'alert-circle-outline', true);
       }
     }
 
@@ -4284,7 +4405,7 @@
       a.download = currentExportFilename;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`Arquivo "${currentExportFilename}" baixado com sucesso!`, 'download-outline');
+      showToast(t('toastFileDownloaded', { name: currentExportFilename }), 'download-outline');
     }
 
     /* ----------------------------------------------------
@@ -4306,7 +4427,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         document.getElementById('importJsonTextarea').value = e.target.result;
-        showToast(`Arquivo "${file.name}" carregado! Clique em Importar Agora.`, 'cloud-upload-outline');
+        showToast(t('toastFileLoaded', { name: file.name }), 'cloud-upload-outline');
       };
       reader.readAsText(file);
     }
@@ -4322,7 +4443,7 @@
         const reader = new FileReader();
         reader.onload = function(evt) {
           document.getElementById('importJsonTextarea').value = evt.target.result;
-          showToast(`Arquivo "${file.name}" carregado!`, 'cloud-upload-outline');
+          showToast(t('toastFileLoaded', { name: file.name }), 'cloud-upload-outline');
         };
         reader.readAsText(file);
       }
@@ -4331,7 +4452,7 @@
     function processImportJson() {
       const rawText = document.getElementById('importJsonTextarea').value.trim();
       if (!rawText) {
-        showToast('Cole o código JSON ou selecione um arquivo.', 'alert-circle-outline', true);
+        showToast(t('toastPleasePasteJson'), 'alert-circle-outline', true);
         return;
       }
 
@@ -4347,7 +4468,7 @@
       }
 
       if (!parsed) {
-        showToast('O código fornecido não é um JSON válido.', 'close-circle-outline', true);
+        showToast(t('toastInvalidJson'), 'close-circle-outline', true);
         return;
       }
 
@@ -4372,7 +4493,7 @@
         saveToStorage();
         closeImportModal();
         switchMode('songs');
-        showToast(`Música "${newSong.name}" importada com sucesso!`, 'musical-notes-outline');
+        showToast(t('toastSongImported', { name: newSong.name }), 'musical-notes-outline');
         return;
       }
 
@@ -4420,7 +4541,7 @@
         saveToStorage();
         closeImportModal();
         switchMode('setlists');
-        showToast(`Setlist "${newSetlist.name}" importado!`, 'list-outline');
+        showToast(t('toastSetlistImported', { name: newSetlist.name }), 'list-outline');
         return;
       }
 
@@ -4429,7 +4550,7 @@
         const importedSongs = parsed.songs || [];
         const importedSetlists = parsed.setlists || [];
 
-        const shouldReplace = confirm(`O backup contém ${importedSongs.length} músicas e ${importedSetlists.length} setlists.\n\nDeseja SUBSTITUIR os dados atuais (OK) ou MESCLAR com os existentes (Cancelar)?`);
+        const shouldReplace = confirm(t('confirmBackupMergeOrReplace', { songs: importedSongs.length, setlists: importedSetlists.length }));
 
         if (shouldReplace) {
           songs = importedSongs.map((s, idx) => ({
@@ -4494,11 +4615,11 @@
         saveToStorage();
         closeImportModal();
         renderAll();
-        showToast(`Backup restaurado! ${importedSongs.length} músicas e ${importedSetlists.length} setlists.`, 'archive-outline');
+        showToast(t('toastBackupRestored', { songs: importedSongs.length, setlists: importedSetlists.length }), 'archive-outline');
         return;
       }
 
-      showToast('Formato de JSON não reconhecido.', 'close-circle-outline', true);
+      showToast(t('toastUnrecognizedJson'), 'close-circle-outline', true);
     }
 
     /* ----------------------------------------------------
