@@ -817,9 +817,9 @@ const styles = StyleSheet.create({
 
   // ===== LAYER 1: HEADER =====
   headerLayer: {
-    paddingTop: Platform.OS === 'ios' ? 58 : 44,
+    paddingTop: Platform.OS === 'ios' ? 56 : 42,
     paddingHorizontal: 16,
-    paddingBottom: 14,
+    paddingBottom: 8,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     zIndex: 10,
@@ -833,7 +833,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 8,
   },
   circleActionBtn: {
     width: 38,
@@ -848,7 +848,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerTitleCenterContainer: {
-    marginTop: 2,
+    marginTop: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
   headerTitleInlineInput: {
     fontWeight: '900',
     letterSpacing: -0.2,
-    paddingVertical: 2,
+    paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
     textAlign: 'center',
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
   },
   headerBandInlineInput: {
     fontWeight: '750',
-    paddingVertical: 2,
+    paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
     textAlign: 'center',
@@ -885,11 +885,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginTop: 8,
+    marginTop: 4,
   },
   headerTagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 3.5,
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
     borderRadius: 8,
   },
   headerTagText: {
@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 10,
     marginTop: 8,
-    marginBottom: 10,
+    marginBottom: Platform.OS === 'ios' ? 26 : 22,
     borderRadius: 18,
     overflow: 'hidden',
   },

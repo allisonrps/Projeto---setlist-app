@@ -75,27 +75,22 @@ export default function SongListItem({
           </Text>
         </View>
 
-        {/* Sub Row: Duration + Style Tags (Full Width Available) */}
-        <View style={styles.subMetaRow}>
-          {song.duration ? (
-            <View style={[styles.metaChip, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }]}>
-              <Ionicons name="time-outline" size={10} color={colors.textMuted} style={{ marginRight: 3 }} />
-              <Text style={[styles.metaChipText, { color: colors.textMuted }]}>{song.duration}</Text>
-            </View>
-          ) : null}
-
-          {tagsList.map((tag, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.metaChip,
-                { backgroundColor: colors.primary + '16' }
-              ]}
-            >
-              <Text style={[styles.metaChipText, { color: colors.primary }]}>{tag}</Text>
-            </View>
-          ))}
-        </View>
+        {/* Sub Row: Style Tags Only (Full Width Available) */}
+        {tagsList.length > 0 && (
+          <View style={styles.subMetaRow}>
+            {tagsList.map((tag, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.metaChip,
+                  { backgroundColor: colors.primary + '16' }
+                ]}
+              >
+                <Text style={[styles.metaChipText, { color: colors.primary }]}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
     </Pressable>
   );

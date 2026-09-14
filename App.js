@@ -44,6 +44,13 @@ import ImportModal from './components/ImportModal';
 import FeatureTutorialModal from './components/FeatureTutorialModal';
 import { LanguageProvider, useLanguage } from './hooks/useLanguage';
 
+const THEME_COLORS = [
+  '#0ea5e9', '#8b5cf6', '#3b82f6', '#10b981', '#ec4899', '#ef4444',
+  '#f97316', '#06b6d4', '#0d9488', '#f59e0b', '#6366f1', '#d946ef',
+  '#84cc16', '#475569', '#38bdf8', '#0284c7', '#14b8a6', '#f43f5e',
+  '#a855f7', '#e11d48', '#fbbf24', '#22c55e', '#1e293b', '#a1a1aa'
+];
+
 export default function App() {
   return (
     <LanguageProvider>
@@ -552,7 +559,7 @@ const getFeaturesList = (lang) => {
 };
 
 function MainApp() {
-  const { colors, themeMode } = useTheme();
+  const { colors, themeMode, primaryColor, secondaryColor, setThemePreferences } = useTheme();
   const { t, language } = useLanguage();
   const isDark = colors.isDark;
 
@@ -2719,6 +2726,308 @@ function MainApp() {
     );
   };
 
+  const renderOptionsTab = () => {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={styles.tabHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15' }]}>
+              <Ionicons name="settings-outline" size={15} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('options') || 'Opções'}</Text>
+          </View>
+        </View>
+
+        <ScrollView 
+          style={{ flex: 1 }} 
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* CARD 1: TEMA & APARÊNCIA */}
+          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
+              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>
+                {t('themeAppearance')}
+              </Text>
+            </View>
+
+            {/* Modo Claro / Escuro */}
+            <Text style={[styles.optionsSectionLabel, { color: colors.textMuted }]}>
+              {t('themeMode')}
+            </Text>
+            <View style={styles.optionsSegmentedContainer}>
+              <Pressable
+                style={[
+                  styles.optionsSegmentButton,
+                  themeMode === 'dark' && { backgroundColor: colors.primary },
+                  { backgroundColor: themeMode === 'dark' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                ]}
+                onPress={() => setThemePreferences('dark', primaryColor, secondaryColor)}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                  <Ionicons name="moon-outline" size={14} color={themeMode === 'dark' ? '#fff' : colors.text} />
+                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'dark' ? '#fff' : colors.text }]}>
+                    {t('dark')}
+                  </Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.optionsSegmentButton,
+                  themeMode === 'light' && { backgroundColor: colors.primary },
+                  { backgroundColor: themeMode === 'light' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                ]}
+                onPress={() => setThemePreferences('light', primaryColor, secondaryColor)}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                  <Ionicons name="sunny-outline" size={14} color={themeMode === 'light' ? '#fff' : colors.text} />
+                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'light' ? '#fff' : colors.text }]}>
+                    {t('light')}
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+
+            {/* Cor Primária */}
+            <Text style={[styles.optionsSectionLabel, { color: colors.textMuted }]}>
+              {t('primaryColor')}
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 2, alignItems: 'center', gap: 8 }}
+              style={{ marginBottom: 14, height: 48 }}
+            >
+              {THEME_COLORS.map((color) => (
+                <Pressable
+                  key={color}
+                  style={({ pressed }) => [
+                    styles.optionColorCircle,
+                    {
+                      backgroundColor: color,
+                      borderColor: primaryColor === color ? colors.text : 'transparent',
+                      borderWidth: primaryColor === color ? 3 : 0,
+                      transform: [{ scale: pressed ? 0.9 : 1 }]
+                    }
+                  ]}
+                  onPress={() => setThemePreferences(themeMode, color, secondaryColor)}
+                >
+                  {primaryColor === color && (
+                    <View style={styles.optionColorInnerDot} />
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            {/* Cor Secundária */}
+            <Text style={[styles.optionsSectionLabel, { color: colors.textMuted }]}>
+              {t('secondaryColor')}
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 2, alignItems: 'center', gap: 8 }}
+              style={{ marginBottom: 4, height: 48 }}
+            >
+              {THEME_COLORS.map((color) => (
+                <Pressable
+                  key={color}
+                  style={({ pressed }) => [
+                    styles.optionColorCircle,
+                    {
+                      backgroundColor: color,
+                      borderColor: secondaryColor === color ? colors.text : 'transparent',
+                      borderWidth: secondaryColor === color ? 3 : 0,
+                      transform: [{ scale: pressed ? 0.9 : 1 }]
+                    }
+                  ]}
+                  onPress={() => setThemePreferences(themeMode, primaryColor, color)}
+                >
+                  {secondaryColor === color && (
+                    <View style={styles.optionColorInnerDot} />
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* CARD 2: IDIOMA DO APLICATIVO */}
+          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Ionicons name="globe-outline" size={18} color={colors.primary} />
+              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>
+                {t('appLanguage')}
+              </Text>
+            </View>
+
+            <View style={styles.optionsSegmentedContainer}>
+              <Pressable
+                style={[
+                  styles.optionsSegmentButton,
+                  language === 'pt' && { backgroundColor: colors.primary },
+                  { backgroundColor: language === 'pt' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                ]}
+                onPress={() => setLanguage('pt')}
+              >
+                <Text style={[styles.optionsSegmentText, { color: language === 'pt' ? '#fff' : colors.text }]}>
+                  Português 🇧🇷
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.optionsSegmentButton,
+                  language === 'en' && { backgroundColor: colors.primary },
+                  { backgroundColor: language === 'en' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                ]}
+                onPress={() => setLanguage('en')}
+              >
+                <Text style={[styles.optionsSegmentText, { color: language === 'en' ? '#fff' : colors.text }]}>
+                  English 🇺🇸
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.optionsSegmentButton,
+                  language === 'es' && { backgroundColor: colors.primary },
+                  { backgroundColor: language === 'es' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                ]}
+                onPress={() => setLanguage('es')}
+              >
+                <Text style={[styles.optionsSegmentText, { color: language === 'es' ? '#fff' : colors.text }]}>
+                  Español 🇪🇸
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* CARD 3: WEB EDITOR & SINCRONIZAÇÃO */}
+          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: '#6366f166', borderWidth: 1.5 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <View style={{ backgroundColor: '#6366f122', padding: 6, borderRadius: 8 }}>
+                <Ionicons name="desktop-outline" size={18} color="#6366f1" />
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: '900', color: '#6366f1', letterSpacing: 0.5 }}>
+                {t('webEditorTitle')}
+              </Text>
+            </View>
+
+            <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2, marginBottom: 8 }}>
+              {t('webSyncSubtitle')}
+            </Text>
+
+            <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: 14 }}>
+              {t('webSyncDesc')}
+            </Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  backgroundColor: '#6366f1',
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  opacity: pressed ? 0.85 : 1,
+                  shadowColor: '#6366f1',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }
+              ]}
+              onPress={() => setShowSyncModal(true)}
+            >
+              <Ionicons name="scan-outline" size={18} color="#fff" />
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+                {t('openSyncQrBtn')}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* CARD 4: BACKUP E RESTAURAÇÃO DE DADOS */}
+          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <Ionicons name="shield-checkmark-outline" size={18} color={colors.warning} />
+              <Text style={[styles.aboutSectionTitle, { color: colors.warning, marginBottom: 0 }]}>
+                {t('backupTipsTitle')}
+              </Text>
+            </View>
+
+            <View style={{ gap: 10, marginTop: 4 }}>
+              <Text style={{ fontSize: 13, color: colors.text, fontWeight: '700' }}>
+                {t('protectDataLabel')}
+              </Text>
+              
+              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
+                {t('tip1')}
+              </Text>
+              
+              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
+                {t('tip2')}
+              </Text>
+
+              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
+                {t('tip3')}
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+              <Pressable
+                style={({ pressed }) => [
+                  {
+                    flex: 1,
+                    backgroundColor: colors.primary,
+                    paddingVertical: 12,
+                    borderRadius: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    opacity: pressed ? 0.8 : 1,
+                  }
+                ]}
+                onPress={handleBackupAll}
+              >
+                <Ionicons name="save-outline" size={14} color="#fff" />
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>
+                  {t('backupAllBtn')}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [
+                  {
+                    flex: 1,
+                    backgroundColor: colors.primary + '18',
+                    paddingVertical: 12,
+                    borderRadius: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    opacity: pressed ? 0.8 : 1,
+                  }
+                ]}
+                onPress={() => handleOpenImportOptions('backup')}
+              >
+                <Ionicons name="download-outline" size={14} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '900' }}>
+                  {t('restoreBackupBtn')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  };
+
   const renderAboutTab = () => {
     return (
       <View style={{ flex: 1 }}>
@@ -2728,7 +3037,7 @@ function MainApp() {
 
         <ScrollView 
           style={{ flex: 1 }} 
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Card Principal de Versão */}
@@ -2817,129 +3126,6 @@ function MainApp() {
               </Pressable>
             ))}
           </View>
-
-          
-          {/* Card de Sincronização Web (QR Code) */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: '#6366f166', borderWidth: 1.5 }]}>
-            {/* Linha 1: Ícone + WEB EDITOR */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-              <View style={{ backgroundColor: '#6366f122', padding: 6, borderRadius: 8 }}>
-                <Ionicons name="desktop-outline" size={18} color="#6366f1" />
-              </View>
-              <Text style={{ fontSize: 14, fontWeight: '900', color: '#6366f1', letterSpacing: 0.5 }}>
-                {t('webEditorTitle')}
-              </Text>
-            </View>
-
-            {/* Linha 2: Descrição/Subtítulo */}
-            <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2, marginBottom: 8 }}>
-              {t('webSyncSubtitle')}
-            </Text>
-
-            {/* Texto maior mantido */}
-            <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: 14 }}>
-              {t('webSyncDesc')}
-            </Text>
-
-            {/* Botão de Sincronizar mantido */}
-            <Pressable
-              style={({ pressed }) => [
-                {
-                  backgroundColor: '#6366f1',
-                  paddingVertical: 12,
-                  borderRadius: 10,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  opacity: pressed ? 0.85 : 1,
-                  shadowColor: '#6366f1',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 8,
-                  elevation: 4,
-                }
-              ]}
-              onPress={() => setShowSyncModal(true)}
-            >
-              <Ionicons name="scan-outline" size={18} color="#fff" />
-              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
-                {t('openSyncQrBtn')}
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Card de Dicas de Backup */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <Text style={[styles.aboutSectionTitle, { color: colors.warning }]}>{t('backupTipsTitle')}</Text>
-            
-            <View style={{ gap: 10, marginTop: 8 }}>
-              <Text style={{ fontSize: 13, color: colors.text, fontWeight: '700' }}>
-                {t('protectDataLabel')}
-              </Text>
-              
-              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
-                {t('tip1')}
-              </Text>
-              
-              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
-                {t('tip2')}
-              </Text>
-
-              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
-                {t('tip3')}
-              </Text>
-            </View>
-
-            {/* Ações de Backup e Restauração Consolidada */}
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
-              <Pressable
-                style={({ pressed }) => [
-                  {
-                    flex: 1,
-                    backgroundColor: colors.primary,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                    opacity: pressed ? 0.8 : 1,
-                  }
-                ]}
-                onPress={handleBackupAll}
-              >
-                <Ionicons name="save-outline" size={14} color="#fff" />
-                <Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '900' }}>
-                  {t('backupAllBtn')}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={({ pressed }) => [
-                  {
-                    flex: 1,
-                    backgroundColor: 'transparent',
-                    borderWidth: 1.5,
-                    borderColor: colors.primary,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                    opacity: pressed ? 0.8 : 1,
-                  }
-                ]}
-                onPress={() => handleOpenImportOptions('backup')}
-              >
-                <Ionicons name="download-outline" size={14} color={colors.primary} />
-                <Text style={{ color: colors.primary, fontSize: 10.5, fontWeight: '900' }}>
-                  {t('restoreBackupBtn')}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
         </ScrollView>
       </View>
     );
@@ -2959,25 +3145,12 @@ function MainApp() {
         </View>
       ) : (
         <View style={styles.container}>
-          {/* Cabeçalho principal */}
+          {/* Cabeçalho principal (sem o botão de opções) */}
           <View style={styles.header}>
             <View style={styles.headerTitleRow}>
               <Image source={require('./assets/logo.png')} style={styles.headerLogo} />
               <Text style={[styles.appTitle, { color: colors.text }]}>SETLIST BAND MANAGER</Text>
             </View>
-            <Pressable
-              style={({ pressed }) => [
-                styles.settingsButton,
-                {
-                  backgroundColor: colors.cardBackground,
-                  borderColor: colors.border,
-                  transform: [{ scale: pressed ? 0.9 : 1 }]
-                }
-              ]}
-              onPress={() => setShowSettingsModal(true)}
-            >
-              <Ionicons name="settings-outline" size={18} color={colors.text} />
-            </Pressable>
           </View>
 
           {/* Área de conteúdo da aba ativa */}
@@ -2985,10 +3158,11 @@ function MainApp() {
             {currentTab === 'home' && renderHomeTab()}
             {currentTab === 'songs' && renderSongsTab()}
             {currentTab === 'setlists' && renderSetlistsTab()}
+            {currentTab === 'options' && renderOptionsTab()}
             {currentTab === 'about' && renderAboutTab()}
           </View>
 
-          {/* Barra de Navegação Inferior */}
+          {/* Barra de Navegação Inferior (com aba de Opções antes de Sobre) */}
           <View style={[styles.bottomNav, { backgroundColor: colors.cardBackground, borderTopColor: colors.border }]}>
             <Pressable
               style={styles.tabItem}
@@ -2996,7 +3170,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'home' ? 'home' : 'home-outline'} 
-                size={20} 
+                size={19} 
                 color={currentTab === 'home' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'home' ? colors.primary : colors.textMuted }]}>
@@ -3010,7 +3184,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'songs' ? 'musical-notes' : 'musical-notes-outline'} 
-                size={20} 
+                size={19} 
                 color={currentTab === 'songs' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'songs' ? colors.primary : colors.textMuted }]}>
@@ -3024,7 +3198,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'setlists' ? 'clipboard' : 'clipboard-outline'} 
-                size={20} 
+                size={19} 
                 color={currentTab === 'setlists' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'setlists' ? colors.primary : colors.textMuted }]}>
@@ -3034,11 +3208,25 @@ function MainApp() {
 
             <Pressable
               style={styles.tabItem}
+              onPress={() => setCurrentTab('options')}
+            >
+              <Ionicons 
+                name={currentTab === 'options' ? 'settings' : 'settings-outline'} 
+                size={19} 
+                color={currentTab === 'options' ? colors.primary : colors.textMuted} 
+              />
+              <Text style={[styles.tabText, { color: currentTab === 'options' ? colors.primary : colors.textMuted }]}>
+                {t('options') || 'Opções'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.tabItem}
               onPress={() => setCurrentTab('about')}
             >
               <Ionicons 
                 name={currentTab === 'about' ? 'information-circle' : 'information-circle-outline'} 
-                size={20} 
+                size={19} 
                 color={currentTab === 'about' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'about' ? colors.primary : colors.textMuted }]}>
@@ -3195,7 +3383,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50,
-    paddingBottom: Platform.OS === 'ios' ? 112 : 106,
+    paddingBottom: Platform.OS === 'ios' ? 116 : 108,
   },
   header: {
     flexDirection: 'row',
@@ -3472,13 +3660,54 @@ const styles = StyleSheet.create({
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 48 : 46,
-    borderTopWidth: 1.5,
+    paddingVertical: 6,
+    paddingBottom: Platform.OS === 'ios' ? 42 : 32,
+    borderTopWidth: 1,
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 99,
+    elevation: 8,
+  },
+  optionsSectionLabel: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  optionsSegmentedContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    gap: 8,
+  },
+  optionsSegmentButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionsSegmentText: {
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  optionColorCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 2,
+  },
+  optionColorInnerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.2)',
   },
   tabItem: {
     alignItems: 'center',

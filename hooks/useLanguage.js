@@ -7,6 +7,7 @@ const translations = {
     home: 'Início',
     songs: 'Músicas',
     setlists: 'Setlists',
+    options: 'Opções',
     about: 'Sobre',
 
     // Ações Gerais e Modais
@@ -423,6 +424,7 @@ const translations = {
     home: 'Home',
     songs: 'Songs',
     setlists: 'Setlists',
+    options: 'Options',
     about: 'About',
 
     // Common Actions & Dialogs
@@ -839,6 +841,7 @@ const translations = {
     home: 'Inicio',
     songs: 'Canciones',
     setlists: 'Setlists',
+    options: 'Opciones',
     about: 'Acerca de',
 
     // Acciones Generales y Diálogos
