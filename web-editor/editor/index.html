@@ -1334,10 +1334,10 @@
     <!-- Header -->
   <header>
     <div class="brand">
-      <a href="index.html" title="Voltar à Página Inicial" style="display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;">
+      <a href="index.html" data-i18n-title="backToHome" title="Back to Home Page" style="display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;">
       <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../assets/logo.png';">
       <div class="brand-text">
-        <h1>Setlist Band Manager <span class="brand-badge">WEB EDITOR</span></h1>
+        <h1>Setlist Band Manager <span class="brand-badge" data-i18n="brandBadge">WEB EDITOR</span></h1>
       </div>
       </a>
     </div>
@@ -1353,22 +1353,22 @@
         </select>
       </div>
 
-      <button class="btn btn-primary btn-sync-header" id="btnSyncHeader" onclick="openSyncModal()" title="Sync in Real-time with Phone via QR Code">
+      <button class="btn btn-primary btn-sync-header" id="btnSyncHeader" onclick="openSyncModal()" data-i18n-title="btnSyncHeaderTitle" title="Sync in Real-time with Phone via QR Code">
         <ion-icon name="qr-code-outline"></ion-icon>
-        <span id="btnSyncHeaderText">Sync Mobile</span>
+        <span id="btnSyncHeaderText" data-i18n="btnSyncHeader">Sync Mobile</span>
       </button>
 
-      <button class="btn btn-outline" onclick="openImportModal()" title="Importar arquivo de backup .json ou código">
+      <button class="btn btn-outline" onclick="openImportModal()" data-i18n-title="btnImportBackupTitle" title="Import backup .json file or code">
         <ion-icon name="cloud-download-outline"></ion-icon>
-        Importar Backup
+        <span data-i18n="btnImportBackup">Import Backup</span>
       </button>
 
-      <button class="btn btn-outline" onclick="exportFullBackup()" title="Exportar backup completo de todas as músicas e setlists (.json)">
+      <button class="btn btn-outline" onclick="exportFullBackup()" data-i18n-title="btnExportBackupTitle" title="Export full backup of all songs and setlists (.json)">
         <ion-icon name="cloud-upload-outline"></ion-icon>
-        Exportar Backup
+        <span data-i18n="btnExportBackup">Export Backup</span>
       </button>
 
-      <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="Alternar Tema Claro / Escuro">
+      <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" data-i18n-title="toggleTheme" title="Toggle Light / Dark Theme">
         <ion-icon name="moon-outline" id="themeIcon"></ion-icon>
       </button>
     </div>
@@ -1384,26 +1384,26 @@
         <div class="mode-nav">
           <button class="mode-btn active" id="modeBtnSongs" onclick="switchMode('songs')">
             <ion-icon name="musical-notes-outline"></ion-icon>
-            MÚSICAS
+            <span data-i18n="tabSongs">SONGS</span>
           </button>
           <button class="mode-btn" id="modeBtnSetlists" onclick="switchMode('setlists')">
             <ion-icon name="list-outline"></ion-icon>
-            SETLISTS
+            <span data-i18n="tabSetlists">SETLISTS</span>
           </button>
         </div>
 
         <div class="search-box">
           <span class="search-icon"><ion-icon name="search-outline"></ion-icon></span>
-          <input type="text" id="searchInput" placeholder="Buscar por título, artista ou tag..." oninput="filterItems()">
+          <input type="text" id="searchInput" data-i18n-placeholder="searchSongsPlaceholder" placeholder="Search by title, artist, or tag..." oninput="filterItems()">
         </div>
         <div class="sidebar-meta-bar">
           <span class="sidebar-count" id="itemsCountLabel">
             <ion-icon name="musical-notes-outline"></ion-icon>
             0 MÚSICAS
           </span>
-          <button class="btn btn-sidebar-add" id="sidebarAddBtn" onclick="handleSidebarAdd()" title="Criar Nova Música">
+          <button class="btn btn-sidebar-add" id="sidebarAddBtn" onclick="handleSidebarAdd()" data-i18n-title="btnNewSong" title="New Song">
             <ion-icon name="add-circle-outline"></ion-icon>
-            Nova Música
+            <span id="sidebarAddBtnText" data-i18n="btnNewSong">New Song</span>
           </button>
         </div>
       </div>
@@ -1420,11 +1420,11 @@
       <div id="songEditorSection" style="display: flex; flex-direction: column; flex: 1;">
         <div class="empty-state" id="emptyStateSong">
           <ion-icon name="musical-notes-outline" class="empty-icon"></ion-icon>
-          <h2>Nenhuma música selecionada</h2>
-          <p>Selecione uma música da lista ao lado ou crie uma nova para começar a editar letras, cifras e tablaturas no seu PC.</p>
+          <h2 data-i18n="emptySongTitle">No song selected</h2>
+          <p data-i18n="emptySongDesc">Select a song from the sidebar or create a new one to edit chords, lyrics, and tabs on your PC.</p>
           <button class="btn btn-primary" onclick="addNewSong()">
             <ion-icon name="add-outline"></ion-icon>
-            Criar Primeira Música
+            <span data-i18n="btnCreateFirstSong">Create First Song</span>
           </button>
         </div>
 
@@ -1433,40 +1433,40 @@
           <div class="form-card">
             <div class="form-grid-3">
               <div class="form-group">
-                <label><ion-icon name="musical-note-outline"></ion-icon> Nome da Música *</label>
-                <input type="text" class="form-input" id="songName" placeholder="Ex: Yellow" oninput="updateCurrentSong('name', this.value)">
+                <label><ion-icon name="musical-note-outline"></ion-icon> <span data-i18n="songNameLabel">Song Name *</span></label>
+                <input type="text" class="form-input" id="songName" data-i18n-placeholder="songNamePlaceholder" placeholder="e.g. Yellow" oninput="updateCurrentSong('name', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="people-outline"></ion-icon> Banda / Artista Original *</label>
-                <input type="text" class="form-input" id="songBand" placeholder="Ex: Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
+                <label><ion-icon name="people-outline"></ion-icon> <span data-i18n="originalBandLabel">Original Artist / Band *</span></label>
+                <input type="text" class="form-input" id="songBand" data-i18n-placeholder="originalBandPlaceholder" placeholder="e.g. Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="time-outline"></ion-icon> Duração (mm:ss)</label>
-                <input type="text" class="form-input" id="songDuration" placeholder="Ex: 04:30" oninput="updateCurrentSong('duration', this.value)">
+                <label><ion-icon name="time-outline"></ion-icon> <span data-i18n="durationLabel">Duration (mm:ss)</span></label>
+                <input type="text" class="form-input" id="songDuration" data-i18n-placeholder="durationPlaceholder" placeholder="e.g. 04:30" oninput="updateCurrentSong('duration', this.value)">
               </div>
             </div>
 
             <div class="form-grid-3">
               <div class="form-group">
-                <label><ion-icon name="pricetag-outline"></ion-icon> Tags / Estilos (separados por vírgula)</label>
-                <input type="text" class="form-input" id="songStyle" placeholder="Ex: pop rock, 2000s, acustico" oninput="updateCurrentSong('style', this.value)">
+                <label><ion-icon name="pricetag-outline"></ion-icon> <span data-i18n="tagsLabel">Tags / Styles (comma separated)</span></label>
+                <input type="text" class="form-input" id="songStyle" data-i18n-placeholder="tagsPlaceholder" placeholder="e.g. pop rock, 2000s, acoustic" oninput="updateCurrentSong('style', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="eye-outline"></ion-icon> Aba Padrão no Modo Palco</label>
+                <label><ion-icon name="eye-outline"></ion-icon> <span data-i18n="defaultViewLabel">Default Stage View</span></label>
                 <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
-                  <option value="chords">🎼 Cifra</option>
-                  <option value="lyrics">📝 Letra</option>
-                  <option value="tabs">🎸 Tablatura</option>
+                  <option value="chords" data-i18n="viewChords">🎼 Chords</option>
+                  <option value="lyrics" data-i18n="viewLyrics">📝 Lyrics</option>
+                  <option value="tabs" data-i18n="viewTabs">🎸 Tabs</option>
                 </select>
               </div>
               <div class="form-group">
-                <label><ion-icon name="play-forward-outline"></ion-icon> Velocidade Autoscroll</label>
+                <label><ion-icon name="play-forward-outline"></ion-icon> <span data-i18n="scrollSpeedLabel">Autoscroll Speed</span></label>
                 <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
-                  <option value="none">Pausado / Sem Rolagem</option>
-                  <option value="0.5x">0.5x (Lenta)</option>
-                  <option value="1x">1.0x (Normal)</option>
-                  <option value="1.5x">1.5x (Rápida)</option>
-                  <option value="2x">2.0x (Muito Rápida)</option>
+                  <option value="none" data-i18n="speedNone">Paused / Off</option>
+                  <option value="0.5x" data-i18n="speed05">0.5x (Slow)</option>
+                  <option value="1x" data-i18n="speed10">1.0x (Normal)</option>
+                  <option value="1.5x" data-i18n="speed15">1.5x (Fast)</option>
+                  <option value="2x" data-i18n="speed20">2.0x (Very Fast)</option>
                 </select>
               </div>
             </div>
@@ -1478,38 +1478,38 @@
               <div class="tab-buttons">
                 <button class="tab-btn active" id="tabBtnChords" onclick="switchSongTab('chords')">
                   <ion-icon name="musical-notes-outline"></ion-icon>
-                  Cifra
+                  <span data-i18n="tabChords">Chords</span>
                 </button>
                 <button class="tab-btn" id="tabBtnLyrics" onclick="switchSongTab('lyrics')">
                   <ion-icon name="document-text-outline"></ion-icon>
-                  Letra
+                  <span data-i18n="tabLyrics">Lyrics</span>
                 </button>
                 <button class="tab-btn" id="tabBtnTabs" onclick="switchSongTab('tabs')">
                   <ion-icon name="grid-outline"></ion-icon>
-                  Tablatura
+                  <span data-i18n="tabTabs">Tabs</span>
                 </button>
                 <button class="tab-btn" id="tabBtnLinks" onclick="switchSongTab('links')">
                   <ion-icon name="link-outline"></ion-icon>
-                  Links Úteis
+                  <span data-i18n="tabLinks">Support Links</span>
                 </button>
               </div>
 
               <div class="tab-tools">
                 <div id="chordsTools" style="display: flex; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" title="Diminuir 1 semitom">♭ -1 Semitom</button>
-                  <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" title="Aumentar 1 semitom">♯ +1 Semitom</button>
+                  <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" data-i18n="btnMinusKey">♭ -1 Key</button>
+                  <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" data-i18n="btnPlusKey">♯ +1 Key</button>
                 </div>
 
                 <div id="tabsTools" style="display: none; gap: 6px;">
                   <button class="btn btn-outline btn-sm" onclick="insertTabTemplate()">
                     <ion-icon name="add-outline"></ion-icon>
-                    Grade de Cordas
+                    <span data-i18n="insertTabGrid">String Grid</span>
                   </button>
                 </div>
 
                 <button class="btn btn-outline btn-sm" onclick="openPreviewModal()">
                   <ion-icon name="desktop-outline"></ion-icon>
-                  Modo Palco
+                  <span data-i18n="btnStageMode">Stage Mode</span>
                 </button>
               </div>
             </div>
@@ -1524,11 +1524,11 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
                   <ion-icon name="link-outline" style="color: var(--primary);"></ion-icon>
-                  LINKS DE VÍDEO, CIFRA OU ÁUDIO:
+                  <span data-i18n="linksHeading">VIDEO, AUDIO & CHORDS LINKS:</span>
                 </span>
                 <button class="btn btn-primary btn-sm" onclick="addLinkRow()">
                   <ion-icon name="add-outline"></ion-icon>
-                  Adicionar Link
+                  <span data-i18n="btnAddLink">Add Link</span>
                 </button>
               </div>
               <div class="links-list" id="linksListContainer">
@@ -1543,11 +1543,11 @@
       <div id="setlistEditorSection" style="display: none; flex-direction: column; flex: 1;">
         <div class="empty-state" id="emptyStateSetlist">
           <ion-icon name="list-outline" class="empty-icon"></ion-icon>
-          <h2>Nenhum setlist selecionado</h2>
-          <p>Crie ou selecione um setlist para montar o roteiro das músicas do seu show ou ensaio, com suporte a arrastar e soltar (Drag & Drop), pausas e exportação para Word.</p>
+          <h2 data-i18n="emptySetlistTitle">No setlist selected</h2>
+          <p data-i18n="emptySetlistDesc">Create or select a setlist to organize your concert or rehearsal repertoire with Drag & Drop, pauses, and Word export.</p>
           <button class="btn btn-primary" onclick="addNewSetlist()">
             <ion-icon name="add-outline"></ion-icon>
-            Criar Primeiro Setlist
+            <span data-i18n="btnCreateFirstSetlist">Create First Setlist</span>
           </button>
         </div>
 
@@ -1556,39 +1556,39 @@
           <div class="form-card">
             <div class="form-grid-4">
               <div class="form-group">
-                <label><ion-icon name="mic-outline"></ion-icon> Nome do Setlist / Show *</label>
-                <input type="text" class="form-input" id="setlistName" placeholder="Ex: Show no Bar do Rock" oninput="updateCurrentSetlist('name', this.value)">
+                <label><ion-icon name="mic-outline"></ion-icon> <span data-i18n="setlistNameLabel">Setlist / Show Name *</span></label>
+                <input type="text" class="form-input" id="setlistName" data-i18n-placeholder="setlistNamePlaceholder" placeholder="e.g. Rock Bar Show" oninput="updateCurrentSetlist('name', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="people-outline"></ion-icon> Banda / Projeto *</label>
-                <input type="text" class="form-input" id="setlistBand" placeholder="Ex: Minha Banda" oninput="updateCurrentSetlist('bandName', this.value)">
+                <label><ion-icon name="people-outline"></ion-icon> <span data-i18n="responsibleBandLabel">Band / Project *</span></label>
+                <input type="text" class="form-input" id="setlistBand" data-i18n-placeholder="responsibleBandPlaceholder" placeholder="e.g. My Band" oninput="updateCurrentSetlist('bandName', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="pricetag-outline"></ion-icon> Tipo</label>
+                <label><ion-icon name="pricetag-outline"></ion-icon> <span data-i18n="typeLabel">Event Type</span></label>
                 <select class="form-select" id="setlistType" onchange="updateCurrentSetlist('type', this.value)">
-                  <option value="show">🔥 Show</option>
-                  <option value="ensaio">🎙️ Ensaio</option>
-                  <option value="repertório">📚 Repertório</option>
+                  <option value="show" data-i18n="typeShow">🔥 Show</option>
+                  <option value="ensaio" data-i18n="typeRehearsal">🎙️ Rehearsal</option>
+                  <option value="repertório" data-i18n="typeRepertoire">📚 Repertoire</option>
                 </select>
               </div>
               <div class="form-group">
-                <label><ion-icon name="calendar-outline"></ion-icon> Data</label>
-                <input type="text" class="form-input" id="setlistDate" placeholder="Ex: 2026-10-25 ou 25/10/2026" oninput="updateCurrentSetlist('date', this.value)">
+                <label><ion-icon name="calendar-outline"></ion-icon> <span data-i18n="dateLabel">Date</span></label>
+                <input type="text" class="form-input" id="setlistDate" data-i18n-placeholder="datePlaceholder" placeholder="e.g. 2026-10-25 or 25/10/2026" oninput="updateCurrentSetlist('date', this.value)">
               </div>
             </div>
 
             <div class="form-grid-3">
               <div class="form-group">
-                <label><ion-icon name="location-outline"></ion-icon> Local / Evento</label>
-                <input type="text" class="form-input" id="setlistLocal" placeholder="Ex: The Rock Pub" oninput="updateCurrentSetlist('local', this.value)">
+                <label><ion-icon name="location-outline"></ion-icon> <span data-i18n="localLabel">Venue / Location</span></label>
+                <input type="text" class="form-input" id="setlistLocal" data-i18n-placeholder="localPlaceholder" placeholder="e.g. The Rock Pub" oninput="updateCurrentSetlist('local', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="cash-outline"></ion-icon> Cachê / Valor</label>
-                <input type="text" class="form-input" id="setlistCache" placeholder="Ex: R$ 1.500" oninput="updateCurrentSetlist('cachê', this.value)">
+                <label><ion-icon name="cash-outline"></ion-icon> <span data-i18n="cacheLabel">Cache / Fee</span></label>
+                <input type="text" class="form-input" id="setlistCache" data-i18n-placeholder="cachePlaceholder" placeholder="e.g. $ 1,500" oninput="updateCurrentSetlist('cachê', this.value)">
               </div>
               <div class="form-group">
-                <label><ion-icon name="information-circle-outline"></ion-icon> Observações Gerais</label>
-                <input type="text" class="form-input" id="setlistNotes" placeholder="Ex: Levar cabos extras, passar som às 19h" oninput="updateCurrentSetlist('notes', this.value)">
+                <label><ion-icon name="information-circle-outline"></ion-icon> <span data-i18n="notesLabel">General Notes & Reminders</span></label>
+                <input type="text" class="form-input" id="setlistNotes" data-i18n-placeholder="notesPlaceholder" placeholder="e.g. Bring extra cables, sound check at 7pm" oninput="updateCurrentSetlist('notes', this.value)">
               </div>
             </div>
 
@@ -1597,11 +1597,11 @@
               <div class="summary-pills">
                 <span class="summary-pill">
                   <ion-icon name="musical-notes-outline"></ion-icon>
-                  Músicas: <strong id="sumTotalSongs">0</strong>
+                  <span data-i18n="sumSongs">Songs:</span> <strong id="sumTotalSongs">0</strong>
                 </span>
                 <span class="summary-pill">
                   <ion-icon name="time-outline"></ion-icon>
-                  Duração Estimada: <strong id="sumTotalDuration">00:00</strong>
+                  <span data-i18n="sumDuration">Estimated Duration:</span> <strong id="sumTotalDuration">00:00</strong>
                 </span>
                 <span class="summary-pill" id="sumLocalPill" style="display: none;">
                   <ion-icon name="location-outline"></ion-icon>
@@ -1615,11 +1615,11 @@
               <div style="display: flex; gap: 8px;">
                 <button class="btn btn-outline btn-sm" onclick="exportCurrentSetlistDoc()">
                   <ion-icon name="document-text-outline"></ion-icon>
-                  Exportar Word (.doc)
+                  <span data-i18n="btnExportDoc">Export Word (.doc)</span>
                 </button>
                 <button class="btn btn-primary btn-sm" onclick="exportCurrentSetlistJson()">
                   <ion-icon name="download-outline"></ion-icon>
-                  Exportar Setlist
+                  <span data-i18n="btnExportSetlist">Export Setlist</span>
                 </button>
               </div>
             </div>
@@ -1630,21 +1630,21 @@
             <div class="setlist-songs-header">
               <div class="setlist-songs-title">
                 <ion-icon name="reorder-four-outline"></ion-icon>
-                <span>ROTEIRO DO SHOW / ENSAIO</span>
-                <span style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-left: 6px;">(Arraste pelas alças ☰ para reordenar)</span>
+                <span data-i18n="setlistRoteiroTitle">CONCERT / REHEARSAL REPERTOIRE</span>
+                <span style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-left: 6px;" data-i18n="setlistDragHelp">(Drag handles ☰ to reorder)</span>
               </div>
               <div class="setlist-songs-tools">
                 <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">
                   <ion-icon name="add-circle-outline"></ion-icon>
-                  Adicionar do Repertório
+                  <span data-i18n="btnAddFromRepertoire">Add from Repertoire</span>
                 </button>
                 <button class="btn btn-outline btn-sm" onclick="addSpecialItem('pause')">
                   <ion-icon name="pause-circle-outline" style="color: var(--danger);"></ion-icon>
-                  Pausa / Intervalo
+                  <span data-i18n="btnAddPause">Pause / Break</span>
                 </button>
                 <button class="btn btn-outline btn-sm" onclick="addSpecialItem('note')">
                   <ion-icon name="megaphone-outline" style="color: var(--warning);"></ion-icon>
-                  Anotação / Fala
+                  <span data-i18n="btnAddNote">Announcement / Note</span>
                 </button>
               </div>
             </div>
@@ -1665,7 +1665,7 @@
   <div class="modal-overlay" id="syncModal">
     <div class="modal-card" style="max-width: 620px;">
       <div class="modal-header">
-        <h3><ion-icon name="qr-code-outline" style="color: var(--primary);"></ion-icon> Sincronização Direta com o Celular</h3>
+        <h3><ion-icon name="qr-code-outline" style="color: var(--primary);"></ion-icon> <span data-i18n="syncModalTitle">Direct Real-Time Phone Sync</span></h3>
         <button class="btn btn-ghost btn-icon" onclick="closeSyncModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
 
@@ -1675,11 +1675,11 @@
         <div style="display: flex; gap: 8px; width: 100%; background: var(--bg-card); padding: 4px; border-radius: var(--radius-md); border: 1.5px solid var(--border);">
           <button id="syncTabReceive" class="tab-btn active" onclick="switchSyncMode('receive')" style="flex: 1; justify-content: center;">
             <ion-icon name="cloud-download-outline"></ion-icon>
-            PUXAR DO CELULAR
+            <span data-i18n="syncTabReceive">PULL FROM PHONE</span>
           </button>
           <button id="syncTabSend" class="tab-btn" onclick="switchSyncMode('send')" style="flex: 1; justify-content: center;">
             <ion-icon name="cloud-upload-outline"></ion-icon>
-            ENVIAR PARA O CELULAR
+            <span data-i18n="syncTabSend">SEND TO PHONE</span>
           </button>
         </div>
 
@@ -1699,7 +1699,7 @@
 
         <!-- PIN Alternative -->
         <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px;">OU DIGITE O CÓDIGO PIN NO APP:</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px;"><span data-i18n="syncPinLabel">OR TYPE PIN IN APP:</span></span>
           <div style="display: flex; align-items: center; gap: 10px;">
             <div id="syncPinDisplay" style="font-family: 'Fira Code', monospace; font-size: 26px; font-weight: 800; letter-spacing: 4px; color: var(--primary); background: var(--bg-card); padding: 6px 18px; border-radius: var(--radius-md); border: 2px dashed var(--primary);">
               ------
@@ -1721,9 +1721,9 @@
       <div class="modal-footer" style="justify-content: space-between;">
         <button class="btn btn-ghost btn-sm" onclick="refreshSyncSession()">
           <ion-icon name="refresh-outline"></ion-icon>
-          Gerar Novo QR Code
+          <span data-i18n="btnRefreshQr">Generate New QR Code</span>
         </button>
-        <button class="btn btn-outline" onclick="closeSyncModal()">Fechar</button>
+        <button class="btn btn-outline" onclick="closeSyncModal()" data-i18n="btnClose">Close</button>
       </div>
     </div>
   </div>
@@ -1732,29 +1732,29 @@
   <div class="modal-overlay" id="importModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3><ion-icon name="cloud-download-outline"></ion-icon> Importar Backup para o PC</h3>
+        <h3><ion-icon name="cloud-download-outline"></ion-icon> <span data-i18n="importModalTitle">Import Backup to PC</span></h3>
         <button class="btn btn-ghost btn-icon" onclick="closeImportModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
       <div class="modal-body">
         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
           <ion-icon name="cloud-upload-outline"></ion-icon>
-          <p><strong>Clique para selecionar</strong> ou arraste um arquivo <code>.json</code> exportado pelo app</p>
+          <p data-i18n="dropZoneText"><strong>Click to select</strong> or drag a <code>.json</code> file exported from the app</p>
           <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileSelected(event)">
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="flex: 1; height: 1px; background: var(--border);"></div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim);">OU COLE O CÓDIGO JSON ABAIXO</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim);" data-i18n="dropZoneOr">OR PASTE JSON CODE BELOW</span>
           <div style="flex: 1; height: 1px; background: var(--border);"></div>
         </div>
 
-        <textarea class="form-input" id="importJsonTextarea" rows="6" placeholder="Cole o código JSON de Música, Setlist ou Backup Total aqui..." style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
+        <textarea class="form-input" id="importJsonTextarea" rows="6" data-i18n-placeholder="placeholderImport" placeholder="Paste Song, Setlist or Full Backup JSON code here..." style="font-family: 'Fira Code', monospace; font-size: 11.5px;"></textarea>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeImportModal()">Cancelar</button>
+        <button class="btn btn-outline" onclick="closeImportModal()" data-i18n="btnCancel">Cancel</button>
         <button class="btn btn-primary" onclick="processImportJson()">
           <ion-icon name="download-outline"></ion-icon>
-          Importar Agora
+          <span data-i18n="btnImportNow">Import Now</span>
         </button>
       </div>
     </div>
@@ -1775,14 +1775,14 @@
         <textarea class="form-input" id="exportJsonTextarea" rows="10" readonly style="font-family: 'Fira Code', monospace; font-size: 12px;"></textarea>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeExportModal()">Fechar</button>
+        <button class="btn btn-outline" onclick="closeExportModal()" data-i18n="btnClose">Close</button>
         <button class="btn btn-outline" onclick="copyExportCode()">
           <ion-icon name="copy-outline"></ion-icon>
-          Copiar Código
+          <span data-i18n="btnCopyCode">Copy Code</span>
         </button>
         <button class="btn btn-primary" id="downloadJsonBtn" onclick="downloadExportFile()">
           <ion-icon name="download-outline"></ion-icon>
-          Baixar Arquivo .JSON
+          <span data-i18n="btnDownloadJson">Download .JSON File</span>
         </button>
       </div>
     </div>
@@ -1792,13 +1792,13 @@
   <div class="modal-overlay" id="pickSongModal">
     <div class="modal-card" style="max-width: 720px;">
       <div class="modal-header">
-        <h3><ion-icon name="musical-notes-outline"></ion-icon> Adicionar Músicas ao Setlist</h3>
+        <h3><ion-icon name="musical-notes-outline"></ion-icon> <span data-i18n="pickSongModalTitle">Add Songs to Setlist</span></h3>
         <button class="btn btn-ghost btn-icon" onclick="closePickSongModal()"><ion-icon name="close-outline"></ion-icon></button>
       </div>
       <div class="modal-body">
         <div class="search-box">
           <span class="search-icon"><ion-icon name="search-outline"></ion-icon></span>
-          <input type="text" id="pickSongSearchInput" placeholder="Filtrar por nome, banda ou estilo..." oninput="renderPickSongList()">
+          <input type="text" id="pickSongSearchInput" data-i18n-placeholder="pickSongSearchPlaceholder" placeholder="Filter by name, band or style..." oninput="renderPickSongList()">
         </div>
         
         <!-- Selection Bar -->
@@ -1810,11 +1810,11 @@
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-outline btn-sm" onclick="toggleSelectAllPickSongs(true)">
               <ion-icon name="checkmark-done-outline"></ion-icon>
-              Marcar Todas
+              <span data-i18n="btnSelectAll">Select All</span>
             </button>
             <button class="btn btn-outline btn-sm" onclick="toggleSelectAllPickSongs(false)">
               <ion-icon name="close-circle-outline"></ion-icon>
-              Desmarcar
+              <span data-i18n="btnDeselect">Deselect</span>
             </button>
           </div>
         </div>
@@ -1824,7 +1824,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closePickSongModal()">Cancelar</button>
+        <button class="btn btn-outline" onclick="closePickSongModal()" data-i18n="btnCancel">Cancel</button>
         <button class="btn btn-primary" id="confirmAddSongsBtn" onclick="confirmAddSelectedSongsToSetlist()">
           <ion-icon name="add-circle-outline"></ion-icon>
           <span id="confirmAddSongsBtnText">Adicionar Selecionadas (0)</span>
@@ -2000,13 +2000,16 @@
     ---------------------------------------------------- */
     let currentLang = localStorage.getItem('setlist_editor_lang') || 'en';
 
-    const translations = {
+        const translations = {
       en: {
         pageTitle: 'Setlist Band Manager - Web Editor Pro',
         brandBadge: 'WEB EDITOR',
         btnSyncHeader: 'Sync Mobile',
+        btnSyncHeaderTitle: 'Sync in Real-time with Phone via QR Code',
         btnImportBackup: 'Import Backup',
+        btnImportBackupTitle: 'Import backup .json file or code',
         btnExportBackup: 'Export Backup',
+        btnExportBackupTitle: 'Export full backup of all songs and setlists (.json)',
         toggleTheme: 'Toggle Light / Dark Theme',
         backToHome: 'Back to Home Page',
         tabSongs: 'SONGS',
@@ -2024,9 +2027,13 @@
         emptySetlistDesc: 'Create or select a setlist to organize your concert or rehearsal repertoire with Drag & Drop, pauses, and Word export.',
         btnCreateFirstSetlist: 'Create First Setlist',
         songNameLabel: 'Song Name *',
+        songNamePlaceholder: 'e.g. Yellow',
         originalBandLabel: 'Original Artist / Band *',
+        originalBandPlaceholder: 'e.g. Coldplay',
         durationLabel: 'Duration (mm:ss)',
+        durationPlaceholder: 'e.g. 04:30',
         tagsLabel: 'Tags / Styles (comma separated)',
+        tagsPlaceholder: 'e.g. pop rock, 2000s, acoustic',
         defaultViewLabel: 'Default Stage View',
         viewChords: '🎼 Chords',
         viewLyrics: '📝 Lyrics',
@@ -2055,15 +2062,21 @@
         btnDuplicate: 'Duplicate',
         btnDelete: 'Delete',
         setlistNameLabel: 'Setlist / Show Name *',
+        setlistNamePlaceholder: 'e.g. Rock Bar Show',
         responsibleBandLabel: 'Band / Project *',
+        responsibleBandPlaceholder: 'e.g. My Band',
         typeLabel: 'Event Type',
         typeShow: '🔥 Show',
         typeRehearsal: '🎙️ Rehearsal',
         typeRepertoire: '📚 Repertoire',
         dateLabel: 'Date',
+        datePlaceholder: 'e.g. 2026-10-25 or 25/10/2026',
         localLabel: 'Venue / Location',
+        localPlaceholder: 'e.g. The Rock Pub',
         cacheLabel: 'Cache / Fee',
+        cachePlaceholder: 'e.g. $ 1,500',
         notesLabel: 'General Notes & Reminders',
+        notesPlaceholder: 'e.g. Bring extra cables, sound check at 7pm',
         sumSongs: 'Songs:',
         sumDuration: 'Estimated Duration:',
         btnExportDoc: 'Export Word (.doc)',
@@ -2074,9 +2087,15 @@
         btnAddPause: 'Pause / Break',
         btnAddNote: 'Announcement / Note',
         noSongsInSetlist: 'No songs in this setlist yet. Click "Add from Repertoire" above!',
-        pauseTitle: 'PAUSE / INTERMISSION',
+        pauseTitle: 'PAUSE / BREAK',
         noteTitle: 'ANNOUNCEMENT / NOTE',
         customNotesPlaceholder: 'Show notes, key adjustments, vocal cues...',
+        pauseCustomNotesPlaceholder: 'e.g. 15 min break for instrument swap',
+        noteCustomNotesPlaceholder: 'e.g. Thank audience and sponsors...',
+        songCustomNotesPlaceholder: 'Notes for this gig (e.g. Key G, drive guitar, direct entry)...',
+        btnMoveUp: 'Move Up (1 position)',
+        btnMoveDown: 'Move Down (1 position)',
+        btnRemoveFromSetlist: 'Remove from Setlist',
         syncModalTitle: 'Direct Real-Time Phone Sync',
         syncTabReceive: 'PULL FROM PHONE',
         syncTabSend: 'SEND TO PHONE',
@@ -2130,8 +2149,11 @@
         pageTitle: 'Setlist Band Manager - Web Editor Pro',
         brandBadge: 'WEB EDITOR',
         btnSyncHeader: 'Sincronizar Celular',
+        btnSyncHeaderTitle: 'Sincronizar em Tempo Real com o Celular via QR Code',
         btnImportBackup: 'Importar Backup',
+        btnImportBackupTitle: 'Importar arquivo de backup .json ou código',
         btnExportBackup: 'Exportar Backup',
+        btnExportBackupTitle: 'Exportar backup completo de todas as músicas e setlists (.json)',
         toggleTheme: 'Alternar Tema Claro / Escuro',
         backToHome: 'Voltar à Página Inicial',
         tabSongs: 'MÚSICAS',
@@ -2149,9 +2171,13 @@
         emptySetlistDesc: 'Crie ou selecione um setlist para montar o roteiro das músicas do seu show ou ensaio, com suporte a arrastar e soltar (Drag & Drop), pausas e exportação para Word.',
         btnCreateFirstSetlist: 'Criar Primeiro Setlist',
         songNameLabel: 'Nome da Música *',
+        songNamePlaceholder: 'Ex: Yellow',
         originalBandLabel: 'Banda / Artista Original *',
+        originalBandPlaceholder: 'Ex: Coldplay',
         durationLabel: 'Duração (mm:ss)',
+        durationPlaceholder: 'Ex: 04:30',
         tagsLabel: 'Tags / Estilos (separados por vírgula)',
+        tagsPlaceholder: 'Ex: pop rock, 2000s, acustico',
         defaultViewLabel: 'Aba Padrão no Modo Palco',
         viewChords: '🎼 Cifra',
         viewLyrics: '📝 Letra',
@@ -2180,15 +2206,21 @@
         btnDuplicate: 'Duplicar',
         btnDelete: 'Excluir',
         setlistNameLabel: 'Nome do Setlist / Show *',
+        setlistNamePlaceholder: 'Ex: Show no Bar do Rock',
         responsibleBandLabel: 'Banda / Projeto *',
+        responsibleBandPlaceholder: 'Ex: Minha Banda',
         typeLabel: 'Tipo de Evento',
         typeShow: '🔥 Show',
         typeRehearsal: '🎙️ Ensaio',
         typeRepertoire: '📚 Repertório',
         dateLabel: 'Data',
+        datePlaceholder: 'Ex: 2026-10-25 ou 25/10/2026',
         localLabel: 'Local / Evento',
+        localPlaceholder: 'Ex: The Rock Pub',
         cacheLabel: 'Cachê / Valor',
+        cachePlaceholder: 'Ex: R$ 1.500',
         notesLabel: 'Observações Gerais',
+        notesPlaceholder: 'Ex: Levar cabos extras, passar som às 19h',
         sumSongs: 'Músicas:',
         sumDuration: 'Duração Estimada:',
         btnExportDoc: 'Exportar Word (.doc)',
@@ -2202,6 +2234,12 @@
         pauseTitle: 'PAUSA / INTERVALO',
         noteTitle: 'ANOTAÇÃO / FALA',
         customNotesPlaceholder: 'Observações, afinação, avisos para a banda...',
+        pauseCustomNotesPlaceholder: 'Ex: Intervalo 15 min para troca de instrumentos',
+        noteCustomNotesPlaceholder: 'Ex: Agradecer ao público e patrocinadores...',
+        songCustomNotesPlaceholder: 'Obs para este show (ex: Tom G, guitarra com drive, entrar direto)...',
+        btnMoveUp: 'Subir (1 posição)',
+        btnMoveDown: 'Descer (1 posição)',
+        btnRemoveFromSetlist: 'Remover do Roteiro',
         syncModalTitle: 'Sincronização Direta com o Celular',
         syncTabReceive: 'PUXAR DO CELULAR',
         syncTabSend: 'ENVIAR PARA O CELULAR',
@@ -2255,8 +2293,11 @@
         pageTitle: 'Setlist Band Manager - Web Editor Pro',
         brandBadge: 'WEB EDITOR',
         btnSyncHeader: 'Sincronizar Celular',
+        btnSyncHeaderTitle: 'Sincronizar en Tiempo Real con el Celular vía QR',
         btnImportBackup: 'Importar Respaldo',
+        btnImportBackupTitle: 'Importar archivo de respaldo .json o código',
         btnExportBackup: 'Exportar Respaldo',
+        btnExportBackupTitle: 'Exportar respaldo completo de canciones y setlists (.json)',
         toggleTheme: 'Cambiar Tema Claro / Oscuro',
         backToHome: 'Volver a la Página Principal',
         tabSongs: 'CANCIONES',
@@ -2274,9 +2315,13 @@
         emptySetlistDesc: 'Crea o selecciona un setlist para organizar el repertorio de tu show o ensayo con Drag & Drop, pausas y exportación a Word.',
         btnCreateFirstSetlist: 'Crear Primer Setlist',
         songNameLabel: 'Nombre de la Canción *',
+        songNamePlaceholder: 'Ej: Yellow',
         originalBandLabel: 'Banda / Artista Original *',
+        originalBandPlaceholder: 'Ej: Coldplay',
         durationLabel: 'Duración (mm:ss)',
+        durationPlaceholder: 'Ej: 04:30',
         tagsLabel: 'Etiquetas / Estilos (separados por comas)',
+        tagsPlaceholder: 'Ej: pop rock, 2000s, acústico',
         defaultViewLabel: 'Vista Predeterminada en Escenario',
         viewChords: '🎼 Acordes',
         viewLyrics: '📝 Letra',
@@ -2290,7 +2335,7 @@
         tabChords: 'Acordes',
         tabLyrics: 'Letra',
         tabTabs: 'Tablatura',
-        tabLinks: 'Enlaces de Apoyo',
+        tabLinks: 'Enlaces Útiles',
         transposeKey: 'Transponer Tono:',
         btnMinusKey: '♭ -1 Tono',
         btnPlusKey: '♯ +1 Tono',
@@ -2305,15 +2350,21 @@
         btnDuplicate: 'Duplicar',
         btnDelete: 'Eliminar',
         setlistNameLabel: 'Nombre del Setlist / Show *',
+        setlistNamePlaceholder: 'Ej: Show en Bar Rock',
         responsibleBandLabel: 'Banda / Proyecto *',
+        responsibleBandPlaceholder: 'Ej: Mi Banda',
         typeLabel: 'Tipo de Evento',
         typeShow: '🔥 Show',
         typeRehearsal: '🎙️ Ensayo',
         typeRepertoire: '📚 Repertorio',
         dateLabel: 'Fecha',
+        datePlaceholder: 'Ej: 2026-10-25 o 25/10/2026',
         localLabel: 'Lugar / Evento',
+        localPlaceholder: 'Ej: The Rock Pub',
         cacheLabel: 'Caché / Honorarios',
+        cachePlaceholder: 'Ej: $ 1.500',
         notesLabel: 'Notas y Avisos Generales',
+        notesPlaceholder: 'Ej: Traer cables extra, prueba de sonido a las 19h',
         sumSongs: 'Canciones:',
         sumDuration: 'Duración Estimada:',
         btnExportDoc: 'Exportar Word (.doc)',
@@ -2327,6 +2378,12 @@
         pauseTitle: 'PAUSA / DESCANSO',
         noteTitle: 'AVISO / NOTA',
         customNotesPlaceholder: 'Notas de ensayo, tono, afinación...',
+        pauseCustomNotesPlaceholder: 'Ej: Descanso 15 min para cambio de instrumentos',
+        noteCustomNotesPlaceholder: 'Ej: Agradecer al público y patrocinadores...',
+        songCustomNotesPlaceholder: 'Obs para este show (ej: Tono G, guitarra con drive, entrar directo)...',
+        btnMoveUp: 'Subir (1 posición)',
+        btnMoveDown: 'Bajar (1 posición)',
+        btnRemoveFromSetlist: 'Eliminar del Repertorio',
         syncModalTitle: 'Sincronización Directa con Celular',
         syncTabReceive: 'EXTRAER DEL CELULAR',
         syncTabSend: 'ENVIAR AL CELULAR',
@@ -2378,9 +2435,9 @@
       }
     };
 
-    function t(key, params = {}) {
+        function t(key, params = {}) {
       const dict = translations[currentLang] || translations.en;
-      let text = dict[key] || translations.en[key] || key;
+      let text = dict[key] || (translations.en && translations.en[key]) || key;
       for (const [pKey, pVal] of Object.entries(params)) {
         text = text.replace(new RegExp('\\{' + pKey + '\\}', 'g'), pVal);
       }
@@ -2388,46 +2445,82 @@
     }
 
     function changeLanguage(lang) {
+      if (!translations[lang]) lang = 'en';
       currentLang = lang;
       localStorage.setItem('setlist_editor_lang', lang);
-      document.getElementById('langSelector').value = lang;
-      document.documentElement.setAttribute('lang', lang === 'pt' ? 'pt-BR' : lang);
+      const sel = document.getElementById('langSelector');
+      if (sel) sel.value = lang;
+      document.documentElement.setAttribute('lang', lang === 'pt' ? 'pt-BR' : (lang === 'es' ? 'es-ES' : 'en'));
       
       applyStaticTranslations();
       renderAll();
+      const pickModal = document.getElementById('pickSongModal');
+      if (pickModal && pickModal.classList.contains('open')) {
+        renderPickSongList();
+      }
       showToast(lang === 'en' ? 'Language switched to English' : lang === 'pt' ? 'Idioma alterado para Português' : 'Idioma cambiado a Español', 'globe-outline');
     }
 
     function applyStaticTranslations() {
-      // Header
-      const btnSync = document.getElementById('btnSyncHeaderText');
-      if (btnSync) btnSync.innerText = t('btnSyncHeader');
+      const dict = translations[currentLang] || translations.en;
 
-      // Sidebar Mode Buttons
-      const btnSongs = document.getElementById('modeBtnSongs');
-      if (btnSongs) btnSongs.innerHTML = '<ion-icon name="musical-notes-outline"></ion-icon> ' + t('tabSongs');
-      const btnSetlists = document.getElementById('modeBtnSetlists');
-      if (btnSetlists) btnSetlists.innerHTML = '<ion-icon name="list-outline"></ion-icon> ' + t('tabSetlists');
+      if (dict.pageTitle) document.title = dict.pageTitle;
 
+      // Update all elements with data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+
+      // Update all elements with data-i18n-placeholder
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) {
+          el.setAttribute('placeholder', dict[key]);
+        }
+      });
+
+      // Update all elements with data-i18n-title
+      document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        if (dict[key]) {
+          el.setAttribute('title', dict[key]);
+        }
+      });
+
+      // Update Dynamic search input placeholder based on current mode
       const searchInput = document.getElementById('searchInput');
       if (searchInput) {
         searchInput.placeholder = currentMode === 'songs' ? t('searchSongsPlaceholder') : t('searchSetlistsPlaceholder');
       }
 
-      // Empty states
-      const emptySongH2 = document.querySelector('#emptyStateSong h2');
-      if (emptySongH2) emptySongH2.innerText = t('emptySongTitle');
-      const emptySongP = document.querySelector('#emptyStateSong p');
-      if (emptySongP) emptySongP.innerText = t('emptySongDesc');
-      const emptySongBtn = document.querySelector('#emptyStateSong button');
-      if (emptySongBtn) emptySongBtn.innerHTML = '<ion-icon name="add-outline"></ion-icon> ' + t('btnCreateFirstSong');
+      // Update Textarea placeholder based on active tab
+      const textarea = document.getElementById('mainTextarea');
+      if (textarea) {
+        if (activeSongTab === 'chords') {
+          textarea.placeholder = t('placeholderChords');
+        } else if (activeSongTab === 'lyrics') {
+          textarea.placeholder = t('placeholderLyrics');
+        } else if (activeSongTab === 'tabs') {
+          textarea.placeholder = t('placeholderTabs');
+        }
+      }
 
-      const emptySetlistH2 = document.querySelector('#emptyStateSetlist h2');
-      if (emptySetlistH2) emptySetlistH2.innerText = t('emptySetlistTitle');
-      const emptySetlistP = document.querySelector('#emptyStateSetlist p');
-      if (emptySetlistP) emptySetlistP.innerText = t('emptySetlistDesc');
-      const emptySetlistBtn = document.querySelector('#emptyStateSetlist button');
-      if (emptySetlistBtn) emptySetlistBtn.innerHTML = '<ion-icon name="add-outline"></ion-icon> ' + t('btnCreateFirstSetlist');
+      // Update Sync status text
+      const syncStatusText = document.getElementById('syncStatusText');
+      if (syncStatusText && syncSessionId) {
+        syncStatusText.innerText = t('syncWaitingPhone');
+      }
+
+      // Update Sync Description text based on mode
+      const syncDesc = document.getElementById('syncDescText');
+      if (syncDesc) {
+        const syncTabRec = document.getElementById('syncTabReceive');
+        const isRec = syncTabRec && syncTabRec.classList.contains('active');
+        syncDesc.innerHTML = isRec ? t('syncDescReceive') : t('syncDescSend');
+      }
     }
 
     let currentMode = 'songs'; // 'songs' | 'setlists'
@@ -2939,15 +3032,15 @@
           return sName.includes(query) || sBand.includes(query) || sStyle.includes(query);
         });
 
-        document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="musical-notes-outline"></ion-icon> ${songs.length} MÚSICAS`;
+        document.getElementById('itemsCountLabel').innerHTML = `<ion-icon name="musical-notes-outline"></ion-icon> ${t('songsCountLabel', { count: songs.length })}`;
         const addBtnSong = document.getElementById('sidebarAddBtn');
         if (addBtnSong) {
-          addBtnSong.innerHTML = '<ion-icon name="add-circle-outline"></ion-icon> Nova Música';
-          addBtnSong.title = 'Criar Nova Música';
+          addBtnSong.innerHTML = '<ion-icon name="add-circle-outline"></ion-icon> ' + t('btnNewSong');
+          addBtnSong.title = t('btnNewSong');
         }
 
         if (filtered.length === 0) {
-          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">Nenhuma música encontrada</div>`;
+          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">${t('noSongsFoundPicker')}</div>`;
           return;
         }
 
@@ -2967,10 +3060,10 @@
                 ${tags.length > 2 ? `<span class="tag-badge">+${tags.length - 2}</span>` : ''}
               </div>
               <div class="item-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="Duplicar">
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSong(${song.id})" title="${t('btnDuplicate')}">
                   <ion-icon name="copy-outline"></ion-icon>
                 </button>
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="Excluir" style="color: var(--danger);">
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSong(${song.id})" title="${t('btnDelete')}" style="color: var(--danger);">
                   <ion-icon name="trash-outline"></ion-icon>
                 </button>
               </div>
@@ -2996,7 +3089,7 @@
         }
 
         if (filtered.length === 0) {
-          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">Nenhum setlist encontrado</div>`;
+          container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 30px; font-size: 13px;">${t('noSongsFoundPicker')}</div>`;
           return;
         }
 
@@ -3017,10 +3110,10 @@
                 ${st.date ? `<span class="tag-badge"><ion-icon name="calendar-outline"></ion-icon> ${st.date}</span>` : ''}
               </div>
               <div class="item-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSetlist(${st.id})" title="Duplicar">
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); duplicateSetlist(${st.id})" title="${t('btnDuplicate')}">
                   <ion-icon name="copy-outline"></ion-icon>
                 </button>
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSetlist(${st.id})" title="Excluir" style="color: var(--danger);">
+                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteSetlist(${st.id})" title="${t('btnDelete')}" style="color: var(--danger);">
                   <ion-icon name="trash-outline"></ion-icon>
                 </button>
               </div>
@@ -3061,7 +3154,7 @@
       if (currentMode !== 'songs') switchMode('songs');
       renderSidebar();
       renderSongEditor();
-      showToast('Nova música criada!', 'musical-notes-outline');
+      showToast(t('toastNewSongCreated'), 'musical-notes-outline');
     }
 
     function duplicateSong(id) {
@@ -3080,7 +3173,7 @@
       saveToStorage();
       renderSidebar();
       renderSongEditor();
-      showToast(`Música "${duplicated.name}" duplicada!`, 'copy-outline');
+      showToast(t('toastSongDuplicated', { name: duplicated.name }), 'copy-outline');
     }
 
     function deleteSong(id) {
@@ -3088,7 +3181,7 @@
       if (!song) return;
 
       const songName = song.name || song.title || 'Música';
-      if (!confirm(`Deseja realmente excluir a música "${songName}"?`)) return;
+      if (!confirm(t('confirmDeleteSong', { name: songName }))) return;
 
       songs = songs.filter(s => s.id !== id);
       if (activeSongId === id) {
@@ -3098,7 +3191,7 @@
       saveToStorage();
       renderSidebar();
       renderSongEditor();
-      showToast(`Música "${songName}" removida.`, 'trash-outline');
+      showToast(t('toastSongDeleted', { name: songName }), 'trash-outline');
     }
 
     function renderSongEditor() {
@@ -3160,13 +3253,13 @@
 
         if (tab === 'chords') {
           textarea.value = song.chords || '';
-          textarea.placeholder = 'Digite ou cole a Cifra aqui (ex: Intro, Verso, Refrão com acordes)...';
+          textarea.placeholder = t('placeholderChords');
         } else if (tab === 'lyrics') {
           textarea.value = song.lyrics || '';
-          textarea.placeholder = 'Digite ou cole a Letra da música aqui...';
+          textarea.placeholder = t('placeholderLyrics');
         } else if (tab === 'tabs') {
           textarea.value = song.tabs || '';
-          textarea.placeholder = 'Digite ou cole a Tablatura de guitarra/violão aqui...';
+          textarea.placeholder = t('placeholderTabs');
         }
       }
     }
@@ -3187,7 +3280,7 @@
       const template = `e|---------------------------------------------------|\nB|---------------------------------------------------|\nG|---------------------------------------------------|\nD|---------------------------------------------------|\nA|---------------------------------------------------|\nE|---------------------------------------------------|\n`;
       textarea.value = (textarea.value ? textarea.value + '\n\n' : '') + template;
       handleTextareaChange(textarea.value);
-      showToast('Grade de tablatura inserida!', 'grid-outline');
+      showToast(t('toastTabTemplate'), 'grid-outline');
     }
 
     function renderLinksEditor() {
@@ -3198,7 +3291,7 @@
       const links = song.links || [];
 
       if (links.length === 0) {
-        container.innerHTML = `<p style="font-size: 12.5px; color: var(--text-dim); font-style: italic; padding: 12px 0;">Nenhum link cadastrado para esta música.</p>`;
+        container.innerHTML = `<p style="font-size: 12.5px; color: var(--text-dim); font-style: italic; padding: 12px 0;">${t('noLinks')}</p>`;
         return;
       }
 
@@ -3316,7 +3409,7 @@
       if (currentMode !== 'setlists') switchMode('setlists');
       renderSidebar();
       renderSetlistEditor();
-      showToast('Novo setlist criado!', 'list-outline');
+      showToast(t('toastNewSetlistCreated'), 'list-outline');
     }
 
     function duplicateSetlist(id) {
@@ -3335,14 +3428,14 @@
       saveToStorage();
       renderSidebar();
       renderSetlistEditor();
-      showToast(`Setlist "${st.name}" duplicado!`, 'copy-outline');
+      showToast(t('toastSetlistDuplicated', { name: duplicated.name }), 'copy-outline');
     }
 
     function deleteSetlist(id) {
       const st = setlists.find(s => s.id === id);
       if (!st) return;
 
-      if (!confirm(`Deseja realmente excluir o setlist "${st.name}"?`)) return;
+      if (!confirm(t('confirmDeleteSetlist', { name: st.name }))) return;
 
       setlists = setlists.filter(s => s.id !== id);
       if (activeSetlistId === id) {
@@ -3352,7 +3445,7 @@
       saveToStorage();
       renderSidebar();
       renderSetlistEditor();
-      showToast(`Setlist "${st.name}" removido.`, 'trash-outline');
+      showToast(t('toastSetlistDeleted', { name: st.name }), 'trash-outline');
     }
 
     function renderSetlistEditor() {
@@ -3469,11 +3562,10 @@
         container.innerHTML = `
           <div style="text-align: center; color: var(--text-dim); padding: 36px 20px; border: 2px dashed var(--border); border-radius: var(--radius-md); background: var(--bg-card);">
             <ion-icon name="musical-notes-outline" style="font-size: 38px; color: var(--primary); margin-bottom: 8px;"></ion-icon>
-            <p style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Nenhuma música no roteiro</p>
-            <p style="font-size: 12.5px; margin-bottom: 14px;">Adicione músicas do seu repertório para montar a ordem de execução do show.</p>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 14px;">${t('noSongsInSetlist')}</p>
             <button class="btn btn-primary btn-sm" onclick="openPickSongModal()">
               <ion-icon name="add-circle-outline"></ion-icon>
-              Adicionar Música do Repertório
+              ${t('btnAddFromRepertoire')}
             </button>
           </div>
         `;
@@ -3499,7 +3591,7 @@
         }
 
         const songTitle = item.name || item.title || 'Sem Título';
-        const songBand = isPause ? 'Pausa / Intervalo' : (isNote ? 'Anotação / Fala de Palco' : (item.originalBand || item.band || 'Artista'));
+        const songBand = isPause ? t('btnAddPause') : (isNote ? t('btnAddNote') : (item.originalBand || item.band || ''));
 
         return `
           <div class="${rowClass}" 
@@ -3533,17 +3625,17 @@
             ` : ''}
 
             <!-- Custom Notes -->
-            <input type="text" class="song-row-notes-input" placeholder="${isPause ? 'Ex: Intervalo 15 min para troca de instrumentos' : (isNote ? 'Ex: Agradecer ao público e patrocinadores...' : 'Obs para este show (ex: Tom G, guitarra com drive, entrar direto)...')}" value="${item.customNotes || ''}" oninput="updateSetlistSongItem(${idx}, 'customNotes', this.value)">
+            <input type="text" class="song-row-notes-input" placeholder="${isPause ? t('pauseCustomNotesPlaceholder') : (isNote ? t('noteCustomNotesPlaceholder') : t('songCustomNotesPlaceholder'))}" value="${item.customNotes || ''}" oninput="updateSetlistSongItem(${idx}, 'customNotes', this.value)">
 
             <!-- Quick Action Buttons -->
             <div class="song-row-actions">
-              <button class="btn btn-outline btn-sm btn-icon" ${idx === 0 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveSetlistSong(${idx}, -1)" title="Subir (1 posição)">
+              <button class="btn btn-outline btn-sm btn-icon" ${idx === 0 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveSetlistSong(${idx}, -1)" title="${t('btnMoveUp')}">
                 <ion-icon name="chevron-up-outline"></ion-icon>
               </button>
-              <button class="btn btn-outline btn-sm btn-icon" ${idx === list.length - 1 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveSetlistSong(${idx}, 1)" title="Descer (1 posição)">
+              <button class="btn btn-outline btn-sm btn-icon" ${idx === list.length - 1 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveSetlistSong(${idx}, 1)" title="${t('btnMoveDown')}">
                 <ion-icon name="chevron-down-outline"></ion-icon>
               </button>
-              <button class="btn btn-outline btn-sm btn-icon" style="color: var(--danger);" onclick="removeSetlistSong(${idx})" title="Remover do Roteiro">
+              <button class="btn btn-outline btn-sm btn-icon" style="color: var(--danger);" onclick="removeSetlistSong(${idx})" title="${t('btnRemoveFromSetlist')}">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
             </div>
@@ -3748,9 +3840,9 @@
       });
 
       const selectedCount = selectedSongIdsForSetlist.size;
-      document.getElementById('pickSelectedCountBadge').innerText = `${selectedCount} SELECIONADA${selectedCount === 1 ? '' : 'S'}`;
-      document.getElementById('pickSongTotalCountLabel').innerText = `(${filtered.length} disponíveis)`;
-      document.getElementById('confirmAddSongsBtnText').innerText = `Adicionar Selecionadas (${selectedCount})`;
+      document.getElementById('pickSelectedCountBadge').innerText = t('pickSelectedCount', { count: selectedCount });
+      document.getElementById('pickSongTotalCountLabel').innerText = t('pickAvailableCount', { count: filtered.length });
+      document.getElementById('confirmAddSongsBtnText').innerText = t('btnAddSelected', { count: selectedCount });
       
       const confirmBtn = document.getElementById('confirmAddSongsBtn');
       if (selectedCount === 0) {
@@ -3762,7 +3854,7 @@
       }
 
       if (filtered.length === 0) {
-        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 28px; font-size: 13px;">Nenhuma música encontrada no repertório.</p>`;
+        container.innerHTML = `<p style="text-align: center; color: var(--text-dim); padding: 28px; font-size: 13px;">${t('noSongsFoundPicker')}</p>`;
         return;
       }
 
@@ -3792,7 +3884,7 @@
             <!-- Setlist indicator badge -->
             ${inSetlistCount > 0 ? `
               <span class="tag-badge" style="color: var(--primary); border-color: var(--primary-glow); flex-shrink: 0;">
-                <ion-icon name="list-outline"></ion-icon> No setlist (${inSetlistCount}x)
+                <ion-icon name="list-outline"></ion-icon> ${t('inSetlistBadge', { count: inSetlistCount })}
               </span>
             ` : ''}
           </div>
@@ -4054,7 +4146,7 @@
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`Documento Word "${filename}" baixado!`, 'document-text-outline');
+      showToast(t('toastDocDownloaded', { name: filename }), 'document-text-outline');
     }
 
     function exportFullBackup() {
