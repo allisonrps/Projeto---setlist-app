@@ -560,7 +560,7 @@ const getFeaturesList = (lang) => {
 
 function MainApp() {
   const { colors, themeMode, primaryColor, secondaryColor, setThemePreferences } = useTheme();
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const isDark = colors.isDark;
 
   // Estados de navegação e abas
@@ -2962,7 +2962,7 @@ function MainApp() {
             </Text>
 
             <View style={{ gap: 6, marginBottom: 16 }}>
-              {[t('tip1'), t('tip2'), t('tip3')].map((tip, idx) => (
+              {[t('tip2'), t('tip3')].map((tip, idx) => (
                 <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
                   <Ionicons name="checkmark-circle" size={13} color={colors.primary} style={{ marginTop: 2 }} />
                   <Text style={{ fontSize: 11.5, color: colors.textMuted, lineHeight: 16, flex: 1 }}>
@@ -3387,7 +3387,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50,
-    paddingBottom: Platform.OS === 'ios' ? 116 : 108,
+    paddingBottom: Platform.OS === 'ios' ? 88 : 80,
   },
   header: {
     flexDirection: 'row',
@@ -3664,8 +3664,8 @@ const styles = StyleSheet.create({
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 38 : 30,
+    paddingTop: 2,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 22,
     borderTopWidth: 1,
     position: 'absolute',
     bottom: 0,
@@ -3717,7 +3717,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingVertical: 2,
+    paddingTop: 1,
+    paddingBottom: 2,
   },
   tabIcon: {
     fontSize: 22,
@@ -3725,7 +3726,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 9.5,
     fontWeight: '800',
-    marginTop: 3,
+    marginTop: 2,
     letterSpacing: 0.2,
   },
   aboutCard: {

@@ -288,7 +288,6 @@ const translations = {
     backupImportError: 'Não foi possível restaurar o backup. Verifique o formato do arquivo.',
     backupTipsTitle: 'Dicas de Backup e Segurança',
     protectDataLabel: 'Como proteger seus dados de repertório:',
-    tip1: '• Não desinstale para atualizar: Para instalar novas atualizações, basta abrir o APK atualizado e instalá-lo por cima do antigo. Caso você desinstale o app completamente, o banco de dados local será deletado do celular pelo sistema operacional.',
     tip2: '• Faça backups manuais: Salve seus setlists mais importantes gerando os códigos de exportação com o botão de compartilhamento e guardando-os no WhatsApp ou bloco de notas.',
     tip3: '• Restaurar dados: Se precisar reinstalar o aplicativo ou trocar de aparelho, utilize a opção Importar na aba correspondente e cole o código ou selecione o arquivo para recuperar tudo instantaneamente.',
     backupAllBtn: 'BACKUP TOTAL',
@@ -346,8 +345,8 @@ const translations = {
 
     // Sincronização Web e Compartilhamento QR
     webEditorTitle: 'WEB EDITOR',
-    webSyncSubtitle: 'Conecte ao seu computador via QR Code ou PIN',
-    webSyncDesc: 'Transfira todo o seu repertório, letras, cifras e setlists entre o aplicativo do celular e o Web Editor no computador com apenas 1 leitura de câmera ou código PIN de 6 dígitos.',
+    webSyncSubtitle: 'Conecte ao seu computador (PC) ou outro celular via QR Code ou PIN',
+    webSyncDesc: 'Transfira todo o seu repertório, letras, cifras e setlists entre o aplicativo do celular, o computador (PC) ou outro celular com apenas 1 leitura de câmera ou código PIN de 6 dígitos.',
     openSyncQrBtn: 'ABRIR SINCRONIZADOR QR CODE',
     syncModalTitle: 'Sincronizar & Compartilhar',
     syncModalSubtitle: 'Web Editor (PC) ou Outro Celular',
@@ -705,7 +704,6 @@ const translations = {
     backupImportError: 'Could not restore backup file. Please check file format.',
     backupTipsTitle: 'Backup & Security Tips',
     protectDataLabel: 'How to protect your repertoire data:',
-    tip1: '• Do not uninstall to update: To install new updates, simply open the updated APK and install it over the old one. If you uninstall the app completely, the local database will be deleted from the phone by the OS.',
     tip2: '• Make manual backups: Save your most important setlists by generating export codes or JSON files with the share button and keeping them in WhatsApp or notes.',
     tip3: '• Restore data: If you need to reinstall the app or change devices, use the Import option in the corresponding tab and paste the code or select the file to recover everything instantly.',
     backupAllBtn: 'TOTAL BACKUP',
@@ -763,8 +761,8 @@ const translations = {
 
     // Web Sync & QR Share
     webEditorTitle: 'WEB EDITOR',
-    webSyncSubtitle: 'Connect to your computer via QR Code or PIN',
-    webSyncDesc: 'Transfer your entire repertoire, lyrics, chords, and setlists between your mobile app and Web Editor on PC using a single camera QR scan or 6-digit PIN code.',
+    webSyncSubtitle: 'Connect to your PC or another phone via QR Code or PIN',
+    webSyncDesc: 'Transfer your entire repertoire, lyrics, chords, and setlists between your phone, PC, or another mobile phone using a single camera QR scan or 6-digit PIN code.',
     openSyncQrBtn: 'OPEN QR CODE SYNC',
     syncModalTitle: 'Sync & Share',
     syncModalSubtitle: 'Web Editor (PC) or Another Phone',
@@ -1122,7 +1120,6 @@ const translations = {
     backupImportError: 'No se pudo restaurar la copia de seguridad. Verifique el formato del archivo.',
     backupTipsTitle: 'Consejos de Seguridad y Respaldo',
     protectDataLabel: 'Cómo proteger los datos de su repertorio:',
-    tip1: '• No desinstale para actualizar: Para instalar nuevas actualizaciones, simplemente abra el APK actualizado e instálelo sobre el antiguo. Si desinstala la aplicación por completo, el sistema operativo borrará la base de datos local del teléfono.',
     tip2: '• Realice copias de seguridad manuales: Guarde sus setlists más importantes generando códigos de exportación o archivos JSON con el botón compartir y guardándolos en WhatsApp o notas.',
     tip3: '• Restaurar datos: Si necesita reinstalar la aplicación o cambiar de dispositivo, use la opción Importar en la pestaña correspondiente y pegue el código o seleccione el archivo para recuperar todo al instante.',
     backupAllBtn: 'RESPALDO TOTAL',
@@ -1180,8 +1177,8 @@ const translations = {
 
     // Sincronización Web y Compartir QR
     webEditorTitle: 'WEB EDITOR',
-    webSyncSubtitle: 'Conecte a su computadora mediante código QR o PIN',
-    webSyncDesc: 'Transfiera todo su repertorio, letras, acordes y setlists entre la aplicación móvil y el Web Editor en su computadora con solo 1 escaneo de cámara o código PIN de 6 dígitos.',
+    webSyncSubtitle: 'Conecte a su computadora (PC) u otro celular mediante código QR o PIN',
+    webSyncDesc: 'Transfiera todo su repertorio, letras, acordes y setlists entre la aplicación móvil, la PC u otro celular con solo 1 escaneo de cámara o código PIN de 6 dígitos.',
     openSyncQrBtn: 'ABRIR SINCRONIZADOR QR CODE',
     syncModalTitle: 'Sincronizar & Compartir',
     syncModalSubtitle: 'Web Editor (PC) u Otro Celular',
