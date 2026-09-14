@@ -35,10 +35,29 @@ export default function SongListItem({
       ]}
       onPress={() => onSelect && onSelect(song)}
     >
-      <View style={styles.cardContentRow}>
-        {/* Left: Song & Band info + metadata tags */}
-        <View style={styles.infoCol}>
-          {/* Main Title Row */}
+      <View style={styles.cardContent}>
+        {/* Main Title Row with Favorite Star in Front */}
+        <View style={styles.titleRow}>
+          {/* Left: Star Favorite Button */}
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onToggleFavorite && onToggleFavorite(song.id, song.isFavorite);
+            }}
+            style={({ pressed }) => [
+              styles.favoriteBtn,
+              pressed && { opacity: 0.5, transform: [{ scale: 0.88 }] }
+            ]}
+            hitSlop={8}
+          >
+            <Ionicons
+              name={song.isFavorite ? "star" : "star-outline"}
+              size={15}
+              color={song.isFavorite ? '#eab308' : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)')}
+            />
+          </Pressable>
+
+          {/* Song & Band Title Text */}
           <Text style={[styles.songTitleText, { color: colors.text }]} numberOfLines={1}>
             {sortBy === 'name' ? (
               <>
@@ -54,54 +73,29 @@ export default function SongListItem({
               </>
             )}
           </Text>
-
-          {/* Sub Row: Duration + Style Tags */}
-          <View style={styles.subMetaRow}>
-            {song.duration ? (
-              <View style={[styles.metaChip, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }]}>
-                <Ionicons name="time-outline" size={10} color={colors.textMuted} style={{ marginRight: 3 }} />
-                <Text style={[styles.metaChipText, { color: colors.textMuted }]}>{song.duration}</Text>
-              </View>
-            ) : null}
-
-            {tagsList.slice(0, 2).map((tag, idx) => (
-              <View
-                key={idx}
-                style={[
-                  styles.metaChip,
-                  { backgroundColor: colors.primary + '16' }
-                ]}
-              >
-                <Text style={[styles.metaChipText, { color: colors.primary }]}>{tag}</Text>
-              </View>
-            ))}
-
-            {tagsList.length > 2 && (
-              <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textMuted }}>
-                +{tagsList.length - 2}
-              </Text>
-            )}
-          </View>
         </View>
 
-        {/* Right: Star Favorite Button */}
-        <Pressable
-          onPress={(e) => {
-            e.stopPropagation();
-            onToggleFavorite && onToggleFavorite(song.id, song.isFavorite);
-          }}
-          style={({ pressed }) => [
-            styles.favoriteBtn,
-            pressed && { opacity: 0.5, transform: [{ scale: 0.88 }] }
-          ]}
-          hitSlop={10}
-        >
-          <Ionicons
-            name={song.isFavorite ? "star" : "star-outline"}
-            size={20}
-            color={song.isFavorite ? '#eab308' : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)')}
-          />
-        </Pressable>
+        {/* Sub Row: Duration + Style Tags (Full Width Available) */}
+        <View style={styles.subMetaRow}>
+          {song.duration ? (
+            <View style={[styles.metaChip, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }]}>
+              <Ionicons name="time-outline" size={10} color={colors.textMuted} style={{ marginRight: 3 }} />
+              <Text style={[styles.metaChipText, { color: colors.textMuted }]}>{song.duration}</Text>
+            </View>
+          ) : null}
+
+          {tagsList.map((tag, idx) => (
+            <View
+              key={idx}
+              style={[
+                styles.metaChip,
+                { backgroundColor: colors.primary + '16' }
+              ]}
+            >
+              <Text style={[styles.metaChipText, { color: colors.primary }]}>{tag}</Text>
+            </View>
+          ))}
+        </View>
       </View>
     </Pressable>
   );
@@ -119,19 +113,24 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  cardContentRow: {
+  cardContent: {
+    flex: 1,
+  },
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 6,
   },
-  infoCol: {
-    flex: 1,
-    paddingRight: 10,
+  favoriteBtn: {
+    padding: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   songTitleText: {
     fontSize: 14,
     lineHeight: 18,
     letterSpacing: -0.2,
+    flex: 1,
   },
   songNamePart: {
     fontWeight: '800',
@@ -141,9 +140,11 @@ const styles = StyleSheet.create({
   },
   subMetaRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
-    marginTop: 5,
+    marginTop: 6,
+    paddingLeft: 2,
   },
   metaChip: {
     flexDirection: 'row',
@@ -156,10 +157,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.2,
-  },
-  favoriteBtn: {
-    padding: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

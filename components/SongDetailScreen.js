@@ -109,7 +109,7 @@ export default function SongDetailScreen({
       setScrollSpeed('none');
       setLinks([{ type: 'youtube', url: '' }]);
       setIsFavorite(false);
-      setShowDetailsLayer(true); // Open details by default for new song
+      setShowDetailsLayer(false); // Closed by default
 
       initialDataRef.current = {
         name: '',
@@ -306,6 +306,10 @@ export default function SongDetailScreen({
     ? style.split(',').map(s => s.trim()).filter(Boolean)
     : [];
 
+  const totalTitleLen = (name?.length || 0) + (originalBand?.length || 0);
+  const titleFontSize = totalTitleLen > 36 ? 14 : totalTitleLen > 26 ? 16 : totalTitleLen > 18 ? 18 : 20;
+  const bandFontSize = totalTitleLen > 36 ? 13 : totalTitleLen > 26 ? 14 : totalTitleLen > 18 ? 16 : 18;
+
   return (
     <Modal
       visible={visible}
@@ -337,7 +341,7 @@ export default function SongDetailScreen({
             <Ionicons name="arrow-back" size={20} color={colors.text} />
           </Pressable>
 
-          {/* Right Action Buttons: Save, Share, Play, Delete */}
+          {/* Right Action Buttons: Save, Share, Delete, PLAY (Play after Delete) */}
           <View style={styles.headerActionsRight}>
             {/* Save (Disquete) */}
             <Pressable
@@ -365,20 +369,7 @@ export default function SongDetailScreen({
               <Ionicons name="share-social-outline" size={18} color={colors.secondary} />
             </Pressable>
 
-            {/* PLAY (Modo Palco) */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.circleActionBtn,
-                { backgroundColor: colors.primary },
-                pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
-              ]}
-              onPress={handlePlayStage}
-              hitSlop={6}
-            >
-              <Ionicons name="play" size={17} color="#ffffff" style={{ marginLeft: 2 }} />
-            </Pressable>
-
-            {/* Delete */}
+            {/* Delete (Lixeira) */}
             {song && song.id ? (
               <Pressable
                 style={({ pressed }) => [
@@ -392,50 +383,64 @@ export default function SongDetailScreen({
                 <Ionicons name="trash-outline" size={18} color={colors.danger} />
               </Pressable>
             ) : null}
+
+            {/* PLAY (Modo Palco) - Posicionado após a lixeira */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.circleActionBtn,
+                { backgroundColor: colors.primary },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+              ]}
+              onPress={handlePlayStage}
+              hitSlop={6}
+            >
+              <Ionicons name="play" size={17} color="#ffffff" style={{ marginLeft: 2 }} />
+            </Pressable>
           </View>
         </View>
 
-        {/* Title and Artist Inputs */}
-        <View style={styles.headerTitleContainer}>
-          <TextInput
-            style={[
-              styles.headerTitleInput,
-              { color: colors.text }
-            ]}
-            value={name}
-            onChangeText={setName}
-            placeholder={t('songNamePlaceholder') || 'Nome da Música'}
-            placeholderTextColor={colors.textMuted}
-            autoComplete="off"
-            importantForAutofill="no"
-          />
+        {/* Title and Artist Centered on Same Line with Parentheses */}
+        <View style={styles.headerTitleCenterContainer}>
+          <View style={styles.headerInlineRow}>
+            <TextInput
+              style={[
+                styles.headerTitleInlineInput,
+                { color: colors.text, fontSize: titleFontSize }
+              ]}
+              value={name}
+              onChangeText={setName}
+              placeholder={t('songNamePlaceholder') || 'Música'}
+              placeholderTextColor={colors.textMuted}
+              autoComplete="off"
+              importantForAutofill="no"
+              textAlign="center"
+            />
+            <Text style={[styles.headerParenthesesText, { color: colors.secondary, fontSize: bandFontSize }]}> (</Text>
+            <TextInput
+              style={[
+                styles.headerBandInlineInput,
+                { color: colors.secondary, fontSize: bandFontSize }
+              ]}
+              value={originalBand}
+              onChangeText={setOriginalBand}
+              placeholder={t('originalBandPlaceholder') || 'Banda'}
+              placeholderTextColor={colors.textMuted}
+              autoComplete="off"
+              importantForAutofill="no"
+              textAlign="center"
+            />
+            <Text style={[styles.headerParenthesesText, { color: colors.secondary, fontSize: bandFontSize }]}>)</Text>
+          </View>
 
-          <TextInput
-            style={[
-              styles.headerBandInput,
-              { color: colors.secondary }
-            ]}
-            value={originalBand}
-            onChangeText={setOriginalBand}
-            placeholder={t('originalBandPlaceholder') || 'Artista / Banda'}
-            placeholderTextColor={colors.textMuted}
-            autoComplete="off"
-            importantForAutofill="no"
-          />
-
-          {/* Tags preview row */}
+          {/* Tags preview row: background color from details layer, centered */}
           {tagsList.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.headerTagsRow}
-            >
+            <View style={styles.headerTagsRowCentered}>
               {tagsList.map((tag, idx) => (
-                <View key={idx} style={[styles.headerTagChip, { backgroundColor: colors.primary + '18' }]}>
+                <View key={idx} style={[styles.headerTagChip, { backgroundColor: detailsBg }]}>
                   <Text style={[styles.headerTagText, { color: colors.primary }]}>{tag}</Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           )}
         </View>
       </View>
@@ -458,12 +463,6 @@ export default function SongDetailScreen({
             <Text style={[styles.detailsToggleText, { color: colors.text }]}>
               {t('songDetails') || 'Detalhes da Música'}
             </Text>
-            {duration ? (
-              <View style={[styles.miniDurationBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }]}>
-                <Ionicons name="time-outline" size={11} color={colors.textMuted} />
-                <Text style={[styles.miniDurationText, { color: colors.textMuted }]}>{duration}</Text>
-              </View>
-            ) : null}
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -818,7 +817,7 @@ const styles = StyleSheet.create({
 
   // ===== LAYER 1: HEADER =====
   headerLayer: {
-    paddingTop: Platform.OS === 'ios' ? 48 : 28,
+    paddingTop: Platform.OS === 'ios' ? 58 : 44,
     paddingHorizontal: 16,
     paddingBottom: 14,
     borderBottomLeftRadius: 20,
@@ -834,7 +833,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   circleActionBtn: {
     width: 38,
@@ -848,32 +847,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  headerTitleContainer: {
+  headerTitleCenterContainer: {
     marginTop: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerTitleInput: {
-    fontSize: 22,
-    fontWeight: '900',
-    letterSpacing: -0.3,
-    paddingVertical: 2,
-    margin: 0,
-  },
-  headerBandInput: {
-    fontSize: 14,
-    fontWeight: '750',
-    marginTop: 2,
-    paddingVertical: 2,
-    margin: 0,
-  },
-  headerTagsRow: {
+  headerInlineRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'nowrap',
+    maxWidth: '100%',
+  },
+  headerTitleInlineInput: {
+    fontWeight: '900',
+    letterSpacing: -0.2,
+    paddingVertical: 2,
+    paddingHorizontal: 0,
+    margin: 0,
+    textAlign: 'center',
+    flexShrink: 1,
+  },
+  headerBandInlineInput: {
+    fontWeight: '750',
+    paddingVertical: 2,
+    paddingHorizontal: 0,
+    margin: 0,
+    textAlign: 'center',
+    flexShrink: 1,
+  },
+  headerParenthesesText: {
+    fontWeight: '800',
+  },
+  headerTagsRowCentered: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     marginTop: 8,
   },
   headerTagChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 3.5,
     borderRadius: 8,
   },
   headerTagText: {
