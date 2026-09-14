@@ -104,7 +104,7 @@ export default function PerformanceMode({
   const isDark = colors.isDark;
   const isEnsaio = (setlist?.type || '').toLowerCase() === 'ensaio';
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [fontSize, setFontSize] = useState(20); // Letras levemente maiores por padrão
+  const [fontSize, setFontSize] = useState(14); // Menor fonte por padrão
   const [activeView, setActiveView] = useState('lyrics');
   const [showLinks, setShowLinks] = useState(false);
   const [showSongList, setShowSongList] = useState(false);
@@ -873,9 +873,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'android' ? 28 : 46,
-    paddingBottom: 6,
-    paddingHorizontal: 12,
+    paddingTop: Platform.OS === 'android' ? 24 : 38,
+    paddingBottom: 2,
+    paddingHorizontal: 8,
     borderBottomWidth: 0,
   },
   circleBtn: {
@@ -901,13 +901,13 @@ const styles = StyleSheet.create({
   marqueeHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 0,
     borderBottomWidth: 0,
-    height: 46,
+    height: 38,
   },
   marqueeHeaderText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '950',
     letterSpacing: 0.2,
     textAlign: 'center',
@@ -932,10 +932,11 @@ const styles = StyleSheet.create({
   },
   lyricsContainer: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
   },
   lyricsContent: {
-    paddingVertical: 8,
+    paddingVertical: 2,
+    paddingBottom: 6,
     flexGrow: 1,
   },
   songListContainer: {
@@ -977,33 +978,33 @@ const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 22,
+    paddingHorizontal: 10,
+    paddingTop: 2,
+    paddingBottom: Platform.OS === 'ios' ? 18 : 8,
     borderTopWidth: 0,
-    gap: 12,
+    gap: 8,
     alignItems: 'center',
   },
   navCircleBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowRadius: 2,
     elevation: 2,
   },
   bottomProgressBox: {
-    paddingHorizontal: 18,
-    borderRadius: 22,
+    paddingHorizontal: 14,
+    borderRadius: 19,
     borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 90,
-    height: 42,
+    minWidth: 80,
+    height: 38,
   },
   bottomProgressText: {
     fontSize: 16,

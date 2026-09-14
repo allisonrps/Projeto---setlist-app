@@ -742,7 +742,7 @@ export default function SongDetailScreen({
         {/* Text Area for Active Tab */}
         <ScrollView
           style={styles.editorTextAreaContainer}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
         >
           {activeEditorTab === 'chords' && (
@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 10,
     marginTop: 8,
-    marginBottom: Platform.OS === 'ios' ? 26 : 22,
+    marginBottom: Platform.OS === 'ios' ? 36 : 48,
     borderRadius: 18,
     overflow: 'hidden',
   },
