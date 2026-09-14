@@ -3145,14 +3145,6 @@ function MainApp() {
         </View>
       ) : (
         <View style={styles.container}>
-          {/* Cabeçalho principal (sem o botão de opções) */}
-          <View style={styles.header}>
-            <View style={styles.headerTitleRow}>
-              <Image source={require('./assets/logo.png')} style={styles.headerLogo} />
-              <Text style={[styles.appTitle, { color: colors.text }]}>SETLIST BAND MANAGER</Text>
-            </View>
-          </View>
-
           {/* Área de conteúdo da aba ativa */}
           <View style={{ flex: 1 }}>
             {currentTab === 'home' && renderHomeTab()}
@@ -3170,7 +3162,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'home' ? 'home' : 'home-outline'} 
-                size={19} 
+                size={23} 
                 color={currentTab === 'home' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'home' ? colors.primary : colors.textMuted }]}>
@@ -3184,7 +3176,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'songs' ? 'musical-notes' : 'musical-notes-outline'} 
-                size={19} 
+                size={23} 
                 color={currentTab === 'songs' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'songs' ? colors.primary : colors.textMuted }]}>
@@ -3198,7 +3190,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'setlists' ? 'clipboard' : 'clipboard-outline'} 
-                size={19} 
+                size={23} 
                 color={currentTab === 'setlists' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'setlists' ? colors.primary : colors.textMuted }]}>
@@ -3212,7 +3204,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'options' ? 'settings' : 'settings-outline'} 
-                size={19} 
+                size={23} 
                 color={currentTab === 'options' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'options' ? colors.primary : colors.textMuted }]}>
@@ -3226,7 +3218,7 @@ function MainApp() {
             >
               <Ionicons 
                 name={currentTab === 'about' ? 'information-circle' : 'information-circle-outline'} 
-                size={19} 
+                size={23} 
                 color={currentTab === 'about' ? colors.primary : colors.textMuted} 
               />
               <Text style={[styles.tabText, { color: currentTab === 'about' ? colors.primary : colors.textMuted }]}>
@@ -3660,15 +3652,15 @@ const styles = StyleSheet.create({
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 6,
-    paddingBottom: Platform.OS === 'ios' ? 42 : 32,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 38 : 30,
     borderTopWidth: 1,
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     zIndex: 99,
-    elevation: 8,
+    elevation: 10,
   },
   optionsSectionLabel: {
     fontSize: 10.5,
@@ -3713,16 +3705,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   tabIcon: {
-    fontSize: 18,
+    fontSize: 22,
   },
   tabText: {
-    fontSize: 10,
-    fontWeight: '900',
-    marginTop: 2,
-    letterSpacing: 0.5,
+    fontSize: 9.5,
+    fontWeight: '800',
+    marginTop: 3,
+    letterSpacing: 0.2,
   },
   aboutCard: {
     padding: 20,
