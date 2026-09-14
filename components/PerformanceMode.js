@@ -450,13 +450,13 @@ export default function PerformanceMode({
                 ? `⏸ ${t('pauseTitle').toUpperCase()}` 
                 : (currentSong.id === -2 
                   ? `📝 ${currentSong.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}` 
-                  : `${currentSong.name} - ${currentSong.originalBand}`))} 
+                  : `${currentSong.name}${currentSong.originalBand ? ` (${currentSong.originalBand})` : ''}`))} 
             style={[styles.marqueeHeaderText, { 
               color: showSongList 
                 ? colors.primary 
                 : (currentSong.id === -1 
                   ? colors.secondary 
-                  : (currentSong.id === -2 ? colors.warning : colors.text)) 
+                  : (currentSong.id === -2 ? colors.warning : colors.primary)) 
             }]}
           />
         </View>
@@ -519,8 +519,8 @@ export default function PerformanceMode({
         {/* 3. Visualização Principal de Letra / Cifra / Tablatura (Maximizada) ou Lista de Músicas */}
         {showSongList ? (
           <ScrollView 
-            style={styles.lyricsContainer} 
-            contentContainerStyle={{ padding: 16 }}
+            style={styles.songListContainer} 
+            contentContainerStyle={styles.songListContent}
             showsVerticalScrollIndicator={true}
           >
             {songs.map((song, idx) => {
@@ -550,14 +550,8 @@ export default function PerformanceMode({
                 <View
                   key={`${song.id}-${idx}`}
                   style={[
+                    styles.songListItemCard,
                     {
-                      paddingVertical: 10,
-                      paddingHorizontal: 12,
-                      borderRadius: 14,
-                      marginBottom: 8,
-                      borderWidth: 0,
-                      flexDirection: 'row',
-                      alignItems: 'center',
                       backgroundColor: isActive 
                         ? (colors.primary + '20') 
                         : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
@@ -569,9 +563,9 @@ export default function PerformanceMode({
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       onPress={() => onToggleRehearsalStatus && onToggleRehearsalStatus(setlist.id, song.id, idx, song.rehearsalStatus)}
                       style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 15,
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
                         backgroundColor: badgeColor,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -588,9 +582,9 @@ export default function PerformanceMode({
                     </Pressable>
                   ) : (
                     <View style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: 15,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
                       backgroundColor: badgeColor,
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -607,7 +601,7 @@ export default function PerformanceMode({
                   )}
 
                   <Pressable
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, paddingVertical: 4 }}
                     onPress={() => {
                       setCurrentIndex(idx);
                       setShowSongList(false);
@@ -615,17 +609,17 @@ export default function PerformanceMode({
                   >
                     {isPause ? (
                       <Text style={{
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: '900',
                         color: colors.secondary
                       }}>
                         {t('pause') || 'PAUSE'}
                       </Text>
                     ) : isNote ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Ionicons name="document-text-outline" size={12} color={colors.warning} />
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Ionicons name="document-text-outline" size={14} color={colors.warning} />
                         <Text style={{
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: '900',
                           color: colors.warning,
                           fontStyle: 'italic',
@@ -635,39 +629,41 @@ export default function PerformanceMode({
                         </Text>
                       </View>
                     ) : (
-                      <>
-                        <Text style={{
-                          fontSize: 12.5,
-                          fontWeight: '800',
-                          color: colors.text
-                        }}>
-                          {song.name}
-                        </Text>
-                        {song.originalBand ? (
-                          <Text style={{
-                            fontSize: 10.5,
-                            color: colors.textMuted,
-                            marginTop: 1
-                          }}>
-                            {song.originalBand}
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' }}>
+                          <Text 
+                            style={{
+                              fontSize: 13.5,
+                              fontWeight: '800',
+                              color: colors.text,
+                              flexShrink: 1,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {song.name}
+                            {song.originalBand ? (
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textMuted }}>
+                                {` (${song.originalBand})`}
+                              </Text>
+                            ) : null}
                           </Text>
-                        ) : null}
+                        </View>
                         {song.rehearsalNotes ? (
                           <Text style={{
-                            fontSize: 10,
+                            fontSize: 10.5,
                             color: '#eab308',
                             fontStyle: 'italic',
-                            marginTop: 1
-                          }}>
+                            marginTop: 2
+                          }} numberOfLines={1}>
                             Obs: {song.rehearsalNotes}
                           </Text>
                         ) : null}
-                      </>
+                      </View>
                     )}
                   </Pressable>
 
                   {isActive && (
-                    <Ionicons name="play" size={14} color={colors.primary} style={{ marginLeft: 6 }} />
+                    <Ionicons name="mic" size={16} color={colors.primary} style={{ marginLeft: 8 }} />
                   )}
                 </View>
               );
@@ -877,9 +873,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 44,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? 28 : 46,
+    paddingBottom: 6,
+    paddingHorizontal: 12,
     borderBottomWidth: 0,
   },
   circleBtn: {
@@ -905,13 +901,13 @@ const styles = StyleSheet.create({
   marqueeHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderBottomWidth: 0,
-    height: 56,
+    height: 46,
   },
   marqueeHeaderText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '950',
     letterSpacing: 0.2,
     textAlign: 'center',
@@ -936,11 +932,29 @@ const styles = StyleSheet.create({
   },
   lyricsContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
   },
   lyricsContent: {
-    paddingVertical: 16,
+    paddingVertical: 8,
     flexGrow: 1,
+  },
+  songListContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  songListContent: {
+    paddingVertical: 6,
+    paddingBottom: 20,
+  },
+  songListItemCard: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    marginBottom: 6,
+    borderWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
   },
   lyricsText: {
     fontWeight: '700',
@@ -964,32 +978,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: Platform.OS === 'ios' ? 48 : 38,
+    paddingTop: 4,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 22,
     borderTopWidth: 0,
-    gap: 14,
+    gap: 12,
     alignItems: 'center',
   },
   navCircleBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 2,
   },
   bottomProgressBox: {
-    paddingHorizontal: 20,
-    borderRadius: 24,
+    paddingHorizontal: 18,
+    borderRadius: 22,
     borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 100,
-    height: 48,
+    minWidth: 90,
+    height: 42,
   },
   bottomProgressText: {
     fontSize: 16,

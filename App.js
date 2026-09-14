@@ -811,6 +811,15 @@ function MainApp() {
       // Sincronizar links
       await songService.syncLinks(songId, songData.links);
 
+      if (activeSetlist) {
+        setActiveSetlist(prev => {
+          if (!prev || !prev.songs) return prev;
+          return {
+            ...prev,
+            songs: prev.songs.map(s => (s.id === songId ? { ...s, ...songData, id: songId } : s))
+          };
+        });
+      }
       await reloadAllData();
       setShowSongModal(false);
       setEditingSong(null);
@@ -3265,16 +3274,7 @@ function MainApp() {
         band={editingBand}
       />
 
-      <SongDetailScreen
-        visible={!!activeSongDetail}
-        song={activeSongDetail}
-        onBack={() => setActiveSongDetail(null)}
-        onSave={handleSaveSong}
-        onDelete={handleDeleteSong}
-        onShare={handleShareSong}
-        onStartPerformance={handleStartSongPerformance}
-        onToggleFavorite={handleToggleFavoriteSong}
-      />
+
 
       <SetlistModal
         visible={showSetlistModal}
@@ -3306,6 +3306,17 @@ function MainApp() {
         }}
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+      />
+
+      <SongDetailScreen
+        visible={!!activeSongDetail}
+        song={activeSongDetail}
+        onBack={() => setActiveSongDetail(null)}
+        onSave={handleSaveSong}
+        onDelete={handleDeleteSong}
+        onShare={handleShareSong}
+        onStartPerformance={handleStartSongPerformance}
+        onToggleFavorite={handleToggleFavoriteSong}
       />
 
       <ImportModal
