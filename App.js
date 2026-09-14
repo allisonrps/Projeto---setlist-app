@@ -609,6 +609,7 @@ function MainApp() {
   const [editingBand, setEditingBand] = useState(null);
   const [editingSong, setEditingSong] = useState(null);
   const [activeSongDetail, setActiveSongDetail] = useState(null);
+  const [editingFromPerformance, setEditingFromPerformance] = useState(false);
   const [editingSetlist, setEditingSetlist] = useState(null);
   const [activeSetlist, setActiveSetlist] = useState(null);
 
@@ -824,6 +825,10 @@ function MainApp() {
       setShowSongModal(false);
       setEditingSong(null);
       setActiveSongDetail(null);
+      if (editingFromPerformance) {
+        setEditingFromPerformance(false);
+        setShowPerformanceMode(true);
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar a música.');
     }
@@ -831,6 +836,14 @@ function MainApp() {
 
   const handleEditSong = (song) => {
     setActiveSongDetail(song);
+  };
+
+  const handleCloseSongDetail = () => {
+    setActiveSongDetail(null);
+    if (editingFromPerformance) {
+      setEditingFromPerformance(false);
+      setShowPerformanceMode(true);
+    }
   };
 
   const handleDeleteSong = (id) => {
@@ -847,6 +860,10 @@ function MainApp() {
               await songService.delete(id);
               await reloadAllData();
               setActiveSongDetail(null);
+              if (editingFromPerformance) {
+                setEditingFromPerformance(false);
+                setShowPerformanceMode(true);
+              }
             } catch (error) {
               Alert.alert(t('importErrorTitle'), t('deleteSongError'));
             }
@@ -3302,6 +3319,8 @@ function MainApp() {
         onClose={() => { setShowPerformanceMode(false); setActiveSetlist(null); }}
         setlist={activeSetlist ? (setlists.find(s => s.id === activeSetlist.id) || activeSetlist) : null}
         onEditSong={(song) => {
+          setEditingFromPerformance(true);
+          setShowPerformanceMode(false);
           setActiveSongDetail(song);
         }}
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
@@ -3311,7 +3330,7 @@ function MainApp() {
       <SongDetailScreen
         visible={!!activeSongDetail}
         song={activeSongDetail}
-        onBack={() => setActiveSongDetail(null)}
+        onBack={handleCloseSongDetail}
         onSave={handleSaveSong}
         onDelete={handleDeleteSong}
         onShare={handleShareSong}
