@@ -2731,10 +2731,12 @@ function MainApp() {
       <View style={{ flex: 1 }}>
         <View style={styles.tabHeaderRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15' }]}>
-              <Ionicons name="settings-outline" size={15} color={colors.primary} />
+            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="settings-outline" size={16} color={colors.primary} />
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('options') || 'Opções'}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('options') || 'Opções'}
+            </Text>
           </View>
         </View>
 
@@ -2744,9 +2746,11 @@ function MainApp() {
           showsVerticalScrollIndicator={false}
         >
           {/* CARD 1: TEMA & APARÊNCIA */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
+              </View>
               <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>
                 {t('themeAppearance')}
               </Text>
@@ -2760,14 +2764,13 @@ function MainApp() {
               <Pressable
                 style={[
                   styles.optionsSegmentButton,
-                  themeMode === 'dark' && { backgroundColor: colors.primary },
-                  { backgroundColor: themeMode === 'dark' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                  { backgroundColor: themeMode === 'dark' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
                 ]}
                 onPress={() => setThemePreferences('dark', primaryColor, secondaryColor)}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                  <Ionicons name="moon-outline" size={14} color={themeMode === 'dark' ? '#fff' : colors.text} />
-                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'dark' ? '#fff' : colors.text }]}>
+                  <Ionicons name="moon-outline" size={15} color={themeMode === 'dark' ? '#fff' : colors.text} />
+                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'dark' ? '#fff' : colors.text, fontWeight: themeMode === 'dark' ? '900' : '700' }]}>
                     {t('dark')}
                   </Text>
                 </View>
@@ -2776,14 +2779,13 @@ function MainApp() {
               <Pressable
                 style={[
                   styles.optionsSegmentButton,
-                  themeMode === 'light' && { backgroundColor: colors.primary },
-                  { backgroundColor: themeMode === 'light' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                  { backgroundColor: themeMode === 'light' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
                 ]}
                 onPress={() => setThemePreferences('light', primaryColor, secondaryColor)}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                  <Ionicons name="sunny-outline" size={14} color={themeMode === 'light' ? '#fff' : colors.text} />
-                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'light' ? '#fff' : colors.text }]}>
+                  <Ionicons name="sunny-outline" size={15} color={themeMode === 'light' ? '#fff' : colors.text} />
+                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'light' ? '#fff' : colors.text, fontWeight: themeMode === 'light' ? '900' : '700' }]}>
                     {t('light')}
                   </Text>
                 </View>
@@ -2854,9 +2856,11 @@ function MainApp() {
           </View>
 
           {/* CARD 2: IDIOMA DO APLICATIVO */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <Ionicons name="globe-outline" size={18} color={colors.primary} />
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="globe-outline" size={18} color={colors.primary} />
+              </View>
               <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>
                 {t('appLanguage')}
               </Text>
@@ -2866,12 +2870,11 @@ function MainApp() {
               <Pressable
                 style={[
                   styles.optionsSegmentButton,
-                  language === 'pt' && { backgroundColor: colors.primary },
-                  { backgroundColor: language === 'pt' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                  { backgroundColor: language === 'pt' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
                 ]}
                 onPress={() => setLanguage('pt')}
               >
-                <Text style={[styles.optionsSegmentText, { color: language === 'pt' ? '#fff' : colors.text }]}>
+                <Text style={[styles.optionsSegmentText, { color: language === 'pt' ? '#fff' : colors.text, fontWeight: language === 'pt' ? '900' : '700' }]}>
                   Português 🇧🇷
                 </Text>
               </Pressable>
@@ -2879,12 +2882,11 @@ function MainApp() {
               <Pressable
                 style={[
                   styles.optionsSegmentButton,
-                  language === 'en' && { backgroundColor: colors.primary },
-                  { backgroundColor: language === 'en' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                  { backgroundColor: language === 'en' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
                 ]}
                 onPress={() => setLanguage('en')}
               >
-                <Text style={[styles.optionsSegmentText, { color: language === 'en' ? '#fff' : colors.text }]}>
+                <Text style={[styles.optionsSegmentText, { color: language === 'en' ? '#fff' : colors.text, fontWeight: language === 'en' ? '900' : '700' }]}>
                   English 🇺🇸
                 </Text>
               </Pressable>
@@ -2892,12 +2894,11 @@ function MainApp() {
               <Pressable
                 style={[
                   styles.optionsSegmentButton,
-                  language === 'es' && { backgroundColor: colors.primary },
-                  { backgroundColor: language === 'es' ? colors.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') }
+                  { backgroundColor: language === 'es' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
                 ]}
                 onPress={() => setLanguage('es')}
               >
-                <Text style={[styles.optionsSegmentText, { color: language === 'es' ? '#fff' : colors.text }]}>
+                <Text style={[styles.optionsSegmentText, { color: language === 'es' ? '#fff' : colors.text, fontWeight: language === 'es' ? '900' : '700' }]}>
                   Español 🇪🇸
                 </Text>
               </Pressable>
@@ -2905,17 +2906,17 @@ function MainApp() {
           </View>
 
           {/* CARD 3: WEB EDITOR & SINCRONIZAÇÃO */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: '#6366f166', borderWidth: 1.5 }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-              <View style={{ backgroundColor: '#6366f122', padding: 6, borderRadius: 8 }}>
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: '#6366f125', justifyContent: 'center', alignItems: 'center' }}>
                 <Ionicons name="desktop-outline" size={18} color="#6366f1" />
               </View>
-              <Text style={{ fontSize: 14, fontWeight: '900', color: '#6366f1', letterSpacing: 0.5 }}>
+              <Text style={{ fontSize: 14, fontWeight: '900', color: '#6366f1', letterSpacing: 0.3 }}>
                 {t('webEditorTitle')}
               </Text>
             </View>
 
-            <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2, marginBottom: 8 }}>
+            <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.text, marginTop: 4, marginBottom: 4 }}>
               {t('webSyncSubtitle')}
             </Text>
 
@@ -2928,63 +2929,57 @@ function MainApp() {
                 {
                   backgroundColor: '#6366f1',
                   paddingVertical: 12,
-                  borderRadius: 10,
+                  borderRadius: 12,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 8,
                   opacity: pressed ? 0.85 : 1,
-                  shadowColor: '#6366f1',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 8,
-                  elevation: 4,
                 }
               ]}
               onPress={() => setShowSyncModal(true)}
             >
-              <Ionicons name="scan-outline" size={18} color="#fff" />
-              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+              <Ionicons name="scan-outline" size={17} color="#fff" />
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '900' }}>
                 {t('openSyncQrBtn')}
               </Text>
             </Pressable>
           </View>
 
           {/* CARD 4: BACKUP E RESTAURAÇÃO DE DADOS */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Ionicons name="shield-checkmark-outline" size={18} color={colors.warning} />
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.warning + '20', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="shield-checkmark-outline" size={18} color={colors.warning} />
+              </View>
               <Text style={[styles.aboutSectionTitle, { color: colors.warning, marginBottom: 0 }]}>
                 {t('backupTipsTitle')}
               </Text>
             </View>
 
-            <View style={{ gap: 10, marginTop: 4 }}>
-              <Text style={{ fontSize: 13, color: colors.text, fontWeight: '700' }}>
-                {t('protectDataLabel')}
-              </Text>
-              
-              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
-                {t('tip1')}
-              </Text>
-              
-              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
-                {t('tip2')}
-              </Text>
+            <Text style={{ fontSize: 12.5, color: colors.text, fontWeight: '800', marginBottom: 8 }}>
+              {t('protectDataLabel')}
+            </Text>
 
-              <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
-                {t('tip3')}
-              </Text>
+            <View style={{ gap: 6, marginBottom: 16 }}>
+              {[t('tip1'), t('tip2'), t('tip3')].map((tip, idx) => (
+                <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                  <Ionicons name="checkmark-circle" size={13} color={colors.primary} style={{ marginTop: 2 }} />
+                  <Text style={{ fontSize: 11.5, color: colors.textMuted, lineHeight: 16, flex: 1 }}>
+                    {tip}
+                  </Text>
+                </View>
+              ))}
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
               <Pressable
                 style={({ pressed }) => [
                   {
                     flex: 1,
                     backgroundColor: colors.primary,
                     paddingVertical: 12,
-                    borderRadius: 10,
+                    borderRadius: 12,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -2994,7 +2989,7 @@ function MainApp() {
                 ]}
                 onPress={handleBackupAll}
               >
-                <Ionicons name="save-outline" size={14} color="#fff" />
+                <Ionicons name="save-outline" size={15} color="#fff" />
                 <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>
                   {t('backupAllBtn')}
                 </Text>
@@ -3006,7 +3001,7 @@ function MainApp() {
                     flex: 1,
                     backgroundColor: colors.primary + '18',
                     paddingVertical: 12,
-                    borderRadius: 10,
+                    borderRadius: 12,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -3016,7 +3011,7 @@ function MainApp() {
                 ]}
                 onPress={() => handleOpenImportOptions('backup')}
               >
-                <Ionicons name="download-outline" size={14} color={colors.primary} />
+                <Ionicons name="download-outline" size={15} color={colors.primary} />
                 <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '900' }}>
                   {t('restoreBackupBtn')}
                 </Text>
@@ -3032,7 +3027,12 @@ function MainApp() {
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.tabHeaderRow}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('aboutHeader')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('aboutHeader')}</Text>
+          </View>
         </View>
 
         <ScrollView 
@@ -3041,24 +3041,26 @@ function MainApp() {
           showsVerticalScrollIndicator={false}
         >
           {/* Card Principal de Versão */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, alignItems: 'center' }]}>
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)', alignItems: 'center', paddingVertical: 24 }]}>
             <Image source={require('./assets/logo.png')} style={styles.aboutLogo} />
             <Text style={[styles.aboutAppTitle, { color: colors.primary }]}>SETLIST BAND MANAGER</Text>
-            <Text style={[styles.aboutAppVersion, { color: colors.textMuted }]}>{t('versionText')} 1.1.5</Text>
+            <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.1.5</Text>
+            </View>
             
             <Pressable 
               onPress={() => Linking.openURL('https://www.setlistbandmanager.com').catch(err => console.error("Couldn't open URL", err))}
               style={({ pressed }) => [{ marginTop: 4, marginBottom: 2 }, pressed && { opacity: 0.7 }]}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                <Ionicons name="globe-outline" size={12} color={colors.primary} />
+                <Ionicons name="globe-outline" size={13} color={colors.primary} />
                 <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary, textDecorationLine: 'underline' }}>
                   www.setlistbandmanager.com
                 </Text>
               </View>
             </Pressable>
 
-            <View style={[styles.divider, { backgroundColor: colors.border, width: '100%', marginVertical: 10 }]} />
+            <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '85%', marginVertical: 14 }} />
             
             <Text style={[styles.aboutDeveloperLabel, { color: colors.textMuted }]}>{t('aboutDev')}</Text>
             <Pressable 
@@ -3072,15 +3074,26 @@ function MainApp() {
           </View>
 
           {/* Card de Descrição */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <Text style={[styles.aboutSectionTitle, { color: colors.text }]}>{t('aboutTheApp')}</Text>
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="document-text-outline" size={18} color={colors.primary} />
+              </View>
+              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('aboutTheApp')}</Text>
+            </View>
             <Text style={[styles.aboutDescriptionText, { color: colors.textMuted }]}>
               {t('aboutAppDesc')}
             </Text>
           </View>
+
           {/* Card de Funcionalidades com Tutoriais Interativos */}
-          <View style={[styles.aboutCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-            <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('aboutFeatures')}</Text>
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
+              </View>
+              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('aboutFeatures')}</Text>
+            </View>
             
             {getFeaturesList(language).map((feature) => (
               <Pressable
@@ -3089,11 +3102,10 @@ function MainApp() {
                 style={({ pressed }) => [
                   styles.aboutFeatureRow,
                   {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
                     padding: 12,
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    borderColor: colors.border,
+                    borderRadius: 12,
+                    borderWidth: 0,
                     marginBottom: 8,
                     flexDirection: 'column',
                     alignItems: 'stretch',
@@ -3103,7 +3115,7 @@ function MainApp() {
               >
                 {/* Linha 1: Ícone + Título */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <View style={{ width: 26, height: 26, borderRadius: 6, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
                     <Ionicons name={feature.icon} size={15} color={colors.primary} />
                   </View>
                   <Text style={[styles.aboutFeatureTitle, { color: colors.text, fontSize: 13, fontWeight: '800', flex: 1 }]}>
@@ -3116,7 +3128,7 @@ function MainApp() {
                   <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted, fontSize: 11, flex: 1, lineHeight: 15 }]} numberOfLines={2}>
                     {feature.subtitle}
                   </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '15', borderColor: colors.primary + '35', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, flexShrink: 0 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, flexShrink: 0 }}>
                     <Text style={{ fontSize: 9.5, fontWeight: '900', color: colors.primary }}>
                       TUTORIAL
                     </Text>
@@ -3717,10 +3729,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   aboutCard: {
-    padding: 20,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    marginBottom: 16,
+    padding: 16,
+    borderRadius: 18,
+    borderWidth: 0,
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   aboutAppTitle: {
     fontSize: 20,
