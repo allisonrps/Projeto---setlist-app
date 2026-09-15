@@ -164,5 +164,53 @@ export const bandService = {
       console.error('Error in bandService.deleteFinancialEntry:', error);
       throw error;
     }
+  },
+
+  // ===== GESTÃO DE INTEGRANTES DA BANDA (band_members) =====
+  async getBandMembers(bandId) {
+    try {
+      const result = await db.getAllAsync(
+        'SELECT * FROM band_members WHERE bandId = ? ORDER BY status ASC, name ASC;',
+        [bandId]
+      );
+      return result || [];
+    } catch (error) {
+      console.error('Error in bandService.getBandMembers:', error);
+      return [];
+    }
+  },
+
+  async addBandMember(bandId, name, role, phone = '', startDate = '', endDate = '', status = 'active') {
+    try {
+      const result = await db.runAsync(
+        'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status) VALUES (?, ?, ?, ?, ?, ?, ?);',
+        [bandId, name, role, phone, startDate, endDate, status]
+      );
+      return result.lastInsertRowId;
+    } catch (error) {
+      console.error('Error in bandService.addBandMember:', error);
+      throw error;
+    }
+  },
+
+  async updateBandMember(id, name, role, phone = '', startDate = '', endDate = '', status = 'active') {
+    try {
+      await db.runAsync(
+        'UPDATE band_members SET name = ?, role = ?, phone = ?, startDate = ?, endDate = ?, status = ? WHERE id = ?;',
+        [name, role, phone, startDate, endDate, status, id]
+      );
+    } catch (error) {
+      console.error('Error in bandService.updateBandMember:', error);
+      throw error;
+    }
+  },
+
+  async deleteBandMember(id) {
+    try {
+      await db.runAsync('DELETE FROM band_members WHERE id = ?;', [id]);
+    } catch (error) {
+      console.error('Error in bandService.deleteBandMember:', error);
+      throw error;
+    }
   }
 };

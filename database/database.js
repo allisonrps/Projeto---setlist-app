@@ -813,8 +813,11 @@ const createWebDB = () => {
         const name = params[1] || '';
         const role = params[2] || '';
         const phone = params[3] || '';
+        const startDate = params[4] || '';
+        const endDate = params[5] || '';
+        const status = params[6] || 'active';
         const newId = Date.now() + Math.floor(Math.random() * 1000);
-        data.band_members.push({ id: newId, bandId, name, role, phone });
+        data.band_members.push({ id: newId, bandId, name, role, phone, startDate, endDate, status });
         saveToStorage();
         return { lastInsertRowId: newId };
       }
@@ -824,12 +827,18 @@ const createWebDB = () => {
         const name = params[0] || '';
         const role = params[1] || '';
         const phone = params[2] || '';
-        const id = params[3];
+        const startDate = params[3] || '';
+        const endDate = params[4] || '';
+        const status = params[5] || 'active';
+        const id = params[6];
         const item = data.band_members.find(m => m.id === id);
         if (item) {
           item.name = name;
           item.role = role;
           item.phone = phone;
+          item.startDate = startDate;
+          item.endDate = endDate;
+          item.status = status;
           saveToStorage();
         }
         return { changes: 1 };
@@ -996,6 +1005,18 @@ export const createTables = async () => {
         FOREIGN KEY (songId) REFERENCES songs(id) ON DELETE CASCADE,
         UNIQUE(bandId, songId)
       );
+      CREATE TABLE IF NOT EXISTS band_members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bandId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        role TEXT,
+        phone TEXT,
+        startDate TEXT,
+        endDate TEXT,
+        status TEXT DEFAULT 'active',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE
+      );
       CREATE TABLE IF NOT EXISTS band_finances (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         bandId INTEGER NOT NULL,
@@ -1047,6 +1068,9 @@ export const createTables = async () => {
         console.log("Nativo: Coluna 'name' já existe.");
       } else {
         console.log("Nativo: Nota da migração de setlists name:", e.message);
+      }
+    }
+
     // Migração de phone em band_members
     try {
       await db.execAsync('ALTER TABLE band_members ADD COLUMN phone TEXT;');
@@ -1056,9 +1080,15 @@ export const createTables = async () => {
         console.log("Nativo: Coluna 'phone' já existe em band_members.");
       }
     }
-  
-      }
-    }
+    try {
+      await db.execAsync('ALTER TABLE band_members ADD COLUMN startDate TEXT;');
+    } catch (e) {}
+    try {
+      await db.execAsync('ALTER TABLE band_members ADD COLUMN endDate TEXT;');
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE band_members ADD COLUMN status TEXT DEFAULT 'active';");
+    } catch (e) {}
 
     // Migração de chords em songs
     try {
