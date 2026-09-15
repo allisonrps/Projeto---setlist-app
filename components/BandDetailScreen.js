@@ -1056,7 +1056,7 @@ export default function BandDetailScreen({
         </View>
 
         {/* ========================================================
-            MODAL 1: INTEGRANTES DA BANDA (MESMO MOLDE DO MODAL DE ESTILOS)
+            MODAL 1: INTEGRANTES DA BANDA (ULTRA CLEAN)
            ======================================================== */}
         <Modal
           visible={showMembersModal}
@@ -1083,23 +1083,8 @@ export default function BandDetailScreen({
                 </Pressable>
               </View>
 
-              {/* Card Resumo do Cabeçalho (Mesmo Molde do Modal de Estilos) */}
-              <View style={[styles.chartSummaryBox, { backgroundColor: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.8)', borderColor: colors.border }]}>
-                <View style={{ alignItems: 'center', flex: 1 }}>
-                  <Text style={[styles.summaryVal, { color: colors.primary }]}>{members.length}</Text>
-                  <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>INTEGRANTES</Text>
-                </View>
-                <View style={{ width: 1, backgroundColor: colors.border, height: '80%' }} />
-                <View style={{ alignItems: 'center', flex: 1 }}>
-                  <Text style={[styles.summaryVal, { color: colors.secondary }]}>
-                    {new Set(members.map(m => m.role).filter(Boolean)).size}
-                  </Text>
-                  <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>INSTRUMENTOS</Text>
-                </View>
-              </View>
-
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {/* Form Clean Adicionar / Editar Integrante */}
+                {/* Form Ultra Clean Adicionar / Editar Integrante */}
                 <View style={[styles.addMemberFormClean, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
                   <Text style={[styles.cleanFormHeaderTitle, { color: colors.text }]}>
                     {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
@@ -1109,8 +1094,6 @@ export default function BandDetailScreen({
                   <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Nome:</Text>
                   <TextInput
                     style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    placeholder="Nome do integrante"
-                    placeholderTextColor={colors.textMuted}
                     value={memberName}
                     onChangeText={setMemberName}
                   />
@@ -1119,38 +1102,14 @@ export default function BandDetailScreen({
                   <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Função:</Text>
                   <TextInput
                     style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    placeholder="Ex: Guitarra Solo, Vocal, Baixo..."
-                    placeholderTextColor={colors.textMuted}
                     value={memberRole}
                     onChangeText={setMemberRole}
                   />
-                  {/* Chips Rápidos de Sugestão */}
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 5, marginBottom: 8, marginTop: -3 }}>
-                    {PRESET_INSTRUMENTS.map(inst => {
-                      const isSel = memberRole.toLowerCase() === inst.toLowerCase();
-                      return (
-                        <Pressable
-                          key={inst}
-                          style={[
-                            styles.instTagChipCompact,
-                            isSel && { backgroundColor: colors.primary, borderColor: colors.primary }
-                          ]}
-                          onPress={() => setMemberRole(inst)}
-                        >
-                          <Text style={[styles.instTagTextCompact, isSel && { color: '#fff', fontWeight: '900' }]}>
-                            {inst}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
 
                   {/* 3. Contato (whatsapp) */}
                   <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Contato: (whatsapp)</Text>
                   <TextInput
                     style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    placeholder="Ex: (11) 99999-8888"
-                    placeholderTextColor={colors.textMuted}
                     keyboardType="phone-pad"
                     value={memberPhone}
                     onChangeText={setMemberPhone}
