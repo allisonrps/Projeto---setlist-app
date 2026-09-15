@@ -38,7 +38,7 @@ export default function BandCarousel({
       // Se houver algum modo de edição ativo, fecha ao tocar
       setActiveActionsBandId(null);
     } else {
-      onSelectBand(band.id);
+      onSelectBand(band);
     }
   };
 

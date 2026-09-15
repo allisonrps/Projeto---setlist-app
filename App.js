@@ -38,6 +38,7 @@ import BandModal from './components/BandModal';
 import SongModal from './components/SongModal';
 import SongDetailScreen from './components/SongDetailScreen';
 import SetlistDetailScreen from './components/SetlistDetailScreen';
+import BandDetailScreen from './components/BandDetailScreen';
 import SetlistModal from './components/SetlistModal';
 import SetlistDetailModal from './components/SetlistDetailModal';
 import PerformanceMode from './components/PerformanceMode';
@@ -614,6 +615,9 @@ function MainApp() {
   const [editingSetlist, setEditingSetlist] = useState(null);
   const [activeSetlist, setActiveSetlist] = useState(null);
   const [activeSetlistDetail, setActiveSetlistDetail] = useState(null);
+  const [activeBandDetail, setActiveBandDetail] = useState(null);
+  const [editingSongFromBandDetail, setEditingSongFromBandDetail] = useState(null);
+  const [editingSetlistFromBandDetail, setEditingSetlistFromBandDetail] = useState(null);
   const [editingSongFromSetlistDetail, setEditingSongFromSetlistDetail] = useState(null);
 
   // Controle de cards abertos por vez (máx 2)
@@ -815,6 +819,10 @@ function MainApp() {
       // Sincronizar links
       await songService.syncLinks(songId, songData.links);
 
+      if (editingSongFromBandDetail && editingSongFromBandDetail.id) {
+        await bandService.addSongToBand(editingSongFromBandDetail.id, songId);
+      }
+
       if (activeSetlist) {
         setActiveSetlist(prev => {
           if (!prev || !prev.songs) return prev;
@@ -834,6 +842,9 @@ function MainApp() {
       } else if (editingSongFromSetlistDetail) {
         setActiveSetlistDetail(editingSongFromSetlistDetail);
         setEditingSongFromSetlistDetail(null);
+      } else if (editingSongFromBandDetail) {
+        setActiveBandDetail(editingSongFromBandDetail);
+        setEditingSongFromBandDetail(null);
       }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar a música.');
@@ -852,6 +863,9 @@ function MainApp() {
     } else if (editingSongFromSetlistDetail) {
       setActiveSetlistDetail(editingSongFromSetlistDetail);
       setEditingSongFromSetlistDetail(null);
+    } else if (editingSongFromBandDetail) {
+      setActiveBandDetail(editingSongFromBandDetail);
+      setEditingSongFromBandDetail(null);
     }
   };
 
@@ -875,6 +889,9 @@ function MainApp() {
               } else if (editingSongFromSetlistDetail) {
                 setActiveSetlistDetail(editingSongFromSetlistDetail);
                 setEditingSongFromSetlistDetail(null);
+              } else if (editingSongFromBandDetail) {
+                setActiveBandDetail(editingSongFromBandDetail);
+                setEditingSongFromBandDetail(null);
               }
             } catch (error) {
               Alert.alert(t('importErrorTitle'), t('deleteSongError'));
@@ -916,6 +933,10 @@ function MainApp() {
       setShowSetlistModal(false);
       setEditingSetlist(null);
       setActiveSetlistDetail(null);
+      if (editingSetlistFromBandDetail) {
+        setActiveBandDetail(editingSetlistFromBandDetail);
+        setEditingSetlistFromBandDetail(null);
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar o setlist.');
     }
@@ -927,6 +948,10 @@ function MainApp() {
 
   const handleCloseSetlistDetail = () => {
     setActiveSetlistDetail(null);
+    if (editingSetlistFromBandDetail) {
+      setActiveBandDetail(editingSetlistFromBandDetail);
+      setEditingSetlistFromBandDetail(null);
+    }
   };
 
   const handleDeleteSetlist = (id) => {
@@ -2109,9 +2134,8 @@ function MainApp() {
           <BandCarousel
             bands={bands}
             selectedBandId={selectedBandId}
-            onSelectBand={(bandId) => {
-              setSelectedBandId(bandId);
-              setCurrentTab('setlists');
+            onSelectBand={(band) => {
+              setActiveBandDetail(band);
             }}
             onAddBand={() => {
               setEditingBand(null);
@@ -3328,6 +3352,42 @@ function MainApp() {
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
         onEditSong={handleEditSong}
+      />
+
+      <BandDetailScreen
+        visible={!!activeBandDetail}
+        band={activeBandDetail && activeBandDetail.id ? (bands.find(b => b.id === activeBandDetail.id) || activeBandDetail) : activeBandDetail}
+        allGeneralSongs={allSongsUnfiltered}
+        allSetlists={setlists}
+        onBack={() => setActiveBandDetail(null)}
+        onEditBand={(b) => {
+          setEditingBand(b);
+          setShowBandModal(true);
+        }}
+        onDeleteBand={(bandId) => handleDeleteBand(bandId)}
+        onSelectSong={(song) => {
+          setEditingSongFromBandDetail(activeBandDetail);
+          setActiveBandDetail(null);
+          setActiveSongDetail(song);
+        }}
+        onOpenNewSongForBand={(b) => {
+          setEditingSongFromBandDetail(b);
+          setActiveBandDetail(null);
+          setActiveSongDetail({ originalBand: b.name });
+        }}
+        onOpenNewSetlistForBand={(b, setlist) => {
+          setEditingSetlistFromBandDetail(b);
+          setActiveBandDetail(null);
+          setActiveSetlistDetail(setlist || { myBandId: b.id });
+        }}
+        onStartPerformance={handleStartPerformance}
+        onExportDoc={handleExportDoc}
+        onShareSetlist={handleShareSetlist}
+        onToggleFavoriteSetlist={handleToggleFavoriteSetlist}
+        onToggleFavoriteSong={handleToggleFavoriteSong}
+        onToggleRehearsalStatus={handleToggleRehearsalStatus}
+        onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+        onReloadAll={reloadAllData}
       />
 
       <SetlistDetailScreen

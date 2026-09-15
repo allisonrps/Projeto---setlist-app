@@ -43,5 +43,112 @@ export const bandService = {
       console.error('Error in bandService.delete:', error);
       throw error;
     }
+  },
+
+  // ===== GESTÃO DE REPERTÓRIO DA BANDA (band_songs) =====
+  async getBandSongs(bandId) {
+    try {
+      const result = await db.getAllAsync(
+        'SELECT s.* FROM band_songs bs JOIN songs s ON bs.songId = s.id WHERE bs.bandId = ? ORDER BY s.name ASC;',
+        [bandId]
+      );
+      if (!result) return [];
+      
+      // Carregar song_links para cada música do repertório da banda
+      const songsWithLinks = await Promise.all(
+        result.map(async (song) => {
+          const links = await db.getAllAsync('SELECT * FROM song_links WHERE songId = ?;', [song.id]);
+          return { ...song, links: links || [] };
+        })
+      );
+      return songsWithLinks;
+    } catch (error) {
+      console.error('Error in bandService.getBandSongs:', error);
+      return [];
+    }
+  },
+
+  async addSongToBand(bandId, songId) {
+    try {
+      await db.runAsync(
+        'INSERT INTO band_songs (bandId, songId) VALUES (?, ?);',
+        [bandId, songId]
+      );
+    } catch (error) {
+      console.error('Error in bandService.addSongToBand:', error);
+    }
+  },
+
+  async removeSongFromBand(bandId, songId) {
+    try {
+      await db.runAsync(
+        'DELETE FROM band_songs WHERE bandId = ? AND songId = ?;',
+        [bandId, songId]
+      );
+    } catch (error) {
+      console.error('Error in bandService.removeSongFromBand:', error);
+    }
+  },
+
+  // ===== GESTÃO FINANCEIRA DA BANDA (band_finances) =====
+  async getBandFinances(bandId) {
+    try {
+      const result = await db.getAllAsync(
+        'SELECT * FROM band_finances WHERE bandId = ? ORDER BY date DESC, id DESC;',
+        [bandId]
+      );
+      return result || [];
+    } catch (error) {
+      console.error('Error in bandService.getBandFinances:', error);
+      return [];
+    }
+  },
+
+  async addFinancialEntry(bandId, title, amount, type, date, status = 'paid', notes = '', setlistId = null) {
+    try {
+      const result = await db.runAsync(
+        'INSERT INTO band_finances (bandId, title, amount, type, date, status, notes, setlistId) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+        [bandId, title, parseFloat(amount) || 0, type, date || '', status, notes || '', setlistId]
+      );
+      return result.lastInsertRowId;
+    } catch (error) {
+      console.error('Error in bandService.addFinancialEntry:', error);
+      throw error;
+    }
+  },
+
+  async updateFinancialEntry(id, title, amount, type, date, status, notes) {
+    try {
+      await db.runAsync(
+        'UPDATE band_finances SET title = ?, amount = ?, type = ?, date = ?, status = ?, notes = ? WHERE id = ?;',
+        [title, parseFloat(amount) || 0, type, date || '', status, notes || '', id]
+      );
+    } catch (error) {
+      console.error('Error in bandService.updateFinancialEntry:', error);
+      throw error;
+    }
+  },
+
+  async toggleFinanceStatus(id, currentStatus) {
+    try {
+      const nextStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+      await db.runAsync(
+        'UPDATE band_finances SET status = ? WHERE id = ?;',
+        [nextStatus, id]
+      );
+      return nextStatus;
+    } catch (error) {
+      console.error('Error in bandService.toggleFinanceStatus:', error);
+      throw error;
+    }
+  },
+
+  async deleteFinancialEntry(id) {
+    try {
+      await db.runAsync('DELETE FROM band_finances WHERE id = ?;', [id]);
+    } catch (error) {
+      console.error('Error in bandService.deleteFinancialEntry:', error);
+      throw error;
+    }
   }
 };
