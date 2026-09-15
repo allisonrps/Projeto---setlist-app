@@ -107,7 +107,7 @@ export default function BandDetailScreen({
   const [selectedPickerSongIds, setSelectedPickerSongIds] = useState(new Set());
   const [pickerSearch, setPickerSearch] = useState('');
 
-  // Band Members Data & Form (Form oculto por padrão)
+  // Band Members Data & Form (Form oculto por padrão, cartões expansíveis)
   const [members, setMembers] = useState([]);
   const [showMemberForm, setShowMemberForm] = useState(false);
   const [memberName, setMemberName] = useState('');
@@ -118,6 +118,7 @@ export default function BandDetailScreen({
   const [memberStatus, setMemberStatus] = useState('active'); // 'active' | 'inactive'
   const [editingMemberId, setEditingMemberId] = useState(null);
   const [showInactiveMembers, setShowInactiveMembers] = useState(false);
+  const [expandedMemberIds, setExpandedMemberIds] = useState(new Set());
 
   // Financial Data
   const [finances, setFinances] = useState([]);
@@ -164,6 +165,20 @@ export default function BandDetailScreen({
   // Separate active and inactive members
   const activeMembers = members.filter(m => (m.status || 'active') === 'active');
   const inactiveMembers = members.filter(m => m.status === 'inactive');
+
+  // Toggle member card expansion
+  const handleToggleExpandMember = (id) => {
+    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+    setExpandedMemberIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   // Financial Calculations
   const parseCurrency = (valStr) => {
@@ -532,7 +547,7 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         
-        {/* HEADER SENIOR UX/UI COM COR DE FUNDO NATURAL */}
+        {/* HEADER HERO CLEAN COM LOGO MAIS ALTO E DIMINUÍDO EM 50% */}
         <View style={[styles.headerHeroContainer, { backgroundColor: colors.background }]}>
           <View style={styles.topRowNav}>
             <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={onBack}>
@@ -549,13 +564,13 @@ export default function BandDetailScreen({
             </View>
           </View>
 
-          {/* LOGO AUMENTADO EM 100% */}
-          <View style={styles.logoCenterContainer}>
-            <View style={[styles.avatarCircleLarge, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+          {/* LOGO REDUZIDO EM 50% E MAIS PRÓXIMO DO LIMITE SUPERIOR DA TELA */}
+          <View style={styles.logoCenterContainerTop}>
+            <View style={[styles.avatarCircleCompact, { backgroundColor: colors.card, borderColor: colors.primary }]}>
               {band.imageUri ? (
-                <Image source={{ uri: band.imageUri }} style={styles.avatarImageLarge} />
+                <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
               ) : (
-                <Text style={[styles.avatarInitialsLarge, { color: colors.primary }]}>
+                <Text style={[styles.avatarInitialsCompact, { color: colors.primary }]}>
                   {getBandInitials(band.name)}
                 </Text>
               )}
@@ -564,7 +579,7 @@ export default function BandDetailScreen({
           </View>
         </View>
 
-        {/* TOP TAB BAR DE 5 PÁGINAS SOMENTE ÍCONES (MANTENDO A BARRA DEBAIXO) */}
+        {/* TOP TAB BAR DE 5 PÁGINAS SOMENTE ÍCONES */}
         <View style={[styles.tabBarContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <View style={styles.tabBarRow}>
             
@@ -869,7 +884,7 @@ export default function BandDetailScreen({
               </View>
             )}
 
-            {/* SEÇÃO 1: INTEGRANTES ATIVOS (SEM CONTORNO NO CARD) */}
+            {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
             <View style={styles.memberSectionHeader}>
               <View style={styles.sectionHeaderTitleGroup}>
                 <View style={styles.activeDot} />
@@ -884,25 +899,47 @@ export default function BandDetailScreen({
             ) : (
               activeMembers.map(item => {
                 const periodText = getMemberPeriodText(item);
+                const isExpanded = expandedMemberIds.has(item.id);
+                const hasExtraDetails = periodText || item.phone;
+
                 return (
                   <View key={item.id} style={[styles.memberCardNoBorder, { backgroundColor: colors.card }]}>
-                    <View style={styles.memberCardLeft}>
-                      <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
-                        <Ionicons name="person" size={20} color={colors.primary} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <View style={styles.memberCardTopRow}>
+                      <View style={styles.memberCardLeft}>
+                        <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
+                          <Ionicons name="person" size={18} color={colors.primary} />
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
                           <Text style={[styles.memberNameText, { color: colors.text }]}>{item.name}</Text>
                           <View style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
                             <Text style={styles.roleBadgeText}>{item.role}</Text>
                           </View>
                         </View>
-                        
-                        {periodText && (
-                          <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
-                            <Ionicons name="calendar-outline" size={12} color={colors.textMuted} /> {periodText}
-                          </Text>
+                      </View>
+
+                      <View style={styles.memberCardRightActions}>
+                        <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
+                          <Ionicons name="pencil" size={18} color={colors.primary} />
+                        </Pressable>
+                        <Pressable style={styles.iconActionBtn} onPress={() => handleDeleteMember(item)}>
+                          <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                        </Pressable>
+                        {hasExtraDetails && (
+                          <Pressable style={styles.expandToggleBtn} onPress={() => handleToggleExpandMember(item.id)}>
+                            <Ionicons name={isExpanded ? "remove" : "add"} size={20} color={colors.primary} />
+                          </Pressable>
                         )}
+                      </View>
+                    </View>
+
+                    {/* REVELAR CONTATO E PERÍODO APENAS AO APERTAR O '+' */}
+                    {isExpanded && hasExtraDetails && (
+                      <View style={[styles.memberCardExpandedRow, { borderTopColor: isDark ? '#3f3f46' : '#e4e4e7' }]}>
+                        {periodText ? (
+                          <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
+                            <Ionicons name="calendar-outline" size={13} color={colors.textMuted} /> {periodText}
+                          </Text>
+                        ) : null}
 
                         {item.phone ? (
                           <Pressable style={styles.whatsAppBadge} onPress={() => handleOpenWhatsApp(item.phone)}>
@@ -911,22 +948,13 @@ export default function BandDetailScreen({
                           </Pressable>
                         ) : null}
                       </View>
-                    </View>
-
-                    <View style={styles.memberCardRightActions}>
-                      <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
-                        <Ionicons name="pencil" size={18} color={colors.primary} />
-                      </Pressable>
-                      <Pressable style={styles.iconActionBtn} onPress={() => handleDeleteMember(item)}>
-                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                      </Pressable>
-                    </View>
+                    )}
                   </View>
                 );
               })
             )}
 
-            {/* SEÇÃO 2: INTEGRANTES INATIVOS (SEM CONTORNO NO CARD) */}
+            {/* SEÇÃO 2: INTEGRANTES INATIVOS (COM EXPANSÃO '+') */}
             {inactiveMembers.length > 0 && (
               <View style={{ marginTop: 20 }}>
                 <Pressable
@@ -950,14 +978,17 @@ export default function BandDetailScreen({
                   <View style={{ marginTop: 12 }}>
                     {inactiveMembers.map(item => {
                       const periodText = getMemberPeriodText(item);
+                      const isExpanded = expandedMemberIds.has(item.id);
+                      const hasExtraDetails = periodText || item.phone;
+
                       return (
                         <View key={item.id} style={[styles.memberCardNoBorderInactive, { backgroundColor: colors.card }]}>
-                          <View style={styles.memberCardLeft}>
-                            <View style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}>
-                              <Ionicons name="person-outline" size={20} color="#6b7280" />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <View style={styles.memberCardTopRow}>
+                            <View style={styles.memberCardLeft}>
+                              <View style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}>
+                                <Ionicons name="person-outline" size={18} color="#6b7280" />
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
                                 <Text style={[styles.memberNameText, { color: colors.textMuted }]}>{item.name}</Text>
                                 <View style={[styles.roleBadge, { backgroundColor: '#6b7280' }]}>
                                   <Text style={styles.roleBadgeText}>{item.role}</Text>
@@ -966,12 +997,30 @@ export default function BandDetailScreen({
                                   <Text style={styles.inactivePillText}>Inativo</Text>
                                 </View>
                               </View>
+                            </View>
 
-                              {periodText && (
-                                <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
-                                  <Ionicons name="calendar-outline" size={12} color={colors.textMuted} /> {periodText}
-                                </Text>
+                            <View style={styles.memberCardRightActions}>
+                              <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
+                                <Ionicons name="pencil" size={18} color={colors.primary} />
+                              </Pressable>
+                              <Pressable style={styles.iconActionBtn} onPress={() => handleDeleteMember(item)}>
+                                <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                              </Pressable>
+                              {hasExtraDetails && (
+                                <Pressable style={styles.expandToggleBtn} onPress={() => handleToggleExpandMember(item.id)}>
+                                  <Ionicons name={isExpanded ? "remove" : "add"} size={20} color={colors.primary} />
+                                </Pressable>
                               )}
+                            </View>
+                          </View>
+
+                          {isExpanded && hasExtraDetails && (
+                            <View style={[styles.memberCardExpandedRow, { borderTopColor: isDark ? '#3f3f46' : '#e4e4e7' }]}>
+                              {periodText ? (
+                                <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
+                                  <Ionicons name="calendar-outline" size={13} color={colors.textMuted} /> {periodText}
+                                </Text>
+                              ) : null}
 
                               {item.phone ? (
                                 <Pressable style={styles.whatsAppBadge} onPress={() => handleOpenWhatsApp(item.phone)}>
@@ -980,16 +1029,7 @@ export default function BandDetailScreen({
                                 </Pressable>
                               ) : null}
                             </View>
-                          </View>
-
-                          <View style={styles.memberCardRightActions}>
-                            <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
-                              <Ionicons name="pencil" size={18} color={colors.primary} />
-                            </Pressable>
-                            <Pressable style={styles.iconActionBtn} onPress={() => handleDeleteMember(item)}>
-                              <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                            </Pressable>
-                          </View>
+                          )}
                         </View>
                       );
                     })}
@@ -1001,19 +1041,16 @@ export default function BandDetailScreen({
           </ScrollView>
         )}
 
-        {/* ABA 3: ESTATÍSTICAS */}
+        {/* ABA 3: ESTATÍSTICAS (SEM CONTORNO DE TABELA, APENAS TÍTULO "Estilos do Repertorio") */}
         {activeTab === 'stats' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
-            <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.cardPanelNoBorder, { backgroundColor: colors.card }]}>
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="stats-chart" size={20} color={colors.primary} style={{ marginRight: 8 }} />
                 <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
-                  Distribuição de Estilos no Repertório
+                  Estilos do Repertorio
                 </Text>
               </View>
-              <Text style={[styles.cardPanelSubtitle, { color: colors.textMuted }]}>
-                Cálculo automático baseado nas tags cadastradas nas {bandSongs.length} músicas do repertório da banda.
-              </Text>
 
               {styleBreakdown.length === 0 ? (
                 <View style={styles.emptyContainer}>
@@ -1023,7 +1060,7 @@ export default function BandDetailScreen({
                   </Text>
                 </View>
               ) : (
-                <View style={{ marginTop: 16 }}>
+                <View style={{ marginTop: 12 }}>
                   {styleBreakdown.map(item => (
                     <View key={item.tag} style={styles.styleBreakdownRow}>
                       <View style={styles.styleBreakdownHeader}>
@@ -1378,29 +1415,29 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   headerHeroContainer: {
     width: '100%',
-    paddingTop: Platform.OS === 'ios' ? 44 : 12,
+    paddingTop: Platform.OS === 'ios' ? 44 : 8,
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   topRowNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   topRowActions: { flexDirection: 'row' },
   headerIconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
   },
-  logoCenterContainer: {
+  logoCenterContainerTop: {
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: -16,
   },
-  avatarCircleLarge: {
-    width: 144,
-    height: 144,
-    borderRadius: 72,
-    borderWidth: 3,
+  avatarCircleCompact: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
@@ -1409,9 +1446,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
   },
-  avatarImageLarge: { width: 136, height: 136, borderRadius: 68 },
-  avatarInitialsLarge: { fontSize: 44, fontWeight: 'bold' },
-  bandTitleText: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginTop: 12 },
+  avatarImageCompact: { width: 66, height: 66, borderRadius: 33 },
+  avatarInitialsCompact: { fontSize: 24, fontWeight: 'bold' },
+  bandTitleText: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginTop: 6 },
 
   tabBarContainer: { borderBottomWidth: 1, height: 48 },
   tabBarRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', height: 48 },
@@ -1475,7 +1512,6 @@ const styles = StyleSheet.create({
   cardPanel: { borderRadius: 12, borderWidth: 1, padding: 16 },
   cardPanelHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   cardPanelTitle: { fontSize: 16, fontWeight: 'bold' },
-  cardPanelSubtitle: { fontSize: 12, marginBottom: 12 },
 
   cleanFormGroup: { marginBottom: 12 },
   cleanInputLabel: { fontSize: 13, fontWeight: '600', marginBottom: 4 },
@@ -1515,34 +1551,51 @@ const styles = StyleSheet.create({
 
   cardPanelNoBorder: { borderRadius: 12, padding: 16, marginBottom: 10 },
   memberCardNoBorder: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     padding: 14,
     borderRadius: 12,
     marginBottom: 10,
   },
   memberCardNoBorderInactive: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     padding: 12,
     borderRadius: 12,
     marginBottom: 10,
     opacity: 0.8,
   },
+  memberCardTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   memberCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  memberAvatarCircle: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  memberAvatarCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   memberNameText: { fontSize: 15, fontWeight: 'bold', marginRight: 8 },
   roleBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginRight: 6 },
   roleBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: 'bold' },
   inactivePill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, backgroundColor: '#6b7280' },
   inactivePillText: { color: '#ffffff', fontSize: 10, fontWeight: 'bold' },
-  memberPeriodText: { fontSize: 12, marginTop: 4 },
-  whatsAppBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  whatsAppBadgeText: { fontSize: 12, color: '#25D366', fontWeight: 'bold' },
   memberCardRightActions: { flexDirection: 'row', alignItems: 'center' },
-  iconActionBtn: { padding: 6, marginLeft: 4 },
+  iconActionBtn: { padding: 6, marginLeft: 2 },
+  expandToggleBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
+  },
+  memberCardExpandedRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+  },
+  memberPeriodText: { fontSize: 12 },
+  whatsAppBadge: { flexDirection: 'row', alignItems: 'center' },
+  whatsAppBadgeText: { fontSize: 12, color: '#25D366', fontWeight: 'bold' },
 
   toggleInactiveBtn: {
     flexDirection: 'row',
