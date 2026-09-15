@@ -2144,42 +2144,8 @@ function MainApp() {
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* CARROSSEL DE BANDAS NO TOPO DA HOME */}
-          <BandCarousel
-            bands={bands}
-            selectedBandId={selectedBandId}
-            onSelectBand={(band) => {
-              setActiveBandDetail(band);
-            }}
-            onAddBand={() => {
-              setEditingBand(null);
-              setShowBandModal(true);
-            }}
-            onEditBand={handleEditBand}
-            onDeleteBand={(band) => {
-              Alert.alert(
-                t('deleteBandConfirmTitle'),
-                t('deleteBandConfirmMsg').replace('{name}', band.name),
-                [
-                  { text: t('cancel'), style: 'cancel' },
-                  {
-                    text: t('delete'),
-                    style: 'destructive',
-                    onPress: async () => {
-                      await bandService.delete(band.id);
-                      if (selectedBandId === band.id) {
-                        setSelectedBandId(null);
-                      }
-                      await reloadAllData();
-                    },
-                  },
-                ]
-              );
-            }}
-          />
-
           {/* LISTA DE EVENTOS PRÓXIMOS */}
-          <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 24, marginBottom: 12 }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>
             Próximos Eventos ({upcomingSetlists.length})
           </Text>
 
@@ -2411,8 +2377,42 @@ function MainApp() {
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* CARROSSEL DE BANDAS NA ABA DE BANDAS */}
+          <BandCarousel
+            bands={bands}
+            selectedBandId={selectedBandId}
+            onSelectBand={(band) => {
+              setActiveBandDetail(band);
+            }}
+            onAddBand={() => {
+              setEditingBand(null);
+              setShowBandModal(true);
+            }}
+            onEditBand={handleEditBand}
+            onDeleteBand={(band) => {
+              Alert.alert(
+                t('deleteBandConfirmTitle'),
+                t('deleteBandConfirmMsg').replace('{name}', band.name),
+                [
+                  { text: t('cancel'), style: 'cancel' },
+                  {
+                    text: t('delete'),
+                    style: 'destructive',
+                    onPress: async () => {
+                      await bandService.delete(band.id);
+                      if (selectedBandId === band.id) {
+                        setSelectedBandId(null);
+                      }
+                      await reloadAllData();
+                    },
+                  },
+                ]
+              );
+            }}
+          />
+
           {filteredBands.length === 0 ? (
-            <View style={styles.emptyContainer}>
+            <View style={[styles.emptyContainer, { marginTop: 20 }]}>
               <Ionicons name="people-outline" size={48} color={colors.textMuted} />
               <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma banda cadastrada</Text>
               <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
