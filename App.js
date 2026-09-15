@@ -3441,7 +3441,7 @@ function MainApp() {
           <View style={{ flex: 1 }}>
             {currentTab === 'home' && renderHomeTab()}
             {currentTab === 'songs' && renderSongsTab()}
-            {currentTab === 'setlists' && renderSetlistsTab()}
+            {currentTab === 'bands' && renderBandsTab()}
             {currentTab === 'options' && renderOptionsTab()}
             {currentTab === 'about' && renderAboutTab()}
           </View>
@@ -3478,15 +3478,15 @@ function MainApp() {
 
             <Pressable
               style={styles.tabItem}
-              onPress={() => setCurrentTab('setlists')}
+              onPress={() => setCurrentTab('bands')}
             >
               <Ionicons 
-                name={currentTab === 'setlists' ? 'clipboard' : 'clipboard-outline'} 
+                name={currentTab === 'bands' ? 'people' : 'people-outline'} 
                 size={23} 
-                color={currentTab === 'setlists' ? colors.primary : colors.textMuted} 
+                color={currentTab === 'bands' ? colors.primary : colors.textMuted} 
               />
-              <Text style={[styles.tabText, { color: currentTab === 'setlists' ? colors.primary : colors.textMuted }]}>
-                {t('setlists')}
+              <Text style={[styles.tabText, { color: currentTab === 'bands' ? colors.primary : colors.textMuted }]}>
+                Bandas
               </Text>
             </Pressable>
 
