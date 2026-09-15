@@ -591,7 +591,11 @@ const createWebDB = () => {
         const bsItems = (data.band_songs || []).filter(item => item.bandId === bandId);
         const result = bsItems.map(item => {
           const song = data.songs.find(s => s.id === item.songId);
-          return song || null;
+          if (!song) return null;
+          return {
+            ...song,
+            isBandFavorite: item.isFavorite || 0
+          };
         }).filter(Boolean);
         result.sort((a, b) => a.name.localeCompare(b.name));
         return result;
@@ -806,6 +810,19 @@ const createWebDB = () => {
         return {};
       }
 
+      if (sql.includes('UPDATE band_songs SET isFavorite = ?')) {
+        data.band_songs = data.band_songs || [];
+        const isFav = params[0];
+        const bandId = params[1];
+        const songId = params[2];
+        const item = data.band_songs.find(bs => bs.bandId === bandId && bs.songId === songId);
+        if (item) {
+          item.isFavorite = isFav;
+          saveToStorage();
+        }
+        return {};
+      }
+
       // INSERT / UPDATE / DELETE / TOGGLE de band_finances
       if (sql.includes('INSERT INTO band_members')) {
         data.band_members = data.band_members || [];
@@ -1000,6 +1017,7 @@ export const createTables = async () => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         bandId INTEGER NOT NULL,
         songId INTEGER NOT NULL,
+        isFavorite INTEGER DEFAULT 0,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE,
         FOREIGN KEY (songId) REFERENCES songs(id) ON DELETE CASCADE,
@@ -1183,6 +1201,18 @@ export const createTables = async () => {
         console.log("Nativo: Coluna 'isFavorite' já existe em setlists.");
       } else {
         console.log("Nativo: Nota da migração de isFavorite em setlists:", e.message);
+      }
+    }
+
+    // Migração de isFavorite em band_songs
+    try {
+      await db.execAsync('ALTER TABLE band_songs ADD COLUMN isFavorite INTEGER DEFAULT 0;');
+      console.log("Nativo: Coluna 'isFavorite' adicionada em 'band_songs'!");
+    } catch (e) {
+      if (e.message && e.message.includes("duplicate column name")) {
+        console.log("Nativo: Coluna 'isFavorite' já existe em band_songs.");
+      } else {
+        console.log("Nativo: Nota da migração de isFavorite em band_songs:", e.message);
       }
     }
 

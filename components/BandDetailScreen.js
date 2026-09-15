@@ -152,6 +152,13 @@ export default function BandDetailScreen({
     }
   }, [band]);
 
+  const handleToggleBandSongFavorite = async (songId, currentIsFav) => {
+    if (band && band.id) {
+      await bandService.toggleBandSongFavorite(band.id, songId, currentIsFav);
+      await loadData();
+    }
+  };
+
   useEffect(() => {
     if (visible && band && band.id) {
       loadData();
@@ -551,16 +558,16 @@ export default function BandDetailScreen({
         {/* HEADER HERO CLEAN COM LOGO MAIS ALTO E DIMINUÍDO EM 50% */}
         <View style={[styles.headerHeroContainer, { backgroundColor: colors.background }]}>
           <View style={styles.topRowNav}>
-            <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={onBack}>
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Pressable style={[styles.headerIconButton, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
+              <Ionicons name="arrow-back" size={20} color={colors.text} />
             </Pressable>
 
             <View style={styles.topRowActions}>
-              <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={() => onEditBand(band)}>
-                <Ionicons name="pencil" size={20} color={colors.text} />
+              <Pressable style={[styles.headerIconButton, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
+                <Ionicons name="pencil" size={18} color={colors.primary} />
               </Pressable>
-              <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={() => onDeleteBand(band)}>
-                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+              <Pressable style={[styles.headerIconButton, { backgroundColor: colors.danger + '18', borderColor: colors.danger + '40', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
+                <Ionicons name="trash-outline" size={18} color={colors.danger} />
               </Pressable>
             </View>
           </View>
@@ -645,12 +652,12 @@ export default function BandDetailScreen({
         {/* ABA 1: REPERTÓRIO */}
         {activeTab === 'repertoire' && (
           <View style={styles.tabContentFlex}>
-            <View style={[styles.searchToolbar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              <View style={[styles.searchInputWrapper, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]}>
+            <View style={[styles.searchToolbar, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
+              <View style={[styles.searchInputWrapper, { flex: 1, backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 44, flexDirection: 'row', alignItems: 'center' }]}>
                 <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
                 <TextInput
-                  style={[styles.searchInput, { color: colors.text }]}
-                  placeholder=""
+                  style={[styles.searchInput, { color: colors.text, flex: 1, fontSize: 13 }]}
+                  placeholder="Buscar no repertório..."
                   placeholderTextColor={colors.textMuted}
                   value={repertoireSearch}
                   onChangeText={setRepertoireSearch}
@@ -667,20 +674,39 @@ export default function BandDetailScreen({
                 <Pressable
                   style={[
                     styles.roundIconButton,
-                    { backgroundColor: showStyleFilters ? colors.primary : (isDark ? '#27272a' : '#e2e8f0') }
+                    {
+                      backgroundColor: showStyleFilters ? colors.primary : (colors.secondary + '18'),
+                      borderColor: showStyleFilters ? colors.primary : (colors.secondary + '40'),
+                      borderWidth: 1,
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }
                   ]}
                   onPress={() => setShowStyleFilters(!showStyleFilters)}
                 >
                   <Ionicons
                     name="pricetag-outline"
                     size={18}
-                    color={showStyleFilters ? '#ffffff' : colors.text}
+                    color={showStyleFilters ? '#ffffff' : colors.secondary}
                   />
                 </Pressable>
               )}
 
               <Pressable
-                style={[styles.roundIconButton, { backgroundColor: colors.primary, marginLeft: 8 }]}
+                style={[
+                  styles.roundIconButton,
+                  {
+                    backgroundColor: colors.primary,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }
+                ]}
                 onPress={handleOpenSongPicker}
               >
                 <Ionicons name="add" size={22} color="#ffffff" />
@@ -709,7 +735,11 @@ export default function BandDetailScreen({
                         key={st}
                         style={[
                           styles.stylePill,
-                          { backgroundColor: isSel ? colors.primary : (isDark ? '#27272a' : '#f1f5f9') }
+                          {
+                            backgroundColor: isSel ? colors.primary : colors.cardBackground,
+                            borderColor: isSel ? colors.primary : colors.border,
+                            borderWidth: 1
+                          }
                         ]}
                         onPress={() => setSelectedStyleFilter(isSel ? '' : st)}
                       >
@@ -739,7 +769,7 @@ export default function BandDetailScreen({
                     song={song}
                     onSelect={() => onSelectSong(song)}
                     onPress={() => onSelectSong(song)}
-                    onToggleFavorite={() => onToggleFavoriteSong(song.id)}
+                    onToggleFavorite={() => handleToggleBandSongFavorite(song.id, song.isFavorite)}
                     showRehearsalControls={true}
                     onToggleRehearsalStatus={() => onToggleRehearsalStatus && onToggleRehearsalStatus(song.id)}
                     onUpdateRehearsalNotes={(notes) => onUpdateSongRehearsalNotes && onUpdateSongRehearsalNotes(song.id, notes)}
@@ -788,7 +818,7 @@ export default function BandDetailScreen({
                 <View style={styles.cleanFormGroup}>
                   <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Nome: *</Text>
                   <TextInput
-                    style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                    style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                     placeholder=""
                     placeholderTextColor={colors.textMuted}
                     value={memberName}
@@ -799,7 +829,7 @@ export default function BandDetailScreen({
                 <View style={styles.cleanFormGroup}>
                   <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Função / Instrumento:</Text>
                   <TextInput
-                    style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                    style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                     placeholder=""
                     placeholderTextColor={colors.textMuted}
                     value={memberRole}
@@ -810,7 +840,7 @@ export default function BandDetailScreen({
                 <View style={styles.cleanFormGroup}>
                   <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Contato (WhatsApp):</Text>
                   <TextInput
-                    style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                    style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                     placeholder=""
                     placeholderTextColor={colors.textMuted}
                     keyboardType="phone-pad"
@@ -824,7 +854,7 @@ export default function BandDetailScreen({
                   <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
                     <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Início:</Text>
                     <TextInput
-                      style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                      style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                       placeholder=""
                       placeholderTextColor={colors.textMuted}
                       value={memberStartDate}
@@ -835,7 +865,7 @@ export default function BandDetailScreen({
                   <View style={[styles.cleanFormGroup, { flex: 1 }]}>
                     <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Fim:</Text>
                     <TextInput
-                      style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                      style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                       placeholder=""
                       placeholderTextColor={colors.textMuted}
                       value={memberEndDate}
@@ -960,7 +990,7 @@ export default function BandDetailScreen({
             {inactiveMembers.length > 0 && (
               <View style={{ marginTop: 20 }}>
                 <Pressable
-                  style={[styles.toggleInactiveBtn, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]}
+                  style={[styles.toggleInactiveBtn, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]}
                   onPress={() => setShowInactiveMembers(!showInactiveMembers)}
                 >
                   <Ionicons
@@ -1075,7 +1105,7 @@ export default function BandDetailScreen({
                         </Text>
                       </View>
 
-                      <View style={[styles.progressBarTrack, { backgroundColor: isDark ? '#27272a' : '#e2e8f0' }]}>
+                      <View style={[styles.progressBarTrack, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}>
                         <View
                           style={[
                             styles.progressBarFill,
@@ -1251,11 +1281,11 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
 
-            <View style={[styles.pickerSearchInputWrapper, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]}>
+            <View style={[styles.pickerSearchInputWrapper, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]}>
               <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
               <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
-                placeholder=""
+                style={[styles.searchInput, { color: colors.text, flex: 1, fontSize: 13 }]}
+                placeholder="Buscar música da coleção..."
                 placeholderTextColor={colors.textMuted}
                 value={pickerSearch}
                 onChangeText={setPickerSearch}
@@ -1342,7 +1372,7 @@ export default function BandDetailScreen({
             <ScrollView>
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Descrição: *</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                 placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={finTitle}
@@ -1351,7 +1381,7 @@ export default function BandDetailScreen({
 
               <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Valor (R$): *</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                 placeholder=""
                 placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
@@ -1383,7 +1413,7 @@ export default function BandDetailScreen({
 
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data:</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
                 placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={finDate}

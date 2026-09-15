@@ -49,22 +49,40 @@ export const bandService = {
   async getBandSongs(bandId) {
     try {
       const result = await db.getAllAsync(
-        'SELECT s.* FROM band_songs bs JOIN songs s ON bs.songId = s.id WHERE bs.bandId = ? ORDER BY s.name ASC;',
+        'SELECT s.*, bs.isFavorite as isBandFavorite FROM band_songs bs JOIN songs s ON bs.songId = s.id WHERE bs.bandId = ? ORDER BY s.name ASC;',
         [bandId]
       );
       if (!result) return [];
       
-      // Carregar song_links para cada música do repertório da banda
+      // Carregar song_links para cada música do repertório da banda e usar o isFavorite específico da banda
       const songsWithLinks = await Promise.all(
         result.map(async (song) => {
           const links = await db.getAllAsync('SELECT * FROM song_links WHERE songId = ?;', [song.id]);
-          return { ...song, links: links || [] };
+          return { 
+            ...song, 
+            isFavorite: song.isBandFavorite !== undefined ? Boolean(song.isBandFavorite) : Boolean(song.isFavorite),
+            links: links || [] 
+          };
         })
       );
       return songsWithLinks;
     } catch (error) {
       console.error('Error in bandService.getBandSongs:', error);
       return [];
+    }
+  },
+
+  async toggleBandSongFavorite(bandId, songId, currentIsFavorite) {
+    try {
+      const newStatus = currentIsFavorite ? 0 : 1;
+      await db.runAsync(
+        'UPDATE band_songs SET isFavorite = ? WHERE bandId = ? AND songId = ?;',
+        [newStatus, bandId, songId]
+      );
+      return newStatus;
+    } catch (error) {
+      console.error('Error in bandService.toggleBandSongFavorite:', error);
+      throw error;
     }
   },
 
