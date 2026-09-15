@@ -12,12 +12,25 @@ import { useLanguage } from '../hooks/useLanguage';
 export default function SongListItem({
   song,
   onSelect,
+  onPress,
   onToggleFavorite,
   sortBy = 'band',
+  extraRightComponent,
+  showRehearsalControls,
+  onToggleRehearsalStatus,
+  onUpdateRehearsalNotes,
 }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const isDark = colors.isDark;
+
+  const handlePress = () => {
+    if (onSelect) {
+      onSelect(song);
+    } else if (onPress) {
+      onPress(song);
+    }
+  };
 
   const tagsList = song.style
     ? song.style.split(',').map(s => s.trim()).filter(Boolean)
@@ -31,9 +44,11 @@ export default function SongListItem({
           backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)',
           shadowColor: colors.shadowColor,
           transform: [{ scale: pressed ? 0.985 : 1 }],
+          flexDirection: 'row',
+          alignItems: 'center',
         }
       ]}
-      onPress={() => onSelect && onSelect(song)}
+      onPress={handlePress}
     >
       <View style={styles.cardContent}>
         {/* Main Title Row with Favorite Star in Front */}
@@ -92,6 +107,12 @@ export default function SongListItem({
           </View>
         )}
       </View>
+
+      {extraRightComponent ? (
+        <View style={{ marginLeft: 10 }}>
+          {extraRightComponent}
+        </View>
+      ) : null}
     </Pressable>
   );
 }

@@ -737,6 +737,7 @@ export default function BandDetailScreen({
                   <SongListItem
                     key={song.id}
                     song={song}
+                    onSelect={() => onSelectSong(song)}
                     onPress={() => onSelectSong(song)}
                     onToggleFavorite={() => onToggleFavoriteSong(song.id)}
                     showRehearsalControls={true}
