@@ -37,6 +37,7 @@ import ImportOptionsModal from './components/ImportOptionsModal';
 import BandModal from './components/BandModal';
 import SongModal from './components/SongModal';
 import SongDetailScreen from './components/SongDetailScreen';
+import SetlistDetailScreen from './components/SetlistDetailScreen';
 import SetlistModal from './components/SetlistModal';
 import SetlistDetailModal from './components/SetlistDetailModal';
 import PerformanceMode from './components/PerformanceMode';
@@ -612,6 +613,8 @@ function MainApp() {
   const [editingFromPerformance, setEditingFromPerformance] = useState(false);
   const [editingSetlist, setEditingSetlist] = useState(null);
   const [activeSetlist, setActiveSetlist] = useState(null);
+  const [activeSetlistDetail, setActiveSetlistDetail] = useState(null);
+  const [editingSongFromSetlistDetail, setEditingSongFromSetlistDetail] = useState(null);
 
   // Controle de cards abertos por vez (máx 2)
   const [expandedSongIds, setExpandedSongIds] = useState([]);
@@ -828,6 +831,9 @@ function MainApp() {
       if (editingFromPerformance) {
         setEditingFromPerformance(false);
         setShowPerformanceMode(true);
+      } else if (editingSongFromSetlistDetail) {
+        setActiveSetlistDetail(editingSongFromSetlistDetail);
+        setEditingSongFromSetlistDetail(null);
       }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar a música.');
@@ -843,6 +849,9 @@ function MainApp() {
     if (editingFromPerformance) {
       setEditingFromPerformance(false);
       setShowPerformanceMode(true);
+    } else if (editingSongFromSetlistDetail) {
+      setActiveSetlistDetail(editingSongFromSetlistDetail);
+      setEditingSongFromSetlistDetail(null);
     }
   };
 
@@ -863,6 +872,9 @@ function MainApp() {
               if (editingFromPerformance) {
                 setEditingFromPerformance(false);
                 setShowPerformanceMode(true);
+              } else if (editingSongFromSetlistDetail) {
+                setActiveSetlistDetail(editingSongFromSetlistDetail);
+                setEditingSongFromSetlistDetail(null);
               }
             } catch (error) {
               Alert.alert(t('importErrorTitle'), t('deleteSongError'));
@@ -876,9 +888,9 @@ function MainApp() {
   // ===== AÇÕES SETLISTS =====
   const handleSaveSetlist = async (setlistData) => {
     try {
-      if (editingSetlist) {
+      if (setlistData && setlistData.id) {
         await setlistService.update(
-          editingSetlist.id,
+          setlistData.id,
           setlistData.name,
           setlistData.type,
           setlistData.myBandId,
@@ -903,14 +915,18 @@ function MainApp() {
       await reloadAllData();
       setShowSetlistModal(false);
       setEditingSetlist(null);
+      setActiveSetlistDetail(null);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar o setlist.');
     }
   };
 
   const handleEditSetlist = (setlist) => {
-    setEditingSetlist(setlist);
-    setShowSetlistModal(true);
+    setActiveSetlistDetail(setlist);
+  };
+
+  const handleCloseSetlistDetail = () => {
+    setActiveSetlistDetail(null);
   };
 
   const handleDeleteSetlist = (id) => {
@@ -926,6 +942,7 @@ function MainApp() {
             try {
               await setlistService.delete(id);
               await reloadAllData();
+              setActiveSetlistDetail(null);
             } catch (error) {
               Alert.alert(t('importErrorTitle'), t('deleteSetlistError'));
             }
@@ -2495,7 +2512,7 @@ function MainApp() {
                 styles.quickAddButton,
                 { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
               ]}
-              onPress={() => { setEditingSetlist(null); setShowSetlistModal(true); }}
+              onPress={() => { setActiveSetlistDetail({}); }}
             >
               <Text style={styles.quickAddText}>{t('addSetlist')}</Text>
             </Pressable>
@@ -3311,6 +3328,27 @@ function MainApp() {
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
         onEditSong={handleEditSong}
+      />
+
+      <SetlistDetailScreen
+        visible={!!activeSetlistDetail}
+        setlist={activeSetlistDetail && activeSetlistDetail.id ? (setlists.find(s => s.id === activeSetlistDetail.id) || activeSetlistDetail) : activeSetlistDetail}
+        bands={bands}
+        songs={allSongsUnfiltered}
+        onBack={handleCloseSetlistDetail}
+        onSave={handleSaveSetlist}
+        onDelete={handleDeleteSetlist}
+        onShare={handleShareSetlist}
+        onStartPerformance={handleStartPerformance}
+        onExportDoc={handleExportDoc}
+        onToggleFavorite={handleToggleFavoriteSetlist}
+        onToggleRehearsalStatus={handleToggleRehearsalStatus}
+        onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
+        onEditSong={(song) => {
+          setEditingSongFromSetlistDetail(activeSetlistDetail);
+          setActiveSetlistDetail(null);
+          setActiveSongDetail(song);
+        }}
       />
 
       {/* Modo Performance em Tela Cheia */}

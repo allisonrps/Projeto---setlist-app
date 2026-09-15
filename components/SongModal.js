@@ -30,7 +30,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
   const [defaultView, setDefaultView] = useState('lyrics');
   const [scrollSpeed, setScrollSpeed] = useState('none');
   const [activeEditorTab, setActiveEditorTab] = useState('lyrics');
-  const [links, setLinks] = useState([{ type: 'youtube', url: '' }]);
+  const [links, setLinks] = useState([]);
   const [showLinksSection, setShowLinksSection] = useState(false);
   const [showSongDetails, setShowSongDetails] = useState(false);
 
@@ -51,7 +51,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
         setLinks(
           hasLinks
             ? song.links.map(l => ({ type: l.type, url: l.url }))
-            : [{ type: 'youtube', url: '' }]
+            : []
         );
         setShowLinksSection(false);
         setShowSongDetails(false);
@@ -66,7 +66,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
         setDefaultView('lyrics');
         setScrollSpeed('none');
         setActiveEditorTab('lyrics');
-        setLinks([{ type: 'youtube', url: '' }]);
+        setLinks([]);
         setShowLinksSection(false);
         setShowSongDetails(false);
       }
@@ -305,17 +305,15 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                           importantForAutofill="no"
                         />
 
-                        {links.length > 1 && (
-                          <Pressable 
-                            style={({ pressed }) => [styles.removeLinkButton, pressed && { opacity: 0.7 }]} 
-                            onPress={() => removeLink(index)}
-                          >
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                              <Ionicons name="trash-outline" size={13} color={colors.danger} />
-                              <Text style={[styles.removeLinkText, { color: colors.danger }]}>{t('removeLink')}</Text>
-                            </View>
-                          </Pressable>
-                        )}
+                        <Pressable 
+                          style={({ pressed }) => [styles.removeLinkButton, pressed && { opacity: 0.7 }]} 
+                          onPress={() => removeLink(index)}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                            <Text style={[styles.removeLinkText, { color: colors.danger }]}>{t('removeLink')}</Text>
+                          </View>
+                        </Pressable>
                       </View>
                     ))}
 

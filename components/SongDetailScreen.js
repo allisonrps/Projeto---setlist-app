@@ -47,7 +47,7 @@ export default function SongDetailScreen({
   const [defaultView, setDefaultView] = useState('lyrics');
   const [scrollSpeed, setScrollSpeed] = useState('none');
   const [activeEditorTab, setActiveEditorTab] = useState('chords');
-  const [links, setLinks] = useState([{ type: 'youtube', url: '' }]);
+  const [links, setLinks] = useState([]);
   const [showLinksSection, setShowLinksSection] = useState(false);
   const [showDetailsLayer, setShowDetailsLayer] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -68,7 +68,7 @@ export default function SongDetailScreen({
       const sSpeed = song.scrollSpeed || 'none';
       const sLinks = song.links && song.links.length > 0
         ? song.links.map(l => ({ type: l.type, url: l.url }))
-        : [{ type: 'youtube', url: '' }];
+        : [];
 
       setName(sName);
       setOriginalBand(sBand);
@@ -107,7 +107,7 @@ export default function SongDetailScreen({
       setDefaultView('chords');
       setActiveEditorTab('chords');
       setScrollSpeed('none');
-      setLinks([{ type: 'youtube', url: '' }]);
+      setLinks([]);
       setIsFavorite(false);
       setShowDetailsLayer(false); // Closed by default
 
@@ -121,7 +121,7 @@ export default function SongDetailScreen({
         tabs: '',
         defaultView: 'chords',
         scrollSpeed: 'none',
-        links: JSON.stringify([{ type: 'youtube', url: '' }]),
+        links: JSON.stringify([]),
       };
     }
   }, [song]);
@@ -636,58 +636,64 @@ export default function SongDetailScreen({
                   </Pressable>
                 </View>
 
-                {links.map((link, index) => (
-                  <View key={index} style={[styles.linkRowItem, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}>
-                    <View style={styles.linkTypePills}>
-                      {['youtube', 'spotify', 'cifras'].map((type) => {
-                        const isTypeActive = link.type === type;
-                        return (
-                          <Pressable
-                            key={type}
-                            style={[
-                              styles.linkTypePill,
-                              {
-                                backgroundColor: isTypeActive
-                                  ? (type === 'youtube' ? '#ef4444' : type === 'spotify' ? '#1db954' : colors.primary)
-                                  : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
-                              }
-                            ]}
-                            onPress={() => updateLink(index, 'type', type)}
-                          >
-                            <Ionicons
-                              name={type === 'youtube' ? 'logo-youtube' : type === 'spotify' ? 'logo-spotify' : 'document-text-outline'}
-                              size={11}
-                              color={isTypeActive ? '#ffffff' : colors.textMuted}
-                            />
-                          </Pressable>
-                        );
-                      })}
-                    </View>
+                {links.length === 0 ? (
+                  <View style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: 'italic' }}>
+                      {language === 'en' ? 'No support links added. Tap + Add above.' : language === 'es' ? 'Ningún enlace de apoyo añadido. Toca + Añadir arriba.' : 'Nenhum link de apoio adicionado. Toque em + Adicionar acima.'}
+                    </Text>
+                  </View>
+                ) : (
+                  links.map((link, index) => (
+                    <View key={index} style={[styles.linkRowItem, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}>
+                      <View style={styles.linkTypePills}>
+                        {['youtube', 'spotify', 'cifras'].map((type) => {
+                          const isTypeActive = link.type === type;
+                          return (
+                            <Pressable
+                              key={type}
+                              style={[
+                                styles.linkTypePill,
+                                {
+                                  backgroundColor: isTypeActive
+                                    ? (type === 'youtube' ? '#ef4444' : type === 'spotify' ? '#1db954' : colors.primary)
+                                    : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                                }
+                              ]}
+                              onPress={() => updateLink(index, 'type', type)}
+                            >
+                              <Ionicons
+                                name={type === 'youtube' ? 'logo-youtube' : type === 'spotify' ? 'logo-spotify' : 'document-text-outline'}
+                                size={11}
+                                color={isTypeActive ? '#ffffff' : colors.textMuted}
+                              />
+                            </Pressable>
+                          );
+                        })}
+                      </View>
 
-                    <TextInput
-                      style={[
-                        styles.linkUrlInput,
-                        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
-                      ]}
-                      value={link.url}
-                      onChangeText={(val) => updateLink(index, 'url', val)}
-                      placeholder="https://..."
-                      placeholderTextColor={colors.textMuted}
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      importantForAutofill="no"
-                    />
+                      <TextInput
+                        style={[
+                          styles.linkUrlInput,
+                          { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
+                        ]}
+                        value={link.url}
+                        onChangeText={(val) => updateLink(index, 'url', val)}
+                        placeholder="https://..."
+                        placeholderTextColor={colors.textMuted}
+                        autoCapitalize="none"
+                        autoComplete="off"
+                        importantForAutofill="no"
+                      />
 
-                    {links.length > 1 && (
                       <Pressable
                         style={({ pressed }) => [styles.linkDeleteBtn, pressed && { opacity: 0.6 }]}
                         onPress={() => removeLink(index)}
                       >
                         <Ionicons name="trash-outline" size={15} color={colors.danger} />
                       </Pressable>
-                    )}
-                  </View>
-                ))}
+                    </View>
+                  ))
+                )}
               </View>
             </View>
           </ScrollView>

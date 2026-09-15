@@ -8,7 +8,7 @@ export function useSongs(onSuccess) {
   const [originalBand, setOriginalBand] = useState('');
   const [songStyle, setSongStyle] = useState('');
   const [songLyrics, setSongLyrics] = useState('');
-  const [songLinks, setSongLinks] = useState([{ type: 'youtube', url: '' }]);
+  const [songLinks, setSongLinks] = useState([]);
   const [editingSongId, setEditingSongId] = useState(null);
 
   const loadSongs = async () => {
@@ -49,7 +49,7 @@ export function useSongs(onSuccess) {
     setOriginalBand(song.originalBand);
     setSongStyle(song.style || '');
     setSongLyrics(song.lyrics || '');
-    setSongLinks(song.links.length > 0 ? song.links : [{ type: 'youtube', url: '' }]);
+    setSongLinks(song.links && song.links.length > 0 ? song.links : []);
     setEditingSongId(song.id);
   };
 
@@ -58,7 +58,7 @@ export function useSongs(onSuccess) {
     setOriginalBand('');
     setSongStyle('');
     setSongLyrics('');
-    setSongLinks([{ type: 'youtube', url: '' }]);
+    setSongLinks([]);
     setEditingSongId(null);
   };
 
