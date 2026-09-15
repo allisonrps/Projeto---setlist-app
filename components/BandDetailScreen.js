@@ -224,7 +224,7 @@ export default function BandDetailScreen({
   const totalExpense = customPaidExpense;
   const netBalance = totalIncome - totalExpense;
 
-  // Filtered band repertoire
+  // Filtered band repertoire (Favoritas no topo)
   const filteredBandSongs = bandSongs.filter(song => {
     const query = repertoireSearch.toLowerCase().trim();
     const matchesSearch = !query || 
@@ -236,6 +236,11 @@ export default function BandDetailScreen({
       (song.style || '').toLowerCase().includes(selectedStyleFilter.toLowerCase());
 
     return matchesSearch && matchesStyle;
+  }).sort((a, b) => {
+    const favA = a.isFavorite ? 1 : 0;
+    const favB = b.isFavorite ? 1 : 0;
+    if (favA !== favB) return favB - favA;
+    return (a.name || '').localeCompare(b.name || '');
   });
 
   // Extract unique tags for repertoire filter
@@ -941,11 +946,13 @@ export default function BandDetailScreen({
                         <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
                           <Ionicons name="person" size={18} color={colors.primary} />
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, gap: 4 }}>
                           <Text style={[styles.memberNameText, { color: colors.text }]}>{item.name}</Text>
-                          <View style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
-                            <Text style={styles.roleBadgeText}>{item.role}</Text>
-                          </View>
+                          {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
+                            <View key={idx} style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
+                              <Text style={styles.roleBadgeText}>{roleTag}</Text>
+                            </View>
+                          ))}
                         </View>
                       </View>
 
@@ -1020,11 +1027,13 @@ export default function BandDetailScreen({
                               <View style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}>
                                 <Ionicons name="person-outline" size={18} color="#6b7280" />
                               </View>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, gap: 4 }}>
                                 <Text style={[styles.memberNameText, { color: colors.textMuted }]}>{item.name}</Text>
-                                <View style={[styles.roleBadge, { backgroundColor: '#6b7280' }]}>
-                                  <Text style={styles.roleBadgeText}>{item.role}</Text>
-                                </View>
+                                {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
+                                  <View key={idx} style={[styles.roleBadge, { backgroundColor: '#6b7280' }]}>
+                                    <Text style={styles.roleBadgeText}>{roleTag}</Text>
+                                  </View>
+                                ))}
                                 <View style={styles.inactivePill}>
                                   <Text style={styles.inactivePillText}>Inativo</Text>
                                 </View>
@@ -1394,31 +1403,60 @@ export default function BandDetailScreen({
                 <Pressable
                   style={[
                     styles.typeSelectBtn,
-                    finType === 'income' && { backgroundColor: '#10b981', borderColor: '#10b981' }
+                    { backgroundColor: finType === 'income' ? '#10b981' : 'rgba(16, 185, 129, 0.25)', borderColor: '#10b981', borderWidth: 1 }
                   ]}
                   onPress={() => setFinType('income')}
                 >
-                  <Text style={[styles.typeSelectText, finType === 'income' && { color: '#ffffff' }]}>Entrada (+)</Text>
+                  <Text style={[styles.typeSelectText, { color: '#ffffff' }]}>Entrada (+)</Text>
                 </Pressable>
                 <Pressable
                   style={[
                     styles.typeSelectBtn,
-                    finType === 'expense' && { backgroundColor: '#ef4444', borderColor: '#ef4444' }
+                    { backgroundColor: finType === 'expense' ? '#ef4444' : 'rgba(239, 68, 68, 0.25)', borderColor: '#ef4444', borderWidth: 1 }
                   ]}
                   onPress={() => setFinType('expense')}
                 >
-                  <Text style={[styles.typeSelectText, finType === 'expense' && { color: '#ffffff' }]}>Saída (-)</Text>
+                  <Text style={[styles.typeSelectText, { color: '#ffffff' }]}>Saída (-)</Text>
                 </Pressable>
               </View>
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data:</Text>
-              <TextInput
-                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder=""
-                placeholderTextColor={colors.textMuted}
-                value={finDate}
-                onChangeText={setFinDate}
-              />
+              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data (DD/MM/AAAA):</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <TextInput
+                  style={[styles.cleanInput, { flex: 1, backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                  placeholder="DD/MM/AAAA"
+                  placeholderTextColor={colors.textMuted}
+                  value={finDate}
+                  onChangeText={setFinDate}
+                />
+                <Pressable
+                  style={({ pressed }) => [
+                    {
+                      height: 42,
+                      paddingHorizontal: 12,
+                      borderRadius: 8,
+                      backgroundColor: colors.primary + '18',
+                      borderColor: colors.primary + '40',
+                      borderWidth: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      gap: 4,
+                      opacity: pressed ? 0.7 : 1
+                    }
+                  ]}
+                  onPress={() => {
+                    const now = new Date();
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const year = now.getFullYear();
+                    setFinDate(`${day}/${month}/${year}`);
+                  }}
+                >
+                  <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.primary }}>Hoje</Text>
+                </Pressable>
+              </View>
             </ScrollView>
 
             <View style={styles.modalFooterRow}>

@@ -641,14 +641,9 @@ export default function SetlistDetailScreen({
             </View>
           </Pressable>
 
-          {/* Collapsible Details Content */}
+          {/* Collapsible Details Content (Expandido completo sem rolagem interna) */}
           {showDetailsLayer && (
-            <ScrollView
-              style={styles.detailsContentScroll}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={styles.detailsForm}>
+            <View style={styles.detailsForm}>
                 {/* Row 1: Tipo do Setlist */}
                 <View style={{ marginBottom: 10 }}>
                   <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
@@ -822,7 +817,6 @@ export default function SetlistDetailScreen({
                   </View>
                 </View>
               </View>
-            </ScrollView>
           )}
         </View>
 
@@ -842,7 +836,7 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="add-circle-outline" size={15} color="#fff" />
               <Text style={styles.roteiroBtnText}>
-                '+ Música'
+                Música
               </Text>
             </Pressable>
 
@@ -856,7 +850,7 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="pause-outline" size={15} color={colors.secondary} />
               <Text style={[styles.roteiroBtnText, { color: colors.secondary }]}>
-                '+ Pausa'
+                Pausa
               </Text>
             </Pressable>
 
@@ -870,7 +864,7 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="document-text-outline" size={15} color={colors.warning} />
               <Text style={[styles.roteiroBtnText, { color: colors.warning }]}>
-                '+ Anotação'
+                Anotação
               </Text>
             </Pressable>
           </View>
