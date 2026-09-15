@@ -1099,45 +1099,45 @@ export default function BandDetailScreen({
               </View>
 
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {/* Form Adicionar / Editar Integrante */}
-                <View style={[styles.addMemberForm, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderColor: colors.border }]}>
-                  <Text style={[styles.inputLabel, { color: colors.textMuted }]}>
-                    {editingMemberId ? 'EDITAR INTEGRANTE' : 'ADICIONAR NOVO INTEGRANTE'}
+                {/* Form Clean Adicionar / Editar Integrante */}
+                <View style={[styles.addMemberFormClean, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
+                  <Text style={[styles.cleanFormHeaderTitle, { color: colors.text }]}>
+                    {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
                   </Text>
 
-                  {/* Nome do Músico */}
+                  {/* 1. Nome */}
+                  <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Nome:</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    placeholder="Nome do integrante (ex: João Silva)..."
+                    style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                    placeholder="Nome do integrante"
                     placeholderTextColor={colors.textMuted}
                     value={memberName}
                     onChangeText={setMemberName}
                   />
 
-                  {/* Tag Aberta do Instrumento / Papel */}
-                  <Text style={[styles.inputLabel, { color: colors.textMuted }]}>INSTRUMENTO / TAG (LIVRE)</Text>
+                  {/* 2. Função */}
+                  <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Função:</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    placeholder="Digite a tag (ex: Guitarra Solo, Backing Vocal...)"
+                    style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                    placeholder="Ex: Guitarra Solo, Vocal, Baixo..."
                     placeholderTextColor={colors.textMuted}
                     value={memberRole}
                     onChangeText={setMemberRole}
                   />
-
-                  {/* Sugestões Rápidas de Instrumentos */}
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
+                  {/* Chips Rápidos de Sugestão */}
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 5, marginBottom: 8, marginTop: -3 }}>
                     {PRESET_INSTRUMENTS.map(inst => {
                       const isSel = memberRole.toLowerCase() === inst.toLowerCase();
                       return (
                         <Pressable
                           key={inst}
                           style={[
-                            styles.instTagChip,
+                            styles.instTagChipCompact,
                             isSel && { backgroundColor: colors.primary, borderColor: colors.primary }
                           ]}
                           onPress={() => setMemberRole(inst)}
                         >
-                          <Text style={[styles.instTagText, isSel && { color: '#fff', fontWeight: '900' }]}>
+                          <Text style={[styles.instTagTextCompact, isSel && { color: '#fff', fontWeight: '900' }]}>
                             {inst}
                           </Text>
                         </Pressable>
@@ -1145,10 +1145,10 @@ export default function BandDetailScreen({
                     })}
                   </ScrollView>
 
-                  {/* Campo de WhatsApp / Telefone */}
-                  <Text style={[styles.inputLabel, { color: colors.textMuted }]}>WHATSAPP / TELEFONE (OPCIONAL)</Text>
+                  {/* 3. Contato (whatsapp) */}
+                  <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Contato: (whatsapp)</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                    style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
                     placeholder="Ex: (11) 99999-8888"
                     placeholderTextColor={colors.textMuted}
                     keyboardType="phone-pad"
@@ -1156,7 +1156,7 @@ export default function BandDetailScreen({
                     onChangeText={setMemberPhone}
                   />
 
-                  {/* Botão Salvar / Cancelar */}
+                  {/* Botões Ação */}
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                     {editingMemberId && (
                       <Pressable
@@ -1172,7 +1172,7 @@ export default function BandDetailScreen({
                     >
                       <Ionicons name={editingMemberId ? "checkmark-circle" : "person-add"} size={15} color="#fff" />
                       <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>
-                        {editingMemberId ? 'SALVAR ALTERAÇÕES' : '+ ADICIONAR INTEGRANTE'}
+                        {editingMemberId ? 'SALVAR INTEGRANTE' : '+ ADICIONAR INTEGRANTE'}
                       </Text>
                     </Pressable>
                   </View>
@@ -1996,11 +1996,43 @@ const styles = StyleSheet.create({
   },
 
   // Band Members
-  addMemberForm: {
+  addMemberFormClean: {
     padding: 12,
     borderRadius: 14,
     borderWidth: 1,
-    marginBottom: 10,
+    marginBottom: 12,
+  },
+  cleanFormHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    marginBottom: 6,
+    letterSpacing: 0.3,
+  },
+  inputLabelClean: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    marginBottom: 3,
+    marginTop: 2,
+  },
+  cleanInputBox: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+    fontSize: 12.5,
+    marginBottom: 8,
+  },
+  instTagChipCompact: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(150,150,150,0.3)',
+  },
+  instTagTextCompact: {
+    fontSize: 10,
+    color: '#94a3b8',
   },
   instTagChip: {
     paddingHorizontal: 10,
