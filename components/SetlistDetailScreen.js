@@ -909,6 +909,7 @@ export default function SetlistDetailScreen({
                 onReorder={handleReorderSongs}
                 onRemove={removeSongByIndex}
                 onEditCustomItem={handleOpenCustomItemEditor}
+                onEditSong={onEditSong}
                 colors={colors}
                 t={t}
                 onDragStateChange={setIsDraggingActive}

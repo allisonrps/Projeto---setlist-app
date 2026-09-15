@@ -968,6 +968,10 @@ function MainApp() {
               await setlistService.delete(id);
               await reloadAllData();
               setActiveSetlistDetail(null);
+              if (editingSetlistFromBandDetail) {
+                setActiveBandDetail(editingSetlistFromBandDetail);
+                setEditingSetlistFromBandDetail(null);
+              }
             } catch (error) {
               Alert.alert(t('importErrorTitle'), t('deleteSetlistError'));
             }
@@ -3582,6 +3586,11 @@ function MainApp() {
           setEditingSongFromBandDetail(activeBandDetail);
           setActiveBandDetail(null);
           setActiveSongDetail(song);
+        }}
+        onSelectSetlist={(setlist) => {
+          setEditingSetlistFromBandDetail(activeBandDetail);
+          setActiveBandDetail(null);
+          setActiveSetlistDetail(setlist);
         }}
         onOpenNewSongForBand={(b) => {
           setEditingSongFromBandDetail(b);

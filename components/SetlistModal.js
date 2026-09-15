@@ -25,6 +25,7 @@ export function DraggableSortableList({
   onReorder, 
   onRemove, 
   onEditCustomItem, 
+  onEditSong,
   colors, 
   t,
   onDragStateChange,
@@ -378,6 +379,8 @@ export function DraggableSortableList({
                   onPress={() => {
                     if (isPause || isNote) {
                       onEditCustomItem(index, song);
+                    } else if (onEditSong) {
+                      onEditSong(song);
                     }
                   }}
                 >
