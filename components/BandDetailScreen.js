@@ -558,7 +558,7 @@ export default function BandDetailScreen({
         {/* HEADER HERO CLEAN COM LOGO MAIS ALTO E DIMINUÍDO EM 50% */}
         <View style={[styles.headerHeroContainer, { backgroundColor: colors.background }]}>
           <View style={styles.topRowNav}>
-            <Pressable style={[styles.headerIconButton, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
+            <Pressable style={[styles.headerIconButton, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
               <Ionicons name="arrow-back" size={20} color={colors.text} />
             </Pressable>
 
@@ -574,7 +574,7 @@ export default function BandDetailScreen({
 
           {/* LOGO REDUZIDO EM 50% E MAIS PRÓXIMO DO LIMITE SUPERIOR DA TELA */}
           <View style={styles.logoCenterContainerTop}>
-            <View style={[styles.avatarCircleCompact, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+            <View style={[styles.avatarCircleCompact, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
               {band.imageUri ? (
                 <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
               ) : (
@@ -588,7 +588,7 @@ export default function BandDetailScreen({
         </View>
 
         {/* TOP TAB BAR DE 5 PÁGINAS SOMENTE ÍCONES */}
-        <View style={[styles.tabBarContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <View style={[styles.tabBarContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
           <View style={styles.tabBarRow}>
             
             <Pressable
@@ -652,7 +652,7 @@ export default function BandDetailScreen({
         {/* ABA 1: REPERTÓRIO */}
         {activeTab === 'repertoire' && (
           <View style={styles.tabContentFlex}>
-            <View style={[styles.searchToolbar, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
+            <View style={[styles.searchToolbar, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
               <View style={[styles.searchInputWrapper, { flex: 1, backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 44, flexDirection: 'row', alignItems: 'center' }]}>
                 <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
                 <TextInput
@@ -714,7 +714,7 @@ export default function BandDetailScreen({
             </View>
 
             {showStyleFilters && uniqueBandStyles.length > 0 && (
-              <View style={[styles.styleFilterBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              <View style={[styles.styleFilterBar, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <Pressable
                     style={[
@@ -804,7 +804,7 @@ export default function BandDetailScreen({
               </Pressable>
             ) : (
               /* FORMULÁRIO OCULTÁVEL */
-              <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 16 }]}>
+              <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
                 <View style={styles.cardPanelHeaderRow}>
                   <Ionicons name="person-add-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
                   <Text style={[styles.cardPanelTitle, { color: colors.text, flex: 1 }]}>
@@ -1014,7 +1014,7 @@ export default function BandDetailScreen({
                       const hasExtraDetails = periodText || item.phone;
 
                       return (
-                        <View key={item.id} style={[styles.memberCardNoBorderInactive, { backgroundColor: colors.card }]}>
+                        <View key={item.id} style={[styles.memberCardNoBorderInactive, { backgroundColor: colors.cardBackground }]}>
                           <View style={styles.memberCardTopRow}>
                             <View style={styles.memberCardLeft}>
                               <View style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}>
@@ -1076,7 +1076,7 @@ export default function BandDetailScreen({
         {/* ABA 3: ESTATÍSTICAS (SEM CONTORNO DE TABELA, APENAS TÍTULO "Estilos do Repertorio") */}
         {activeTab === 'stats' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
-            <View style={[styles.cardPanelNoBorder, { backgroundColor: colors.card }]}>
+            <View style={[styles.cardPanelNoBorder, { backgroundColor: colors.cardBackground }]}>
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="stats-chart" size={20} color={colors.primary} style={{ marginRight: 8 }} />
                 <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
@@ -1124,7 +1124,7 @@ export default function BandDetailScreen({
         {/* ABA 4: FINANCEIRO */}
         {activeTab === 'financial' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
-            <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="wallet-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
                 <Text style={[styles.cardPanelTitle, { color: colors.text }]}>Resumo Financeiro</Text>
@@ -1163,7 +1163,7 @@ export default function BandDetailScreen({
             </View>
 
             {finances.length > 0 && (
-              <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 16 }]}>
+              <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
                 <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Lançamentos</Text>
                 {finances.map(item => (
                   <View key={item.id} style={[styles.financeItemRow, { borderBottomColor: colors.border }]}>
@@ -1273,7 +1273,7 @@ export default function BandDetailScreen({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={[styles.pickerModalContainer, { backgroundColor: colors.card }]}>
+          <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitleText, { color: colors.text }]}>Vincular Músicas da Coleção</Text>
               <Pressable onPress={() => setShowSongPickerModal(false)}>
@@ -1359,7 +1359,7 @@ export default function BandDetailScreen({
       {/* MODAL ADICIONAR/EDITAR FINANCEIRO */}
       <Modal visible={showAddFinanceModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.pickerModalContainer, { backgroundColor: colors.card, maxHeight: '80%' }]}>
+          <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '80%' }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitleText, { color: colors.text }]}>
                 {editingFinanceItem ? 'Editar Lançamento' : 'Novo Lançamento Financeiro'}
@@ -1372,7 +1372,7 @@ export default function BandDetailScreen({
             <ScrollView>
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Descrição: *</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={finTitle}
@@ -1381,7 +1381,7 @@ export default function BandDetailScreen({
 
               <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Valor (R$): *</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder=""
                 placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
@@ -1413,7 +1413,7 @@ export default function BandDetailScreen({
 
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data:</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={finDate}

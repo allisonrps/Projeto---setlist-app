@@ -36,6 +36,7 @@ export function ThemeProvider({ children }) {
     const isDark = themeMode === 'dark';
     return {
       background: isDark ? '#0b0f19' : '#f8fafc',
+      card: isDark ? '#171e2e' : '#ffffff',
       cardBackground: isDark ? '#171e2e' : '#ffffff',
       border: isDark ? '#253047' : '#e2e8f0',
       text: isDark ? '#ffffff' : '#0f172a',
