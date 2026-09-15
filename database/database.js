@@ -454,6 +454,8 @@ const createWebDB = () => {
     song_links: [],
     setlists: [],
     setlist_songs: [],
+    band_songs: [],
+    band_finances: [],
     settings: [],
   };
 
@@ -578,6 +580,24 @@ const createWebDB = () => {
         }).filter(Boolean);
 
         return result;
+      }
+
+      if (sql.includes('FROM band_songs bs JOIN songs s')) {
+        const bandId = params[0];
+        const bsItems = (data.band_songs || []).filter(item => item.bandId === bandId);
+        const result = bsItems.map(item => {
+          const song = data.songs.find(s => s.id === item.songId);
+          return song || null;
+        }).filter(Boolean);
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        return result;
+      }
+
+      if (sql.includes('FROM band_finances')) {
+        const bandId = params[0];
+        const items = (data.band_finances || []).filter(item => item.bandId === bandId);
+        items.sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
+        return items;
       }
 
       if (sql.includes('SELECT value FROM settings WHERE key = ?')) {
@@ -753,6 +773,81 @@ const createWebDB = () => {
         return {};
       }
 
+      // INSERT / DELETE de band_songs
+      if (sql.includes('band_songs') && (sql.includes('INSERT') || sql.includes('INSERT OR IGNORE'))) {
+        data.band_songs = data.band_songs || [];
+        const bandId = params[0];
+        const songId = params[1];
+        if (!data.band_songs.some(bs => bs.bandId === bandId && bs.songId === songId)) {
+          const id = Math.max(...data.band_songs.map(bs => bs.id || 0), 0) + 1;
+          data.band_songs.push({ id, bandId, songId, createdAt: new Date().toISOString() });
+          saveToStorage();
+          return { lastInsertRowId: id };
+        }
+        return {};
+      }
+      if (sql.includes('DELETE FROM band_songs WHERE bandId = ? AND songId = ?')) {
+        data.band_songs = data.band_songs || [];
+        const bandId = params[0];
+        const songId = params[1];
+        data.band_songs = data.band_songs.filter(bs => !(bs.bandId === bandId && bs.songId === songId));
+        saveToStorage();
+        return {};
+      }
+
+      // INSERT / UPDATE / DELETE / TOGGLE de band_finances
+      if (sql.includes('INSERT INTO band_finances')) {
+        data.band_finances = data.band_finances || [];
+        const id = Math.max(...data.band_finances.map(f => f.id || 0), 0) + 1;
+        data.band_finances.push({
+          id,
+          bandId: params[0],
+          title: params[1],
+          amount: params[2],
+          type: params[3],
+          date: params[4],
+          status: params[5] || 'paid',
+          notes: params[6] || '',
+          setlistId: params[7] || null,
+          createdAt: new Date().toISOString(),
+        });
+        saveToStorage();
+        return { lastInsertRowId: id };
+      }
+      if (sql.includes('UPDATE band_finances SET title = ?')) {
+        data.band_finances = data.band_finances || [];
+        const id = params[6];
+        const found = data.band_finances.find(f => f.id === id);
+        if (found) {
+          found.title = params[0];
+          found.amount = params[1];
+          found.type = params[2];
+          found.date = params[3];
+          found.status = params[4];
+          found.notes = params[5];
+          saveToStorage();
+        }
+        return {};
+      }
+      if (sql.includes('UPDATE band_finances SET status = ?')) {
+        data.band_finances = data.band_finances || [];
+        const status = params[0];
+        const id = params[1];
+        const found = data.band_finances.find(f => f.id === id);
+        if (found) {
+          found.status = status;
+          saveToStorage();
+        }
+        return {};
+      }
+      if (sql.includes('DELETE FROM band_finances WHERE id = ?')) {
+        data.band_finances = data.band_finances || [];
+        const id = params[0];
+        data.band_finances = data.band_finances.filter(f => f.id !== id);
+        saveToStorage();
+        return {};
+      }
+
       // Configurações
       if (sql.includes('INSERT OR REPLACE INTO settings')) {
         const key = params[0];
@@ -845,6 +940,29 @@ export const createTables = async () => {
       CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT
+      );
+      CREATE TABLE IF NOT EXISTS band_songs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bandId INTEGER NOT NULL,
+        songId INTEGER NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE,
+        FOREIGN KEY (songId) REFERENCES songs(id) ON DELETE CASCADE,
+        UNIQUE(bandId, songId)
+      );
+      CREATE TABLE IF NOT EXISTS band_finances (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bandId INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        amount REAL NOT NULL,
+        type TEXT NOT NULL,
+        date TEXT,
+        status TEXT DEFAULT 'paid',
+        notes TEXT,
+        setlistId INTEGER,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE,
+        FOREIGN KEY (setlistId) REFERENCES setlists(id) ON DELETE SET NULL
       );
     `);
     

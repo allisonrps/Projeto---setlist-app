@@ -71,11 +71,25 @@ export const bandService = {
   async addSongToBand(bandId, songId) {
     try {
       await db.runAsync(
-        'INSERT INTO band_songs (bandId, songId) VALUES (?, ?);',
+        'INSERT OR IGNORE INTO band_songs (bandId, songId) VALUES (?, ?);',
         [bandId, songId]
       );
     } catch (error) {
       console.error('Error in bandService.addSongToBand:', error);
+    }
+  },
+
+  async addSongsToBand(bandId, songIds) {
+    try {
+      if (!Array.isArray(songIds)) return;
+      for (const songId of songIds) {
+        await db.runAsync(
+          'INSERT OR IGNORE INTO band_songs (bandId, songId) VALUES (?, ?);',
+          [bandId, songId]
+        );
+      }
+    } catch (error) {
+      console.error('Error in bandService.addSongsToBand:', error);
     }
   },
 

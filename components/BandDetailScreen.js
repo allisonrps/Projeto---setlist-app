@@ -19,7 +19,6 @@ import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
 import { bandService } from '../services/bandService';
 import SongListItem from './SongListItem';
-import SetlistCard from './SetlistCard';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +27,41 @@ const getBandInitials = (name) => {
   const words = name.trim().split(/\s+/);
   const initials = words.map(w => w[0]).join('').toUpperCase();
   return initials.slice(0, 3);
+};
+
+const getFormattedDateBadge = (dateStr, lang) => {
+  if (!dateStr || !dateStr.trim()) return { day: '--', month: '---' };
+  const clean = dateStr.trim();
+  let day = '';
+  let monthNum = 0;
+  
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      day = parseInt(parts[2], 10);
+      monthNum = parseInt(parts[1], 10) - 1;
+    }
+  }
+  
+  if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      day = parseInt(parts[0], 10);
+      monthNum = parseInt(parts[1], 10) - 1;
+    }
+  }
+  
+  if (!day) return { day: '--', month: '---' };
+  
+  const monthsPT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  const monthsEN = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const monthsES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+  
+  let months = monthsPT;
+  if (lang === 'en') months = monthsEN;
+  if (lang === 'es') months = monthsES;
+  
+  return { day: String(day).padStart(2, '0'), month: months[monthNum] || '---' };
 };
 
 export default function BandDetailScreen({
@@ -61,7 +95,10 @@ export default function BandDetailScreen({
   const [bandSongs, setBandSongs] = useState([]);
   const [repertoireSearch, setRepertoireSearch] = useState('');
   const [selectedStyleFilter, setSelectedStyleFilter] = useState('');
-  const [showGeneralPickerModal, setShowGeneralPickerModal] = useState(false);
+
+  // Song Collection Picker Modal with Checkboxes
+  const [showSongPickerModal, setShowSongPickerModal] = useState(false);
+  const [selectedPickerSongIds, setSelectedPickerSongIds] = useState(new Set());
   const [pickerSearch, setPickerSearch] = useState('');
 
   // Financial Data
@@ -82,10 +119,10 @@ export default function BandDetailScreen({
     if (band && band.id) {
       try {
         const bSongs = await bandService.getBandSongs(band.id);
-        setBandSongs(bSongs);
+        setBandSongs(bSongs || []);
 
         const bFin = await bandService.getBandFinances(band.id);
-        setFinances(bFin);
+        setFinances(bFin || []);
       } catch (err) {
         console.error('Error loading BandDetailScreen data:', err);
       }
@@ -115,8 +152,6 @@ export default function BandDetailScreen({
 
   // Setlist cachês auto-derived entries
   let totalSetlistIncome = 0;
-  let totalSetlistPending = 0;
-
   bandSetlists.forEach(sl => {
     if (sl.type === 'show' && sl.cachê) {
       const val = parseCurrency(sl.cachê);
@@ -141,7 +176,6 @@ export default function BandDetailScreen({
   const totalIncome = totalSetlistIncome + customPaidIncome;
   const totalExpense = customPaidExpense;
   const netBalance = totalIncome - totalExpense;
-  const totalPending = totalSetlistPending + customPendingIncome;
 
   // Filtered band repertoire
   const filteredBandSongs = bandSongs.filter(song => {
@@ -162,42 +196,83 @@ export default function BandDetailScreen({
     bandSongs.flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean))
   ));
 
-  // General songs not yet in band's repertoire
+  // Available general songs for picker modal
   const bandSongIds = new Set(bandSongs.map(s => s.id));
   const availableGeneralSongs = allGeneralSongs.filter(s => {
     if (s.id < 0) return false;
-    if (bandSongIds.has(s.id)) return false;
     if (!pickerSearch.trim()) return true;
     const q = pickerSearch.toLowerCase().trim();
     return (s.name || '').toLowerCase().includes(q) || (s.originalBand || '').toLowerCase().includes(q);
   });
 
-  // Handlers for Repertoire
-  const handleToggleLinkSongToBand = async (songId) => {
+  // Song Checkbox Handlers
+  const handleOpenSongPicker = () => {
+    // Pre-select songs that are already in the band's repertoire
+    const currentIds = new Set(bandSongs.map(s => s.id));
+    setSelectedPickerSongIds(currentIds);
+    setPickerSearch('');
+    setShowSongPickerModal(true);
+  };
+
+  const handleTogglePickerCheck = (songId) => {
+    if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
+    setSelectedPickerSongIds(prev => {
+      const next = new Set(prev);
+      if (next.has(songId)) {
+        next.delete(songId);
+      } else {
+        next.add(songId);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAllPicker = () => {
+    if (selectedPickerSongIds.size === availableGeneralSongs.length) {
+      setSelectedPickerSongIds(new Set());
+    } else {
+      const allIds = new Set(availableGeneralSongs.map(s => s.id));
+      setSelectedPickerSongIds(allIds);
+    }
+  };
+
+  const handleSavePickerSongs = async () => {
     try {
       if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
-      if (bandSongIds.has(songId)) {
-        await bandService.removeSongFromBand(band.id, songId);
-      } else {
-        await bandService.addSongToBand(band.id, songId);
+      const targetIds = Array.from(selectedPickerSongIds);
+
+      // Determine additions and removals
+      const currentIds = new Set(bandSongs.map(s => s.id));
+      const toAdd = targetIds.filter(id => !currentIds.has(id));
+      const toRemove = Array.from(currentIds).filter(id => !selectedPickerSongIds.has(id));
+
+      if (toAdd.length > 0) {
+        await bandService.addSongsToBand(band.id, toAdd);
       }
+      for (const remId of toRemove) {
+        await bandService.removeSongFromBand(band.id, remId);
+      }
+
+      setShowSongPickerModal(false);
       await loadData();
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error('Error saving band repertoire songs:', err);
+      Alert.alert('Erro', 'Não foi possível atualizar as músicas da banda.');
     }
   };
 
   const handleUnlinkSongConfirm = (song) => {
     Alert.alert(
       t('attention') || 'Atenção',
-      `Remover "${song.name}" do repertório da banda ${band.name}? (A música continuará salva no Repertório Geral)`,
+      `Remover "${song.name}" do repertório da banda ${band.name}? (A música continuará salva na Coleção Geral)`,
       [
         { text: t('cancel') || 'Cancelar', style: 'cancel' },
         {
           text: t('remove') || 'Remover',
           style: 'destructive',
           onPress: async () => {
-            await handleToggleLinkSongToBand(song.id);
+            await bandService.removeSongFromBand(band.id, song.id);
+            await loadData();
           },
         },
       ]
@@ -230,12 +305,12 @@ export default function BandDetailScreen({
 
   const handleSaveFinanceEntry = async () => {
     if (!finTitle.trim()) {
-      Alert.alert(t('attention') || 'Atenção', 'Por favor, informe o título do lançamento.');
+      Alert.alert(t('attention') || 'Atenção', 'Por favor, informe a descrição do lançamento.');
       return;
     }
     const parsedAmt = parseCurrency(finAmount);
     if (parsedAmt <= 0) {
-      Alert.alert(t('attention') || 'Atenção', 'Por favor, informe um valor maior que zero.');
+      Alert.alert(t('attention') || 'Atenção', 'Por favor, informe um valor válido.');
       return;
     }
 
@@ -300,7 +375,7 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* ========================================================
-            CAMADA 1: CABEÇALHO SUPERIOR DA BANDA (ESCUTO)
+            CAMADA 1: CABEÇALHO SUPERIOR DA BANDA (ESCURO)
            ======================================================== */}
         <View style={[styles.headerBar, { backgroundColor: isDark ? '#0f172a' : '#1e293b' }]}>
           {/* Linha Superior: Botão Voltar, Avatar/Logo, Titulo e Ações */}
@@ -330,7 +405,7 @@ export default function BandDetailScreen({
                 {band.name}
               </Text>
               <Text style={styles.headerSubtitleText}>
-                {bandSongs.length} {t('songsBadge') || 'músicas'} • {bandSetlists.length} setlists
+                {bandSongs.length} {t('songsBadge') || 'músicas'} • {bandSetlists.length} eventos
               </Text>
             </View>
 
@@ -361,9 +436,9 @@ export default function BandDetailScreen({
             </View>
 
             <View style={[styles.headerStatBadge, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Ionicons name="list-outline" size={12} color={colors.secondary} />
+              <Ionicons name="calendar-outline" size={12} color={colors.secondary} />
               <Text style={[styles.headerStatText, { color: '#fff' }]}>
-                {bandSetlists.length} Setlists
+                {bandSetlists.length} Eventos
               </Text>
             </View>
 
@@ -419,12 +494,12 @@ export default function BandDetailScreen({
               onPress={() => setActiveTab('setlists')}
             >
               <Ionicons
-                name="list"
+                name="calendar"
                 size={14}
                 color={activeTab === 'setlists' ? '#fff' : '#94a3b8'}
               />
               <Text style={[styles.navTabText, activeTab === 'setlists' && styles.navTabTextActive]}>
-                SETLISTS ({bandSetlists.length})
+                EVENTOS ({bandSetlists.length})
               </Text>
             </Pressable>
           </View>
@@ -434,38 +509,24 @@ export default function BandDetailScreen({
             CAMADA 3: CONTEÚDO DAS ABAS
            ======================================================== */}
         <View style={{ flex: 1 }}>
-          {/* ==================== ABA 1: REPERTÓRIO ==================== */}
+          {/* ==================== ABA 1: REPERTÓRIO DA BANDA ==================== */}
           {activeTab === 'repertoire' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
-              {/* Barra de Ações Rápidas: + Nova Música | + Adicionar do Repertório Geral */}
+              {/* Botão Único Principal: + ADICIONAR MÚSICAS (Busca na coleção) */}
               <View style={styles.tabActionBar}>
                 <Pressable
                   style={({ pressed }) => [
-                    styles.tabActionBtnPrimary,
-                    { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
+                    styles.singleMainAddBtn,
+                    { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.98 : 1 }] }
                   ]}
-                  onPress={() => onOpenNewSongForBand(band)}
+                  onPress={handleOpenSongPicker}
                 >
-                  <Ionicons name="add-circle" size={16} color="#fff" />
-                  <Text style={styles.tabActionBtnText}>+ NOVA MÚSICA</Text>
-                </Pressable>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.tabActionBtnSecondary,
-                    { backgroundColor: colors.secondary + '20', borderColor: colors.secondary + '60' },
-                    pressed && { opacity: 0.85 }
-                  ]}
-                  onPress={() => setShowGeneralPickerModal(true)}
-                >
-                  <Ionicons name="library-outline" size={15} color={colors.secondary} />
-                  <Text style={[styles.tabActionBtnText, { color: colors.secondary }]}>
-                    DO REPERTÓRIO GERAL
-                  </Text>
+                  <Ionicons name="add-circle" size={18} color="#fff" />
+                  <Text style={styles.singleMainAddBtnText}>+ ADICIONAR MÚSICAS</Text>
                 </Pressable>
               </View>
 
-              {/* Busca e Filtros de Gênero */}
+              {/* Busca e Filtros de Gênero na Banda */}
               <View style={styles.searchFilterRow}>
                 <View style={[styles.searchBox, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }]}>
                   <Ionicons name="search-outline" size={15} color={colors.textMuted} />
@@ -524,15 +585,15 @@ export default function BandDetailScreen({
                   <View style={styles.emptyContainer}>
                     <Ionicons name="musical-notes-outline" size={44} color={colors.textMuted} />
                     <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                      Nenhuma música cadastrada no repertório desta banda ainda.
+                      Nenhuma música vinculada ao repertório da banda {band.name} ainda.
                     </Text>
                     <Pressable
                       style={[styles.emptyAddBtn, { backgroundColor: colors.primary }]}
-                      onPress={() => setShowGeneralPickerModal(true)}
+                      onPress={handleOpenSongPicker}
                     >
-                      <Ionicons name="add" size={16} color="#fff" />
+                      <Ionicons name="add-circle-outline" size={16} color="#fff" />
                       <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>
-                        Adicionar do Repertório Geral
+                        Adicionar da Coleção de Músicas
                       </Text>
                     </Pressable>
                   </View>
@@ -570,9 +631,9 @@ export default function BandDetailScreen({
               contentContainerStyle={{ paddingBottom: 40 }}
               showsVerticalScrollIndicator={false}
             >
-              {/* Dashboard Financeiro (4 Cards Inteligentes) */}
+              {/* Dashboard Financeiro (Cards) */}
               <View style={styles.financeGrid}>
-                {/* 1. Saldo Líquido */}
+                {/* Saldo Líquido */}
                 <View style={[styles.financeCard, { backgroundColor: netBalance >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderColor: netBalance >= 0 ? '#22c55e40' : '#ef444440' }]}>
                   <Text style={[styles.financeCardLabel, { color: netBalance >= 0 ? '#22c55e' : '#ef4444' }]}>
                     SALDO LÍQUIDO ACUMULADO
@@ -581,27 +642,26 @@ export default function BandDetailScreen({
                     R$ {netBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </Text>
                   <Text style={[styles.financeCardSubtext, { color: colors.textMuted }]}>
-                    {netBalance >= 0 ? 'Lucro positivo da banda' : 'Atenção: Saldo devedor'}
+                    {netBalance >= 0 ? 'Lucro líquido acumulado da banda' : 'Atenção: Saldo devedor'}
                   </Text>
                 </View>
 
-                {/* 2. Total Receita / Entradas */}
+                {/* Resumo de Entradas vs Custos */}
                 <View style={styles.financeRowCards}>
                   <View style={[styles.financeMiniCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Ionicons name="arrow-down-circle" size={14} color="#22c55e" />
-                      <Text style={[styles.miniCardLabel, { color: colors.textMuted }]}>ENTRADAS (CACHÊS)</Text>
+                      <Text style={[styles.miniCardLabel, { color: colors.textMuted }]}>TOTAL CACHÊS / RECEITAS</Text>
                     </View>
                     <Text style={[styles.miniCardValue, { color: colors.text }]}>
                       R$ {totalIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </Text>
                   </View>
 
-                  {/* 3. Total Saídas / Despesas */}
                   <View style={[styles.financeMiniCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Ionicons name="arrow-up-circle" size={14} color="#ef4444" />
-                      <Text style={[styles.miniCardLabel, { color: colors.textMuted }]}>SAÍDAS (CUSTOS)</Text>
+                      <Text style={[styles.miniCardLabel, { color: colors.textMuted }]}>DESPESAS / DESCONTOS</Text>
                     </View>
                     <Text style={[styles.miniCardValue, { color: colors.text }]}>
                       R$ {totalExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -610,7 +670,7 @@ export default function BandDetailScreen({
                 </View>
               </View>
 
-              {/* Botão para Adicionar Novo Lançamento Manual */}
+              {/* Botão de Novo Lançamento Manual */}
               <View style={{ marginVertical: 12 }}>
                 <Pressable
                   style={({ pressed }) => [
@@ -624,37 +684,39 @@ export default function BandDetailScreen({
                 </Pressable>
               </View>
 
-              {/* Seção 1: Cachês dos Setlists / Shows */}
+              {/* Seção 1: Eventos e Shows com Cachê */}
               <Text style={[styles.financeSectionTitle, { color: colors.text }]}>
-                CACHÊS DOS SHOWS E EVENTOS ({bandSetlists.filter(s => s.type === 'show' && s.cachê).length})
+                EVENTOS E SHOWS COM CACHÊ ({bandSetlists.filter(s => s.cachê).length})
               </Text>
 
-              {bandSetlists.filter(s => s.type === 'show' && s.cachê).length === 0 ? (
+              {bandSetlists.filter(s => s.cachê).length === 0 ? (
                 <View style={[styles.emptyFinanceBox, { borderColor: colors.border }]}>
                   <Text style={[styles.emptyFinanceText, { color: colors.textMuted }]}>
-                    Nenhum show com cachê informado nos setlists desta banda.
+                    Nenhum evento com cachê cadastrado para esta banda.
                   </Text>
                 </View>
               ) : (
-                bandSetlists.filter(s => s.type === 'show' && s.cachê).map(sl => {
+                bandSetlists.filter(s => s.cachê).map(sl => {
                   const val = parseCurrency(sl.cachê);
                   return (
-                    <View
+                    <Pressable
                       key={sl.id}
-                      style={[
+                      style={({ pressed }) => [
                         styles.financeItemRow,
-                        { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }
+                        { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border },
+                        pressed && { opacity: 0.8 }
                       ]}
+                      onPress={() => onOpenNewSetlistForBand(band, sl)}
                     >
                       <View style={{ flex: 1 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Ionicons name="mic-outline" size={14} color={colors.primary} />
+                          <Ionicons name="mic" size={14} color={colors.primary} />
                           <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
-                            {sl.name || 'Show da Banda'}
+                            {sl.name || 'Evento da Banda'}
                           </Text>
                         </View>
                         <Text style={[styles.financeItemDate, { color: colors.textMuted }]}>
-                          Data: {sl.date || 'Não informada'} {sl.local ? `• ${sl.local}` : ''}
+                          Data: {sl.date || 'Sem data'} {sl.local ? `• ${sl.local}` : ''}
                         </Text>
                       </View>
 
@@ -662,17 +724,17 @@ export default function BandDetailScreen({
                         <Text style={[styles.financeItemAmount, { color: '#22c55e' }]}>
                           + R$ {val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </Text>
-                        <View style={[styles.paidStatusBadge, { backgroundColor: '#22c55e20', borderColor: '#22c55e60' }]}>
+                        <View style={[styles.paidStatusBadge, { backgroundColor: 'rgba(34,197,94,0.15)', borderColor: '#22c55e60' }]}>
                           <Ionicons name="checkmark-circle" size={10} color="#22c55e" />
-                          <Text style={[styles.paidStatusText, { color: '#22c55e' }]}>Cachê de Setlist</Text>
+                          <Text style={[styles.paidStatusText, { color: '#22c55e' }]}>Evento da Banda</Text>
                         </View>
                       </View>
-                    </View>
+                    </Pressable>
                   );
                 })
               )}
 
-              {/* Seção 2: Lançamentos Financeiros Manuais (Despesas e Receitas Extra) */}
+              {/* Seção 2: Lançamentos Financeiros Manuais */}
               <Text style={[styles.financeSectionTitle, { color: colors.text, marginTop: 20 }]}>
                 LANÇAMENTOS E DESPESAS DA BANDA ({finances.length})
               </Text>
@@ -680,7 +742,7 @@ export default function BandDetailScreen({
               {finances.length === 0 ? (
                 <View style={[styles.emptyFinanceBox, { borderColor: colors.border }]}>
                   <Text style={[styles.emptyFinanceText, { color: colors.textMuted }]}>
-                    Nenhum lançamento manual (ensaio, frete, manutenção) registrado.
+                    Nenhum lançamento manual (ensaio, transporte, som) registrado.
                   </Text>
                 </View>
               ) : (
@@ -700,7 +762,7 @@ export default function BandDetailScreen({
                       <View style={{ flex: 1 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Ionicons
-                            name={isInc ? 'arrow-down-circle-outline' : 'arrow-up-circle-outline'}
+                            name={isInc ? 'arrow-down-circle' : 'arrow-up-circle'}
                             size={16}
                             color={isInc ? '#22c55e' : '#ef4444'}
                           />
@@ -718,7 +780,7 @@ export default function BandDetailScreen({
                           {isInc ? '+' : '-'} R$ {amt.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </Text>
 
-                        {/* Status Toggle (Pago vs Pendente) */}
+                        {/* Status Toggle */}
                         <Pressable
                           style={[
                             styles.paidStatusBadge,
@@ -755,24 +817,24 @@ export default function BandDetailScreen({
             </ScrollView>
           )}
 
-          {/* ==================== ABA 3: SETLISTS DA BANDA ==================== */}
+          {/* ==================== ABA 3: EVENTOS E SETLISTS DA BANDA ==================== */}
           {activeTab === 'setlists' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
-              {/* Botão + Novo Setlist */}
+              {/* Botão + Novo Evento / Setlist */}
               <View style={{ marginBottom: 12 }}>
                 <Pressable
                   style={({ pressed }) => [
-                    styles.tabActionBtnPrimary,
-                    { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
+                    styles.singleMainAddBtn,
+                    { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.98 : 1 }] }
                   ]}
                   onPress={() => onOpenNewSetlistForBand(band)}
                 >
                   <Ionicons name="add-circle" size={18} color="#fff" />
-                  <Text style={styles.tabActionBtnText}>+ NOVO SETLIST DA BANDA</Text>
+                  <Text style={styles.singleMainAddBtnText}>+ NOVO EVENTO / SETLIST</Text>
                 </Pressable>
               </View>
 
-              {/* Listagem de Setlists da Banda */}
+              {/* Listagem de Eventos da Banda (Card Simplificado Clicável) */}
               <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 40 }}
@@ -780,39 +842,99 @@ export default function BandDetailScreen({
               >
                 {bandSetlists.length === 0 ? (
                   <View style={styles.emptyContainer}>
-                    <Ionicons name="list-outline" size={44} color={colors.textMuted} />
+                    <Ionicons name="calendar-outline" size={44} color={colors.textMuted} />
                     <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                      Nenhum setlist criado para a banda {band.name} ainda.
+                      Nenhum evento registrado para a banda {band.name} ainda.
                     </Text>
                     <Pressable
                       style={[styles.emptyAddBtn, { backgroundColor: colors.primary }]}
                       onPress={() => onOpenNewSetlistForBand(band)}
                     >
-                      <Ionicons name="add" size={16} color="#fff" />
+                      <Ionicons name="add-circle-outline" size={16} color="#fff" />
                       <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>
-                        Criar Primeiro Setlist
+                        Criar Primeiro Evento
                       </Text>
                     </Pressable>
                   </View>
                 ) : (
-                  bandSetlists.map(setlist => (
-                    <SetlistCard
-                      key={setlist.id}
-                      setlist={setlist}
-                      onEdit={() => onOpenNewSetlistForBand(band, setlist)}
-                      onDelete={() => {}}
-                      onCopy={() => {}}
-                      onShare={onShareSetlist}
-                      onStartPerformance={onStartPerformance}
-                      onExportDoc={onExportDoc}
-                      onToggleFavorite={onToggleFavoriteSetlist}
-                      expanded={false}
-                      onToggleExpand={() => {}}
-                      onToggleRehearsalStatus={onToggleRehearsalStatus}
-                      onUpdateSongRehearsalNotes={onUpdateSongRehearsalNotes}
-                      onEditSong={onSelectSong}
-                    />
-                  ))
+                  bandSetlists.map(setlist => {
+                    const badgeDate = getFormattedDateBadge(setlist.date, language);
+                    const songCount = setlist.songs ? setlist.songs.filter(s => s.id !== -1 && s.id !== -2).length : 0;
+                    const typeColor = setlist.type === 'show' ? colors.primary : setlist.type === 'ensaio' ? colors.secondary : colors.warning;
+
+                    return (
+                      <Pressable
+                        key={setlist.id}
+                        style={({ pressed }) => [
+                          styles.simplifiedEventCard,
+                          {
+                            backgroundColor: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255, 255, 255, 0.85)',
+                            borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)',
+                            transform: [{ scale: pressed ? 0.98 : 1 }]
+                          }
+                        ]}
+                        onPress={() => onOpenNewSetlistForBand(band, setlist)}
+                      >
+                        {/* Data Badge */}
+                        <View style={[styles.eventDateSquare, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }]}>
+                          <Text style={[styles.eventDateDay, { color: colors.text }]}>{badgeDate.day}</Text>
+                          <Text style={[styles.eventDateMonth, { color: colors.primary }]}>{badgeDate.month}</Text>
+                        </View>
+
+                        {/* Detalhes do Evento */}
+                        <View style={{ flex: 1, paddingRight: 6 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={[styles.eventTitle, { color: colors.text }]} numberOfLines={1}>
+                              {setlist.name || 'Sem Nome'}
+                            </Text>
+                          </View>
+
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                            {/* Type Pill */}
+                            <View style={[styles.eventTypePill, { backgroundColor: typeColor + '18', borderColor: typeColor + '40' }]}>
+                              <Ionicons
+                                name={setlist.type === 'show' ? 'mic' : setlist.type === 'ensaio' ? 'musical-notes' : 'clipboard'}
+                                size={10}
+                                color={typeColor}
+                              />
+                              <Text style={[styles.eventTypeText, { color: typeColor }]}>
+                                {t(setlist.type === 'repertório' || setlist.type === 'repertoire' ? 'repertoire' : setlist.type === 'ensaio' || setlist.type === 'rehearsal' ? 'rehearsal' : 'show').toUpperCase()}
+                              </Text>
+                            </View>
+
+                            {/* Songs Badge */}
+                            <View style={[styles.eventTypePill, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+                              <Ionicons name="musical-notes-outline" size={10} color={colors.primary} />
+                              <Text style={[styles.eventTypeText, { color: colors.primary }]}>
+                                {songCount} {t('songsBadge') || 'músicas'}
+                              </Text>
+                            </View>
+
+                            {/* Cachê Badge */}
+                            {setlist.cachê ? (
+                              <View style={[styles.eventTypePill, { backgroundColor: '#22c55e18', borderColor: '#22c55e40' }]}>
+                                <Ionicons name="cash-outline" size={10} color="#22c55e" />
+                                <Text style={[styles.eventTypeText, { color: '#22c55e' }]}>
+                                  R$ {setlist.cachê}
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
+
+                          {setlist.local ? (
+                            <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
+                              📍 {setlist.local}
+                            </Text>
+                          ) : null}
+                        </View>
+
+                        {/* Seta para indicar que abre a página do evento */}
+                        <View style={styles.eventChevronBox}>
+                          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                        </View>
+                      </Pressable>
+                    );
+                  })
                 )}
               </ScrollView>
             </View>
@@ -820,70 +942,112 @@ export default function BandDetailScreen({
         </View>
 
         {/* ========================================================
-            MODAL 1: SELETOR DE MÚSICAS DO REPERTÓRIO GERAL
+            MODAL 1: SELETOR DE MÚSICAS DA COLEÇÃO (COM CHECKBOXES)
            ======================================================== */}
         <Modal
-          visible={showGeneralPickerModal}
+          visible={showSongPickerModal}
           animationType="slide"
           transparent={true}
-          onRequestClose={() => setShowGeneralPickerModal(false)}
+          onRequestClose={() => setShowSongPickerModal(false)}
         >
           <View style={[styles.pickerOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}>
             <View style={[styles.pickerModalBox, { backgroundColor: colors.background }]}>
               {/* Cabeçalho */}
               <View style={styles.pickerHeader}>
-                <Text style={[styles.pickerTitle, { color: colors.text }]}>
-                  Adicionar ao Repertório de {band.name}
-                </Text>
-                <Pressable onPress={() => setShowGeneralPickerModal(false)}>
+                <View>
+                  <Text style={[styles.pickerTitle, { color: colors.text }]}>
+                    Adicionar Músicas
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                    Selecione as músicas da coleção para a banda {band.name}
+                  </Text>
+                </View>
+                <Pressable onPress={() => setShowSongPickerModal(false)}>
                   <Ionicons name="close" size={20} color={colors.textMuted} />
                 </Pressable>
               </View>
 
-              {/* Busca */}
+              {/* Busca na Coleção */}
               <View style={styles.pickerSearchRow}>
                 <Ionicons name="search-outline" size={15} color={colors.textMuted} style={{ marginRight: 6 }} />
                 <TextInput
                   style={[styles.pickerSearchInput, { color: colors.inputText }]}
-                  placeholder="Buscar no repertório geral..."
+                  placeholder="Buscar na coleção de músicas..."
                   placeholderTextColor={colors.textMuted}
                   value={pickerSearch}
                   onChangeText={setPickerSearch}
                 />
               </View>
 
-              {/* Lista de Músicas Disponíveis */}
+              {/* Opção Selecionar Todas */}
+              <View style={styles.pickerActionBar}>
+                <Pressable
+                  style={styles.pickerSelectAllBtn}
+                  onPress={handleToggleSelectAllPicker}
+                >
+                  <Ionicons
+                    name={selectedPickerSongIds.size === availableGeneralSongs.length ? "checkbox" : "square-outline"}
+                    size={16}
+                    color={colors.primary}
+                  />
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                    {selectedPickerSongIds.size === availableGeneralSongs.length ? 'DESSELECIONAR TODAS' : 'SELECIONAR TODAS'}
+                  </Text>
+                </Pressable>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted }}>
+                  {selectedPickerSongIds.size} selecionada(s)
+                </Text>
+              </View>
+
+              {/* Lista de Músicas com Checkboxes */}
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                 {availableGeneralSongs.length === 0 ? (
                   <Text style={{ fontStyle: 'italic', color: colors.textMuted, textAlign: 'center', marginVertical: 20 }}>
-                    Todas as músicas disponíveis já estão no repertório da banda.
+                    Nenhuma música encontrada na coleção.
                   </Text>
                 ) : (
-                  availableGeneralSongs.map(s => (
-                    <Pressable
-                      key={s.id}
-                      style={({ pressed }) => [
-                        styles.pickerSongRow,
-                        { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' },
-                        pressed && { opacity: 0.7 }
-                      ]}
-                      onPress={() => handleToggleLinkSongToBand(s.id)}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.pickerSongName, { color: colors.text }]}>{s.name}</Text>
-                        <Text style={{ fontSize: 11, color: colors.textMuted }}>{s.originalBand}</Text>
-                      </View>
-                      <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-                    </Pressable>
-                  ))
+                  availableGeneralSongs.map(s => {
+                    const isChecked = selectedPickerSongIds.has(s.id);
+                    return (
+                      <Pressable
+                        key={s.id}
+                        style={({ pressed }) => [
+                          styles.pickerSongRowCheckbox,
+                          {
+                            backgroundColor: isChecked
+                              ? colors.primary + '12'
+                              : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
+                            borderColor: isChecked ? colors.primary + '40' : 'transparent',
+                          },
+                          pressed && { opacity: 0.8 }
+                        ]}
+                        onPress={() => handleTogglePickerCheck(s.id)}
+                      >
+                        {/* Checkbox Icon */}
+                        <View style={[styles.checkboxSquare, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
+                          {isChecked && <Ionicons name="checkmark" size={14} color="#fff" />}
+                        </View>
+
+                        {/* Detalhes da Música */}
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.pickerSongName, { color: colors.text }]}>{s.name}</Text>
+                          <Text style={{ fontSize: 11, color: colors.textMuted }}>{s.originalBand} {s.style ? `• ${s.style}` : ''}</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })
                 )}
               </ScrollView>
 
+              {/* Botão de Salvar Alterações */}
               <Pressable
                 style={[styles.pickerConfirmBtn, { backgroundColor: colors.primary }]}
-                onPress={() => setShowGeneralPickerModal(false)}
+                onPress={handleSavePickerSongs}
               >
-                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>CONCLUÍDO</Text>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13, letterSpacing: 0.5 }}>
+                  SALVAR REPERTÓRIO DA BANDA ({selectedPickerSongIds.size})
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -936,7 +1100,7 @@ export default function BandDetailScreen({
               <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DESCRIÇÃO / TÍTULO *</Text>
               <TextInput
                 style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                placeholder="Ex: Aluguel de Estúdio Ensaio, Frete Som..."
+                placeholder="Ex: Ensaio no Estúdio, Frete Som, Cachê extra..."
                 placeholderTextColor={colors.textMuted}
                 value={finTitle}
                 onChangeText={setFinTitle}
@@ -1150,34 +1314,22 @@ const styles = StyleSheet.create({
 
   // Tab Action Bar
   tabActionBar: {
-    flexDirection: 'row',
-    gap: 8,
     marginBottom: 10,
   },
-  tabActionBtnPrimary: {
-    flex: 1,
+  singleMainAddBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 12,
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 14,
+    elevation: 2,
   },
-  tabActionBtnSecondary: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  tabActionBtnText: {
+  singleMainAddBtnText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
 
   // Search & Filter
@@ -1363,13 +1515,67 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
+  // Simplified Event Card
+  simplifiedEventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 8,
+    gap: 10,
+  },
+  eventDateSquare: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventDateDay: {
+    fontSize: 15,
+    fontWeight: '900',
+    lineHeight: 17,
+  },
+  eventDateMonth: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  eventTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  eventTypePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  eventTypeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+  },
+  eventLocalText: {
+    fontSize: 11,
+    marginTop: 3,
+  },
+  eventChevronBox: {
+    paddingLeft: 4,
+  },
+
   // Picker Modal
   pickerOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   pickerModalBox: {
-    height: '75%',
+    height: '82%',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 16,
@@ -1378,10 +1584,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   pickerTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '900',
   },
   pickerSearchRow: {
@@ -1391,30 +1597,54 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   pickerSearchInput: {
     flex: 1,
     fontSize: 12.5,
     padding: 0,
   },
-  pickerSongRow: {
+  pickerActionBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  pickerSelectAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pickerSongRowCheckbox: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 12,
     marginBottom: 6,
+    borderWidth: 1,
+    gap: 12,
+  },
+  checkboxSquare: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pickerSongName: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
   },
   pickerConfirmBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
+    gap: 8,
+    paddingVertical: 13,
+    borderRadius: 14,
     marginTop: 10,
   },
 
