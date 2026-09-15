@@ -2099,38 +2099,52 @@ function MainApp() {
 
   // ===== RENDERS DAS ABAS =====
   const renderHomeTab = () => {
+    const parseDate = (dStr) => {
+      if (!dStr) return new Date(8640000000000000);
+      const clean = dStr.trim();
+      const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (dmy) return new Date(parseInt(dmy[3], 10), parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10));
+      const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+      if (ymd) return new Date(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10));
+      const d = new Date(clean);
+      return isNaN(d.getTime()) ? new Date(8640000000000000) : d;
+    };
+
     const upcomingSetlists = setlists
       .filter(s => isFutureDate(s.date))
-      .sort((a, b) => {
-        const parseDate = (dStr) => {
-          if (!dStr) return new Date(8640000000000000);
-          const clean = dStr.trim();
-          const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-          if (dmy) return new Date(parseInt(dmy[3], 10), parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10));
-          const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
-          if (ymd) return new Date(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10));
-          const d = new Date(clean);
-          return isNaN(d.getTime()) ? new Date(8640000000000000) : d;
-        };
-        return parseDate(a.date) - parseDate(b.date);
-      });
+      .sort((a, b) => parseDate(a.date) - parseDate(b.date));
+
+    const pastSetlists = setlists
+      .filter(s => !isFutureDate(s.date))
+      .sort((a, b) => parseDate(b.date) - parseDate(a.date));
 
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.tabHeaderRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
-              <Text style={[styles.headerCountText, { color: colors.primary }]}>{bands.length}</Text>
+              <Text style={[styles.headerCountText, { color: colors.primary }]}>{upcomingSetlists.length}</Text>
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('myBands')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Próximos Eventos</Text>
           </View>
+
+          <Pressable 
+            style={({ pressed }) => [
+              styles.quickAddButton,
+              { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
+            ]}
+            onPress={() => { setActiveSetlistDetail({}); }}
+          >
+            <Text style={styles.quickAddText}>+ Criar Evento</Text>
+          </Pressable>
         </View>
 
         <ScrollView 
           style={{ flex: 1 }} 
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* CARROSSEL DE BANDAS NO TOPO DA HOME */}
           <BandCarousel
             bands={bands}
             selectedBandId={selectedBandId}
@@ -2164,102 +2178,303 @@ function MainApp() {
             }}
           />
 
-          {upcomingSetlists.length > 0 && (
-            <>
-              <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 28, marginBottom: 12, marginLeft: 4 }]}>
-                {t('upcomingEvents')}
-              </Text>
-              {upcomingSetlists.map((setlist) => {
-                const badge = getFormattedDateBadge(setlist.date, language);
-                
-                return (
-                  <Pressable
-                    key={setlist.id}
-                    style={({ pressed }) => [
-                      styles.bandCard,
-                      {
-                        backgroundColor: colors.cardBackground,
-                        borderColor: colors.border,
-                        borderWidth: 1.5,
-                        marginBottom: 10,
-                        transform: [{ scale: pressed ? 0.98 : 1 }],
+          {/* LISTA DE EVENTOS PRÓXIMOS */}
+          <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 24, marginBottom: 12 }]}>
+            Próximos Eventos ({upcomingSetlists.length})
+          </Text>
+
+          {upcomingSetlists.length === 0 ? (
+            <View style={{ padding: 20, alignItems: 'center', backgroundColor: colors.cardBackground, borderRadius: 12, borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name="calendar-outline" size={40} color={colors.textMuted} />
+              <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13 }}>Nenhum evento próximo agendado.</Text>
+            </View>
+          ) : (
+            upcomingSetlists.map((setlist) => {
+              const badge = getFormattedDateBadge(setlist.date, language);
+              
+              return (
+                <Pressable
+                  key={setlist.id}
+                  style={({ pressed }) => [
+                    styles.bandCard,
+                    {
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      borderWidth: 1.5,
+                      marginBottom: 10,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 12
+                    }
+                  ]}
+                  onPress={() => {
+                    setActiveSetlistDetail(setlist);
+                  }}
+                >
+                  <View style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 8,
+                    borderWidth: 1.5,
+                    borderColor: colors.border,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 18 }}>{badge.day}</Text>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
+                  </View>
+
+                  <View style={{ marginLeft: 10 }}>
+                    {setlist.bandImageUri ? (
+                      <Image source={{ uri: setlist.bandImageUri }} style={{ width: 42, height: 42, borderRadius: 21 }} />
+                    ) : (
+                      <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: colors.border, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>
+                          {getBandInitials(setlist.bandName || '')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={{ flex: 1, marginLeft: 10, justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }} numberOfLines={1}>
+                      {setlist.name || 'Sem Nome'}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                      <View style={{
+                        backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
+                        borderColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '30',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
                         flexDirection: 'row',
                         alignItems: 'center',
-                        padding: 12
-                      }
-                    ]}
-                    onPress={() => {
-                      setSelectedBandId(setlist.myBandId);
-                      setExpandedSetlistIds([setlist.id]);
-                      setCurrentTab('setlists');
-                    }}
-                  >
-                    {/* 1. Date Square (Left) */}
-                    <View style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 6,
-                      borderWidth: 1.5,
-                      borderColor: colors.border,
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}>
-                      <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 18 }}>{badge.day}</Text>
-                      <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
-                    </View>
-
-                    {/* 2. Band Logo (Middle) */}
-                    <View style={{ marginLeft: 10 }}>
-                      {setlist.bandImageUri ? (
-                        <Image source={{ uri: setlist.bandImageUri }} style={{ width: 42, height: 42, borderRadius: 21 }} />
-                      ) : (
-                        <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: colors.border, justifyContent: 'center', alignItems: 'center' }}>
-                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>
-                            {getBandInitials(setlist.bandName || '')}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* 3. Text Info (Right) */}
-                    <View style={{ flex: 1, marginLeft: 10, justifyContent: 'center' }}>
-                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }} numberOfLines={1}>
-                        {setlist.name || 'Sem Nome'}
-                      </Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                        <View style={{
-                          backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
-                          borderColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '30',
-                          borderWidth: 1,
-                          borderRadius: 4,
-                          paddingHorizontal: 8,
-                          paddingVertical: 2,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 4
+                        gap: 4
+                      }}>
+                        <Ionicons 
+                          name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
+                          size={10} 
+                          color={setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success} 
+                        />
+                        <Text style={{ 
+                          fontSize: 10, 
+                          fontWeight: '900', 
+                          color: setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success 
                         }}>
-                          <Ionicons 
-                            name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                            size={10} 
-                            color={setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success} 
-                          />
-                          <Text style={{ 
-                            fontSize: 10, 
-                            fontWeight: '900', 
-                            color: setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success 
-                          }}>
-                            {t(setlist.type).toUpperCase()}
-                          </Text>
-                        </View>
+                          {t(setlist.type).toUpperCase()}
+                        </Text>
                       </View>
                     </View>
-                  </Pressable>
-                );
-              })}
-            </>
+                  </View>
+
+                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                </Pressable>
+              );
+            })
           )}
 
+          {/* SEÇÃO DE EVENTOS ANTERIORES (OCULTA POR PADRÃO COM OLHO FECHADO) */}
+          {pastSetlists.length > 0 && (
+            <View style={{ marginTop: 24 }}>
+              <Pressable
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 8,
+                  backgroundColor: isDark ? '#27272a' : '#f1f5f9',
+                }}
+                onPress={() => setShowPastSetlists(!showPastSetlists)}
+              >
+                <Ionicons
+                  name={showPastSetlists ? "eye-off-outline" : "eye-outline"}
+                  size={18}
+                  color={colors.text}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={{ fontSize: 13, fontWeight: 'bold', color: colors.text }}>
+                  {showPastSetlists
+                    ? `Ocultar Eventos Anteriores (${pastSetlists.length})`
+                    : `Exibir Eventos Anteriores (${pastSetlists.length})`}
+                </Text>
+              </Pressable>
+
+              {showPastSetlists && (
+                <View style={{ marginTop: 12 }}>
+                  {pastSetlists.map((setlist) => {
+                    const badge = getFormattedDateBadge(setlist.date, language);
+                    return (
+                      <Pressable
+                        key={setlist.id}
+                        style={({ pressed }) => [
+                          styles.bandCard,
+                          {
+                            backgroundColor: colors.cardBackground,
+                            borderColor: colors.border,
+                            borderWidth: 1,
+                            marginBottom: 10,
+                            opacity: 0.75,
+                            transform: [{ scale: pressed ? 0.98 : 1 }],
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            padding: 12
+                          }
+                        ]}
+                        onPress={() => {
+                          setActiveSetlistDetail(setlist);
+                        }}
+                      >
+                        <View style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                          justifyContent: 'center',
+                          alignItems: 'center'
+                        }}>
+                          <Text style={{ fontSize: 16, fontWeight: '900', color: colors.textMuted, lineHeight: 18 }}>{badge.day}</Text>
+                          <Text style={{ fontSize: 9, fontWeight: '800', color: colors.textMuted, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
+                        </View>
+
+                        <View style={{ marginLeft: 10 }}>
+                          {setlist.bandImageUri ? (
+                            <Image source={{ uri: setlist.bandImageUri }} style={{ width: 42, height: 42, borderRadius: 21, opacity: 0.8 }} />
+                          ) : (
+                            <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: colors.border, justifyContent: 'center', alignItems: 'center' }}>
+                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textMuted }}>
+                                {getBandInitials(setlist.bandName || '')}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+
+                        <View style={{ flex: 1, marginLeft: 10, justifyContent: 'center' }}>
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textMuted }} numberOfLines={1}>
+                            {setlist.name || 'Sem Nome'}
+                          </Text>
+                        </View>
+
+                        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          )}
+
+        </ScrollView>
+      </View>
+    );
+  };
+
+  // ABA BANDAS / PROJETOS
+  const renderBandsTab = () => {
+    const query = (searchQuery || '').toLowerCase().trim();
+    const filteredBands = bands.filter(b => 
+      !query || (b.name || '').toLowerCase().includes(query)
+    );
+
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={styles.tabHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+              <Text style={[styles.headerCountText, { color: colors.primary }]}>{bands.length}</Text>
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Bandas / Projetos</Text>
+          </View>
+
+          <Pressable 
+            style={({ pressed }) => [
+              styles.quickAddButton,
+              { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
+            ]}
+            onPress={() => {
+              setEditingBand(null);
+              setShowBandModal(true);
+            }}
+          >
+            <Text style={styles.quickAddText}>+ Criar Banda</Text>
+          </Pressable>
+        </View>
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredBands.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="people-outline" size={48} color={colors.textMuted} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma banda cadastrada</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+                Clique em "+ Criar Banda" para adicionar seu projeto musical.
+              </Text>
+            </View>
+          ) : (
+            filteredBands.map(band => {
+              const bSetlists = setlists.filter(s => s.myBandId === band.id);
+              return (
+                <Pressable
+                  key={band.id}
+                  style={({ pressed }) => [
+                    styles.bandCard,
+                    {
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      borderWidth: 1.5,
+                      marginBottom: 12,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 14,
+                      borderRadius: 12,
+                    }
+                  ]}
+                  onPress={() => {
+                    setActiveBandDetail(band);
+                  }}
+                >
+                  <View style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 26,
+                    borderWidth: 2,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary + '15',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 14,
+                  }}>
+                    {band.imageUri ? (
+                      <Image source={{ uri: band.imageUri }} style={{ width: 48, height: 48, borderRadius: 24 }} />
+                    ) : (
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>
+                        {getBandInitials(band.name)}
+                      </Text>
+                    )}
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>{band.name}</Text>
+                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                      {bSetlists.length} {bSetlists.length === 1 ? 'evento' : 'eventos'} agendados
+                    </Text>
+                  </View>
+
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                </Pressable>
+              );
+            })
+          )}
         </ScrollView>
       </View>
     );

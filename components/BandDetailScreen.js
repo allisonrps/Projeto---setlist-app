@@ -78,6 +78,7 @@ export default function BandDetailScreen({
   onEditBand,
   onDeleteBand,
   onSelectSong,
+  onSelectSetlist,
   onOpenNewSongForBand,
   onOpenNewSetlistForBand,
   onStartPerformance,
@@ -1194,7 +1195,7 @@ export default function BandDetailScreen({
                   <Pressable
                     key={setlist.id}
                     style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    onPress={() => onExportDoc(setlist)}
+                    onPress={() => onSelectSetlist ? onSelectSetlist(setlist) : onExportDoc(setlist)}
                   >
                     <View style={[styles.dateBadgeBox, { backgroundColor: colors.primary + '15' }]}>
                       <Text style={[styles.dateBadgeDay, { color: colors.primary }]}>{dateBadge.day}</Text>
