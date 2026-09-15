@@ -805,19 +805,20 @@ const createWebDB = () => {
 
       // INSERT / UPDATE / DELETE / TOGGLE de band_finances
       if (sql.includes('INSERT INTO band_members')) {
-        const [bandId, name, role] = params;
+        const [bandId, name, role, phone] = params;
         const newId = Date.now() + Math.floor(Math.random() * 1000);
-        data.band_members.push({ id: newId, bandId, name, role });
+        data.band_members.push({ id: newId, bandId, name, role, phone: phone || "" });
         saveToStorage();
         return { lastInsertRowId: newId };
       }
 
       if (sql.includes('UPDATE band_members')) {
-        const [name, role, id] = params;
+        const [name, role, phone, id] = params;
         const item = data.band_members.find(m => m.id === id);
         if (item) {
           item.name = name;
           item.role = role;
+          item.phone = phone || "";
           saveToStorage();
         }
         return { changes: 1 };
@@ -1035,6 +1036,16 @@ export const createTables = async () => {
         console.log("Nativo: Coluna 'name' já existe.");
       } else {
         console.log("Nativo: Nota da migração de setlists name:", e.message);
+    // Migração de phone em band_members
+    try {
+      await db.execAsync('ALTER TABLE band_members ADD COLUMN phone TEXT;');
+      console.log("Nativo: Coluna 'phone' adicionada em 'band_members'!");
+    } catch (e) {
+      if (e.message && e.message.includes("duplicate column name")) {
+        console.log("Nativo: Coluna 'phone' já existe em band_members.");
+      }
+    }
+  
       }
     }
 

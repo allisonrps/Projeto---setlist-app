@@ -13,6 +13,7 @@ import {
   Image,
   Dimensions,
   Vibration,
+  Linking,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -65,7 +66,7 @@ const getFormattedDateBadge = (dateStr, lang) => {
 };
 
 const PRESET_INSTRUMENTS = [
-  'Vocal', 'Guitarra', 'Baixo', 'Bateria', 'Teclado', 'Violão', 'Saxofone', 'Trompete', 'Percussão'
+  'Vocal', 'Guitarra', 'Baixo', 'Bateria', 'Teclado', 'Violão', 'Saxofone', 'Trompete', 'Percussão', 'Backing Vocal', 'Sanfona', 'DJ / FX'
 ];
 
 const STYLE_COLOR_PALETTE = [
@@ -114,7 +115,9 @@ export default function BandDetailScreen({
   const [members, setMembers] = useState([]);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [memberName, setMemberName] = useState('');
-  const [memberRole, setMemberRole] = useState('Guitarra');
+  const [memberRole, setMemberRole] = useState('');
+  const [memberPhone, setMemberPhone] = useState('');
+  const [editingMemberId, setEditingMemberId] = useState(null);
 
   // Style Breakdown Chart Modal
   const [showStyleChartModal, setShowStyleChartModal] = useState(false);
@@ -326,19 +329,41 @@ export default function BandDetailScreen({
     );
   };
 
-  // Band Member Handlers
-  const handleAddMember = async () => {
+  // Band Member Handlers (Aberto com WhatsApp)
+  const handleSaveMember = async () => {
     if (!memberName.trim()) {
       Alert.alert('Atenção', 'Informe o nome do integrante.');
       return;
     }
+    const roleTag = memberRole.trim() || 'Integrante';
     try {
-      await bandService.addBandMember(band.id, memberName.trim(), memberRole.trim());
+      if (editingMemberId) {
+        await bandService.updateBandMember(editingMemberId, memberName.trim(), roleTag, memberPhone.trim());
+      } else {
+        await bandService.addBandMember(band.id, memberName.trim(), roleTag, memberPhone.trim());
+      }
       setMemberName('');
+      setMemberRole('');
+      setMemberPhone('');
+      setEditingMemberId(null);
       await loadData();
     } catch (e) {
-      Alert.alert('Erro', 'Não foi possível adicionar o integrante.');
+      Alert.alert('Erro', 'Não foi possível salvar o integrante.');
     }
+  };
+
+  const handleOpenEditMember = (member) => {
+    setEditingMemberId(member.id);
+    setMemberName(member.name || '');
+    setMemberRole(member.role || '');
+    setMemberPhone(member.phone || '');
+  };
+
+  const handleCancelEditMember = () => {
+    setEditingMemberId(null);
+    setMemberName('');
+    setMemberRole('');
+    setMemberPhone('');
   };
 
   const handleDeleteMember = (member) => {
@@ -352,11 +377,23 @@ export default function BandDetailScreen({
           style: 'destructive',
           onPress: async () => {
             await bandService.deleteBandMember(member.id);
+            if (editingMemberId === member.id) handleCancelEditMember();
             await loadData();
           }
         }
       ]
     );
+  };
+
+  const handleOpenWhatsApp = (phoneStr) => {
+    if (!phoneStr) return;
+    const cleanNumber = phoneStr.replace(/[^\d]/g, '');
+    if (!cleanNumber) return;
+    const fullNumber = cleanNumber.length <= 11 ? `55${cleanNumber}` : cleanNumber;
+    const url = `https://wa.me/${fullNumber}`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+    });
   };
 
   // Handlers for Financial Entry Modal
@@ -1019,13 +1056,16 @@ export default function BandDetailScreen({
         </View>
 
         {/* ========================================================
-            MODAL 1: INTEGRANTES DA BANDA (BOTTOM SHEET)
+            MODAL 1: INTEGRANTES DA BANDA (MESMO MOLDE DO MODAL DE ESTILOS)
            ======================================================== */}
         <Modal
           visible={showMembersModal}
           animationType="slide"
           transparent={true}
-          onRequestClose={() => setShowMembersModal(false)}
+          onRequestClose={() => {
+            handleCancelEditMember();
+            setShowMembersModal(false);
+          }}
         >
           <View style={[styles.sheetOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}>
             <View style={[styles.sheetContentBox, { backgroundColor: colors.background }]}>
@@ -1035,54 +1075,114 @@ export default function BandDetailScreen({
                   <Ionicons name="people" size={20} color={colors.primary} />
                   <Text style={[styles.sheetTitle, { color: colors.text }]}>Integrantes da Banda</Text>
                 </View>
-                <Pressable onPress={() => setShowMembersModal(false)}>
+                <Pressable onPress={() => {
+                  handleCancelEditMember();
+                  setShowMembersModal(false);
+                }}>
                   <Ionicons name="close" size={20} color={colors.textMuted} />
                 </Pressable>
               </View>
 
-              {/* Form Novo Integrante */}
-              <View style={[styles.addMemberForm, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderColor: colors.border }]}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>ADICIONAR NOVO INTEGRANTE</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                  placeholder="Nome do músico / integrante..."
-                  placeholderTextColor={colors.textMuted}
-                  value={memberName}
-                  onChangeText={setMemberName}
-                />
-
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>INSTRUMENTO / PAPEL</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
-                  {PRESET_INSTRUMENTS.map(inst => {
-                    const isSel = memberRole === inst;
-                    return (
-                      <Pressable
-                        key={inst}
-                        style={[
-                          styles.instTagChip,
-                          isSel && { backgroundColor: colors.primary, borderColor: colors.primary }
-                        ]}
-                        onPress={() => setMemberRole(inst)}
-                      >
-                        <Text style={[styles.instTagText, isSel && { color: '#fff', fontWeight: '900' }]}>
-                          {inst}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-
-                <Pressable
-                  style={[styles.confirmMemberAddBtn, { backgroundColor: colors.primary }]}
-                  onPress={handleAddMember}
-                >
-                  <Ionicons name="person-add" size={15} color="#fff" />
-                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>+ SALVAR INTEGRANTE</Text>
-                </Pressable>
+              {/* Card Resumo do Cabeçalho (Mesmo Molde do Modal de Estilos) */}
+              <View style={[styles.chartSummaryBox, { backgroundColor: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.8)', borderColor: colors.border }]}>
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text style={[styles.summaryVal, { color: colors.primary }]}>{members.length}</Text>
+                  <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>INTEGRANTES</Text>
+                </View>
+                <View style={{ width: 1, backgroundColor: colors.border, height: '80%' }} />
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text style={[styles.summaryVal, { color: colors.secondary }]}>
+                    {new Set(members.map(m => m.role).filter(Boolean)).size}
+                  </Text>
+                  <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>INSTRUMENTOS</Text>
+                </View>
               </View>
 
-              {/* Lista de Integrantes */}
-              <ScrollView style={{ flex: 1, marginTop: 10 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                {/* Form Adicionar / Editar Integrante */}
+                <View style={[styles.addMemberForm, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderColor: colors.border }]}>
+                  <Text style={[styles.inputLabel, { color: colors.textMuted }]}>
+                    {editingMemberId ? 'EDITAR INTEGRANTE' : 'ADICIONAR NOVO INTEGRANTE'}
+                  </Text>
+
+                  {/* Nome do Músico */}
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                    placeholder="Nome do integrante (ex: João Silva)..."
+                    placeholderTextColor={colors.textMuted}
+                    value={memberName}
+                    onChangeText={setMemberName}
+                  />
+
+                  {/* Tag Aberta do Instrumento / Papel */}
+                  <Text style={[styles.inputLabel, { color: colors.textMuted }]}>INSTRUMENTO / TAG (LIVRE)</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                    placeholder="Digite a tag (ex: Guitarra Solo, Backing Vocal...)"
+                    placeholderTextColor={colors.textMuted}
+                    value={memberRole}
+                    onChangeText={setMemberRole}
+                  />
+
+                  {/* Sugestões Rápidas de Instrumentos */}
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
+                    {PRESET_INSTRUMENTS.map(inst => {
+                      const isSel = memberRole.toLowerCase() === inst.toLowerCase();
+                      return (
+                        <Pressable
+                          key={inst}
+                          style={[
+                            styles.instTagChip,
+                            isSel && { backgroundColor: colors.primary, borderColor: colors.primary }
+                          ]}
+                          onPress={() => setMemberRole(inst)}
+                        >
+                          <Text style={[styles.instTagText, isSel && { color: '#fff', fontWeight: '900' }]}>
+                            {inst}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+
+                  {/* Campo de WhatsApp / Telefone */}
+                  <Text style={[styles.inputLabel, { color: colors.textMuted }]}>WHATSAPP / TELEFONE (OPCIONAL)</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                    placeholder="Ex: (11) 99999-8888"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="phone-pad"
+                    value={memberPhone}
+                    onChangeText={setMemberPhone}
+                  />
+
+                  {/* Botão Salvar / Cancelar */}
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                    {editingMemberId && (
+                      <Pressable
+                        style={[styles.confirmMemberAddBtn, { backgroundColor: colors.textMuted, flex: 1 }]}
+                        onPress={handleCancelEditMember}
+                      >
+                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>CANCELAR</Text>
+                      </Pressable>
+                    )}
+                    <Pressable
+                      style={[styles.confirmMemberAddBtn, { backgroundColor: colors.primary, flex: 1.5 }]}
+                      onPress={handleSaveMember}
+                    >
+                      <Ionicons name={editingMemberId ? "checkmark-circle" : "person-add"} size={15} color="#fff" />
+                      <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>
+                        {editingMemberId ? 'SALVAR ALTERAÇÕES' : '+ ADICIONAR INTEGRANTE'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Lista de Integrantes Cadastrados */}
+                <Text style={[styles.financeSectionTitle, { color: colors.text, marginTop: 10 }]}>
+                  INTEGRANTES CADASTRADOS (${members.length})
+                </Text>
+
                 {members.length === 0 ? (
                   <Text style={{ fontStyle: 'italic', color: colors.textMuted, textAlign: 'center', marginVertical: 20 }}>
                     Nenhum integrante cadastrado nesta banda ainda.
@@ -1096,19 +1196,38 @@ export default function BandDetailScreen({
                         { backgroundColor: isDark ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.7)', borderColor: colors.border }
                       ]}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                        <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
-                          <Ionicons name="person" size={16} color={colors.primary} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.memberNameText, { color: colors.text }]}>{m.name}</Text>
-                          <View style={[styles.roleTagPill, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '38' }]}>
-                            <Ionicons name="musical-note" size={10} color={colors.secondary} />
-                            <Text style={[styles.roleTagText, { color: colors.secondary }]}>{m.role}</Text>
+                      <Pressable style={{ flex: 1 }} onPress={() => handleOpenEditMember(m)}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
+                            <Ionicons name="person" size={16} color={colors.primary} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.memberNameText, { color: colors.text }]}>{m.name}</Text>
+                            
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
+                              {/* Tag do Instrumento */}
+                              <View style={[styles.roleTagPill, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '38' }]}>
+                                <Ionicons name="musical-note" size={10} color={colors.secondary} />
+                                <Text style={[styles.roleTagText, { color: colors.secondary }]}>{m.role}</Text>
+                              </View>
+
+                              {/* WhatsApp Direct Action Button */}
+                              {m.phone ? (
+                                <Pressable
+                                  style={[styles.roleTagPill, { backgroundColor: '#22c55e18', borderColor: '#22c55e40' }]}
+                                  onPress={() => handleOpenWhatsApp(m.phone)}
+                                >
+                                  <Ionicons name="logo-whatsapp" size={10} color="#22c55e" />
+                                  <Text style={[styles.roleTagText, { color: '#22c55e' }]}>{m.phone}</Text>
+                                </Pressable>
+                              ) : null}
+                            </View>
                           </View>
                         </View>
-                      </View>
-                      <Pressable onPress={() => handleDeleteMember(m)} hitSlop={6}>
+                      </Pressable>
+
+                      {/* Botão de Excluir */}
+                      <Pressable onPress={() => handleDeleteMember(m)} hitSlop={6} style={{ padding: 4 }}>
                         <Ionicons name="trash-outline" size={16} color={colors.danger} />
                       </Pressable>
                     </View>
@@ -1857,7 +1976,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheetContentBox: {
-    height: '75%',
+    height: '78%',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 16,
@@ -1899,9 +2018,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 9,
+    paddingVertical: 10,
     borderRadius: 10,
-    marginTop: 4,
   },
   memberRowCard: {
     flexDirection: 'row',
@@ -1925,13 +2043,11 @@ const styles = StyleSheet.create({
   roleTagPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
+    gap: 3.5,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: 8,
     borderWidth: 1,
-    marginTop: 2,
-    alignSelf: 'flex-start',
   },
   roleTagText: {
     fontSize: 9.5,
