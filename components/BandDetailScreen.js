@@ -65,10 +65,6 @@ const getFormattedDateBadge = (dateStr, lang) => {
   return { day: String(day).padStart(2, '0'), month: months[monthNum] || '---' };
 };
 
-const PRESET_INSTRUMENTS = [
-  'Vocal', 'Guitarra', 'Baixo', 'Bateria', 'Teclado', 'Violão', 'Saxofone', 'Trompete', 'Percussão', 'Backing Vocal', 'Sanfona', 'DJ / FX'
-];
-
 const STYLE_COLOR_PALETTE = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
 ];
@@ -97,7 +93,7 @@ export default function BandDetailScreen({
   const { t, language } = useLanguage();
   const isDark = colors.isDark;
 
-  // Tabs state: 'repertoire' | 'financial' | 'setlists'
+  // Dedicated Tab Pages: 'repertoire' | 'members' | 'stats' | 'financial' | 'setlists'
   const [activeTab, setActiveTab] = useState('repertoire');
 
   // Band Repertoire Data
@@ -111,16 +107,12 @@ export default function BandDetailScreen({
   const [selectedPickerSongIds, setSelectedPickerSongIds] = useState(new Set());
   const [pickerSearch, setPickerSearch] = useState('');
 
-  // Band Members Data & Modal
+  // Band Members Data & Form
   const [members, setMembers] = useState([]);
-  const [showMembersModal, setShowMembersModal] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
   const [editingMemberId, setEditingMemberId] = useState(null);
-
-  // Style Breakdown Chart Modal
-  const [showStyleChartModal, setShowStyleChartModal] = useState(false);
 
   // Financial Data
   const [finances, setFinances] = useState([]);
@@ -219,7 +211,7 @@ export default function BandDetailScreen({
     bandSongs.flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean))
   ));
 
-  // Calculate style breakdown percentages for the Chart Modal
+  // Calculate style breakdown percentages for the Statistics Dedicated Page
   const getStyleBreakdown = () => {
     if (bandSongs.length === 0) return [];
     const counts = {};
@@ -249,7 +241,6 @@ export default function BandDetailScreen({
   const styleBreakdown = getStyleBreakdown();
 
   // Available general songs for picker modal
-  const bandSongIds = new Set(bandSongs.map(s => s.id));
   const availableGeneralSongs = allGeneralSongs.filter(s => {
     if (s.id < 0) return false;
     if (!pickerSearch.trim()) return true;
@@ -329,10 +320,10 @@ export default function BandDetailScreen({
     );
   };
 
-  // Band Member Handlers (Aberto com WhatsApp)
+  // Band Member Handlers (Save / Edit / Delete)
   const handleSaveMember = async () => {
     if (!memberName.trim()) {
-      Alert.alert('Atenção', 'Informe o nome do integrante.');
+      Alert.alert('Atenção', 'Por favor, informe o nome do integrante.');
       return;
     }
     const roleTag = memberRole.trim() || 'Integrante';
@@ -348,6 +339,7 @@ export default function BandDetailScreen({
       setEditingMemberId(null);
       await loadData();
     } catch (e) {
+      console.error('Error in handleSaveMember:', e);
       Alert.alert('Erro', 'Não foi possível salvar o integrante.');
     }
   };
@@ -551,41 +543,15 @@ export default function BandDetailScreen({
                 {band.name}
               </Text>
             </View>
-
-            {/* Header Action Pills: Integrantes & Gráfico de Estilos */}
-            <View style={styles.heroQuickPillsRow}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.heroQuickPill,
-                  { backgroundColor: colors.primary + '18', borderColor: colors.primary + '38' },
-                  pressed && { opacity: 0.8 }
-                ]}
-                onPress={() => setShowMembersModal(true)}
-              >
-                <Ionicons name="people-outline" size={12} color={colors.primary} />
-                <Text style={[styles.heroQuickPillText, { color: colors.primary }]}>
-                  INTEGRANTES ({members.length})
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.heroQuickPill,
-                  { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '38' },
-                  pressed && { opacity: 0.8 }
-                ]}
-                onPress={() => setShowStyleChartModal(true)}
-              >
-                <Ionicons name="pie-chart-outline" size={12} color={colors.secondary} />
-                <Text style={[styles.heroQuickPillText, { color: colors.secondary }]}>
-                  ESTILOS ({styleBreakdown.length})
-                </Text>
-              </Pressable>
-            </View>
           </View>
 
-          {/* Abas de Navegação (Com Contadores Nativos) */}
-          <View style={styles.navTabsBar}>
+          {/* Abas de Navegação Dedicadas (Scroll Horizontal se necessário) */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 6 }}
+            style={styles.navTabsBarScroll}
+          >
             <Pressable
               style={[
                 styles.navTabBtn,
@@ -600,6 +566,40 @@ export default function BandDetailScreen({
               />
               <Text style={[styles.navTabText, activeTab === 'repertoire' && styles.navTabTextActive]} numberOfLines={1}>
                 REPERTÓRIO ({bandSongs.length})
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.navTabBtn,
+                activeTab === 'members' && [styles.navTabBtnActive, { backgroundColor: colors.primary }]
+              ]}
+              onPress={() => setActiveTab('members')}
+            >
+              <Ionicons
+                name="people"
+                size={13}
+                color={activeTab === 'members' ? '#fff' : '#94a3b8'}
+              />
+              <Text style={[styles.navTabText, activeTab === 'members' && styles.navTabTextActive]} numberOfLines={1}>
+                INTEGRANTES ({members.length})
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.navTabBtn,
+                activeTab === 'stats' && [styles.navTabBtnActive, { backgroundColor: colors.primary }]
+              ]}
+              onPress={() => setActiveTab('stats')}
+            >
+              <Ionicons
+                name="pie-chart"
+                size={13}
+                color={activeTab === 'stats' ? '#fff' : '#94a3b8'}
+              />
+              <Text style={[styles.navTabText, activeTab === 'stats' && styles.navTabTextActive]} numberOfLines={1}>
+                ESTATÍSTICAS
               </Text>
             </Pressable>
 
@@ -636,14 +636,14 @@ export default function BandDetailScreen({
                 EVENTOS ({bandSetlists.length})
               </Text>
             </Pressable>
-          </View>
+          </ScrollView>
         </View>
 
         {/* ========================================================
-            CAMADA 3: CONTEÚDO DAS ABAS
+            CAMADA 2: CONTEÚDO DAS PÁGINAS DEDICADAS
            ======================================================== */}
         <View style={{ flex: 1 }}>
-          {/* ==================== ABA 1: REPERTÓRIO DA BANDA ==================== */}
+          {/* ==================== PÁGINA 1: REPERTÓRIO DA BANDA ==================== */}
           {activeTab === 'repertoire' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
               {/* Botão Único Principal: + ADICIONAR MÚSICAS */}
@@ -793,7 +793,170 @@ export default function BandDetailScreen({
             </View>
           )}
 
-          {/* ==================== ABA 2: CONTROLE FINANCEIRO ==================== */}
+          {/* ==================== PÁGINA 2: DEDICADA INTEGRANTES ==================== */}
+          {activeTab === 'members' && (
+            <ScrollView style={{ flex: 1, paddingHorizontal: 14, paddingTop: 12 }} showsVerticalScrollIndicator={false}>
+              {/* Form Ultra Clean Adicionar / Editar Integrante */}
+              <View style={[styles.addMemberFormClean, { backgroundColor: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.85)', borderColor: colors.border }]}>
+                <Text style={[styles.cleanFormHeaderTitle, { color: colors.text }]}>
+                  {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
+                </Text>
+
+                {/* 1. Nome */}
+                <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Nome:</Text>
+                <TextInput
+                  style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                  value={memberName}
+                  onChangeText={setMemberName}
+                />
+
+                {/* 2. Função */}
+                <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Função:</Text>
+                <TextInput
+                  style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                  value={memberRole}
+                  onChangeText={setMemberRole}
+                />
+
+                {/* 3. Contato (whatsapp) */}
+                <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Contato: (whatsapp)</Text>
+                <TextInput
+                  style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                  keyboardType="phone-pad"
+                  value={memberPhone}
+                  onChangeText={setMemberPhone}
+                />
+
+                {/* Botões Ação */}
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                  {editingMemberId && (
+                    <Pressable
+                      style={[styles.confirmMemberAddBtn, { backgroundColor: colors.textMuted, flex: 1 }]}
+                      onPress={handleCancelEditMember}
+                    >
+                      <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>CANCELAR</Text>
+                    </Pressable>
+                  )}
+                  <Pressable
+                    style={[styles.confirmMemberAddBtn, { backgroundColor: colors.primary, flex: 1.5 }]}
+                    onPress={handleSaveMember}
+                  >
+                    <Ionicons name={editingMemberId ? "checkmark-circle" : "person-add"} size={15} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>
+                      {editingMemberId ? 'SALVAR INTEGRANTE' : '+ ADICIONAR INTEGRANTE'}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Lista de Integrantes Cadastrados */}
+              <Text style={[styles.financeSectionTitle, { color: colors.text, marginTop: 10, marginBottom: 8 }]}>
+                INTEGRANTES CADASTRADOS (${members.length})
+              </Text>
+
+              {members.length === 0 ? (
+                <View style={[styles.emptyFinanceBox, { borderColor: colors.border, paddingVertical: 30 }]}>
+                  <Ionicons name="people-outline" size={36} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 6 }} />
+                  <Text style={[styles.emptyFinanceText, { color: colors.textMuted }]}>
+                    Nenhum integrante cadastrado nesta banda ainda.
+                  </Text>
+                </View>
+              ) : (
+                members.map(m => (
+                  <View
+                    key={m.id}
+                    style={[
+                      styles.memberRowCard,
+                      { backgroundColor: isDark ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.7)', borderColor: colors.border }
+                    ]}
+                  >
+                    <Pressable style={{ flex: 1 }} onPress={() => handleOpenEditMember(m)}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
+                          <Ionicons name="person" size={16} color={colors.primary} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.memberNameText, { color: colors.text }]}>{m.name}</Text>
+                          
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
+                            {/* Tag do Instrumento */}
+                            <View style={[styles.roleTagPill, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '38' }]}>
+                              <Ionicons name="musical-note" size={10} color={colors.secondary} />
+                              <Text style={[styles.roleTagText, { color: colors.secondary }]}>{m.role}</Text>
+                            </View>
+
+                            {/* WhatsApp Direct Action Button */}
+                            {m.phone ? (
+                              <Pressable
+                                style={[styles.roleTagPill, { backgroundColor: '#22c55e18', borderColor: '#22c55e40' }]}
+                                onPress={() => handleOpenWhatsApp(m.phone)}
+                              >
+                                <Ionicons name="logo-whatsapp" size={10} color="#22c55e" />
+                                <Text style={[styles.roleTagText, { color: '#22c55e' }]}>{m.phone}</Text>
+                              </Pressable>
+                            ) : null}
+                          </View>
+                        </View>
+                      </View>
+                    </Pressable>
+
+                    {/* Botão de Excluir */}
+                    <Pressable onPress={() => handleDeleteMember(m)} hitSlop={6} style={{ padding: 4 }}>
+                      <Ionicons name="trash-outline" size={16} color={colors.danger} />
+                    </Pressable>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          )}
+
+          {/* ==================== PÁGINA 3: DEDICADA ESTATÍSTICAS ==================== */}
+          {activeTab === 'stats' && (
+            <ScrollView style={{ flex: 1, paddingHorizontal: 14, paddingTop: 12 }} showsVerticalScrollIndicator={false}>
+              {/* Resumo do Repertório */}
+              <View style={[styles.chartSummaryBox, { backgroundColor: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.8)', borderColor: colors.border }]}>
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text style={[styles.summaryVal, { color: colors.primary }]}>{bandSongs.length}</Text>
+                  <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>TOTAL DE MÚSICAS</Text>
+                </View>
+                <View style={{ width: 1, backgroundColor: colors.border, height: '80%' }} />
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text style={[styles.summaryVal, { color: colors.secondary }]}>{styleBreakdown.length}</Text>
+                  <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>GÊNEROS / ESTILOS</Text>
+                </View>
+              </View>
+
+              <Text style={[styles.financeSectionTitle, { color: colors.text, marginBottom: 10 }]}>
+                DISTRIBUIÇÃO PERCENTUAL DE ESTILOS
+              </Text>
+
+              {/* Lista de Gêneros com Barras de Progresso */}
+              {styleBreakdown.length === 0 ? (
+                <View style={[styles.emptyFinanceBox, { borderColor: colors.border, paddingVertical: 30 }]}>
+                  <Ionicons name="pie-chart-outline" size={36} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 6 }} />
+                  <Text style={[styles.emptyFinanceText, { color: colors.textMuted }]}>
+                    Nenhuma música com estilo/gênero cadastrado no repertório.
+                  </Text>
+                </View>
+              ) : (
+                styleBreakdown.map((item) => (
+                  <View key={item.tag} style={[styles.chartRowCard, { backgroundColor: isDark ? 'rgba(30,41,59,0.35)' : 'rgba(255,255,255,0.7)', borderColor: colors.border }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <Text style={[styles.chartTagTitle, { color: colors.text }]}>{item.tag}</Text>
+                      <Text style={[styles.chartTagPercent, { color: item.color }]}>
+                        {item.count} {item.count === 1 ? 'música' : 'músicas'} ({item.percentage}%)
+                      </Text>
+                    </View>
+                    <View style={[styles.progressBarTrack, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}>
+                      <View style={[styles.progressBarFill, { width: `${item.percentage}%`, backgroundColor: item.color }]} />
+                    </View>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          )}
+
+          {/* ==================== PÁGINA 4: CONTROLE FINANCEIRO ==================== */}
           {activeTab === 'financial' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
               {/* Dashboard Cards Summary */}
@@ -929,7 +1092,7 @@ export default function BandDetailScreen({
             </View>
           )}
 
-          {/* ==================== ABA 3: EVENTOS DA BANDA (SHOW OU ENSAIO) ==================== */}
+          {/* ==================== PÁGINA 5: EVENTOS DA BANDA (SHOW OU ENSAIO) ==================== */}
           {activeTab === 'setlists' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
               {/* Botão + Novo Evento */}
@@ -1056,210 +1219,7 @@ export default function BandDetailScreen({
         </View>
 
         {/* ========================================================
-            MODAL 1: INTEGRANTES DA BANDA (ULTRA CLEAN)
-           ======================================================== */}
-        <Modal
-          visible={showMembersModal}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => {
-            handleCancelEditMember();
-            setShowMembersModal(false);
-          }}
-        >
-          <View style={[styles.sheetOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}>
-            <View style={[styles.sheetContentBox, { backgroundColor: colors.background }]}>
-              {/* Header */}
-              <View style={styles.sheetHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Ionicons name="people" size={20} color={colors.primary} />
-                  <Text style={[styles.sheetTitle, { color: colors.text }]}>Integrantes da Banda</Text>
-                </View>
-                <Pressable onPress={() => {
-                  handleCancelEditMember();
-                  setShowMembersModal(false);
-                }}>
-                  <Ionicons name="close" size={20} color={colors.textMuted} />
-                </Pressable>
-              </View>
-
-              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {/* Form Ultra Clean Adicionar / Editar Integrante */}
-                <View style={[styles.addMemberFormClean, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderColor: colors.border }]}>
-                  <Text style={[styles.cleanFormHeaderTitle, { color: colors.text }]}>
-                    {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
-                  </Text>
-
-                  {/* 1. Nome */}
-                  <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Nome:</Text>
-                  <TextInput
-                    style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    value={memberName}
-                    onChangeText={setMemberName}
-                  />
-
-                  {/* 2. Função */}
-                  <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Função:</Text>
-                  <TextInput
-                    style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    value={memberRole}
-                    onChangeText={setMemberRole}
-                  />
-
-                  {/* 3. Contato (whatsapp) */}
-                  <Text style={[styles.inputLabelClean, { color: colors.textMuted }]}>Contato: (whatsapp)</Text>
-                  <TextInput
-                    style={[styles.cleanInputBox, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                    keyboardType="phone-pad"
-                    value={memberPhone}
-                    onChangeText={setMemberPhone}
-                  />
-
-                  {/* Botões Ação */}
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                    {editingMemberId && (
-                      <Pressable
-                        style={[styles.confirmMemberAddBtn, { backgroundColor: colors.textMuted, flex: 1 }]}
-                        onPress={handleCancelEditMember}
-                      >
-                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>CANCELAR</Text>
-                      </Pressable>
-                    )}
-                    <Pressable
-                      style={[styles.confirmMemberAddBtn, { backgroundColor: colors.primary, flex: 1.5 }]}
-                      onPress={handleSaveMember}
-                    >
-                      <Ionicons name={editingMemberId ? "checkmark-circle" : "person-add"} size={15} color="#fff" />
-                      <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>
-                        {editingMemberId ? 'SALVAR INTEGRANTE' : '+ ADICIONAR INTEGRANTE'}
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-
-                {/* Lista de Integrantes Cadastrados */}
-                <Text style={[styles.financeSectionTitle, { color: colors.text, marginTop: 10 }]}>
-                  INTEGRANTES CADASTRADOS (${members.length})
-                </Text>
-
-                {members.length === 0 ? (
-                  <Text style={{ fontStyle: 'italic', color: colors.textMuted, textAlign: 'center', marginVertical: 20 }}>
-                    Nenhum integrante cadastrado nesta banda ainda.
-                  </Text>
-                ) : (
-                  members.map(m => (
-                    <View
-                      key={m.id}
-                      style={[
-                        styles.memberRowCard,
-                        { backgroundColor: isDark ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.7)', borderColor: colors.border }
-                      ]}
-                    >
-                      <Pressable style={{ flex: 1 }} onPress={() => handleOpenEditMember(m)}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
-                            <Ionicons name="person" size={16} color={colors.primary} />
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text style={[styles.memberNameText, { color: colors.text }]}>{m.name}</Text>
-                            
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
-                              {/* Tag do Instrumento */}
-                              <View style={[styles.roleTagPill, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '38' }]}>
-                                <Ionicons name="musical-note" size={10} color={colors.secondary} />
-                                <Text style={[styles.roleTagText, { color: colors.secondary }]}>{m.role}</Text>
-                              </View>
-
-                              {/* WhatsApp Direct Action Button */}
-                              {m.phone ? (
-                                <Pressable
-                                  style={[styles.roleTagPill, { backgroundColor: '#22c55e18', borderColor: '#22c55e40' }]}
-                                  onPress={() => handleOpenWhatsApp(m.phone)}
-                                >
-                                  <Ionicons name="logo-whatsapp" size={10} color="#22c55e" />
-                                  <Text style={[styles.roleTagText, { color: '#22c55e' }]}>{m.phone}</Text>
-                                </Pressable>
-                              ) : null}
-                            </View>
-                          </View>
-                        </View>
-                      </Pressable>
-
-                      {/* Botão de Excluir */}
-                      <Pressable onPress={() => handleDeleteMember(m)} hitSlop={6} style={{ padding: 4 }}>
-                        <Ionicons name="trash-outline" size={16} color={colors.danger} />
-                      </Pressable>
-                    </View>
-                  ))
-                )}
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-
-        {/* ========================================================
-            MODAL 2: GRÁFICO DE ESTILOS DO REPERTÓRIO (BOTTOM SHEET)
-           ======================================================== */}
-        <Modal
-          visible={showStyleChartModal}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setShowStyleChartModal(false)}
-        >
-          <View style={[styles.sheetOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}>
-            <View style={[styles.sheetContentBox, { backgroundColor: colors.background }]}>
-              {/* Header */}
-              <View style={styles.sheetHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Ionicons name="pie-chart" size={20} color={colors.secondary} />
-                  <Text style={[styles.sheetTitle, { color: colors.text }]}>Estilos do Repertório</Text>
-                </View>
-                <Pressable onPress={() => setShowStyleChartModal(false)}>
-                  <Ionicons name="close" size={20} color={colors.textMuted} />
-                </Pressable>
-              </View>
-
-              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {/* Resumo do Repertório */}
-                <View style={[styles.chartSummaryBox, { backgroundColor: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.8)', borderColor: colors.border }]}>
-                  <View style={{ alignItems: 'center', flex: 1 }}>
-                    <Text style={[styles.summaryVal, { color: colors.primary }]}>{bandSongs.length}</Text>
-                    <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>MÚSICAS</Text>
-                  </View>
-                  <View style={{ width: 1, backgroundColor: colors.border, height: '80%' }} />
-                  <View style={{ alignItems: 'center', flex: 1 }}>
-                    <Text style={[styles.summaryVal, { color: colors.secondary }]}>{styleBreakdown.length}</Text>
-                    <Text style={[styles.summaryLbl, { color: colors.textMuted }]}>ESTILOS</Text>
-                  </View>
-                </View>
-
-                {/* Lista de Gêneros com Barras de Progresso */}
-                {styleBreakdown.length === 0 ? (
-                  <Text style={{ fontStyle: 'italic', color: colors.textMuted, textAlign: 'center', marginVertical: 30 }}>
-                    Nenhuma música com estilo/gênero cadastrado no repertório.
-                  </Text>
-                ) : (
-                  styleBreakdown.map((item) => (
-                    <View key={item.tag} style={styles.chartRow}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                        <Text style={[styles.chartTagTitle, { color: colors.text }]}>{item.tag}</Text>
-                        <Text style={[styles.chartTagPercent, { color: item.color }]}>
-                          {item.count} {item.count === 1 ? 'música' : 'músicas'} ({item.percentage}%)
-                        </Text>
-                      </View>
-                      <View style={[styles.progressBarTrack, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}>
-                        <View style={[styles.progressBarFill, { width: `${item.percentage}%`, backgroundColor: item.color }]} />
-                      </View>
-                    </View>
-                  ))
-                )}
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-
-        {/* ========================================================
-            MODAL 3: SELETOR DE MÚSICAS DA COLEÇÃO (COM CHECKBOXES)
+            MODAL 1: SELETOR DE MÚSICAS DA COLEÇÃO (COM CHECKBOXES)
            ======================================================== */}
         <Modal
           visible={showSongPickerModal}
@@ -1371,7 +1331,7 @@ export default function BandDetailScreen({
         </Modal>
 
         {/* ========================================================
-            MODAL 4: ADICIONAR / EDITAR LANÇAMENTO FINANCEIRO
+            MODAL 2: ADICIONAR / EDITAR LANÇAMENTO FINANCEIRO
            ======================================================== */}
         <Modal
           visible={showAddFinanceModal}
@@ -1504,7 +1464,7 @@ const styles = StyleSheet.create({
   // Cabeçalho Hero da Banda (Com Logo Sobreposta no Meio da Barra)
   headerHeroCard: {
     paddingTop: Platform.OS === 'ios' ? 44 : 28,
-    paddingBottom: 12,
+    paddingBottom: 10,
     paddingHorizontal: 14,
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
@@ -1540,7 +1500,7 @@ const styles = StyleSheet.create({
   heroCenterSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
     paddingHorizontal: 10,
   },
   bandHeaderAvatarHeroOverlapping: {
@@ -1560,7 +1520,6 @@ const styles = StyleSheet.create({
   heroTitleBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
   },
   headerBandNameHero: {
     color: '#fff',
@@ -1568,26 +1527,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.4,
     textAlign: 'center',
-  },
-  heroQuickPillsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
-  heroQuickPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 3.5,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  heroQuickPillText: {
-    fontSize: 9.5,
-    fontWeight: '900',
-    letterSpacing: 0.5,
   },
   bandHeaderImage: {
     width: '100%',
@@ -1621,21 +1560,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Nav Tabs Bar
-  navTabsBar: {
-    flexDirection: 'row',
-    gap: 6,
+  // Nav Tabs Bar Scroll
+  navTabsBarScroll: {
     backgroundColor: 'rgba(0,0,0,0.25)',
     padding: 4,
     borderRadius: 14,
   },
   navTabBtn: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
     paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 10,
   },
   navTabBtnActive: {
@@ -1929,42 +1866,17 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
 
-  // Bottom Sheet Modal Shared Styles
-  sheetOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  sheetContentBox: {
-    height: '78%',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 16,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(150,150,150,0.15)',
-  },
-  sheetTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-  },
-
-  // Band Members
+  // Dedicated Band Members Page
   addMemberFormClean: {
-    padding: 12,
-    borderRadius: 14,
+    padding: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   cleanFormHeaderTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '900',
-    marginBottom: 6,
+    marginBottom: 8,
     letterSpacing: 0.3,
   },
   inputLabelClean: {
@@ -1976,33 +1888,11 @@ const styles = StyleSheet.create({
   },
   cleanInputBox: {
     paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 1,
-    fontSize: 12.5,
+    fontSize: 13,
     marginBottom: 8,
-  },
-  instTagChipCompact: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(150,150,150,0.3)',
-  },
-  instTagTextCompact: {
-    fontSize: 10,
-    color: '#94a3b8',
-  },
-  instTagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(150,150,150,0.3)',
-  },
-  instTagText: {
-    fontSize: 11,
-    color: '#94a3b8',
   },
   confirmMemberAddBtn: {
     flexDirection: 'row',
@@ -2016,19 +1906,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     marginBottom: 8,
   },
   memberAvatarCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   memberNameText: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '800',
   },
   roleTagPill: {
@@ -2036,26 +1926,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3.5,
     paddingHorizontal: 7,
-    paddingVertical: 2,
+    paddingVertical: 2.5,
     borderRadius: 8,
     borderWidth: 1,
   },
   roleTagText: {
-    fontSize: 9.5,
+    fontSize: 10,
     fontWeight: '800',
   },
 
-  // Style Chart
+  // Dedicated Statistics Page
   chartSummaryBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: 16,
     borderRadius: 16,
     borderWidth: 1,
     marginBottom: 14,
   },
   summaryVal: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900',
   },
   summaryLbl: {
@@ -2064,11 +1954,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: 2,
   },
-  chartRow: {
-    marginBottom: 12,
+  chartRowCard: {
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 10,
   },
   chartTagTitle: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
   },
   chartTagPercent: {
@@ -2076,13 +1969,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   progressBarTrack: {
-    height: 8,
-    borderRadius: 4,
+    height: 9,
+    borderRadius: 4.5,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 4.5,
   },
 
   // Picker Modal

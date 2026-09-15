@@ -473,6 +473,9 @@ const createWebDB = () => {
       }
     }
     // Garantir que as músicas especiais PAUSA e ANOTAÇÃO sempre existam no mock Web
+    data.band_members = data.band_members || [];
+    data.band_finances = data.band_finances || [];
+    data.band_songs = data.band_songs || [];
     if (!data.songs.some(s => s.id === -1)) {
       data.songs.push({ id: -1, name: 'PAUSA', originalBand: '', style: 'PAUSA' });
     }
@@ -805,20 +808,28 @@ const createWebDB = () => {
 
       // INSERT / UPDATE / DELETE / TOGGLE de band_finances
       if (sql.includes('INSERT INTO band_members')) {
-        const [bandId, name, role, phone] = params;
+        data.band_members = data.band_members || [];
+        const bandId = params[0];
+        const name = params[1] || '';
+        const role = params[2] || '';
+        const phone = params[3] || '';
         const newId = Date.now() + Math.floor(Math.random() * 1000);
-        data.band_members.push({ id: newId, bandId, name, role, phone: phone || "" });
+        data.band_members.push({ id: newId, bandId, name, role, phone });
         saveToStorage();
         return { lastInsertRowId: newId };
       }
 
       if (sql.includes('UPDATE band_members')) {
-        const [name, role, phone, id] = params;
+        data.band_members = data.band_members || [];
+        const name = params[0] || '';
+        const role = params[1] || '';
+        const phone = params[2] || '';
+        const id = params[3];
         const item = data.band_members.find(m => m.id === id);
         if (item) {
           item.name = name;
           item.role = role;
-          item.phone = phone || "";
+          item.phone = phone;
           saveToStorage();
         }
         return { changes: 1 };
