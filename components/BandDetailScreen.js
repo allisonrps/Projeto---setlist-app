@@ -376,52 +376,70 @@ export default function BandDetailScreen({
         {/* ========================================================
             CAMADA 1: CABEÇALHO SUPERIOR DA BANDA (TOTALMENTE CENTRALIZADO)
            ======================================================== */}
-        <View style={[styles.headerBar, { backgroundColor: isDark ? '#0f172a' : '#1e293b' }]}>
-          {/* Linha Superior Centralizada: Voltar (Esq) | Avatar + Nome (Centro) | Editar + Excluir (Dir) */}
-          <View style={styles.headerMainRowCentered}>
-            {/* Esquerda: Botão Voltar */}
+        <View style={[styles.headerHeroCard, { backgroundColor: isDark ? '#0f172a' : '#1e293b' }]}>
+          {/* Top Navigation Row */}
+          <View style={styles.headerTopNavRow}>
+            {/* Left: Voltar Button */}
             <Pressable
-              style={({ pressed }) => [styles.headerBackBtn, pressed && { opacity: 0.7 }]}
+              style={({ pressed }) => [styles.headerNavBtn, pressed && { opacity: 0.7 }]}
               onPress={onBack}
             >
-              <Ionicons name="arrow-back" size={20} color="#fff" />
+              <Ionicons name="arrow-back" size={17} color="#fff" />
+              <Text style={styles.headerNavBtnText}>{t('back') || 'Voltar'}</Text>
             </Pressable>
 
-            {/* Centro: Avatar + Nome da Banda Responsivo */}
-            <View style={styles.headerCenterColumn}>
-              <View style={styles.bandHeaderAvatarCentered}>
-                {band.imageUri ? (
-                  <Image source={{ uri: band.imageUri }} style={styles.bandHeaderImage} />
-                ) : (
-                  <View style={[styles.bandHeaderPlaceholder, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.bandHeaderInitials}>{getBandInitials(band.name)}</Text>
-                  </View>
-                )}
-              </View>
+            {/* Right: Floating Circle Actions */}
+            <View style={styles.headerActionsGroup}>
+              <Pressable
+                style={({ pressed }) => [styles.headerIconBtn, pressed && { opacity: 0.75 }]}
+                onPress={() => onEditBand(band)}
+              >
+                <Ionicons name="pencil-outline" size={16} color="#fff" />
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.headerIconBtn,
+                  { backgroundColor: 'rgba(239,68,68,0.22)', borderColor: 'rgba(239,68,68,0.4)' },
+                  pressed && { opacity: 0.75 }
+                ]}
+                onPress={() => onDeleteBand(band.id)}
+              >
+                <Ionicons name="trash-outline" size={16} color="#ef4444" />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Hero Banner Central Area */}
+          <View style={styles.heroCenterSection}>
+            {/* Avatar Frame with Glowing Primary Border */}
+            <View style={[styles.bandHeaderAvatarHero, { borderColor: colors.primary }]}>
+              {band.imageUri ? (
+                <Image source={{ uri: band.imageUri }} style={styles.bandHeaderImage} />
+              ) : (
+                <View style={[styles.bandHeaderPlaceholder, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.bandHeaderInitials}>{getBandInitials(band.name)}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Title & Subtitle Badge */}
+            <View style={styles.heroTitleBox}>
               <Text
-                style={styles.headerBandNameCentered}
+                style={styles.headerBandNameHero}
                 numberOfLines={1}
                 adjustsFontSizeToFit={true}
                 minimumFontScale={0.8}
               >
                 {band.name}
               </Text>
-            </View>
-
-            {/* Direita: Ações Editar e Excluir */}
-            <View style={styles.headerActionsGroup}>
-              <Pressable
-                style={({ pressed }) => [styles.headerIconBtn, pressed && { opacity: 0.7 }]}
-                onPress={() => onEditBand(band)}
-              >
-                <Ionicons name="pencil-outline" size={16} color="#fff" />
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => [styles.headerIconBtn, { backgroundColor: 'rgba(239,68,68,0.2)' }, pressed && { opacity: 0.7 }]}
-                onPress={() => onDeleteBand(band.id)}
-              >
-                <Ionicons name="trash-outline" size={16} color="#ef4444" />
-              </Pressable>
+              
+              {/* Subtitle Pill Badge */}
+              <View style={[styles.heroSubBadge, { backgroundColor: colors.primary + '22', borderColor: colors.primary + '45' }]}>
+                <Ionicons name="people" size={11} color={colors.primary} />
+                <Text style={[styles.heroSubBadgeText, { color: colors.primary }]}>
+                  PROJETO MUSICAL • {bandSongs.length} {bandSongs.length === 1 ? 'MÚSICA' : 'MÚSICAS'}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -872,15 +890,13 @@ export default function BandDetailScreen({
                           <Text style={[styles.eventDateMonth, { color: colors.primary }]}>{badgeDate.month}</Text>
                         </View>
 
-                        {/* Detalhes do Evento */}
+                        {/* Detalhes do Evento (Tags alinhadas na mesma linha) */}
                         <View style={{ flex: 1, paddingRight: 6 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                            <Text style={[styles.eventTitle, { color: colors.text }]} numberOfLines={1}>
-                              {setlist.name || 'Sem Nome'}
-                            </Text>
-                          </View>
+                          <Text style={[styles.eventTitle, { color: colors.text }]} numberOfLines={1}>
+                            {setlist.name || 'Sem Nome'}
+                          </Text>
 
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4, flexWrap: 'wrap' }}>
                             {/* Type Pill (Show vs Ensaio) */}
                             <View style={[styles.eventTypePill, { backgroundColor: typeColor + '18', borderColor: typeColor + '40' }]}>
                               <Ionicons
@@ -910,13 +926,17 @@ export default function BandDetailScreen({
                                 </Text>
                               </View>
                             ) : null}
-                          </View>
 
-                          {setlist.local ? (
-                            <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
-                              📍 {setlist.local}
-                            </Text>
-                          ) : null}
+                            {/* Location Pill (Agora alinhado no mesmo flex row que as demais tags) */}
+                            {setlist.local ? (
+                              <View style={[styles.eventTypePill, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)' }]}>
+                                <Ionicons name="location-outline" size={10} color={colors.textMuted} />
+                                <Text style={[styles.eventTypeText, { color: colors.textMuted }]} numberOfLines={1}>
+                                  {setlist.local}
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
                         </View>
 
                         {/* Seta para indicar que abre a página do evento */}
