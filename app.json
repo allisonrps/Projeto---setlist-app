@@ -34,6 +34,15 @@
         {
           "cameraPermission": "Permita o acesso à câmera para escanear o QR Code de sincronização do Web Editor no PC."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableProguardInReleaseBuilds": true
+          }
+        }
       ]
     ],
     "extra": {
