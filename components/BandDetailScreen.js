@@ -94,6 +94,7 @@ export default function BandDetailScreen({
   // Band Repertoire Data
   const [bandSongs, setBandSongs] = useState([]);
   const [repertoireSearch, setRepertoireSearch] = useState('');
+  const [showStyleFilters, setShowStyleFilters] = useState(false);
   const [selectedStyleFilter, setSelectedStyleFilter] = useState('');
 
   // Song Collection Picker Modal with Checkboxes
@@ -207,7 +208,6 @@ export default function BandDetailScreen({
 
   // Song Checkbox Handlers
   const handleOpenSongPicker = () => {
-    // Pre-select songs that are already in the band's repertoire
     const currentIds = new Set(bandSongs.map(s => s.id));
     setSelectedPickerSongIds(currentIds);
     setPickerSearch('');
@@ -241,7 +241,6 @@ export default function BandDetailScreen({
       if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
       const targetIds = Array.from(selectedPickerSongIds);
 
-      // Determine additions and removals
       const currentIds = new Set(bandSongs.map(s => s.id));
       const toAdd = targetIds.filter(id => !currentIds.has(id));
       const toRemove = Array.from(currentIds).filter(id => !selectedPickerSongIds.has(id));
@@ -375,12 +374,12 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* ========================================================
-            CAMADA 1: CABEÇALHO SUPERIOR DA BANDA (ESCURO)
+            CAMADA 1: CABEÇALHO SUPERIOR DA BANDA (TOTALMENTE CENTRALIZADO)
            ======================================================== */}
         <View style={[styles.headerBar, { backgroundColor: isDark ? '#0f172a' : '#1e293b' }]}>
-          {/* Linha Superior: Botão Voltar, Avatar/Logo, Titulo e Ações */}
-          <View style={styles.headerMainRow}>
-            {/* Voltar */}
+          {/* Linha Superior Centralizada: Voltar (Esq) | Avatar + Nome (Centro) | Editar + Excluir (Dir) */}
+          <View style={styles.headerMainRowCentered}>
+            {/* Esquerda: Botão Voltar */}
             <Pressable
               style={({ pressed }) => [styles.headerBackBtn, pressed && { opacity: 0.7 }]}
               onPress={onBack}
@@ -388,69 +387,45 @@ export default function BandDetailScreen({
               <Ionicons name="arrow-back" size={20} color="#fff" />
             </Pressable>
 
-            {/* Avatar / Logo da Banda */}
-            <View style={styles.bandHeaderAvatar}>
-              {band.imageUri ? (
-                <Image source={{ uri: band.imageUri }} style={styles.bandHeaderImage} />
-              ) : (
-                <View style={[styles.bandHeaderPlaceholder, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.bandHeaderInitials}>{getBandInitials(band.name)}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Informações da Banda */}
-            <View style={styles.headerTitleBox}>
-              <Text style={styles.headerBandName} numberOfLines={1}>
+            {/* Centro: Avatar + Nome da Banda Responsivo */}
+            <View style={styles.headerCenterColumn}>
+              <View style={styles.bandHeaderAvatarCentered}>
+                {band.imageUri ? (
+                  <Image source={{ uri: band.imageUri }} style={styles.bandHeaderImage} />
+                ) : (
+                  <View style={[styles.bandHeaderPlaceholder, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.bandHeaderInitials}>{getBandInitials(band.name)}</Text>
+                  </View>
+                )}
+              </View>
+              <Text
+                style={styles.headerBandNameCentered}
+                numberOfLines={1}
+                adjustsFontSizeToFit={true}
+                minimumFontScale={0.8}
+              >
                 {band.name}
               </Text>
-              <Text style={styles.headerSubtitleText}>
-                {bandSongs.length} {t('songsBadge') || 'músicas'} • {bandSetlists.length} eventos
-              </Text>
             </View>
 
-            {/* Ações: Editar e Excluir */}
+            {/* Direita: Ações Editar e Excluir */}
             <View style={styles.headerActionsGroup}>
               <Pressable
                 style={({ pressed }) => [styles.headerIconBtn, pressed && { opacity: 0.7 }]}
                 onPress={() => onEditBand(band)}
               >
-                <Ionicons name="pencil-outline" size={17} color="#fff" />
+                <Ionicons name="pencil-outline" size={16} color="#fff" />
               </Pressable>
               <Pressable
                 style={({ pressed }) => [styles.headerIconBtn, { backgroundColor: 'rgba(239,68,68,0.2)' }, pressed && { opacity: 0.7 }]}
                 onPress={() => onDeleteBand(band.id)}
               >
-                <Ionicons name="trash-outline" size={17} color="#ef4444" />
+                <Ionicons name="trash-outline" size={16} color="#ef4444" />
               </Pressable>
             </View>
           </View>
 
-          {/* Badges de Estatísticas Rápidas */}
-          <View style={styles.headerStatsRow}>
-            <View style={[styles.headerStatBadge, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Ionicons name="musical-notes-outline" size={12} color={colors.primary} />
-              <Text style={[styles.headerStatText, { color: '#fff' }]}>
-                {bandSongs.length} Repertório
-              </Text>
-            </View>
-
-            <View style={[styles.headerStatBadge, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Ionicons name="calendar-outline" size={12} color={colors.secondary} />
-              <Text style={[styles.headerStatText, { color: '#fff' }]}>
-                {bandSetlists.length} Eventos
-              </Text>
-            </View>
-
-            <View style={[styles.headerStatBadge, { backgroundColor: netBalance >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }]}>
-              <Ionicons name="cash-outline" size={12} color={netBalance >= 0 ? '#22c55e' : '#ef4444'} />
-              <Text style={[styles.headerStatText, { color: netBalance >= 0 ? '#4ade80' : '#f87171', fontWeight: '900' }]}>
-                R$ {netBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </Text>
-            </View>
-          </View>
-
-          {/* Abas de Navegação (Pílulas Superiores) */}
+          {/* Abas de Navegação (Com Contadores Nativos) */}
           <View style={styles.navTabsBar}>
             <Pressable
               style={[
@@ -461,11 +436,11 @@ export default function BandDetailScreen({
             >
               <Ionicons
                 name="musical-notes"
-                size={14}
+                size={13}
                 color={activeTab === 'repertoire' ? '#fff' : '#94a3b8'}
               />
-              <Text style={[styles.navTabText, activeTab === 'repertoire' && styles.navTabTextActive]}>
-                REPERTÓRIO
+              <Text style={[styles.navTabText, activeTab === 'repertoire' && styles.navTabTextActive]} numberOfLines={1}>
+                REPERTÓRIO ({bandSongs.length})
               </Text>
             </Pressable>
 
@@ -478,10 +453,10 @@ export default function BandDetailScreen({
             >
               <Ionicons
                 name="cash"
-                size={14}
+                size={13}
                 color={activeTab === 'financial' ? '#fff' : '#94a3b8'}
               />
-              <Text style={[styles.navTabText, activeTab === 'financial' && styles.navTabTextActive]}>
+              <Text style={[styles.navTabText, activeTab === 'financial' && styles.navTabTextActive]} numberOfLines={1}>
                 FINANCEIRO
               </Text>
             </Pressable>
@@ -495,10 +470,10 @@ export default function BandDetailScreen({
             >
               <Ionicons
                 name="calendar"
-                size={14}
+                size={13}
                 color={activeTab === 'setlists' ? '#fff' : '#94a3b8'}
               />
-              <Text style={[styles.navTabText, activeTab === 'setlists' && styles.navTabTextActive]}>
+              <Text style={[styles.navTabText, activeTab === 'setlists' && styles.navTabTextActive]} numberOfLines={1}>
                 EVENTOS ({bandSetlists.length})
               </Text>
             </Pressable>
@@ -512,7 +487,7 @@ export default function BandDetailScreen({
           {/* ==================== ABA 1: REPERTÓRIO DA BANDA ==================== */}
           {activeTab === 'repertoire' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
-              {/* Botão Único Principal: + ADICIONAR MÚSICAS (Busca na coleção) */}
+              {/* Botão Único Principal: + ADICIONAR MÚSICAS */}
               <View style={styles.tabActionBar}>
                 <Pressable
                   style={({ pressed }) => [
@@ -526,7 +501,7 @@ export default function BandDetailScreen({
                 </Pressable>
               </View>
 
-              {/* Busca e Filtros de Gênero na Banda */}
+              {/* Busca e Botão Olho de Tags (Mesmo padrão da coleção) */}
               <View style={styles.searchFilterRow}>
                 <View style={[styles.searchBox, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }]}>
                   <Ionicons name="search-outline" size={15} color={colors.textMuted} />
@@ -543,19 +518,35 @@ export default function BandDetailScreen({
                     </Pressable>
                   ) : null}
                 </View>
+
+                {/* Botão Olho de Ocultar/Exibir Tags */}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.eyeFilterBtn,
+                    { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderColor: showStyleFilters ? colors.primary : colors.border },
+                    pressed && { opacity: 0.7 }
+                  ]}
+                  onPress={() => setShowStyleFilters(!showStyleFilters)}
+                >
+                  <Ionicons
+                    name={showStyleFilters ? "eye-outline" : "eye-off-outline"}
+                    size={16}
+                    color={showStyleFilters ? colors.primary : colors.textMuted}
+                  />
+                </Pressable>
               </View>
 
-              {/* Chips de Estilo Musical */}
-              {uniqueBandStyles.length > 0 && (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10, maxHeight: 32 }}>
+              {/* Carousel de Chips de Estilo Musical (Pílulas Menores) */}
+              {showStyleFilters && uniqueBandStyles.length > 0 && (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10, maxHeight: 30 }}>
                   <Pressable
                     style={[
-                      styles.styleTagChip,
+                      styles.styleTagChipCompact,
                       !selectedStyleFilter && { backgroundColor: colors.primary, borderColor: colors.primary }
                     ]}
                     onPress={() => setSelectedStyleFilter('')}
                   >
-                    <Text style={[styles.styleTagText, !selectedStyleFilter && { color: '#fff' }]}>TODOS</Text>
+                    <Text style={[styles.styleTagTextCompact, !selectedStyleFilter && { color: '#fff' }]}>TODOS</Text>
                   </Pressable>
                   {uniqueBandStyles.map(tag => {
                     const isSel = selectedStyleFilter === tag;
@@ -563,12 +554,12 @@ export default function BandDetailScreen({
                       <Pressable
                         key={tag}
                         style={[
-                          styles.styleTagChip,
+                          styles.styleTagChipCompact,
                           isSel && { backgroundColor: colors.primary, borderColor: colors.primary }
                         ]}
                         onPress={() => setSelectedStyleFilter(isSel ? '' : tag)}
                       >
-                        <Text style={[styles.styleTagText, isSel && { color: '#fff' }]}>{tag}</Text>
+                        <Text style={[styles.styleTagTextCompact, isSel && { color: '#fff' }]}>{tag}</Text>
                       </Pressable>
                     );
                   })}
@@ -817,10 +808,10 @@ export default function BandDetailScreen({
             </ScrollView>
           )}
 
-          {/* ==================== ABA 3: EVENTOS E SETLISTS DA BANDA ==================== */}
+          {/* ==================== ABA 3: EVENTOS DA BANDA (SHOW OU ENSAIO) ==================== */}
           {activeTab === 'setlists' && (
             <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 10 }}>
-              {/* Botão + Novo Evento / Setlist */}
+              {/* Botão + Novo Evento */}
               <View style={{ marginBottom: 12 }}>
                 <Pressable
                   style={({ pressed }) => [
@@ -830,7 +821,7 @@ export default function BandDetailScreen({
                   onPress={() => onOpenNewSetlistForBand(band)}
                 >
                   <Ionicons name="add-circle" size={18} color="#fff" />
-                  <Text style={styles.singleMainAddBtnText}>+ NOVO EVENTO / SETLIST</Text>
+                  <Text style={styles.singleMainAddBtnText}>+ NOVO EVENTO (SHOW OU ENSAIO)</Text>
                 </Pressable>
               </View>
 
@@ -860,7 +851,7 @@ export default function BandDetailScreen({
                   bandSetlists.map(setlist => {
                     const badgeDate = getFormattedDateBadge(setlist.date, language);
                     const songCount = setlist.songs ? setlist.songs.filter(s => s.id !== -1 && s.id !== -2).length : 0;
-                    const typeColor = setlist.type === 'show' ? colors.primary : setlist.type === 'ensaio' ? colors.secondary : colors.warning;
+                    const typeColor = setlist.type === 'show' ? colors.primary : colors.secondary;
 
                     return (
                       <Pressable
@@ -890,15 +881,15 @@ export default function BandDetailScreen({
                           </View>
 
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                            {/* Type Pill */}
+                            {/* Type Pill (Show vs Ensaio) */}
                             <View style={[styles.eventTypePill, { backgroundColor: typeColor + '18', borderColor: typeColor + '40' }]}>
                               <Ionicons
-                                name={setlist.type === 'show' ? 'mic' : setlist.type === 'ensaio' ? 'musical-notes' : 'clipboard'}
+                                name={setlist.type === 'show' ? 'mic' : 'musical-notes'}
                                 size={10}
                                 color={typeColor}
                               />
                               <Text style={[styles.eventTypeText, { color: typeColor }]}>
-                                {t(setlist.type === 'repertório' || setlist.type === 'repertoire' ? 'repertoire' : setlist.type === 'ensaio' || setlist.type === 'rehearsal' ? 'rehearsal' : 'show').toUpperCase()}
+                                {(setlist.type === 'ensaio' || setlist.type === 'rehearsal' ? 'ENSAIO' : 'SHOW')}
                               </Text>
                             </View>
 
@@ -1196,25 +1187,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 5,
   },
-  headerMainRow: {
+  headerMainRowCentered: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   headerBackBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bandHeaderAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  headerCenterColumn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  bandHeaderAvatarCentered: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
+    marginBottom: 4,
   },
   bandHeaderImage: {
     width: '100%',
@@ -1224,66 +1222,40 @@ const styles = StyleSheet.create({
   bandHeaderPlaceholder: {
     width: '100%',
     height: '100%',
-    borderRadius: 21,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   bandHeaderInitials: {
     color: '#fff',
     fontWeight: '900',
-    fontSize: 16,
+    fontSize: 18,
   },
-  headerTitleBox: {
-    flex: 1,
-  },
-  headerBandName: {
+  headerBandNameCentered: {
     color: '#fff',
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
-    letterSpacing: 0.2,
-  },
-  headerSubtitleText: {
-    color: '#94a3b8',
-    fontSize: 11,
-    fontWeight: '600',
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
   headerActionsGroup: {
     flexDirection: 'row',
     gap: 6,
   },
   headerIconBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  // Header Stats
-  headerStatsRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 10,
-  },
-  headerStatBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 10,
-  },
-  headerStatText: {
-    fontSize: 10.5,
-    fontWeight: '700',
   },
 
   // Nav Tabs Bar
   navTabsBar: {
     flexDirection: 'row',
     gap: 6,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
     padding: 4,
     borderRadius: 14,
   },
@@ -1293,7 +1265,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 10,
   },
   navTabBtnActive: {
@@ -1334,9 +1306,13 @@ const styles = StyleSheet.create({
 
   // Search & Filter
   searchFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 8,
   },
   searchBox: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -1350,18 +1326,26 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     padding: 0,
   },
-  styleTagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+  eyeFilterBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(150,150,150,0.3)',
-    marginRight: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  styleTagText: {
-    fontSize: 10,
+  styleTagChipCompact: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(150,150,150,0.3)',
+    marginRight: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  styleTagTextCompact: {
+    fontSize: 9.5,
     fontWeight: '800',
     color: '#94a3b8',
   },

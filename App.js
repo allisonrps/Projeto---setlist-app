@@ -584,7 +584,7 @@ function MainApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStyles, setSelectedStyles] = useState([]); // Array de tags selecionadas (máx 3)
   const [showStyleFilters, setShowStyleFilters] = useState(false); // Olho de exibição dos filtros de tags
-  const [selectedSetlistType, setSelectedSetlistType] = useState(''); // '' | 'show' | 'ensaio' | 'repertório'
+  const [selectedSetlistType, setSelectedSetlistType] = useState(''); // '' | 'show' | 'ensaio'
   const [songSortBy, setSongSortBy] = useState('band'); // 'name' | 'band'
   const [songSortOrder, setSongSortOrder] = useState('asc'); // 'asc' | 'desc'
 
@@ -1535,7 +1535,7 @@ function MainApp() {
 
               await setlistService.insert(
                 finalName,
-                sl.type || 'repertório',
+                sl.type || 'show',
                 newBandId,
                 sl.date || '',
                 sl.local || '',
@@ -2010,7 +2010,7 @@ function MainApp() {
 
       await setlistService.insert(
         finalName,
-        importData.type || 'repertório',
+        importData.type || 'show',
         bandId,
         importData.date || '',
         importData.local || '',
@@ -2575,8 +2575,6 @@ function MainApp() {
                 setSelectedSetlistType('show');
               } else if (selectedSetlistType === 'show') {
                 setSelectedSetlistType('ensaio');
-              } else if (selectedSetlistType === 'ensaio') {
-                setSelectedSetlistType('repertório');
               } else {
                 setSelectedSetlistType('');
               }

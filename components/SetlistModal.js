@@ -514,7 +514,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
     if (visible) {
       if (setlist) {
         setName(setlist.name || '');
-        setType(setlist.type || 'repertório');
+        setType(setlist.type || 'show');
         setBandId(setlist.myBandId || (bands.length > 0 ? bands[0].id : null));
         setDate(setlist.date || '');
         setLocal(setlist.local || '');
@@ -529,7 +529,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
         setShowEventDetails(false);
       } else {
         setName('');
-        setType('repertório');
+        setType('show');
         setBandId(bands.length > 0 ? bands[0].id : null);
         setDate('');
         setLocal('');
@@ -750,7 +750,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 <View style={styles.eventFormContainer}>
                   <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('presentationType')}</Text>
                   <View style={styles.segmentedContainer}>
-                    {['show', 'ensaio', 'repertório'].map((item) => (
+                    {['show', 'ensaio'].map((item) => (
                       <Pressable
                         key={item}
                         style={[

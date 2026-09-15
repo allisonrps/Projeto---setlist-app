@@ -45,7 +45,7 @@ export default function SetlistDetailScreen({
 
   // Form states
   const [name, setName] = useState('');
-  const [type, setType] = useState('repertório'); // 'show' | 'ensaio' | 'repertório'
+  const [type, setType] = useState('show'); // 'show' | 'ensaio' | 'repertório'
   const [bandId, setBandId] = useState(null);
   const [date, setDate] = useState('');
   const [local, setLocal] = useState('');
@@ -74,7 +74,7 @@ export default function SetlistDetailScreen({
     if (visible) {
       if (setlist && setlist.id) {
         const sName = setlist.name || '';
-        const sType = setlist.type || 'repertório';
+        const sType = setlist.type || 'show';
         const sBandId = setlist.myBandId || (bands.length > 0 ? bands[0].id : null);
         const sDate = setlist.date || '';
         const sLocal = setlist.local || '';
@@ -657,8 +657,7 @@ export default function SetlistDetailScreen({
                   <View style={styles.pillSelectorRow}>
                     {[
                       { key: 'show', label: t('show') || 'Show', icon: 'mic-outline' },
-                      { key: 'ensaio', label: t('rehearsal') || 'Ensaio', icon: 'musical-notes-outline' },
-                      { key: 'repertório', label: t('repertoire') || 'Repertório', icon: 'clipboard-outline' }
+                      { key: 'ensaio', label: t('rehearsal') || 'Ensaio', icon: 'musical-notes-outline' }
                     ].map((item) => {
                       const isSelected = type === item.key;
                       const itemColor = getTypeColor(item.key);
