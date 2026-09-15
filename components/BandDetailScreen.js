@@ -107,8 +107,9 @@ export default function BandDetailScreen({
   const [selectedPickerSongIds, setSelectedPickerSongIds] = useState(new Set());
   const [pickerSearch, setPickerSearch] = useState('');
 
-  // Band Members Data & Form
+  // Band Members Data & Form (Form oculto por padrão)
   const [members, setMembers] = useState([]);
+  const [showMemberForm, setShowMemberForm] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
@@ -364,6 +365,7 @@ export default function BandDetailScreen({
       setMemberEndDate('');
       setMemberStatus('active');
       setEditingMemberId(null);
+      setShowMemberForm(false);
       await loadData();
     } catch (e) {
       console.error('Error in handleSaveMember:', e);
@@ -379,6 +381,7 @@ export default function BandDetailScreen({
     setMemberStartDate(member.startDate || '');
     setMemberEndDate(member.endDate || '');
     setMemberStatus(member.status || 'active');
+    setShowMemberForm(true);
   };
 
   const handleCancelEditMember = () => {
@@ -389,6 +392,7 @@ export default function BandDetailScreen({
     setMemberStartDate('');
     setMemberEndDate('');
     setMemberStatus('active');
+    setShowMemberForm(false);
   };
 
   const handleDeleteMember = (member) => {
@@ -528,97 +532,98 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         
-        {/* HEADER SENIOR UX/UI */}
-        <View style={styles.headerHeroContainer}>
-          <View style={[styles.headerHeroBanner, { backgroundColor: colors.primary }]}>
-            <View style={styles.topRowNav}>
-              <Pressable style={styles.headerIconButton} onPress={onBack}>
-                <Ionicons name="arrow-back" size={24} color="#ffffff" />
+        {/* HEADER SENIOR UX/UI COM COR DE FUNDO NATURAL */}
+        <View style={[styles.headerHeroContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.topRowNav}>
+            <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={onBack}>
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            </Pressable>
+
+            <View style={styles.topRowActions}>
+              <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={() => onEditBand(band)}>
+                <Ionicons name="pencil" size={20} color={colors.text} />
               </Pressable>
-
-              <View style={styles.topRowActions}>
-                <Pressable style={styles.headerIconButton} onPress={() => onEditBand(band)}>
-                  <Ionicons name="pencil" size={20} color="#ffffff" />
-                </Pressable>
-                <Pressable style={styles.headerIconButton} onPress={() => onDeleteBand(band)}>
-                  <Ionicons name="trash-outline" size={20} color="#ffffff" />
-                </Pressable>
-              </View>
-            </View>
-
-            <View style={styles.avatarOverlapContainer}>
-              <View style={[styles.avatarCircle, { backgroundColor: colors.card, borderColor: colors.primary }]}>
-                {band.imageUri ? (
-                  <Image source={{ uri: band.imageUri }} style={styles.avatarImage} />
-                ) : (
-                  <Text style={[styles.avatarInitials, { color: colors.primary }]}>
-                    {getBandInitials(band.name)}
-                  </Text>
-                )}
-              </View>
+              <Pressable style={[styles.headerIconButton, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]} onPress={() => onDeleteBand(band)}>
+                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+              </Pressable>
             </View>
           </View>
 
-          <View style={[styles.headerInfoBlock, { backgroundColor: colors.card }]}>
+          {/* LOGO AUMENTADO EM 100% */}
+          <View style={styles.logoCenterContainer}>
+            <View style={[styles.avatarCircleLarge, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+              {band.imageUri ? (
+                <Image source={{ uri: band.imageUri }} style={styles.avatarImageLarge} />
+              ) : (
+                <Text style={[styles.avatarInitialsLarge, { color: colors.primary }]}>
+                  {getBandInitials(band.name)}
+                </Text>
+              )}
+            </View>
             <Text style={[styles.bandTitleText, { color: colors.text }]}>{band.name}</Text>
           </View>
         </View>
 
-        {/* TOP TAB BAR DE 5 PÁGINAS DEDICADAS */}
+        {/* TOP TAB BAR DE 5 PÁGINAS SOMENTE ÍCONES (MANTENDO A BARRA DEBAIXO) */}
         <View style={[styles.tabBarContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarScrollContent}>
+          <View style={styles.tabBarRow}>
             
             <Pressable
-              style={[styles.tabItem, activeTab === 'repertoire' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
+              style={[styles.tabItemIconOnly, activeTab === 'repertoire' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('repertoire')}
             >
-              <Ionicons name="musical-notes-outline" size={17} color={activeTab === 'repertoire' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: activeTab === 'repertoire' ? colors.primary : colors.textMuted }]}>
-                REPERTÓRIO ({bandSongs.length})
-              </Text>
+              <Ionicons
+                name={activeTab === 'repertoire' ? "musical-notes" : "musical-notes-outline"}
+                size={22}
+                color={activeTab === 'repertoire' ? colors.primary : colors.textMuted}
+              />
             </Pressable>
 
             <Pressable
-              style={[styles.tabItem, activeTab === 'members' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
+              style={[styles.tabItemIconOnly, activeTab === 'members' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('members')}
             >
-              <Ionicons name="people-outline" size={17} color={activeTab === 'members' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: activeTab === 'members' ? colors.primary : colors.textMuted }]}>
-                INTEGRANTES ({activeMembers.length})
-              </Text>
+              <Ionicons
+                name={activeTab === 'members' ? "people" : "people-outline"}
+                size={22}
+                color={activeTab === 'members' ? colors.primary : colors.textMuted}
+              />
             </Pressable>
 
             <Pressable
-              style={[styles.tabItem, activeTab === 'stats' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
+              style={[styles.tabItemIconOnly, activeTab === 'stats' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('stats')}
             >
-              <Ionicons name="pie-chart-outline" size={17} color={activeTab === 'stats' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: activeTab === 'stats' ? colors.primary : colors.textMuted }]}>
-                ESTATÍSTICAS
-              </Text>
+              <Ionicons
+                name={activeTab === 'stats' ? "stats-chart" : "stats-chart-outline"}
+                size={22}
+                color={activeTab === 'stats' ? colors.primary : colors.textMuted}
+              />
             </Pressable>
 
             <Pressable
-              style={[styles.tabItem, activeTab === 'financial' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
+              style={[styles.tabItemIconOnly, activeTab === 'financial' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('financial')}
             >
-              <Ionicons name="wallet-outline" size={17} color={activeTab === 'financial' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: activeTab === 'financial' ? colors.primary : colors.textMuted }]}>
-                FINANCEIRO
-              </Text>
+              <Ionicons
+                name={activeTab === 'financial' ? "wallet" : "wallet-outline"}
+                size={22}
+                color={activeTab === 'financial' ? colors.primary : colors.textMuted}
+              />
             </Pressable>
 
             <Pressable
-              style={[styles.tabItem, activeTab === 'setlists' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
+              style={[styles.tabItemIconOnly, activeTab === 'setlists' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('setlists')}
             >
-              <Ionicons name="calendar-outline" size={17} color={activeTab === 'setlists' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: activeTab === 'setlists' ? colors.primary : colors.textMuted }]}>
-                EVENTOS ({bandSetlists.length})
-              </Text>
+              <Ionicons
+                name={activeTab === 'setlists' ? "calendar" : "calendar-outline"}
+                size={22}
+                color={activeTab === 'setlists' ? colors.primary : colors.textMuted}
+              />
             </Pressable>
 
-          </ScrollView>
+          </View>
         </View>
 
         {/* ABA 1: REPERTÓRIO */}
@@ -629,7 +634,7 @@ export default function BandDetailScreen({
                 <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
                 <TextInput
                   style={[styles.searchInput, { color: colors.text }]}
-                  placeholder="Buscar no repertório da banda..."
+                  placeholder=""
                   placeholderTextColor={colors.textMuted}
                   value={repertoireSearch}
                   onChangeText={setRepertoireSearch}
@@ -641,31 +646,28 @@ export default function BandDetailScreen({
                 )}
               </View>
 
+              {/* BOTÕES SOMENTE ÍCONE E REDONDOS NA ABA REPERTÓRIO */}
               {uniqueBandStyles.length > 0 && (
                 <Pressable
                   style={[
-                    styles.tagToggleBtn,
+                    styles.roundIconButton,
                     { backgroundColor: showStyleFilters ? colors.primary : (isDark ? '#27272a' : '#e2e8f0') }
                   ]}
                   onPress={() => setShowStyleFilters(!showStyleFilters)}
                 >
                   <Ionicons
                     name="pricetag-outline"
-                    size={15}
+                    size={18}
                     color={showStyleFilters ? '#ffffff' : colors.text}
                   />
-                  <Text style={[styles.tagToggleBtnText, { color: showStyleFilters ? '#ffffff' : colors.text }]}>
-                    {showStyleFilters ? 'Ocultar Tags' : 'Estilos'}
-                  </Text>
                 </Pressable>
               )}
 
               <Pressable
-                style={[styles.addSongBtn, { backgroundColor: colors.primary }]}
+                style={[styles.roundIconButton, { backgroundColor: colors.primary, marginLeft: 8 }]}
                 onPress={handleOpenSongPicker}
               >
-                <Ionicons name="add-circle" size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                <Text style={styles.addSongBtnText}>Adicionar Músicas</Text>
+                <Ionicons name="add" size={22} color="#ffffff" />
               </Pressable>
             </View>
 
@@ -711,9 +713,7 @@ export default function BandDetailScreen({
                   <Ionicons name="disc-outline" size={48} color={colors.textMuted} />
                   <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma música no repertório</Text>
                   <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
-                    {repertoireSearch || selectedStyleFilter
-                      ? 'Nenhuma música encontrada para os filtros selecionados.'
-                      : 'Clique em "Adicionar Músicas" para buscar na sua coleção e vincular a esta banda.'}
+                    Clique no botão "+" para vincular músicas da sua coleção a esta banda.
                   </Text>
                 </View>
               ) : (
@@ -742,122 +742,134 @@ export default function BandDetailScreen({
           </View>
         )}
 
-        {/* ABA 2: INTEGRANTES (PÁGINA DEDICADA PELA REQUISIÇÃO) */}
+        {/* ABA 2: INTEGRANTES */}
         {activeTab === 'members' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             
-            {/* FORMULÁRIO ULTRA CLEAN */}
-            <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.cardPanelHeaderRow}>
-                <Ionicons name="person-add-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-                <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
-                  {editingMemberId ? 'Editar Integrante' : 'Adicionar Integrante'}
-                </Text>
-              </View>
+            {/* BOTÃO PARA ABRIR FORMULÁRIO (OCULTO POR PADRÃO) */}
+            {!showMemberForm ? (
+              <Pressable
+                style={[styles.openFormBtn, { backgroundColor: colors.primary }]}
+                onPress={() => setShowMemberForm(true)}
+              >
+                <Ionicons name="person-add-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+                <Text style={styles.openFormBtnText}>Adicionar Integrante</Text>
+              </Pressable>
+            ) : (
+              /* FORMULÁRIO OCULTÁVEL */
+              <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 16 }]}>
+                <View style={styles.cardPanelHeaderRow}>
+                  <Ionicons name="person-add-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+                  <Text style={[styles.cardPanelTitle, { color: colors.text, flex: 1 }]}>
+                    {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
+                  </Text>
+                  <Pressable onPress={handleCancelEditMember}>
+                    <Ionicons name="close" size={22} color={colors.textMuted} />
+                  </Pressable>
+                </View>
 
-              <View style={styles.cleanFormGroup}>
-                <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Nome: *</Text>
-                <TextInput
-                  style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                  placeholder="Ex: João da Silva"
-                  placeholderTextColor={colors.textMuted}
-                  value={memberName}
-                  onChangeText={setMemberName}
-                />
-              </View>
-
-              <View style={styles.cleanFormGroup}>
-                <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Função / Instrumento:</Text>
-                <TextInput
-                  style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                  placeholder="Ex: Vocalista, Guitarrista, Tecladista"
-                  placeholderTextColor={colors.textMuted}
-                  value={memberRole}
-                  onChangeText={setMemberRole}
-                />
-              </View>
-
-              <View style={styles.cleanFormGroup}>
-                <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Contato (WhatsApp):</Text>
-                <TextInput
-                  style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                  placeholder="Ex: 11999998888"
-                  placeholderTextColor={colors.textMuted}
-                  keyboardType="phone-pad"
-                  value={memberPhone}
-                  onChangeText={setMemberPhone}
-                />
-              </View>
-
-              {/* PERÍODO DE ATIVIDADE */}
-              <View style={styles.periodRow}>
-                <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Início:</Text>
+                <View style={styles.cleanFormGroup}>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Nome: *</Text>
                   <TextInput
                     style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                    placeholder="Ex: 01/2022"
+                    placeholder=""
                     placeholderTextColor={colors.textMuted}
-                    value={memberStartDate}
-                    onChangeText={setMemberStartDate}
+                    value={memberName}
+                    onChangeText={setMemberName}
                   />
                 </View>
 
-                <View style={[styles.cleanFormGroup, { flex: 1 }]}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Fim (opcional):</Text>
+                <View style={styles.cleanFormGroup}>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Função / Instrumento:</Text>
                   <TextInput
                     style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                    placeholder="Ex: 12/2023"
+                    placeholder=""
                     placeholderTextColor={colors.textMuted}
-                    value={memberEndDate}
-                    onChangeText={setMemberEndDate}
+                    value={memberRole}
+                    onChangeText={setMemberRole}
                   />
                 </View>
-              </View>
 
-              {/* STATUS ATIVO / INATIVO */}
-              <View style={styles.cleanFormGroup}>
-                <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Status do Integrante:</Text>
-                <View style={styles.statusPillGroup}>
-                  <Pressable
-                    style={[
-                      styles.statusPillBtn,
-                      memberStatus === 'active' && { backgroundColor: '#10b981', borderColor: '#10b981' }
-                    ]}
-                    onPress={() => setMemberStatus('active')}
-                  >
-                    <Ionicons name="checkmark-circle" size={16} color={memberStatus === 'active' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
-                    <Text style={[styles.statusPillText, { color: memberStatus === 'active' ? '#ffffff' : colors.text }]}>Ativo</Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={[
-                      styles.statusPillBtn,
-                      memberStatus === 'inactive' && { backgroundColor: '#6b7280', borderColor: '#6b7280' }
-                    ]}
-                    onPress={() => setMemberStatus('inactive')}
-                  >
-                    <Ionicons name="close-circle" size={16} color={memberStatus === 'inactive' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
-                    <Text style={[styles.statusPillText, { color: memberStatus === 'inactive' ? '#ffffff' : colors.text }]}>Inativo</Text>
-                  </Pressable>
+                <View style={styles.cleanFormGroup}>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Contato (WhatsApp):</Text>
+                  <TextInput
+                    style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                    placeholder=""
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="phone-pad"
+                    value={memberPhone}
+                    onChangeText={setMemberPhone}
+                  />
                 </View>
-              </View>
 
-              <View style={styles.formActionRow}>
-                {editingMemberId && (
+                {/* PERÍODO DE ATIVIDADE */}
+                <View style={styles.periodRow}>
+                  <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
+                    <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Início:</Text>
+                    <TextInput
+                      style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                      placeholder=""
+                      placeholderTextColor={colors.textMuted}
+                      value={memberStartDate}
+                      onChangeText={setMemberStartDate}
+                    />
+                  </View>
+
+                  <View style={[styles.cleanFormGroup, { flex: 1 }]}>
+                    <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Fim:</Text>
+                    <TextInput
+                      style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                      placeholder=""
+                      placeholderTextColor={colors.textMuted}
+                      value={memberEndDate}
+                      onChangeText={setMemberEndDate}
+                    />
+                  </View>
+                </View>
+
+                {/* STATUS ATIVO / INATIVO */}
+                <View style={styles.cleanFormGroup}>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Status do Integrante:</Text>
+                  <View style={styles.statusPillGroup}>
+                    <Pressable
+                      style={[
+                        styles.statusPillBtn,
+                        memberStatus === 'active' && { backgroundColor: '#10b981', borderColor: '#10b981' }
+                      ]}
+                      onPress={() => setMemberStatus('active')}
+                    >
+                      <Ionicons name="checkmark-circle" size={16} color={memberStatus === 'active' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
+                      <Text style={[styles.statusPillText, { color: memberStatus === 'active' ? '#ffffff' : colors.text }]}>Ativo</Text>
+                    </Pressable>
+
+                    <Pressable
+                      style={[
+                        styles.statusPillBtn,
+                        memberStatus === 'inactive' && { backgroundColor: '#6b7280', borderColor: '#6b7280' }
+                      ]}
+                      onPress={() => setMemberStatus('inactive')}
+                    >
+                      <Ionicons name="close-circle" size={16} color={memberStatus === 'inactive' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
+                      <Text style={[styles.statusPillText, { color: memberStatus === 'inactive' ? '#ffffff' : colors.text }]}>Inativo</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                <View style={styles.formActionRow}>
                   <Pressable style={styles.cancelFormBtn} onPress={handleCancelEditMember}>
                     <Text style={[styles.cancelFormBtnText, { color: colors.textMuted }]}>Cancelar</Text>
                   </Pressable>
-                )}
-                <Pressable style={[styles.saveFormBtn, { backgroundColor: colors.primary }]} onPress={handleSaveMember}>
-                  <Ionicons name={editingMemberId ? "checkmark" : "add"} size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={styles.saveFormBtnText}>
-                    {editingMemberId ? 'Salvar Alterações' : 'Adicionar Integrante'}
-                  </Text>
-                </Pressable>
+                  <Pressable style={[styles.saveFormBtn, { backgroundColor: colors.primary }]} onPress={handleSaveMember}>
+                    <Ionicons name={editingMemberId ? "checkmark" : "add"} size={18} color="#ffffff" style={{ marginRight: 4 }} />
+                    <Text style={styles.saveFormBtnText}>
+                      {editingMemberId ? 'Salvar Alterações' : 'Salvar Integrante'}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
+            )}
 
-            {/* SEÇÃO 1: INTEGRANTES ATIVOS (EM DESTAQUE NO TOPO) */}
+            {/* SEÇÃO 1: INTEGRANTES ATIVOS (SEM CONTORNO NO CARD) */}
             <View style={styles.memberSectionHeader}>
               <View style={styles.sectionHeaderTitleGroup}>
                 <View style={styles.activeDot} />
@@ -866,14 +878,14 @@ export default function BandDetailScreen({
             </View>
 
             {activeMembers.length === 0 ? (
-              <View style={[styles.cardPanel, { backgroundColor: colors.card, alignItems: 'center', padding: 24 }]}>
+              <View style={[styles.cardPanelNoBorder, { backgroundColor: colors.card, alignItems: 'center', padding: 24 }]}>
                 <Text style={{ color: colors.textMuted, fontSize: 14 }}>Nenhum integrante ativo cadastrado.</Text>
               </View>
             ) : (
               activeMembers.map(item => {
                 const periodText = getMemberPeriodText(item);
                 return (
-                  <View key={item.id} style={[styles.memberCardHighlight, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+                  <View key={item.id} style={[styles.memberCardNoBorder, { backgroundColor: colors.card }]}>
                     <View style={styles.memberCardLeft}>
                       <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
                         <Ionicons name="person" size={20} color={colors.primary} />
@@ -914,11 +926,11 @@ export default function BandDetailScreen({
               })
             )}
 
-            {/* SEÇÃO 2: INTEGRANTES INATIVOS (OCULTOS POR PADRÃO) */}
+            {/* SEÇÃO 2: INTEGRANTES INATIVOS (SEM CONTORNO NO CARD) */}
             {inactiveMembers.length > 0 && (
               <View style={{ marginTop: 20 }}>
                 <Pressable
-                  style={[styles.toggleInactiveBtn, { backgroundColor: isDark ? '#27272a' : '#f1f5f9', borderColor: colors.border }]}
+                  style={[styles.toggleInactiveBtn, { backgroundColor: isDark ? '#27272a' : '#f1f5f9' }]}
                   onPress={() => setShowInactiveMembers(!showInactiveMembers)}
                 >
                   <Ionicons
@@ -939,7 +951,7 @@ export default function BandDetailScreen({
                     {inactiveMembers.map(item => {
                       const periodText = getMemberPeriodText(item);
                       return (
-                        <View key={item.id} style={[styles.memberCardInactive, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <View key={item.id} style={[styles.memberCardNoBorderInactive, { backgroundColor: colors.card }]}>
                           <View style={styles.memberCardLeft}>
                             <View style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}>
                               <Ionicons name="person-outline" size={20} color="#6b7280" />
@@ -989,7 +1001,7 @@ export default function BandDetailScreen({
           </ScrollView>
         )}
 
-        {/* ABA 3: ESTATÍSTICAS (PÁGINA DEDICADA DE DISTRIBUIÇÃO DE ESTILOS) */}
+        {/* ABA 3: ESTATÍSTICAS */}
         {activeTab === 'stats' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             <View style={[styles.cardPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -1088,7 +1100,7 @@ export default function BandDetailScreen({
                   <View key={item.id} style={[styles.financeItemRow, { borderBottomColor: colors.border }]}>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.financeItemTitle, { color: colors.text }]}>{item.title}</Text>
-                      <Text style={[styles.financeItemMeta, { color: colors.textMuted }]}>{item.date || 'Sem data'}</Text>
+                      <Text style={[styles.financeItemMeta, { color: colors.textMuted }]}>{item.date || ''}</Text>
                     </View>
 
                     <Text style={[
@@ -1204,7 +1216,7 @@ export default function BandDetailScreen({
               <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Filtrar músicas da coleção..."
+                placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={pickerSearch}
                 onChangeText={setPickerSearch}
@@ -1248,7 +1260,7 @@ export default function BandDetailScreen({
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.songItemName, { color: colors.text }]}>{song.name}</Text>
                         <Text style={[styles.songItemBand, { color: colors.textMuted }]}>
-                          {song.originalBand || 'Artista não informado'}
+                          {song.originalBand || ''}
                         </Text>
                       </View>
                     </Pressable>
@@ -1292,7 +1304,7 @@ export default function BandDetailScreen({
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Descrição: *</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder="Ex: Cachê Evento, Venda de Merch"
+                placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={finTitle}
                 onChangeText={setFinTitle}
@@ -1301,7 +1313,7 @@ export default function BandDetailScreen({
               <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Valor (R$): *</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder="Ex: 500,00"
+                placeholder=""
                 placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
                 value={finAmount}
@@ -1333,7 +1345,7 @@ export default function BandDetailScreen({
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data:</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? '#27272a' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder="Ex: DD/MM/AAAA"
+                placeholder=""
                 placeholderTextColor={colors.textMuted}
                 value={finDate}
                 onChangeText={setFinDate}
@@ -1364,66 +1376,54 @@ export default function BandDetailScreen({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerHeroContainer: { width: '100%' },
-  headerHeroBanner: {
-    height: 120,
+  headerHeroContainer: {
     width: '100%',
     paddingTop: Platform.OS === 'ios' ? 44 : 12,
     paddingHorizontal: 16,
-    justifyContent: 'space-between',
+    paddingBottom: 16,
   },
   topRowNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   topRowActions: { flexDirection: 'row' },
   headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
   },
-  avatarOverlapContainer: {
+  logoCenterContainer: {
     alignItems: 'center',
-    position: 'absolute',
-    bottom: -36,
-    left: 0,
-    right: 0,
+    marginTop: 12,
   },
-  avatarCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  avatarCircleLarge: {
+    width: 144,
+    height: 144,
+    borderRadius: 72,
     borderWidth: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
   },
-  avatarImage: { width: 66, height: 66, borderRadius: 33 },
-  avatarInitials: { fontSize: 24, fontWeight: 'bold' },
-  headerInfoBlock: {
-    paddingTop: 42,
-    paddingBottom: 16,
-    alignItems: 'center',
-  },
-  bandTitleText: { fontSize: 22, fontWeight: 'bold', textAlign: 'center' },
+  avatarImageLarge: { width: 136, height: 136, borderRadius: 68 },
+  avatarInitialsLarge: { fontSize: 44, fontWeight: 'bold' },
+  bandTitleText: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginTop: 12 },
 
   tabBarContainer: { borderBottomWidth: 1, height: 48 },
-  tabBarScrollContent: { paddingHorizontal: 8, alignItems: 'center' },
-  tabItem: {
-    flexDirection: 'row',
+  tabBarRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', height: 48 },
+  tabItemIconOnly: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 14,
     height: 48,
     borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
   activeTabItem: { borderBottomWidth: 3 },
-  tabText: { fontSize: 12, fontWeight: 'bold', marginLeft: 6 },
 
   tabContentFlex: { flex: 1 },
   searchToolbar: {
@@ -1439,26 +1439,15 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginRight: 8,
   },
   searchInput: { flex: 1, fontSize: 14, height: 38 },
-  tagToggleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
+  roundIconButton: {
+    width: 38,
     height: 38,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  tagToggleBtnText: { fontSize: 12, fontWeight: 'bold', marginLeft: 4 },
-  addSongBtn: {
-    flexDirection: 'row',
+    borderRadius: 19,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    height: 38,
-    borderRadius: 8,
   },
-  addSongBtnText: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
 
   styleFilterBar: { paddingVertical: 8, paddingHorizontal: 12, borderBottomWidth: 1 },
   stylePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 8 },
@@ -1472,6 +1461,16 @@ const styles = StyleSheet.create({
   emptySubtitle: { fontSize: 13, textAlign: 'center', marginTop: 6, paddingHorizontal: 20 },
 
   unlinkSongBtn: { padding: 6 },
+
+  openFormBtn: {
+    height: 44,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  openFormBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 14 },
 
   cardPanel: { borderRadius: 12, borderWidth: 1, padding: 16 },
   cardPanelHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -1509,27 +1508,26 @@ const styles = StyleSheet.create({
   },
   saveFormBtnText: { color: '#ffffff', fontSize: 14, fontWeight: 'bold' },
 
-  memberSectionHeader: { marginTop: 24, marginBottom: 12 },
+  memberSectionHeader: { marginTop: 16, marginBottom: 12 },
   sectionHeaderTitleGroup: { flexDirection: 'row', alignItems: 'center' },
   activeDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 8 },
   sectionTitle: { fontSize: 14, fontWeight: 'bold' },
 
-  memberCardHighlight: {
+  cardPanelNoBorder: { borderRadius: 12, padding: 16, marginBottom: 10 },
+  memberCardNoBorder: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 14,
-    borderRadius: 10,
-    borderWidth: 1.5,
+    borderRadius: 12,
     marginBottom: 10,
   },
-  memberCardInactive: {
+  memberCardNoBorderInactive: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 12,
     marginBottom: 10,
     opacity: 0.8,
   },
@@ -1553,7 +1551,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    borderWidth: 1,
   },
   toggleInactiveBtnText: { fontSize: 13, fontWeight: 'bold' },
 
