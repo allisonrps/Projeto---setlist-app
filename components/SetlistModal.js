@@ -907,7 +907,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
               >
                 <Ionicons name="search" size={16} color="#fff" />
                 <Text style={styles.primaryAddSongsBtnText}>
-                  {t('addSongsBtn') || 'ADICIONAR MÚSICAS AO ROTEIRO'}
+                  '+ MÚSICA'
                 </Text>
               </Pressable>
 
@@ -922,7 +922,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 >
                   <Ionicons name="pause" size={12} color={colors.secondary} />
                   <Text style={{ color: colors.secondary, fontSize: 11, fontWeight: '800' }}>
-                    + {t('pause') || 'PAUSA'}
+                    + Pausa
                   </Text>
                 </Pressable>
 
@@ -936,7 +936,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 >
                   <Ionicons name="document-text-outline" size={12} color={colors.warning} />
                   <Text style={{ color: colors.warning, fontSize: 11, fontWeight: '800' }}>
-                    + {t('noteItem') || 'ANOTAÇÃO'}
+                    + Anotação
                   </Text>
                 </Pressable>
               </View>

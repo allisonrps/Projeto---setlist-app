@@ -842,7 +842,7 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="add-circle-outline" size={15} color="#fff" />
               <Text style={styles.roteiroBtnText}>
-                {t('addSongs') || '+ MÚSICAS'}
+                '+ Música'
               </Text>
             </Pressable>
 
@@ -856,7 +856,7 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="pause-outline" size={15} color={colors.secondary} />
               <Text style={[styles.roteiroBtnText, { color: colors.secondary }]}>
-                {t('addPause') || '+ PAUSA'}
+                '+ Pausa'
               </Text>
             </Pressable>
 
@@ -870,7 +870,7 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="document-text-outline" size={15} color={colors.warning} />
               <Text style={[styles.roteiroBtnText, { color: colors.warning }]}>
-                {t('addNote') || '+ ANOTAÇÃO'}
+                '+ Anotação'
               </Text>
             </Pressable>
           </View>

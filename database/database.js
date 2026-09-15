@@ -456,6 +456,7 @@ const createWebDB = () => {
     setlist_songs: [],
     band_songs: [],
     band_finances: [],
+    band_members: [],
     settings: [],
   };
 
@@ -591,6 +592,13 @@ const createWebDB = () => {
         }).filter(Boolean);
         result.sort((a, b) => a.name.localeCompare(b.name));
         return result;
+      }
+
+      if (sql.includes('FROM band_members')) {
+        const bandId = params[0];
+        const items = (data.band_members || []).filter(item => item.bandId === bandId);
+        items.sort((a, b) => (a.name || '').localeCompare(b.name || '') || a.id - b.id);
+        return items;
       }
 
       if (sql.includes('FROM band_finances')) {
@@ -796,6 +804,32 @@ const createWebDB = () => {
       }
 
       // INSERT / UPDATE / DELETE / TOGGLE de band_finances
+      if (sql.includes('INSERT INTO band_members')) {
+        const [bandId, name, role] = params;
+        const newId = Date.now() + Math.floor(Math.random() * 1000);
+        data.band_members.push({ id: newId, bandId, name, role });
+        saveToStorage();
+        return { lastInsertRowId: newId };
+      }
+
+      if (sql.includes('UPDATE band_members')) {
+        const [name, role, id] = params;
+        const item = data.band_members.find(m => m.id === id);
+        if (item) {
+          item.name = name;
+          item.role = role;
+          saveToStorage();
+        }
+        return { changes: 1 };
+      }
+
+      if (sql.includes('DELETE FROM band_members')) {
+        const id = params[0];
+        data.band_members = data.band_members.filter(m => m.id !== id);
+        saveToStorage();
+        return { changes: 1 };
+      }
+
       if (sql.includes('INSERT INTO band_finances')) {
         data.band_finances = data.band_finances || [];
         const id = Math.max(...data.band_finances.map(f => f.id || 0), 0) + 1;
