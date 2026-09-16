@@ -130,7 +130,31 @@ export default function BandDetailScreen({
   const [financeStatus, setFinanceStatus] = useState('paid'); // 'paid' | 'pending'
   const [editingFinance, setEditingFinance] = useState(null);
 
-  // Load Band Data when modal opens
+  // Load Band Data when modal opens or updates
+  const loadData = useCallback(async () => {
+    if (band && band.id) {
+      try {
+        const bSongs = await bandService.getBandSongs(band.id);
+        setBandSongs(bSongs || []);
+
+        const bMem = await bandService.getBandMembers(band.id);
+        setMembers(bMem || []);
+
+        const bFin = await bandService.getBandFinances(band.id);
+        setFinances(bFin || []);
+      } catch (err) {
+        console.error('Error loading BandDetailScreen data:', err);
+      }
+    }
+  }, [band]);
+
+  const handleToggleBandSongFavorite = async (songId, currentIsFav) => {
+    if (band && band.id) {
+      await bandService.toggleBandSongFavorite(band.id, songId, currentIsFav);
+      await loadData();
+    }
+  };
+
   useEffect(() => {
     if (visible && band && band.id) {
       loadData();
