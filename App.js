@@ -44,6 +44,7 @@ import SetlistDetailModal from './components/SetlistDetailModal';
 import PerformanceMode from './components/PerformanceMode';
 import ImportModal from './components/ImportModal';
 import FeatureTutorialModal from './components/FeatureTutorialModal';
+import SplashScreen from './components/SplashScreen';
 import { LanguageProvider, useLanguage } from './hooks/useLanguage';
 
 const THEME_COLORS = [
@@ -606,6 +607,7 @@ function MainApp() {
   const [setlists, setSetlists] = useState([]);
   const [songStyles, setSongStyles] = useState([]); // Lista de gêneros/estilos existentes para filtros
   const [dbReady, setDbReady] = useState(false);
+  const [splashFinished, setSplashFinished] = useState(false);
 
   // Estados de busca e filtros
   const [searchQuery, setSearchQuery] = useState('');
@@ -808,6 +810,34 @@ function MainApp() {
   const handleEditBand = (band) => {
     setEditingBand(band);
     setShowBandModal(true);
+  };
+
+  const handleDeleteBand = (bandTarget) => {
+    const bandId = typeof bandTarget === 'object' ? bandTarget.id : bandTarget;
+    const bandName = typeof bandTarget === 'object' ? bandTarget.name : 'esta banda';
+    Alert.alert(
+      'Confirmar Exclusão',
+      `Deseja realmente excluir a banda "${bandName}"? Todos os membros e lançamentos financeiros desta banda serão excluídos.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await bandService.delete(bandId);
+              if (activeBandDetail && activeBandDetail.id === bandId) {
+                setActiveBandDetail(null);
+              }
+              await reloadAllData();
+            } catch (err) {
+              console.error('Error deleting band:', err);
+              Alert.alert('Erro', 'Não foi possível excluir a banda.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   // ===== AÇÕES MÚSICAS =====
@@ -3492,12 +3522,14 @@ function MainApp() {
     >
       <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
 
-      {!dbReady ? (
-        <View style={styles.loadingContainer}>
-          <Image source={require('./assets/logo.png')} style={styles.loadingLogo} resizeMode="contain" />
-          <Text style={styles.loadingText}>{t('loadingDatabase')}</Text>
-        </View>
-      ) : (
+      {!splashFinished && (
+        <SplashScreen
+          isReady={dbReady}
+          onFinish={() => setSplashFinished(true)}
+        />
+      )}
+
+      {dbReady && (
         <View style={styles.container}>
           {/* Área de conteúdo da aba ativa */}
           <View style={{ flex: 1 }}>

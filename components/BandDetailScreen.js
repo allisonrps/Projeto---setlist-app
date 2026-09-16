@@ -110,6 +110,7 @@ export default function BandDetailScreen({
   const [pickerSearch, setPickerSearch] = useState('');
 
   // Member Modal State
+  const [members, setMembers] = useState([]);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
@@ -168,11 +169,11 @@ export default function BandDetailScreen({
   if (!visible || !band) return null;
 
   // Filter setlists belonging to this band
-  const bandSetlists = allSetlists.filter(s => s.myBandId === band.id);
+  const bandSetlists = (allSetlists || []).filter(s => s && s.myBandId === band.id);
 
   // Separate active and inactive members
-  const activeMembers = members.filter(m => (m.status || 'active') === 'active');
-  const inactiveMembers = members.filter(m => m.status === 'inactive');
+  const activeMembers = (members || []).filter(m => (m.status || 'active') === 'active');
+  const inactiveMembers = (members || []).filter(m => m.status === 'inactive');
 
   // Toggle member card expansion
   const handleToggleExpandMember = (id) => {
