@@ -3695,7 +3695,7 @@ function MainApp() {
             <Image source={require('./assets/logo.png')} style={styles.aboutLogo} />
             <Text style={[styles.aboutAppTitle, { color: colors.primary }]}>SETLIST BAND MANAGER</Text>
             <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
-              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.1.5</Text>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.0</Text>
             </View>
             
             <Pressable 
