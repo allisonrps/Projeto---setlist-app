@@ -1255,21 +1255,43 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
 
-            {/* CARD 2: SHOWS E CACHÊS DOS EVENTOS DA BANDA */}
+            {/* CARD 2: TIMELINE DE LANÇAMENTOS FINANCEIROS ORGANIZADA POR MÊS */}
             <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="cash-outline" size={20} color="#10b981" style={{ marginRight: 8 }} />
                 <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
-                  {t('showsAndCaches') || 'Shows e Cachês dos Eventos'}
+                  {t('showsAndCaches') || 'Lançamentos Financeiros'}
                 </Text>
               </View>
 
               {(() => {
-                const showEvents = (bandSetlists || [])
-                  .filter(s => s && s.type === 'show')
-                  .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+                const combinedItems = [
+                  ...(bandSetlists || []).filter(s => s && s.type === 'show').map(sl => {
+                    const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
+                    return {
+                      id: `show_${sl.id}`,
+                      date: sl.date,
+                      title: sl.name || t('untitledShow'),
+                      subtitle: sl.local || t('noLocationSpecified'),
+                      amount: parseCurrency(rawCache),
+                      type: 'income',
+                      isShow: true,
+                      rawSetlist: sl,
+                    };
+                  }),
+                  ...(finances || []).map(item => ({
+                    id: `fin_${item.id}`,
+                    date: item.date,
+                    title: item.title || 'Lançamento',
+                    subtitle: item.category || (item.type === 'income' ? 'Entrada' : 'Saída'),
+                    amount: typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0),
+                    type: item.type || 'expense',
+                    isShow: false,
+                    rawFinance: item,
+                  }))
+                ].sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
-                if (showEvents.length === 0) {
+                if (combinedItems.length === 0) {
                   return (
                     <View style={{ paddingVertical: 14, alignItems: 'center' }}>
                       <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
@@ -1279,68 +1301,129 @@ export default function BandDetailScreen({
                   );
                 }
 
-                let lastShowHeader = '';
-                return showEvents.map(sl => {
-                  const header = getMonthYearHeader(sl.date, language);
-                  const showHeader = header !== lastShowHeader;
-                  if (showHeader) lastShowHeader = header;
-                  const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
-                  const cacheVal = parseCurrency(rawCache);
-                  const badgeDate = getFormattedDateBadge(sl.date, language);
+                let lastFinMonthHeader = '';
+                return combinedItems.map(item => {
+                  const header = getMonthYearHeader(item.date, language);
+                  const showHeader = header !== lastFinMonthHeader;
+                  if (showHeader) lastFinMonthHeader = header;
+
+                  const badgeDate = getFormattedDateBadge(item.date, language);
+                  const isIncome = item.type === 'income';
 
                   return (
-                    <View key={sl.id}>
-                      {showHeader && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
-                          <Text style={{ fontSize: 10.5, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
-                            {header}
-                          </Text>
-                          <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
-                        </View>
-                      )}
+                    <View key={item.id}>
+                      {showHeader && (() => {
+                        const monthGroup = combinedItems.filter(i => getMonthYearHeader(i.date, language) === header);
+                        const monthIncomeTotal = monthGroup
+                          .filter(i => i.type === 'income')
+                          .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+                        return (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                              {header}
+                            </Text>
+
+                            <View style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 4,
+                              backgroundColor: '#10b98115',
+                              borderColor: '#10b98140',
+                              borderWidth: 1,
+                              paddingHorizontal: 8,
+                              paddingVertical: 2.5,
+                              borderRadius: 12
+                            }}>
+                              <Ionicons name="trending-up" size={12} color="#10b981" />
+                              <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981' }}>
+                                + $ {monthIncomeTotal.toFixed(2)}
+                              </Text>
+                            </View>
+
+                            <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                          </View>
+                        );
+                      })()}
+
                       <Pressable
                         style={({ pressed }) => [
                           styles.financeItemRow,
                           { borderBottomColor: colors.border, opacity: pressed ? 0.75 : 1 }
                         ]}
-                        onPress={() => handleOpenCacheSplitModal(sl)}
+                        onPress={() => {
+                          if (item.isShow) {
+                            handleOpenCacheSplitModal(item.rawSetlist);
+                          } else {
+                            handleOpenEditFinance(item.rawFinance);
+                          }
+                        }}
                       >
                         {/* Badge de Data */}
                         <View style={{
                           width: 44,
                           height: 44,
                           borderRadius: 10,
-                          backgroundColor: colors.primary + '12',
-                          borderColor: colors.primary + '30',
+                          backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '15',
+                          borderColor: (isIncome ? '#10b981' : '#ef4444') + '30',
                           borderWidth: 1,
                           justifyContent: 'center',
                           alignItems: 'center',
                           marginRight: 10
                         }}>
                           <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
-                          <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>{badgeDate.month}</Text>
+                          <Text style={{ fontSize: 9, fontWeight: '800', color: isIncome ? '#10b981' : '#ef4444' }}>{badgeDate.month}</Text>
                         </View>
 
-                        {/* Nome e Local do Show */}
+                        {/* Nome e Descrição */}
                         <View style={{ flex: 1, paddingRight: 6 }}>
                           <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
-                            {sl.name || t('untitledShow')}
+                            {item.title}
                           </Text>
                           <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                            <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {sl.local || t('noLocationSpecified')}
+                            {item.isShow ? (
+                              <>
+                                <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {item.subtitle}
+                              </>
+                            ) : (
+                              item.subtitle
+                            )}
                           </Text>
                         </View>
 
-                        {/* Valor do Cachê */}
-                        <View style={{ alignItems: 'flex-end' }}>
-                          <Text style={{ fontSize: 14, fontWeight: '900', color: cacheVal > 0 ? '#10b981' : colors.textMuted }}>
-                            {cacheVal > 0 ? `$ ${cacheVal.toFixed(2)}` : t('noCachetDefined')}
-                          </Text>
-                          <View style={{ backgroundColor: cacheVal > 0 ? '#10b98120' : isDark ? '#3f3f46' : '#e4e4e7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 2 }}>
-                            <Text style={{ color: cacheVal > 0 ? '#10b981' : colors.textMuted, fontSize: 9, fontWeight: '900' }}>
-                              {cacheVal > 0 ? t('showCachet') : t('toBeDefined')}
+                        {/* Valor e Badge / Lixeira */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <View style={{ alignItems: 'flex-end' }}>
+                            <Text style={{ fontSize: 14, fontWeight: '900', color: isIncome ? '#10b981' : '#ef4444' }}>
+                              {isIncome ? '+' : '-'} $ {item.amount.toFixed(2)}
                             </Text>
+                            <View style={{
+                              backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20',
+                              paddingHorizontal: 6,
+                              paddingVertical: 1.5,
+                              borderRadius: 4,
+                              marginTop: 2
+                            }}>
+                              <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
+                                {item.isShow
+                                  ? (item.amount > 0 ? t('showCachet') : t('toBeDefined'))
+                                  : (isIncome ? t('income') : t('expense'))}
+                              </Text>
+                            </View>
                           </View>
+
+                          {!item.isShow && (
+                            <Pressable 
+                              style={{ padding: 4 }} 
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                handleDeleteFinanceEntry(item.rawFinance);
+                              }}
+                              hitSlop={8}
+                            >
+                              <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                            </Pressable>
+                          )}
                         </View>
                       </Pressable>
                     </View>
@@ -1348,100 +1431,6 @@ export default function BandDetailScreen({
                 });
               })()}
             </View>
-
-            {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS (MESMO MODELO DE SHOWS COM BADGE DE DATA, VALOR E LIXEIRA NA DIREITA, SEM CHECK) */}
-            {finances.length > 0 && (
-              (() => {
-                const sortedFinances = [...(finances || [])].sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
-                let lastFinHeader = '';
-
-                return (
-                  <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
-                    <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>{t('otherFinances')}</Text>
-                    {sortedFinances.map(item => {
-                      const header = getMonthYearHeader(item.date, language);
-                      const showHeader = header !== lastFinHeader;
-                      if (showHeader) lastFinHeader = header;
-                      const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
-                      const badgeDate = getFormattedDateBadge(item.date, language);
-                      const isIncome = item.type === 'income';
-
-                      return (
-                        <View key={item.id}>
-                          {showHeader && (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
-                              <Text style={{ fontSize: 10.5, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
-                                {header}
-                              </Text>
-                              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
-                            </View>
-                          )}
-
-                          <Pressable
-                            style={({ pressed }) => [
-                              styles.financeItemRow,
-                              { borderBottomColor: colors.border, opacity: pressed ? 0.8 : 1 }
-                            ]}
-                            onPress={() => handleOpenEditFinance(item)}
-                          >
-                            {/* Badge de Data na lateral esquerda */}
-                            <View style={{
-                              width: 44,
-                              height: 44,
-                              borderRadius: 10,
-                              backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '15',
-                              borderColor: (isIncome ? '#10b981' : '#ef4444') + '30',
-                              borderWidth: 1,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              marginRight: 10
-                            }}>
-                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
-                              <Text style={{ fontSize: 9, fontWeight: '800', color: isIncome ? '#10b981' : '#ef4444' }}>{badgeDate.month}</Text>
-                            </View>
-
-                            {/* Nome e Descrição / Categoria */}
-                            <View style={{ flex: 1, paddingRight: 6 }}>
-                              <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
-                                {item.title || 'Lançamento'}
-                              </Text>
-                              <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                                {item.category || (isIncome ? 'Entrada' : 'Saída')}
-                              </Text>
-                            </View>
-
-                            {/* Valor do Lançamento + Lixeira na direita (sem o botão check) */}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                              <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={{ fontSize: 14, fontWeight: '900', color: isIncome ? '#10b981' : '#ef4444' }}>
-                                  {isIncome ? '+' : '-'} $ {amtVal.toFixed(2)}
-                                </Text>
-                                <View style={{ backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4, marginTop: 2 }}>
-                                  <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
-                                    {isIncome ? t('income') : t('expense')}
-                                  </Text>
-                                </View>
-                              </View>
-
-                              <Pressable 
-                                style={{ padding: 4 }} 
-                                onPress={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteFinanceEntry(item);
-                                }}
-                                hitSlop={8}
-                              >
-                                <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                              </Pressable>
-                            </View>
-                          </Pressable>
-                        </View>
-                      );
-                    })}
-                  </View>
-                );
-              })()
-            )}
           </ScrollView>
         )}
 
@@ -1533,15 +1522,6 @@ export default function BandDetailScreen({
                         </View>
 
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Pressable
-                            style={({ pressed }) => [{ padding: 6, marginRight: 4, opacity: pressed ? 0.7 : 1 }]}
-                            onPress={(e) => {
-                              e.stopPropagation && e.stopPropagation();
-                              if (onCopy) onCopy(setlist.id);
-                            }}
-                          >
-                            <Ionicons name="copy-outline" size={18} color={colors.primary} />
-                          </Pressable>
                           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
                         </View>
                       </Pressable>
