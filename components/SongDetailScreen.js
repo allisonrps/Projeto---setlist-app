@@ -19,62 +19,10 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../hooks/useLanguage';
+import PulsingStageButton from './PulsingStageButton';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-function PulsingStageButton({ onPress, color, iconName = "mic" }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 1800,
-        useNativeDriver: true,
-      })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [anim]);
-
-  const scale = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.6],
-  });
-
-  const opacity = anim.interpolate({
-    inputRange: [0, 0.6, 1],
-    outputRange: [0.7, 0.3, 0],
-  });
-
-  return (
-    <View style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', marginLeft: 6 }}>
-      <Animated.View
-        style={{
-          position: 'absolute',
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: color,
-          transform: [{ scale }],
-          opacity,
-        }}
-      />
-      <Pressable
-        style={({ pressed }) => [
-          styles.circleActionBtn,
-          { backgroundColor: color, marginHorizontal: 0 },
-          pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
-        ]}
-        onPress={onPress}
-        hitSlop={6}
-      >
-        <Ionicons name={iconName} size={18} color="#ffffff" />
-      </Pressable>
-    </View>
-  );
 }
 
 export default function SongDetailScreen({
@@ -440,7 +388,7 @@ export default function SongDetailScreen({
             ) : null}
 
             {/* PLAY (Modo Palco com efeito pulsante) */}
-            <PulsingStageButton onPress={handlePlayStage} color={colors.primary} iconName="mic" />
+            <PulsingStageButton variant="icon" onPress={handlePlayStage} color={colors.primary} iconName="mic" />
           </View>
         </View>
 

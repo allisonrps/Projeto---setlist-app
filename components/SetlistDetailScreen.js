@@ -21,6 +21,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
 import { DraggableSortableList } from './SetlistModal';
+import PulsingStageButton from './PulsingStageButton';
 
 const { width } = Dimensions.get('window');
 
@@ -570,6 +571,7 @@ export default function SetlistDetailScreen({
 
               {/* MODO PALCO COM EFEITO PULSANTE */}
               <PulsingStageButton
+                variant="icon"
                 onPress={() => onStartPerformance && onStartPerformance(getFullSetlistPayload())}
                 color={colors.primary}
                 iconName="mic"

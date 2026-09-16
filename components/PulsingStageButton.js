@@ -15,11 +15,15 @@ export default function PulsingStageButton({
   onPress,
   label,
   size = 'medium',
+  variant = 'button', // 'button' | 'icon'
+  iconName = 'play',
+  color,
   style,
   textStyle,
 }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const btnColor = color || colors.primary;
 
   const pulseScale = useRef(new Animated.Value(1)).current;
   const pulseOpacity = useRef(new Animated.Value(0.65)).current;
@@ -28,7 +32,7 @@ export default function PulsingStageButton({
     const pulseLoop = Animated.loop(
       Animated.parallel([
         Animated.timing(pulseScale, {
-          toValue: 1.38, // Aumentado o tamanho da pulsação como solicitado
+          toValue: variant === 'icon' ? 1.55 : 1.38,
           duration: 1500,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
@@ -44,7 +48,44 @@ export default function PulsingStageButton({
 
     pulseLoop.start();
     return () => pulseLoop.stop();
-  }, []);
+  }, [variant]);
+
+  if (variant === 'icon') {
+    return (
+      <View style={[{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }, style]}>
+        <Animated.View
+          style={{
+            position: 'absolute',
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: btnColor + '35',
+            borderColor: btnColor + '80',
+            borderWidth: 1.5,
+            transform: [{ scale: pulseScale }],
+            opacity: pulseOpacity,
+          }}
+        />
+        <Pressable
+          style={({ pressed }) => [
+            {
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: btnColor,
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: [{ scale: pressed ? 0.92 : 1 }],
+            },
+          ]}
+          onPress={onPress}
+          hitSlop={6}
+        >
+          <Ionicons name={iconName === 'mic' ? 'mic' : 'play'} size={18} color="#ffffff" />
+        </Pressable>
+      </View>
+    );
+  }
 
   const buttonLabel = label || t('startStageBtn') || 'MODO PALCO';
   const iconSize = size === 'small' ? 14 : size === 'large' ? 20 : 16;
@@ -59,8 +100,8 @@ export default function PulsingStageButton({
         style={[
           styles.pulseRing,
           {
-            backgroundColor: colors.primary + '30',
-            borderColor: colors.primary + '70',
+            backgroundColor: btnColor + '30',
+            borderColor: btnColor + '70',
             borderRadius: 30,
             transform: [{ scale: pulseScale }],
             opacity: pulseOpacity,
@@ -73,7 +114,7 @@ export default function PulsingStageButton({
         style={({ pressed }) => [
           styles.button,
           {
-            backgroundColor: colors.primary,
+            backgroundColor: btnColor,
             paddingVertical,
             paddingHorizontal,
             transform: [{ scale: pressed ? 0.96 : 1 }],
@@ -81,7 +122,7 @@ export default function PulsingStageButton({
         ]}
         onPress={onPress}
       >
-        <Ionicons name="play" size={iconSize} color="#ffffff" style={{ marginRight: 6 }} />
+        <Ionicons name={iconName === 'mic' ? 'mic' : 'play'} size={iconSize} color="#ffffff" style={{ marginRight: 6 }} />
         <Text style={[styles.buttonText, { fontSize }, textStyle]}>
           {buttonLabel}
         </Text>
