@@ -113,7 +113,7 @@ export const setlistService = {
     return this.getSongsForSetlist(setlistId);
   },
 
-  async duplicate(setlistId) {
+  async duplicate(setlistId, lang = 'pt') {
     try {
       const rawSetlist = await db.getAllAsync('SELECT * FROM setlists WHERE id = ? LIMIT 1;', [setlistId]);
       if (!rawSetlist || rawSetlist.length === 0) {
@@ -121,7 +121,8 @@ export const setlistService = {
       }
       const sl = rawSetlist[0];
 
-      const copyName = sl.name ? `${sl.name} - Cópia` : 'Setlist Cópia';
+      const prefix = lang === 'en' ? 'Copy' : lang === 'es' ? 'Copia' : 'Cópia';
+      const copyName = sl.name ? `${prefix} - ${sl.name}` : `${prefix} Setlist`;
       const result = await db.runAsync(
         'INSERT INTO setlists (name, type, myBandId, date, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, 0);',
         [copyName, sl.type, sl.myBandId, sl.date, sl.local, sl.cachê, sl.notes]

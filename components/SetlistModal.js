@@ -676,9 +676,9 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const orderedSongs = selectedSongs
     .map((item) => {
       const songInfo = item.id === -1 
-        ? { id: -1, name: 'PAUSA', originalBand: '', style: 'PAUSA' } 
+        ? { id: -1, name: t('pauseItem') || 'PAUSA', originalBand: '', style: t('pauseItem') || 'PAUSA' } 
         : item.id === -2
-        ? { id: -2, name: 'ANOTAÇÃO', originalBand: '', style: 'ANOTAÇÃO' }
+        ? { id: -2, name: t('noteItem') || 'ANOTAÇÃO', originalBand: '', style: t('noteItem') || 'ANOTAÇÃO' }
         : songs.find((s) => s.id === item.id);
       
       if (!songInfo) return null;
@@ -1086,7 +1086,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 </Pressable>
 
                 <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                  {filteredPickerSongs.length} encontradas
+                  {filteredPickerSongs.length} {t('foundPlural')}
                 </Text>
               </View>
             </View>
@@ -1182,7 +1182,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('durationLabel').toUpperCase()}</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                  placeholder="Ex: 5 min, 10 min"
+                  placeholder={t('durationExamplePlaceholder')}
                   placeholderTextColor={colors.textMuted}
                   value={tempCustomDuration}
                   onChangeText={setTempCustomDuration}
@@ -1195,7 +1195,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('notesLabel').toUpperCase()}</Text>
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border, minHeight: 60 }]}
-              placeholder="Digite sua anotação ou aviso..."
+              placeholder={t('typeNotePrompt')}
               placeholderTextColor={colors.textMuted}
               value={tempCustomNotes}
               onChangeText={setTempCustomNotes}

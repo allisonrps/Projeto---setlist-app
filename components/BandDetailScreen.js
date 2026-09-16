@@ -90,6 +90,7 @@ export default function BandDetailScreen({
   onToggleFavoriteSong,
   onToggleRehearsalStatus,
   onUpdateSongRehearsalNotes,
+  onCopy,
   onReloadAll,
 }) {
   const { colors } = useTheme();
@@ -1410,7 +1411,18 @@ export default function BandDetailScreen({
                       </View>
                     </View>
 
-                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Pressable
+                        style={({ pressed }) => [{ padding: 6, marginRight: 4, opacity: pressed ? 0.7 : 1 }]}
+                        onPress={(e) => {
+                          e.stopPropagation && e.stopPropagation();
+                          if (onCopy) onCopy(setlist.id);
+                        }}
+                      >
+                        <Ionicons name="copy-outline" size={18} color={colors.primary} />
+                      </Pressable>
+                      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                    </View>
                   </Pressable>
                 );
               })
@@ -1453,17 +1465,17 @@ export default function BandDetailScreen({
                   size={20}
                   color={colors.primary}
                 />
-                <Text style={[styles.selectAllText, { color: colors.text }]}>Selecionar Todas</Text>
+                <Text style={[styles.selectAllText, { color: colors.text }]}>{t('selectAll')}</Text>
               </Pressable>
               <Text style={[styles.selectedCounterText, { color: colors.textMuted }]}>
-                {selectedPickerSongIds.size} selecionadas
+                {selectedPickerSongIds.size} {t('selectedSongsCount')}
               </Text>
             </View>
 
             <ScrollView style={{ flex: 1 }}>
               {availableGeneralSongs.length === 0 ? (
                 <Text style={{ textAlign: 'center', color: colors.textMuted, marginVertical: 20 }}>
-                  Nenhuma música encontrada na coleção.
+                  {t('noSongsCollection')}
                 </Text>
               ) : (
                 availableGeneralSongs.map(song => {
@@ -1497,13 +1509,13 @@ export default function BandDetailScreen({
                 style={[styles.modalCancelBtn, { borderColor: colors.border }]}
                 onPress={() => setShowSongPickerModal(false)}
               >
-                <Text style={{ color: colors.text }}>Cancelar</Text>
+                <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
                 onPress={handleSavePickerSongs}
               >
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Salvar Repertório</Text>
+                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveRepertoire')}</Text>
               </Pressable>
             </View>
           </View>

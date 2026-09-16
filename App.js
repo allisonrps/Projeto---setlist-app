@@ -1069,11 +1069,17 @@ function MainApp() {
 
   const handleDuplicateSetlist = async (id) => {
     try {
-      await setlistService.duplicate(id);
+      await setlistService.duplicate(id, language);
       await reloadAllData();
-      Alert.alert('Sucesso', 'Setlist copiado/duplicado com sucesso!');
+      Alert.alert(
+        t('success') || 'Sucesso',
+        t('setlistCopiedMsg') || 'Setlist copiado com sucesso!'
+      );
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível duplicar o setlist.');
+      Alert.alert(
+        t('attention') || 'Atenção',
+        t('setlistCopyError') || 'Não foi possível duplicar o setlist.'
+      );
     }
   };
 
