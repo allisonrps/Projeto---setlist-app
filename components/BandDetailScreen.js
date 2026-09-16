@@ -102,7 +102,7 @@ export default function BandDetailScreen({
   const [bandSongs, setBandSongs] = useState([]);
   const [repertoireSearch, setRepertoireSearch] = useState('');
   const [showStyleFilters, setShowStyleFilters] = useState(false);
-  const [selectedStyleFilter, setSelectedStyleFilter] = useState('');
+  const [selectedStyleFilters, setSelectedStyleFilters] = useState([]);
 
   // Song Collection Picker Modal with Checkboxes
   const [showSongPickerModal, setShowSongPickerModal] = useState(false);
@@ -115,51 +115,22 @@ export default function BandDetailScreen({
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
-  const [memberStartDate, setMemberStartDate] = useState('');
-  const [memberEndDate, setMemberEndDate] = useState('');
   const [memberStatus, setMemberStatus] = useState('active'); // 'active' | 'inactive'
-  const [editingMemberId, setEditingMemberId] = useState(null);
-  const [showInactiveMembers, setShowInactiveMembers] = useState(false);
-  const [expandedMemberIds, setExpandedMemberIds] = useState(new Set());
+  const [memberJoinDate, setMemberJoinDate] = useState('');
+  const [memberExitDate, setMemberExitDate] = useState('');
+  const [editingMember, setEditingMember] = useState(null);
 
-  // Financial Data
+  // Financial Modal State
   const [finances, setFinances] = useState([]);
-  const [showAddFinanceModal, setShowAddFinanceModal] = useState(false);
-  const [editingFinanceItem, setEditingFinanceItem] = useState(null);
+  const [showFinanceModal, setShowFinanceModal] = useState(false);
+  const [financeTitle, setFinanceTitle] = useState('');
+  const [financeAmount, setFinanceAmount] = useState('');
+  const [financeType, setFinanceType] = useState('income'); // 'income' | 'expense'
+  const [financeDate, setFinanceDate] = useState('');
+  const [financeStatus, setFinanceStatus] = useState('paid'); // 'paid' | 'pending'
+  const [editingFinance, setEditingFinance] = useState(null);
 
-  // Form states for custom financial entry
-  const [finTitle, setFinTitle] = useState('');
-  const [finAmount, setFinAmount] = useState('');
-  const [finType, setFinType] = useState('income'); // 'income' | 'expense'
-  const [finDate, setFinDate] = useState('');
-  const [finStatus, setFinStatus] = useState('paid'); // 'paid' | 'pending'
-  const [finNotes, setFinNotes] = useState('');
-
-  // Load band specific data when visible or band changes
-  const loadData = useCallback(async () => {
-    if (band && band.id) {
-      try {
-        const bSongs = await bandService.getBandSongs(band.id);
-        setBandSongs(bSongs || []);
-
-        const bFin = await bandService.getBandFinances(band.id);
-        setFinances(bFin || []);
-
-        const bMem = await bandService.getBandMembers(band.id);
-        setMembers(bMem || []);
-      } catch (err) {
-        console.error('Error loading BandDetailScreen data:', err);
-      }
-    }
-  }, [band]);
-
-  const handleToggleBandSongFavorite = async (songId, currentIsFav) => {
-    if (band && band.id) {
-      await bandService.toggleBandSongFavorite(band.id, songId, currentIsFav);
-      await loadData();
-    }
-  };
-
+  // Load Band Data when modal opens
   useEffect(() => {
     if (visible && band && band.id) {
       loadData();
@@ -581,79 +552,68 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         
-        {/* HEADER HERO COM TEXTURAS, DESENHOS DE MÚSICA E MARCA D'ÁGUA */}
-        <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#f8fafc' }]}>
-          {/* 1. Imagem de Marca d'Água no fundo (com opacidade suave) */}
-          {(band.imageUri || band.image || band.logo) && (
-            <Image
-              source={{ uri: band.imageUri || band.image || band.logo }}
-              style={[StyleSheet.absoluteFillObject, { opacity: 0.16 }]}
-              resizeMode="cover"
-              blurRadius={3}
-            />
-          )}
+        {/* OUTER SCROLLVIEW COM CABEÇALHO RETRÁTIL E MENU DE ABAS FIXO (STICKY) */}
+        <ScrollView
+          style={{ flex: 1 }}
+          stickyHeaderIndices={[1]}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+        >
+          {/* INDEX 0: HEADER HERO COM TEXTURAS, DESENHOS DE MÚSICA E LOGO AMPLIADO */}
+          <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#f8fafc' }]}>
+            {/* 1. Imagem de Marca d'Água no fundo (com opacidade suave) */}
+            {(band.imageUri || band.image || band.logo) && (
+              <Image
+                source={{ uri: band.imageUri || band.image || band.logo }}
+                style={[StyleSheet.absoluteFillObject, { opacity: 0.18 }]}
+                resizeMode="cover"
+                blurRadius={2}
+              />
+            )}
 
-          {/* 2. Texturas e Desenhos Artísticos de Música no Fundo */}
-          <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-            {/* Brilho Radial de Fundo */}
-            <View style={[styles.bgHeaderGlow, { backgroundColor: colors.primary + '18' }]} />
-            
-            {/* Ícones Desenhos Flutuantes de Música */}
-            <Ionicons name="musical-notes" size={48} color={colors.primary} style={styles.floatingIcon1} />
-            <Ionicons name="disc-outline" size={54} color={colors.secondary} style={styles.floatingIcon2} />
-            <Ionicons name="radio-outline" size={38} color={colors.textMuted} style={styles.floatingIcon3} />
-            <Ionicons name="sparkles" size={28} color={colors.primary} style={styles.floatingIcon4} />
-            <Ionicons name="headset-outline" size={42} color={colors.secondary} style={styles.floatingIcon5} />
-          </View>
+            {/* 2. Texturas e Desenhos Artísticos de Música no Fundo */}
+            <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+              <View style={[styles.bgHeaderGlow, { backgroundColor: colors.primary + '22' }]} />
+              
+              <Ionicons name="musical-notes" size={54} color={colors.primary} style={styles.floatingIcon1} />
+              <Ionicons name="disc-outline" size={60} color={colors.secondary} style={styles.floatingIcon2} />
+              <Ionicons name="radio-outline" size={42} color={colors.textMuted} style={styles.floatingIcon3} />
+              <Ionicons name="sparkles" size={32} color={colors.primary} style={styles.floatingIcon4} />
+              <Ionicons name="headset-outline" size={48} color={colors.secondary} style={styles.floatingIcon5} />
+            </View>
 
-          {/* Barra de Navegação Superior */}
-          <View style={styles.topRowNav}>
-            <Pressable style={[styles.headerIconButton, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
-              <Ionicons name="arrow-back" size={20} color={colors.text} />
-            </Pressable>
-
-            <View style={styles.topRowActions}>
-              <Pressable style={[styles.headerIconButton, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
-                <Ionicons name="pencil" size={18} color={colors.primary} />
+            {/* Barra de Navegação Superior */}
+            <View style={styles.topRowNav}>
+              <Pressable style={[styles.headerIconButton, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
+                <Ionicons name="arrow-back" size={20} color={colors.text} />
               </Pressable>
-              <Pressable style={[styles.headerIconButton, { backgroundColor: colors.danger + '18', borderColor: colors.danger + '40', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
-                <Ionicons name="trash-outline" size={18} color={colors.danger} />
-              </Pressable>
-            </View>
-          </View>
 
-          {/* LOGO CENTRALIZADO E BADGE DE METADADOS */}
-          <View style={styles.logoCenterContainerTop}>
-            <View style={[styles.avatarGlowOuter, { borderColor: colors.primary + '40', backgroundColor: colors.primary + '10' }]}>
-              <View style={[styles.avatarCircleCompact, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
-                {band.imageUri ? (
-                  <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
-                ) : (
-                  <Text style={[styles.avatarInitialsCompact, { color: colors.primary }]}>
-                    {getBandInitials(band.name)}
-                  </Text>
-                )}
+              <View style={styles.topRowActions}>
+                <Pressable style={[styles.headerIconButton, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
+                  <Ionicons name="pencil" size={18} color={colors.primary} />
+                </Pressable>
+                <Pressable style={[styles.headerIconButton, { backgroundColor: colors.danger + '18', borderColor: colors.danger + '40', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
+                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                </Pressable>
               </View>
             </View>
-            <Text style={[styles.bandTitleText, { color: colors.text }]}>{band.name}</Text>
-            
-            {/* Subtítulo Badges da Banda */}
-            <View style={styles.bandMetaBadgeRow}>
-              <View style={[styles.bandMetaPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
-                <Ionicons name="people" size={11} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={[styles.bandMetaPillText, { color: colors.primary }]}>
-                  {activeMembers.length} {t('membersBadge') || 'INTEGRANTES'}
-                </Text>
+
+            {/* LOGO CENTRALIZADO AMPLIADO */}
+            <View style={styles.logoCenterContainerTop}>
+              <View style={[styles.avatarGlowOuter, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '12' }]}>
+                <View style={[styles.avatarCircleCompact, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                  {band.imageUri ? (
+                    <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
+                  ) : (
+                    <Text style={[styles.avatarInitialsCompact, { color: colors.primary }]}>
+                      {getBandInitials(band.name)}
+                    </Text>
+                  )}
+                </View>
               </View>
-              <View style={[styles.bandMetaPill, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '35' }]}>
-                <Ionicons name="musical-notes" size={11} color={colors.secondary} style={{ marginRight: 4 }} />
-                <Text style={[styles.bandMetaPillText, { color: colors.secondary }]}>
-                  {bandSongs.length} MÚSICAS
-                </Text>
-              </View>
+              <Text style={[styles.bandTitleText, { color: colors.text }]}>{band.name}</Text>
             </View>
           </View>
-        </View>
 
         {/* TOP TAB BAR DE 5 PÁGINAS SOMENTE ÍCONES */}
         <View style={[styles.tabBarContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
@@ -782,42 +742,56 @@ export default function BandDetailScreen({
             </View>
 
             {showStyleFilters && uniqueBandStyles.length > 0 && (
-              <View style={[styles.styleFilterBar, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <Pressable
-                    style={[
-                      styles.stylePill,
-                      !selectedStyleFilter && { backgroundColor: colors.primary }
-                    ]}
-                    onPress={() => setSelectedStyleFilter('')}
-                  >
-                    <Text style={[styles.stylePillText, !selectedStyleFilter && { color: '#ffffff' }]}>
-                      Todas ({bandSongs.length})
-                    </Text>
-                  </Pressable>
+              <View style={[styles.styleFilterWrapContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.stylePillCompact,
+                    {
+                      backgroundColor: selectedStyleFilters.length === 0 ? colors.primary + '18' : colors.cardBackground,
+                      borderColor: selectedStyleFilters.length === 0 ? colors.primary : colors.border,
+                      borderWidth: 1,
+                      transform: [{ scale: pressed ? 0.95 : 1 }]
+                    }
+                  ]}
+                  onPress={() => setSelectedStyleFilters([])}
+                >
+                  <Text style={[styles.stylePillTextCompact, { color: selectedStyleFilters.length === 0 ? colors.primary : colors.text }]}>
+                    Todas ({bandSongs.length})
+                  </Text>
+                </Pressable>
 
-                  {uniqueBandStyles.map(st => {
-                    const isSel = selectedStyleFilter.toLowerCase() === st.toLowerCase();
-                    return (
-                      <Pressable
-                        key={st}
-                        style={[
-                          styles.stylePill,
-                          {
-                            backgroundColor: isSel ? colors.primary : colors.cardBackground,
-                            borderColor: isSel ? colors.primary : colors.border,
-                            borderWidth: 1
+                {uniqueBandStyles.map(st => {
+                  const isSel = selectedStyleFilters.some(s => s.toLowerCase() === st.toLowerCase());
+                  return (
+                    <Pressable
+                      key={st}
+                      style={({ pressed }) => [
+                        styles.stylePillCompact,
+                        {
+                          backgroundColor: isSel ? colors.primary + '18' : colors.cardBackground,
+                          borderColor: isSel ? colors.primary : colors.border,
+                          borderWidth: 1,
+                          transform: [{ scale: pressed ? 0.95 : 1 }]
+                        }
+                      ]}
+                      onPress={() => {
+                        if (isSel) {
+                          setSelectedStyleFilters(selectedStyleFilters.filter(s => s.toLowerCase() !== st.toLowerCase()));
+                        } else {
+                          if (selectedStyleFilters.length < 4) {
+                            setSelectedStyleFilters([...selectedStyleFilters, st]);
+                          } else {
+                            Alert.alert(t('attention') || 'Atenção', 'Você pode selecionar no máximo 4 tags ao mesmo tempo.');
                           }
-                        ]}
-                        onPress={() => setSelectedStyleFilter(isSel ? '' : st)}
-                      >
-                        <Text style={[styles.stylePillText, { color: isSel ? '#ffffff' : colors.text }]}>
-                          {st}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
+                        }
+                      }}
+                    >
+                      <Text style={[styles.stylePillTextCompact, { color: isSel ? colors.primary : colors.text }]}>
+                        {st}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
             )}
 
@@ -1306,6 +1280,7 @@ export default function BandDetailScreen({
           </ScrollView>
         )}
 
+        </ScrollView>
       </View>
 
       {/* MODAL CHECKBOX DA COLEÇÃO DE MÚSICAS */}
@@ -1652,26 +1627,27 @@ const styles = StyleSheet.create({
   },
   logoCenterContainerTop: {
     alignItems: 'center',
-    marginTop: -16,
+    marginTop: -8,
+    marginBottom: 6,
   },
   avatarCircleCompact: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 92,
+    height: 92,
+    borderRadius: 46,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
-  avatarImageCompact: { width: 66, height: 66, borderRadius: 33 },
-  avatarInitialsCompact: { fontSize: 24, fontWeight: 'bold' },
-  bandTitleText: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginTop: 6 },
+  avatarImageCompact: { width: 86, height: 86, borderRadius: 43 },
+  avatarInitialsCompact: { fontSize: 30, fontWeight: '900' },
+  bandTitleText: { fontSize: 24, fontWeight: '900', textAlign: 'center', marginTop: 8 },
 
-  tabBarContainer: { borderBottomWidth: 1, height: 48 },
+  tabBarContainer: { borderBottomWidth: 1, height: 48, zIndex: 10 },
   tabBarRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', height: 48 },
   tabItemIconOnly: {
     flex: 1,
@@ -1707,9 +1683,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  styleFilterBar: { paddingVertical: 8, paddingHorizontal: 12, borderBottomWidth: 1 },
-  stylePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 8 },
-  stylePillText: { fontSize: 12, fontWeight: '600' },
+  styleFilterWrapContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+    borderBottomWidth: 1,
+  },
+  stylePillCompact: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stylePillTextCompact: { fontSize: 10.5, fontWeight: '800' },
 
   listPadding: { padding: 16, paddingBottom: 40 },
   dedicatedTabPadding: { padding: 16, paddingBottom: 40 },

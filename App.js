@@ -2729,10 +2729,10 @@ function MainApp() {
                     if (isSelected) {
                       setSelectedStyles(selectedStyles.filter(s => s !== style));
                     } else {
-                      if (selectedStyles.length < 3) {
+                      if (selectedStyles.length < 4) {
                         setSelectedStyles([...selectedStyles, style]);
                       } else {
-                        Alert.alert('Limite atingido', 'Você pode selecionar no máximo 3 tags ao mesmo tempo.');
+                        Alert.alert('Limite atingido', 'Você pode selecionar no máximo 4 tags ao mesmo tempo.');
                       }
                     }
                   }}
@@ -3942,14 +3942,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 16,
+    marginBottom: 12,
     paddingHorizontal: 2,
   },
   smallFilterChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 0,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
     borderColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
