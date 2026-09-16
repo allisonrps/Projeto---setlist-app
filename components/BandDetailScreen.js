@@ -115,20 +115,23 @@ export default function BandDetailScreen({
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
+  const [memberStartDate, setMemberStartDate] = useState('');
+  const [memberEndDate, setMemberEndDate] = useState('');
   const [memberStatus, setMemberStatus] = useState('active'); // 'active' | 'inactive'
-  const [memberJoinDate, setMemberJoinDate] = useState('');
-  const [memberExitDate, setMemberExitDate] = useState('');
-  const [editingMember, setEditingMember] = useState(null);
+  const [editingMemberId, setEditingMemberId] = useState(null);
+  const [showInactiveMembers, setShowInactiveMembers] = useState(false);
+  const [expandedMemberIds, setExpandedMemberIds] = useState(new Set());
 
   // Financial Modal State
   const [finances, setFinances] = useState([]);
-  const [showFinanceModal, setShowFinanceModal] = useState(false);
-  const [financeTitle, setFinanceTitle] = useState('');
-  const [financeAmount, setFinanceAmount] = useState('');
-  const [financeType, setFinanceType] = useState('income'); // 'income' | 'expense'
-  const [financeDate, setFinanceDate] = useState('');
-  const [financeStatus, setFinanceStatus] = useState('paid'); // 'paid' | 'pending'
-  const [editingFinance, setEditingFinance] = useState(null);
+  const [showAddFinanceModal, setShowAddFinanceModal] = useState(false);
+  const [editingFinanceItem, setEditingFinanceItem] = useState(null);
+  const [finTitle, setFinTitle] = useState('');
+  const [finAmount, setFinAmount] = useState('');
+  const [finType, setFinType] = useState('income'); // 'income' | 'expense'
+  const [finDate, setFinDate] = useState('');
+  const [finStatus, setFinStatus] = useState('paid'); // 'paid' | 'pending'
+  const [finNotes, setFinNotes] = useState('');
 
   // Load Band Data when modal opens or updates
   const loadData = useCallback(async () => {
