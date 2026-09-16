@@ -822,6 +822,8 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     }]}
                     value={name}
                     onChangeText={setName}
+                    placeholder={t('setlistNamePlaceholder') || 'Nome do Evento'}
+                    placeholderTextColor={colors.textMuted}
                     autoComplete="off"
                     importantForAutofill="no"
                   />
@@ -837,7 +839,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         }]}
                         value={date}
                         onChangeText={setDate}
-                        placeholder="AAAA-MM-DD"
+                        placeholder={t('datePlaceholder') || 'AAAA-MM-DD'}
                         placeholderTextColor={colors.textMuted}
                         autoComplete="off"
                         importantForAutofill="no"
@@ -853,6 +855,8 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         }]}
                         value={local}
                         onChangeText={setLocal}
+                        placeholder={t('localPlaceholder') || 'Ex: Bar do Zé, Estúdio X...'}
+                        placeholderTextColor={colors.textMuted}
                         autoComplete="off"
                         importantForAutofill="no"
                       />
@@ -870,6 +874,8 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         }]}
                         value={cachê}
                         onChangeText={setCachê}
+                        placeholder={t('cachetPlaceholder') || 'Ex: 500'}
+                        placeholderTextColor={colors.textMuted}
                         keyboardType="numeric"
                         autoComplete="off"
                         importantForAutofill="no"
@@ -886,6 +892,8 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     }]}
                     value={notes}
                     onChangeText={setNotes}
+                    placeholder={t('notePlaceholder') || 'Ex: Levar cabos extras...'}
+                    placeholderTextColor={colors.textMuted}
                     multiline
                     numberOfLines={2}
                     autoComplete="off"
@@ -910,7 +918,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
               >
                 <Ionicons name="search" size={16} color="#fff" />
                 <Text style={styles.primaryAddSongsBtnText}>
-                  '+ MÚSICA'
+                  {t('addSongBtn')}
                 </Text>
               </Pressable>
 
@@ -925,7 +933,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 >
                   <Ionicons name="pause" size={12} color={colors.secondary} />
                   <Text style={{ color: colors.secondary, fontSize: 11, fontWeight: '800' }}>
-                    + Pausa
+                    {t('addPauseBtn')}
                   </Text>
                 </Pressable>
 
@@ -939,7 +947,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 >
                   <Ionicons name="document-text-outline" size={12} color={colors.warning} />
                   <Text style={{ color: colors.warning, fontSize: 11, fontWeight: '800' }}>
-                    + Anotação
+                    {t('addNoteBtn')}
                   </Text>
                 </Pressable>
               </View>

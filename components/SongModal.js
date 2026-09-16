@@ -167,6 +167,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               }]}
               value={name}
               onChangeText={setName}
+              placeholder={t('songNamePlaceholder') || 'Nome'}
+              placeholderTextColor={colors.textMuted}
               autoComplete="off"
               importantForAutofill="no"
             />
@@ -181,6 +183,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               }]}
               value={originalBand}
               onChangeText={setOriginalBand}
+              placeholder={t('originalBandPlaceholder') || 'Banda'}
+              placeholderTextColor={colors.textMuted}
               autoComplete="off"
               importantForAutofill="no"
             />
@@ -225,6 +229,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                       }]}
                       value={style}
                       onChangeText={setStyle}
+                      placeholder={t('tagsPlaceholder') || 'Ex: Rock, Pop, Anos 80'}
+                      placeholderTextColor={colors.textMuted}
                       autoComplete="off"
                       importantForAutofill="no"
                     />
@@ -240,6 +246,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                       }]}
                       value={duration}
                       onChangeText={setDuration}
+                      placeholder={t('durationPlaceholder') || 'Ex: 03:45'}
+                      placeholderTextColor={colors.textMuted}
                       keyboardType="numbers-and-punctuation"
                       autoComplete="off"
                       importantForAutofill="no"
@@ -464,6 +472,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                 }]}
                 value={lyrics}
                 onChangeText={setLyrics}
+                placeholder={t('lyricsPlaceholder')}
+                placeholderTextColor={colors.textMuted}
                 multiline
                 numberOfLines={12}
                 autoCapitalize="none"
@@ -482,6 +492,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                 }]}
                 value={chords}
                 onChangeText={setChords}
+                placeholder={t('chordsPlaceholder')}
+                placeholderTextColor={colors.textMuted}
                 multiline
                 numberOfLines={12}
                 autoCapitalize="none"
@@ -500,6 +512,8 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                 }]}
                 value={tabs}
                 onChangeText={setTabs}
+                placeholder={t('tabsPlaceholder')}
+                placeholderTextColor={colors.textMuted}
                 multiline
                 numberOfLines={12}
                 autoCapitalize="none"

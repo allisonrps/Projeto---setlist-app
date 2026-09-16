@@ -146,8 +146,8 @@ const getFormattedDateBadge = (dateStr, lang) => {
   return { day: String(day).padStart(2, '0'), month: months[monthNum] || '---' };
 };
 
-const getMonthYearHeader = (dateStr) => {
-  if (!dateStr || !dateStr.trim()) return 'OUTROS';
+const getMonthYearHeader = (dateStr, lang = 'pt') => {
+  if (!dateStr || !dateStr.trim()) return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
   const clean = dateStr.trim();
   let year = '';
   let monthNum = -1;
@@ -166,11 +166,16 @@ const getMonthYearHeader = (dateStr) => {
     }
   }
 
-  const months = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const monthsPt = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const monthsEs = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+  const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
+
   if (monthNum >= 0 && monthNum < 12 && year) {
     return `${months[monthNum]} ${year}`;
   }
-  return 'EVENTOS';
+  return lang === 'en' ? 'EVENTS' : lang === 'es' ? 'EVENTOS' : 'EVENTOS';
 };
 
 const getBandInitials = (name) => {
@@ -2246,7 +2251,7 @@ function MainApp() {
               let lastUpcomingHeader = null;
               return upcomingSetlists.map((setlist, idx) => {
                 const badge = getFormattedDateBadge(setlist.date, language);
-                const header = getMonthYearHeader(setlist.date);
+                const header = getMonthYearHeader(setlist.date, language);
                 const showHeader = header !== lastUpcomingHeader;
                 if (showHeader) lastUpcomingHeader = header;
                 const isHeroNext = idx === 0;
@@ -2254,7 +2259,7 @@ function MainApp() {
                 return (
                   <View key={setlist.id}>
                     {showHeader && (() => {
-                      const mUpcoming = upcomingSetlists.filter(s => getMonthYearHeader(s.date) === header);
+                      const mUpcoming = upcomingSetlists.filter(s => getMonthYearHeader(s.date, language) === header);
                       const mShows = mUpcoming.filter(s => s.type === 'show').length;
                       const mRehearsals = mUpcoming.filter(s => s.type !== 'show').length;
                       return (
@@ -2415,14 +2420,14 @@ function MainApp() {
                     let lastPastHeader = null;
                     return pastSetlists.map((setlist) => {
                       const badge = getFormattedDateBadge(setlist.date, language);
-                      const header = getMonthYearHeader(setlist.date);
+                      const header = getMonthYearHeader(setlist.date, language);
                       const showHeader = header !== lastPastHeader;
                       if (showHeader) lastPastHeader = header;
 
                       return (
                         <View key={setlist.id}>
                           {showHeader && (() => {
-                            const mPast = pastSetlists.filter(s => getMonthYearHeader(s.date) === header);
+                            const mPast = pastSetlists.filter(s => getMonthYearHeader(s.date, language) === header);
                             const mShows = mPast.filter(s => s.type === 'show').length;
                             const mRehearsals = mPast.filter(s => s.type !== 'show').length;
                             return (
