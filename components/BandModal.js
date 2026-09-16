@@ -74,15 +74,15 @@ export default function BandModal({ visible, onClose, onSave, band }) {
   return (
     <Modal
       visible={visible}
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.75)' }]}
+        style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.65)' }]}
       >
-        <View style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.primary }]}>
+        <View style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               {band ? t('editBand') : t('newBand')}
@@ -115,10 +115,10 @@ export default function BandModal({ visible, onClose, onSave, band }) {
 
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA DE INÍCIO</Text>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA DE INÍCIO (DIA/MÊS/ANO)</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                  placeholder="Ex: 2024"
+                  placeholder="Ex: 15/04/2024"
                   placeholderTextColor={colors.textMuted}
                   value={startDate}
                   onChangeText={setStartDate}
@@ -128,7 +128,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
                 <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA FIM (OPCIONAL)</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                  placeholder="Ex: Atual"
+                  placeholder="Ex: Atual ou 10/12/2025"
                   placeholderTextColor={colors.textMuted}
                   value={endDate}
                   onChangeText={setEndDate}
@@ -200,22 +200,21 @@ export default function BandModal({ visible, onClose, onSave, band }) {
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    padding: 20,
   },
   modalContent: {
     width: '100%',
-    maxWidth: 440,
-    borderRadius: 8,
-    borderWidth: 1.5,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
     maxHeight: '85%',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   modalHeader: {
     flexDirection: 'row',

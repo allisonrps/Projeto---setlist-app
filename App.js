@@ -635,6 +635,7 @@ function MainApp() {
   const [shareOptionsItem, setShareOptionsItem] = useState(null);
   const [shareQrItem, setShareQrItem] = useState(null);
   const [selectedTutorialFeature, setSelectedTutorialFeature] = useState(null);
+  const [hideFinancialValues, setHideFinancialValues] = useState(true);
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -2248,14 +2249,29 @@ function MainApp() {
 
                 return (
                   <View key={setlist.id}>
-                    {showHeader && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 10, gap: 8 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
-                          {header}
-                        </Text>
-                        <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
-                      </View>
-                    )}
+                    {showHeader && (() => {
+                      const mUpcoming = upcomingSetlists.filter(s => getMonthYearHeader(s.date) === header);
+                      const mShows = mUpcoming.filter(s => s.type === 'show').length;
+                      const mRehearsals = mUpcoming.filter(s => s.type !== 'show').length;
+                      return (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 10, gap: 8 }}>
+                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                            {header}
+                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 2 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                              <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                              <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mShows}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                              <Ionicons name="headset-outline" size={13} color={colors.primary} />
+                              <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mRehearsals}</Text>
+                            </View>
+                          </View>
+                          <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                        </View>
+                      );
+                    })()}
 
                     <Pressable
                       style={({ pressed }) => [
@@ -2428,14 +2444,29 @@ function MainApp() {
 
                       return (
                         <View key={setlist.id}>
-                          {showHeader && (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
-                              <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 0.8 }}>
-                                {header}
-                              </Text>
-                              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.4 }} />
-                            </View>
-                          )}
+                          {showHeader && (() => {
+                            const mPast = pastSetlists.filter(s => getMonthYearHeader(s.date) === header);
+                            const mShows = mPast.filter(s => s.type === 'show').length;
+                            const mRehearsals = mPast.filter(s => s.type !== 'show').length;
+                            return (
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
+                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 0.8 }}>
+                                  {header}
+                                </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 2 }}>
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                    <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
+                                    <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted }}>{mShows}</Text>
+                                  </View>
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                    <Ionicons name="headset-outline" size={13} color={colors.textMuted} />
+                                    <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted }}>{mRehearsals}</Text>
+                                  </View>
+                                </View>
+                                <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.4 }} />
+                              </View>
+                            );
+                          })()}
                           <Pressable
                             style={({ pressed }) => [
                               styles.bandCard,
@@ -2699,9 +2730,9 @@ function MainApp() {
                     paddingVertical: 10,
                     marginBottom: 10
                   }}>
-                    {/* Músicas */}
+                    {/* Músicas (Nota Musical) */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="disc-outline" size={18} color={colors.primary} />
+                      <Ionicons name="musical-notes" size={18} color={colors.primary} />
                       <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{songsCount}</Text>
                     </View>
 
@@ -2717,9 +2748,9 @@ function MainApp() {
                       <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{showsCount}</Text>
                     </View>
 
-                    {/* Ensaios */}
+                    {/* Ensaios (Fone de Ouvido) */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="musical-notes-outline" size={18} color={colors.primary} />
+                      <Ionicons name="headset-outline" size={18} color={colors.primary} />
                       <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{rehearsalsCount}</Text>
                     </View>
                   </View>
@@ -2738,7 +2769,7 @@ function MainApp() {
                     </View>
                   )}
 
-                  {/* Mostrador de Cachê Acumulado */}
+                  {/* Mostrador de Cachê Acumulado com Olho para Ocultar */}
                   <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -2751,15 +2782,36 @@ function MainApp() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Ionicons name="cash-outline" size={16} color="#10b981" />
                       <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
-                        Cachê {currentYear}: <Text style={{ color: '#10b981', fontWeight: '900' }}>$ {currentYearCache.toFixed(2)}</Text>
+                        Cachê {currentYear}: <Text style={{ color: '#10b981', fontWeight: '900' }}>
+                          {hideFinancialValues ? '$ ••••••' : `$ ${currentYearCache.toFixed(2)}`}
+                        </Text>
                       </Text>
                     </View>
 
-                    {prevYearCache > 0 && (
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
-                        Acumulado {prevYear}: <Text style={{ color: colors.text, fontWeight: '900' }}>$ {prevYearCache.toFixed(2)}</Text>
-                      </Text>
-                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      {prevYearCache > 0 && (
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
+                          Acumulado {prevYear}: <Text style={{ color: colors.text, fontWeight: '900' }}>
+                            {hideFinancialValues ? '$ ••••••' : `$ ${prevYearCache.toFixed(2)}`}
+                          </Text>
+                        </Text>
+                      )}
+
+                      <Pressable
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          setHideFinancialValues(!hideFinancialValues);
+                        }}
+                        hitSlop={8}
+                        style={{ padding: 2 }}
+                      >
+                        <Ionicons
+                          name={hideFinancialValues ? "eye-off-outline" : "eye-outline"}
+                          size={16}
+                          color={colors.textMuted}
+                        />
+                      </Pressable>
+                    </View>
                   </View>
                 </Pressable>
               );

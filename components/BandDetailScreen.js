@@ -912,24 +912,21 @@ export default function BandDetailScreen({
               )}
             </ScrollView>
 
-            {/* BOTÃO FLUTUANTE (FAB) DE ORDENAÇÃO A-Z Z-A BANDA/MÚSICA */}
+            {/* BOTÃO FLUTUANTE (FAB) CIRCULAR SOMENTE ÍCONE COM 30% DE TRANSPARÊNCIA */}
             <Pressable
               style={({ pressed }) => [
-                styles.fabSortButton,
+                styles.fabSortButtonCircular,
                 {
                   backgroundColor: colors.primary,
-                  transform: [{ scale: pressed ? 0.92 : 1 }],
+                  opacity: pressed ? 0.9 : 0.7,
+                  transform: [{ scale: pressed ? 0.90 : 1 }],
                   shadowColor: colors.primary,
                 }
               ]}
               onPress={() => setShowSortModal(true)}
+              hitSlop={6}
             >
-              <Ionicons name="swap-vertical" size={18} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.fabSortText}>
-                {repertoireSort === 'name_asc' ? 'A - Z' :
-                 repertoireSort === 'name_desc' ? 'Z - A' :
-                 repertoireSort === 'band_asc' ? 'Banda A-Z' : 'Banda Z-A'}
-              </Text>
+              <Ionicons name="swap-vertical" size={20} color="#ffffff" />
             </Pressable>
           </View>
         )}
@@ -1194,7 +1191,7 @@ export default function BandDetailScreen({
                 onPress={handleOpenAddFinance}
               >
                 <Ionicons name="add" size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                <Text style={styles.addFinanceBtnText}>Novo Lançamento Financeiro</Text>
+                <Text style={styles.addFinanceBtnText}>Novo Lançamento</Text>
               </Pressable>
             </View>
 
@@ -1326,7 +1323,7 @@ export default function BandDetailScreen({
               onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
             >
               <Ionicons name="add" size={20} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.createEventBtnText}>Criar Evento para esta Banda</Text>
+              <Text style={styles.createEventBtnText}>Novo Evento</Text>
             </Pressable>
 
             {bandSetlists.length === 0 ? (
@@ -1481,7 +1478,7 @@ export default function BandDetailScreen({
           <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '80%' }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitleText, { color: colors.text }]}>
-                {editingFinanceItem ? 'Editar Lançamento' : 'Novo Lançamento Financeiro'}
+                {editingFinanceItem ? 'Editar Lançamento' : 'Novo Lançamento'}
               </Text>
               <Pressable onPress={() => setShowAddFinanceModal(false)}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
