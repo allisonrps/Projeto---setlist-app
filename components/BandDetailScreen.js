@@ -625,9 +625,9 @@ export default function BandDetailScreen({
     const start = (m.startDate || '').trim();
     const end = (m.endDate || '').trim();
     if (!start && !end) return null;
-    if (start && end) return `${start} até ${end}`;
-    if (start && !end) return m.status === 'inactive' ? `Desde ${start}` : `Desde ${start} (Atual)`;
-    if (!start && end) return `Até ${end}`;
+    if (start && end) return `${start} ${t('until') || 'até'} ${end}`;
+    if (start && !end) return m.status === 'inactive' ? `${t('since') || 'Desde'} ${start}` : `${t('since') || 'Desde'} ${start} (${t('current') || 'Atual'})`;
+    if (!start && end) return `${t('untilCapital') || 'Até'} ${end}`;
     return null;
   };
 

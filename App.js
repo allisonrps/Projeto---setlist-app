@@ -650,9 +650,10 @@ function MainApp() {
   const [editingSetlistFromBandDetail, setEditingSetlistFromBandDetail] = useState(null);
   const [editingSongFromSetlistDetail, setEditingSongFromSetlistDetail] = useState(null);
 
-  // Controle de cards abertos por vez (máx 2)
   const [expandedSongIds, setExpandedSongIds] = useState([]);
   const [expandedSetlistIds, setExpandedSetlistIds] = useState([]);
+  const [showPrimaryColorSheet, setShowPrimaryColorSheet] = useState(false);
+  const [showSecondaryColorSheet, setShowSecondaryColorSheet] = useState(false);
 
   const handleToggleExpandSong = (songId) => {
     if (expandedSongIds.includes(songId)) {
@@ -2685,7 +2686,7 @@ function MainApp() {
                       </Text>
 
                       <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginTop: 2 }}>
-                        Desde: {band.startDate ? band.startDate : (currentYear - 1)}{band.endDate ? ` até ${band.endDate}` : ''}
+                        {t('since')}: {band.startDate ? band.startDate : (currentYear - 1)}{band.endDate ? ` ${t('until')} ${band.endDate}` : ''}
                       </Text>
                     </View>
 
@@ -3340,7 +3341,6 @@ function MainApp() {
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* CARD 1: TEMA & APARÊNCIA */}
           <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
@@ -3351,106 +3351,140 @@ function MainApp() {
               </Text>
             </View>
 
-            {/* Modo Claro / Escuro */}
-            <Text style={[styles.optionsSectionLabel, { color: colors.textMuted }]}>
-              {t('themeMode')}
-            </Text>
-            <View style={styles.optionsSegmentedContainer}>
-              <Pressable
-                style={[
-                  styles.optionsSegmentButton,
-                  { backgroundColor: themeMode === 'dark' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
-                ]}
-                onPress={() => setThemePreferences('dark', primaryColor, secondaryColor)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                  <Ionicons name="moon-outline" size={15} color={themeMode === 'dark' ? '#fff' : colors.text} />
-                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'dark' ? '#fff' : colors.text, fontWeight: themeMode === 'dark' ? '900' : '700' }]}>
+            {/* Modo Claro / Escuro (CHAVINHA TOGGLE EXCLUSIVA) */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('themeMode')}</Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                  {themeMode === 'dark' ? t('dark') : t('light')}
+                </Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#18181b' : '#e4e4e7', borderRadius: 20, padding: 3, gap: 2 }}>
+                <Pressable
+                  style={[
+                    {
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 18,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                      backgroundColor: themeMode === 'dark' ? colors.primary : 'transparent',
+                    }
+                  ]}
+                  onPress={() => setThemePreferences('dark', primaryColor, secondaryColor)}
+                >
+                  <Ionicons name="moon" size={14} color={themeMode === 'dark' ? '#ffffff' : colors.textMuted} />
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: themeMode === 'dark' ? '#ffffff' : colors.textMuted }}>
                     {t('dark')}
                   </Text>
-                </View>
-              </Pressable>
+                </Pressable>
 
-              <Pressable
-                style={[
-                  styles.optionsSegmentButton,
-                  { backgroundColor: themeMode === 'light' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
-                ]}
-                onPress={() => setThemePreferences('light', primaryColor, secondaryColor)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                  <Ionicons name="sunny-outline" size={15} color={themeMode === 'light' ? '#fff' : colors.text} />
-                  <Text style={[styles.optionsSegmentText, { color: themeMode === 'light' ? '#fff' : colors.text, fontWeight: themeMode === 'light' ? '900' : '700' }]}>
+                <Pressable
+                  style={[
+                    {
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 18,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                      backgroundColor: themeMode === 'light' ? colors.primary : 'transparent',
+                    }
+                  ]}
+                  onPress={() => setThemePreferences('light', primaryColor, secondaryColor)}
+                >
+                  <Ionicons name="sunny" size={14} color={themeMode === 'light' ? '#ffffff' : colors.textMuted} />
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: themeMode === 'light' ? '#ffffff' : colors.textMuted }}>
                     {t('light')}
                   </Text>
-                </View>
-              </Pressable>
+                </Pressable>
+              </View>
             </View>
 
-            {/* Cor Primária */}
-            <Text style={[styles.optionsSectionLabel, { color: colors.textMuted }]}>
-              {t('primaryColor')}
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 2, alignItems: 'center', gap: 8 }}
-              style={{ marginBottom: 14, height: 48 }}
+            {/* Cor Primária: APENAS UM CÍRCULO QUE ABRE O BOTTOM SHEET */}
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: colors.border,
+                  opacity: pressed ? 0.8 : 1
+                }
+              ]}
+              onPress={() => setShowPrimaryColorSheet(true)}
             >
-              {THEME_COLORS.map((color) => (
-                <Pressable
-                  key={color}
-                  style={({ pressed }) => [
-                    styles.optionColorCircle,
-                    {
-                      backgroundColor: color,
-                      borderColor: primaryColor === color ? colors.text : 'transparent',
-                      borderWidth: primaryColor === color ? 3 : 0,
-                      transform: [{ scale: pressed ? 0.9 : 1 }]
-                    }
-                  ]}
-                  onPress={() => setThemePreferences(themeMode, color, secondaryColor)}
-                >
-                  {primaryColor === color && (
-                    <View style={styles.optionColorInnerDot} />
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
+              <View>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('primaryColor')}</Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                  {primaryColor.toUpperCase()} • {t('tapToChange')}
+                </Text>
+              </View>
 
-            {/* Cor Secundária */}
-            <Text style={[styles.optionsSectionLabel, { color: colors.textMuted }]}>
-              {t('secondaryColor')}
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 2, alignItems: 'center', gap: 8 }}
-              style={{ marginBottom: 4, height: 48 }}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  backgroundColor: primaryColor,
+                  borderWidth: 3,
+                  borderColor: isDark ? '#ffffff' : colors.text,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  elevation: 4
+                }}>
+                  <Ionicons name="color-palette" size={16} color="#ffffff" />
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </View>
+            </Pressable>
+
+            {/* Cor Secundária: APENAS UM CÍRCULO QUE ABRE O BOTTOM SHEET */}
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: colors.border,
+                  opacity: pressed ? 0.8 : 1
+                }
+              ]}
+              onPress={() => setShowSecondaryColorSheet(true)}
             >
-              {THEME_COLORS.map((color) => (
-                <Pressable
-                  key={color}
-                  style={({ pressed }) => [
-                    styles.optionColorCircle,
-                    {
-                      backgroundColor: color,
-                      borderColor: secondaryColor === color ? colors.text : 'transparent',
-                      borderWidth: secondaryColor === color ? 3 : 0,
-                      transform: [{ scale: pressed ? 0.9 : 1 }]
-                    }
-                  ]}
-                  onPress={() => setThemePreferences(themeMode, primaryColor, color)}
-                >
-                  {secondaryColor === color && (
-                    <View style={styles.optionColorInnerDot} />
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
+              <View>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('secondaryColor')}</Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                  {secondaryColor.toUpperCase()} • {t('tapToChange')}
+                </Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  backgroundColor: secondaryColor,
+                  borderWidth: 3,
+                  borderColor: isDark ? '#ffffff' : colors.text,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  elevation: 4
+                }}>
+                  <Ionicons name="color-palette" size={16} color="#ffffff" />
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </View>
+            </Pressable>
           </View>
 
-          {/* CARD 2: IDIOMA DO APLICATIVO */}
+          {/* CARD 2: IDIOMA DO APLICATIVO (TOGGLE SWITCH DESATIVA OS OUTROS) */}
           <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
@@ -3461,39 +3495,57 @@ function MainApp() {
               </Text>
             </View>
 
-            <View style={styles.optionsSegmentedContainer}>
+            <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#18181b' : '#e4e4e7', borderRadius: 20, padding: 4, gap: 4 }}>
               <Pressable
                 style={[
-                  styles.optionsSegmentButton,
-                  { backgroundColor: language === 'pt' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
+                  {
+                    flex: 1,
+                    paddingVertical: 10,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: language === 'pt' ? colors.primary : 'transparent',
+                  }
                 ]}
                 onPress={() => setLanguage('pt')}
               >
-                <Text style={[styles.optionsSegmentText, { color: language === 'pt' ? '#fff' : colors.text, fontWeight: language === 'pt' ? '900' : '700' }]}>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'pt' ? '#ffffff' : colors.textMuted }}>
                   Português 🇧🇷
                 </Text>
               </Pressable>
 
               <Pressable
                 style={[
-                  styles.optionsSegmentButton,
-                  { backgroundColor: language === 'en' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
+                  {
+                    flex: 1,
+                    paddingVertical: 10,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: language === 'en' ? colors.primary : 'transparent',
+                  }
                 ]}
                 onPress={() => setLanguage('en')}
               >
-                <Text style={[styles.optionsSegmentText, { color: language === 'en' ? '#fff' : colors.text, fontWeight: language === 'en' ? '900' : '700' }]}>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'en' ? '#ffffff' : colors.textMuted }}>
                   English 🇺🇸
                 </Text>
               </Pressable>
 
               <Pressable
                 style={[
-                  styles.optionsSegmentButton,
-                  { backgroundColor: language === 'es' ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') }
+                  {
+                    flex: 1,
+                    paddingVertical: 10,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: language === 'es' ? colors.primary : 'transparent',
+                  }
                 ]}
                 onPress={() => setLanguage('es')}
               >
-                <Text style={[styles.optionsSegmentText, { color: language === 'es' ? '#fff' : colors.text, fontWeight: language === 'es' ? '900' : '700' }]}>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'es' ? '#ffffff' : colors.textMuted }}>
                   Español 🇪🇸
                 </Text>
               </Pressable>
@@ -4022,6 +4074,124 @@ function MainApp() {
         item={shareOptionsItem}
         onSelectOption={handleSelectShareOption}
       />
+
+      {/* MODAL BOTTOM SHEET SELEÇÃO COR PRIMÁRIA */}
+      <Modal
+        visible={showPrimaryColorSheet}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowPrimaryColorSheet(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowPrimaryColorSheet(false)}>
+          <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={styles.modalHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: primaryColor }} />
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('primaryColor')}</Text>
+              </View>
+              <Pressable onPress={() => setShowPrimaryColorSheet(false)}>
+                <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+              </Pressable>
+            </View>
+
+            <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingVertical: 12 }}>
+              {THEME_COLORS.map((color) => {
+                const isSelected = primaryColor === color;
+                return (
+                  <Pressable
+                    key={color}
+                    style={({ pressed }) => [
+                      {
+                        width: '28%',
+                        flexGrow: 1,
+                        padding: 12,
+                        borderRadius: 14,
+                        backgroundColor: isSelected ? color + '20' : (isDark ? '#18181b' : '#f4f4f5'),
+                        borderColor: isSelected ? color : colors.border,
+                        borderWidth: isSelected ? 2 : 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        opacity: pressed ? 0.8 : 1
+                      }
+                    ]}
+                    onPress={() => {
+                      setThemePreferences(themeMode, color, secondaryColor);
+                      setShowPrimaryColorSheet(false);
+                    }}
+                  >
+                    <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: color, justifyContent: 'center', alignItems: 'center', borderWidth: isSelected ? 2 : 0, borderColor: '#fff' }}>
+                      {isSelected && <Ionicons name="checkmark" size={18} color="#ffffff" />}
+                    </View>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: isSelected ? color : colors.text, textAlign: 'center' }}>
+                      {color.toUpperCase()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* MODAL BOTTOM SHEET SELEÇÃO COR SECUNDÁRIA */}
+      <Modal
+        visible={showSecondaryColorSheet}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowSecondaryColorSheet(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowSecondaryColorSheet(false)}>
+          <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={styles.modalHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: secondaryColor }} />
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('secondaryColor')}</Text>
+              </View>
+              <Pressable onPress={() => setShowSecondaryColorSheet(false)}>
+                <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+              </Pressable>
+            </View>
+
+            <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingVertical: 12 }}>
+              {THEME_COLORS.map((color) => {
+                const isSelected = secondaryColor === color;
+                return (
+                  <Pressable
+                    key={color}
+                    style={({ pressed }) => [
+                      {
+                        width: '28%',
+                        flexGrow: 1,
+                        padding: 12,
+                        borderRadius: 14,
+                        backgroundColor: isSelected ? color + '20' : (isDark ? '#18181b' : '#f4f4f5'),
+                        borderColor: isSelected ? color : colors.border,
+                        borderWidth: isSelected ? 2 : 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        opacity: pressed ? 0.8 : 1
+                      }
+                    ]}
+                    onPress={() => {
+                      setThemePreferences(themeMode, primaryColor, color);
+                      setShowSecondaryColorSheet(false);
+                    }}
+                  >
+                    <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: color, justifyContent: 'center', alignItems: 'center', borderWidth: isSelected ? 2 : 0, borderColor: '#fff' }}>
+                      {isSelected && <Ionicons name="checkmark" size={18} color="#ffffff" />}
+                    </View>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: isSelected ? color : colors.text, textAlign: 'center' }}>
+                      {color.toUpperCase()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
 
       <ShareQrModal
         visible={showShareQrModal}
