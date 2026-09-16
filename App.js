@@ -816,9 +816,9 @@ function MainApp() {
   const handleSaveBand = async (bandData) => {
     try {
       if (editingBand) {
-        await bandService.update(editingBand.id, bandData.name, bandData.imageUri);
+        await bandService.update(editingBand.id, bandData.name, bandData.imageUri, bandData.startDate, bandData.endDate);
       } else {
-        await bandService.insert(bandData.name, bandData.imageUri);
+        await bandService.insert(bandData.name, bandData.imageUri, bandData.startDate, bandData.endDate);
       }
       await reloadAllData();
       setShowBandModal(false);
@@ -2653,12 +2653,12 @@ function MainApp() {
                   ]}
                   onPress={() => setActiveBandDetail(band)}
                 >
-                  {/* Cabeçalho do Card (Logo + Nome + Status) */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+                  {/* Cabeçalho do Card (Logo + Nome + Data Desde) */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                     <View style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 32,
+                      width: 60,
+                      height: 60,
+                      borderRadius: 30,
                       borderWidth: 2,
                       borderColor: colors.primary,
                       backgroundColor: colors.primary + '18',
@@ -2667,79 +2667,78 @@ function MainApp() {
                       marginRight: 14,
                     }}>
                       {band.imageUri ? (
-                        <Image source={{ uri: band.imageUri }} style={{ width: 58, height: 58, borderRadius: 29 }} />
+                        <Image source={{ uri: band.imageUri }} style={{ width: 54, height: 54, borderRadius: 27 }} />
                       ) : (
-                        <Text style={{ fontSize: 24, fontWeight: '900', color: colors.primary }}>
+                        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary }}>
                           {getBandInitials(band.name)}
                         </Text>
                       )}
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 19, fontWeight: '900', color: colors.text, letterSpacing: -0.2 }} numberOfLines={1}>
+                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, letterSpacing: -0.2 }} numberOfLines={1}>
                         {band.name}
                       </Text>
 
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 6 }} />
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: '#10b981', letterSpacing: 0.4 }}>
-                          PROJETO ATIVO • Desde {currentYear - 1}
-                        </Text>
-                      </View>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginTop: 2 }}>
+                        Desde: {band.startDate ? band.startDate : (currentYear - 1)}{band.endDate ? ` até ${band.endDate}` : ''}
+                      </Text>
                     </View>
 
                     <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
                   </View>
 
-                  {/* Resumão do Projeto: Grid de Métricas (Sem Bordas, Vidro Moderno) */}
+                  {/* Mostradores: Somente Ícones com os Números */}
                   <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-around',
                     backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                    borderRadius: 14,
-                    padding: 12,
-                    gap: 10,
-                    marginBottom: 14
+                    borderRadius: 12,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    marginBottom: 10
                   }}>
-                    {/* Linha 1: Músicas & Integrantes */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Ionicons name="disc-outline" size={16} color={colors.primary} />
-                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
-                          {songsCount} {songsCount === 1 ? 'música' : 'músicas'} no repertório
-                        </Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Ionicons name="people-outline" size={16} color={colors.primary} />
-                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
-                          {membersCount} {membersCount === 1 ? 'integrante' : 'integrantes'}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Linha 2: Shows & Ensaios */}
+                    {/* Músicas */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="calendar-outline" size={16} color={colors.primary} />
-                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
-                        {showsCount} {showsCount === 1 ? 'Show' : 'Shows'} • {rehearsalsCount} {rehearsalsCount === 1 ? 'Ensaio' : 'Ensaios'}
-                      </Text>
+                      <Ionicons name="disc-outline" size={18} color={colors.primary} />
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{songsCount}</Text>
                     </View>
 
-                    {/* Linha 3: 3 Principais Estilos */}
-                    {topStyles.length > 0 && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                        <Ionicons name="pricetag-outline" size={15} color={colors.textMuted} />
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                          {topStyles.map(st => (
-                            <View key={st} style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                              <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>{st}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                    )}
+                    {/* Integrantes */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="people-outline" size={18} color={colors.primary} />
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{membersCount}</Text>
+                    </View>
+
+                    {/* Shows */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{showsCount}</Text>
+                    </View>
+
+                    {/* Ensaios */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="musical-notes-outline" size={18} color={colors.primary} />
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{rehearsalsCount}</Text>
+                    </View>
                   </View>
 
-                  {/* Mostrador de Cachê Acumulado (Ano Atual e Ano Anterior) */}
+                  {/* 3 Principais Estilos */}
+                  {topStyles.length > 0 && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, paddingHorizontal: 2 }}>
+                      <Ionicons name="pricetag-outline" size={14} color={colors.textMuted} />
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                        {topStyles.map(st => (
+                          <View key={st} style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>{st}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Mostrador de Cachê Acumulado */}
                   <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -2747,8 +2746,7 @@ function MainApp() {
                     backgroundColor: isDark ? '#18181b' : '#f4f4f5',
                     borderRadius: 12,
                     paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    marginBottom: 10
+                    paddingVertical: 8
                   }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Ionicons name="cash-outline" size={16} color="#10b981" />
@@ -2762,13 +2760,6 @@ function MainApp() {
                         Acumulado {prevYear}: <Text style={{ color: colors.text, fontWeight: '900' }}>$ {prevYearCache.toFixed(2)}</Text>
                       </Text>
                     )}
-                  </View>
-
-                  {/* Rodapé de Ação */}
-                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingTop: 2 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>
-                      Abrir Painel Completo →
-                    </Text>
                   </View>
                 </Pressable>
               );

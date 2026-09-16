@@ -631,15 +631,19 @@ const createWebDB = () => {
       // INSERT / UPDATE / DELETE de Bandas
       if (sql.includes('INSERT INTO my_bands')) {
         const id = Math.max(...data.my_bands.map(b => b.id || 0), 0) + 1;
-        data.my_bands.push({ id, name: params[0], imageUri: params[1] });
+        data.my_bands.push({ id, name: params[0], imageUri: params[1], startDate: params[2] || '', endDate: params[3] || '' });
         saveToStorage();
         return { lastInsertRowId: id };
       }
       if (sql.includes('UPDATE my_bands')) {
-        const band = data.my_bands.find(b => b.id === params[2]);
+        const band = data.my_bands.find(b => b.id === params[4] || b.id === params[2]);
         if (band) {
           band.name = params[0];
           band.imageUri = params[1];
+          if (params.length >= 4) {
+            band.startDate = params[2] || '';
+            band.endDate = params[3] || '';
+          }
           saveToStorage();
         }
         return {};

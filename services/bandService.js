@@ -11,11 +11,11 @@ export const bandService = {
     }
   },
 
-  async insert(name, imageUri) {
+  async insert(name, imageUri, startDate = '', endDate = '') {
     try {
       const result = await db.runAsync(
-        'INSERT INTO my_bands (name, imageUri) VALUES (?, ?);',
-        [name, imageUri]
+        'INSERT INTO my_bands (name, imageUri, startDate, endDate) VALUES (?, ?, ?, ?);',
+        [name, imageUri, startDate || '', endDate || '']
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -24,11 +24,11 @@ export const bandService = {
     }
   },
 
-  async update(id, name, imageUri) {
+  async update(id, name, imageUri, startDate = '', endDate = '') {
     try {
       await db.runAsync(
-        'UPDATE my_bands SET name = ?, imageUri = ? WHERE id = ?;',
-        [name, imageUri, id]
+        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ? WHERE id = ?;',
+        [name, imageUri, startDate || '', endDate || '', id]
       );
     } catch (error) {
       console.error('Error in bandService.update:', error);

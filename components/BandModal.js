@@ -22,15 +22,21 @@ export default function BandModal({ visible, onClose, onSave, band }) {
   const { t } = useLanguage();
   const [name, setName] = useState('');
   const [imageUri, setImageUri] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     if (visible) {
       if (band) {
-        setName(band.name);
-        setImageUri(band.imageUri);
+        setName(band.name || '');
+        setImageUri(band.imageUri || null);
+        setStartDate(band.startDate || '');
+        setEndDate(band.endDate || '');
       } else {
         setName('');
         setImageUri(null);
+        setStartDate('');
+        setEndDate('');
       }
     }
   }, [visible, band]);
@@ -62,7 +68,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       Alert.alert('Atenção', 'Informe o nome da banda.');
       return;
     }
-    onSave({ name: name.trim(), imageUri });
+    onSave({ name: name.trim(), imageUri, startDate: startDate.trim(), endDate: endDate.trim() });
   };
 
   return (
@@ -106,6 +112,29 @@ export default function BandModal({ visible, onClose, onSave, band }) {
               autoComplete="off"
               importantForAutofill="no"
             />
+
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA DE INÍCIO</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                  placeholder="Ex: 2024"
+                  placeholderTextColor={colors.textMuted}
+                  value={startDate}
+                  onChangeText={setStartDate}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA FIM (OPCIONAL)</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
+                  placeholder="Ex: Atual"
+                  placeholderTextColor={colors.textMuted}
+                  value={endDate}
+                  onChangeText={setEndDate}
+                />
+              </View>
+            </View>
 
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('coverImageLabel')}</Text>
             <Pressable 
