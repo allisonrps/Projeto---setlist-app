@@ -2567,51 +2567,92 @@ function MainApp() {
                 <Pressable
                   key={band.id}
                   style={({ pressed }) => [
-                    styles.bandCard,
                     {
                       backgroundColor: colors.cardBackground,
                       borderColor: colors.border,
                       borderWidth: 1.5,
-                      marginBottom: 12,
-                      transform: [{ scale: pressed ? 0.98 : 1 }],
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      padding: 14,
-                      borderRadius: 12,
+                      marginBottom: 16,
+                      borderRadius: 16,
+                      padding: 16,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 3 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 5,
+                      elevation: 3,
+                      transform: [{ scale: pressed ? 0.98 : 1 }]
                     }
                   ]}
-                  onPress={() => {
-                    setActiveBandDetail(band);
-                  }}
+                  onPress={() => setActiveBandDetail(band)}
                 >
-                  <View style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 26,
-                    borderWidth: 2,
-                    borderColor: colors.primary,
-                    backgroundColor: colors.primary + '15',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginRight: 14,
-                  }}>
-                    {band.imageUri ? (
-                      <Image source={{ uri: band.imageUri }} style={{ width: 48, height: 48, borderRadius: 24 }} />
-                    ) : (
-                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>
-                        {getBandInitials(band.name)}
+                  {/* Cabeçalho do Card da Banda */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                    <View style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 30,
+                      borderWidth: 2,
+                      borderColor: colors.primary,
+                      backgroundColor: colors.primary + '15',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 14,
+                    }}>
+                      {band.imageUri ? (
+                        <Image source={{ uri: band.imageUri }} style={{ width: 54, height: 54, borderRadius: 27 }} />
+                      ) : (
+                        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary }}>
+                          {getBandInitials(band.name)}
+                        </Text>
+                      )}
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }} numberOfLines={1}>
+                        {band.name}
                       </Text>
-                    )}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 6 }} />
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: '#10b981', letterSpacing: 0.5 }}>
+                          PROJETO ATIVO
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
                   </View>
 
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>{band.name}</Text>
-                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
-                      {bSetlists.length} {bSetlists.length === 1 ? 'evento' : 'eventos'} agendados
+                  {/* Resumão Grid com Métricas */}
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 10,
+                    marginBottom: 10
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="calendar-outline" size={15} color={colors.primary} />
+                      <Text style={{ fontSize: 12, color: colors.text, fontWeight: '800' }}>
+                        {bSetlists.length} {bSetlists.length === 1 ? 'Evento' : 'Eventos'}
+                      </Text>
+                    </View>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="disc-outline" size={15} color={colors.primary} />
+                      <Text style={{ fontSize: 12, color: colors.text, fontWeight: '800' }}>
+                        Repertório Exclusivo
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Ações Rápidas do Card */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 2 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>
+                      Abrir Painel Completo →
                     </Text>
                   </View>
-
-                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
                 </Pressable>
               );
             })

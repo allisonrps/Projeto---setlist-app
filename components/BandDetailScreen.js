@@ -133,6 +133,15 @@ export default function BandDetailScreen({
   const [finStatus, setFinStatus] = useState('paid'); // 'paid' | 'pending'
   const [finNotes, setFinNotes] = useState('');
 
+  // Repertoire Sort State
+  const [repertoireSort, setRepertoireSort] = useState('name_asc'); // 'name_asc' | 'name_desc' | 'band_asc' | 'band_desc'
+  const [showSortModal, setShowSortModal] = useState(false);
+
+  // Member Cachet Split Modal State
+  const [showCacheSplitModal, setShowCacheSplitModal] = useState(false);
+  const [selectedShowForSplit, setSelectedShowForSplit] = useState(null);
+  const [memberSplits, setMemberSplits] = useState({});
+
   // Load Band Data when modal opens or updates
   const loadData = useCallback(async () => {
     if (band && band.id) {
@@ -172,6 +181,53 @@ export default function BandDetailScreen({
   // Separate active and inactive members
   const activeMembers = (members || []).filter(m => (m.status || 'active') === 'active');
   const inactiveMembers = (members || []).filter(m => m.status === 'inactive');
+
+  // Member Cachet Split Handlers
+  const handleOpenCacheSplitModal = async (showSetlist) => {
+    setSelectedShowForSplit(showSetlist);
+    const existing = await bandService.getShowCacheSplit(showSetlist.id);
+    const rawCache = showSetlist.cachê || showSetlist.cache || showSetlist.valCache || showSetlist.value;
+    const totalVal = parseCurrency(rawCache);
+
+    if (existing && Object.keys(existing).length > 0) {
+      setMemberSplits(existing);
+    } else {
+      const activeM = (members || []).filter(m => (m.status || 'active') === 'active');
+      const share = activeM.length > 0 ? (totalVal / activeM.length).toFixed(2) : '0';
+      const initial = {};
+      activeM.forEach(m => {
+        initial[m.id] = share;
+      });
+      setMemberSplits(initial);
+    }
+    setShowCacheSplitModal(true);
+  };
+
+  const handleDivideCachetEqually = () => {
+    if (!selectedShowForSplit) return;
+    const rawCache = selectedShowForSplit.cachê || selectedShowForSplit.cache || selectedShowForSplit.valCache || selectedShowForSplit.value;
+    const totalVal = parseCurrency(rawCache);
+    const activeM = (members || []).filter(m => (m.status || 'active') === 'active');
+    if (activeM.length === 0) return;
+    const share = (totalVal / activeM.length).toFixed(2);
+    const updated = {};
+    activeM.forEach(m => {
+      updated[m.id] = share;
+    });
+    setMemberSplits(updated);
+  };
+
+  const handleSaveCachetSplit = async () => {
+    if (!selectedShowForSplit) return;
+    try {
+      await bandService.saveShowCacheSplit(selectedShowForSplit.id, memberSplits);
+      setShowCacheSplitModal(false);
+      Alert.alert('Sucesso', 'Divisão de cachê por integrante salva com sucesso!');
+    } catch (err) {
+      console.error('Error saving cache split:', err);
+      Alert.alert('Erro', 'Não foi possível salvar a divisão do cachê.');
+    }
+  };
 
   // Toggle member card expansion
   const handleToggleExpandMember = (id) => {
@@ -855,6 +911,26 @@ export default function BandDetailScreen({
                 ))
               )}
             </ScrollView>
+
+            {/* BOTÃO FLUTUANTE (FAB) DE ORDENAÇÃO A-Z Z-A BANDA/MÚSICA */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.fabSortButton,
+                {
+                  backgroundColor: colors.primary,
+                  transform: [{ scale: pressed ? 0.92 : 1 }],
+                  shadowColor: colors.primary,
+                }
+              ]}
+              onPress={() => setShowSortModal(true)}
+            >
+              <Ionicons name="swap-vertical" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+              <Text style={styles.fabSortText}>
+                {repertoireSort === 'name_asc' ? 'A - Z' :
+                 repertoireSort === 'name_desc' ? 'Z - A' :
+                 repertoireSort === 'band_asc' ? 'Banda A-Z' : 'Banda Z-A'}
+              </Text>
+            </Pressable>
           </View>
         )}
 
@@ -1155,7 +1231,7 @@ export default function BandDetailScreen({
                         styles.financeItemRow,
                         { borderBottomColor: colors.border, opacity: pressed ? 0.75 : 1 }
                       ]}
-                      onPress={() => onSelectSetlist && onSelectSetlist(sl)}
+                      onPress={() => handleOpenCacheSplitModal(sl)}
                     >
                       {/* Badge de Data */}
                       <View style={{
@@ -1624,6 +1700,133 @@ export default function BandDetailScreen({
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* MODAL BOTTOM SHEET DE ORDENAÇÃO DO REPERTÓRIO */}
+      <Modal visible={showSortModal} animationType="slide" transparent onRequestClose={() => setShowSortModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setShowSortModal(false)}>
+          <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={styles.modalHeaderRow}>
+              <Text style={[styles.modalTitleText, { color: colors.text }]}>Organizar Repertório</Text>
+              <Pressable onPress={() => setShowSortModal(false)}>
+                <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+              </Pressable>
+            </View>
+
+            <View style={{ gap: 8, marginVertical: 12 }}>
+              {[
+                { id: 'name_asc', label: 'Nome da Música (A - Z)', icon: 'text' },
+                { id: 'name_desc', label: 'Nome da Música (Z - A)', icon: 'text' },
+                { id: 'band_asc', label: 'Banda Original (A - Z)', icon: 'disc' },
+                { id: 'band_desc', label: 'Banda Original (Z - A)', icon: 'disc' },
+              ].map(opt => {
+                const isSelected = repertoireSort === opt.id;
+                return (
+                  <Pressable
+                    key={opt.id}
+                    style={({ pressed }) => [
+                      styles.sortOptionRow,
+                      {
+                        backgroundColor: isSelected ? colors.primary + '18' : isDark ? '#27272a' : '#f4f4f5',
+                        borderColor: isSelected ? colors.primary : colors.border,
+                        transform: [{ scale: pressed ? 0.98 : 1 }]
+                      }
+                    ]}
+                    onPress={() => {
+                      setRepertoireSort(opt.id);
+                      setShowSortModal(false);
+                    }}
+                  >
+                    <Ionicons name={opt.icon} size={18} color={isSelected ? colors.primary : colors.text} style={{ marginRight: 10 }} />
+                    <Text style={{ flex: 1, fontSize: 14, fontWeight: isSelected ? '900' : '600', color: isSelected ? colors.primary : colors.text }}>
+                      {opt.label}
+                    </Text>
+                    {isSelected && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* MODAL BOTTOM SHEET DE DIVISÃO DE CACHÊ POR INTEGRANTE */}
+      <Modal visible={showCacheSplitModal} animationType="slide" transparent onRequestClose={() => setShowCacheSplitModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={styles.modalHeaderRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>Divisão de Cachê por Integrante</Text>
+                <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700', marginTop: 2 }}>
+                  {selectedShowForSplit ? selectedShowForSplit.name : ''}
+                </Text>
+              </View>
+              <Pressable onPress={() => setShowCacheSplitModal(false)}>
+                <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+              </Pressable>
+            </View>
+
+            {/* Subcabeçalho com botão Dividir Igualmente */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10, paddingHorizontal: 4 }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '700' }}>
+                Total Cachê: <Text style={{ color: '#10b981', fontWeight: '900', fontSize: 14 }}>$ {(parseCurrency(selectedShowForSplit ? (selectedShowForSplit.cachê || selectedShowForSplit.cache || selectedShowForSplit.valCache || selectedShowForSplit.value) : 0)).toFixed(2)}</Text>
+              </Text>
+              <Pressable
+                style={[styles.equalSplitBtn, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+                onPress={handleDivideCachetEqually}
+              >
+                <Ionicons name="calculator-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>Dividir Igualmente</Text>
+              </Pressable>
+            </View>
+
+            {/* Lista de Integrantes Ativos e Input de Cachê */}
+            <ScrollView style={{ maxHeight: 280, marginVertical: 8 }}>
+              {activeMembers.length === 0 ? (
+                <Text style={{ textAlign: 'center', color: colors.textMuted, marginVertical: 20 }}>
+                  Nenhum integrante ativo cadastrado nesta banda.
+                </Text>
+              ) : (
+                activeMembers.map(m => {
+                  const val = memberSplits[m.id] !== undefined ? memberSplits[m.id] : '';
+                  return (
+                    <View key={m.id} style={[styles.memberSplitRow, { borderBottomColor: colors.border }]}>
+                      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center', marginRight: 10 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>{getBandInitials(m.name)}</Text>
+                      </View>
+                      <View style={{ flex: 1, paddingRight: 6 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>{m.name}</Text>
+                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>{m.role || 'Integrante'}</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary, marginRight: 4 }}>$</Text>
+                        <TextInput
+                          style={[styles.splitCurrencyInput, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? '#18181b' : '#f4f4f5' }]}
+                          keyboardType="numeric"
+                          value={String(val)}
+                          onChangeText={(txt) => {
+                            setMemberSplits(prev => ({ ...prev, [m.id]: txt }));
+                          }}
+                          placeholder="0.00"
+                          placeholderTextColor={colors.textMuted}
+                        />
+                      </View>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+
+            <View style={styles.modalFooterRow}>
+              <Pressable style={[styles.modalCancelBtn, { borderColor: colors.border }]} onPress={() => setShowCacheSplitModal(false)}>
+                <Text style={{ color: colors.text }}>Cancelar</Text>
+              </Pressable>
+              <Pressable style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]} onPress={handleSaveCachetSplit}>
+                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Salvar Divisão</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </Modal>
   );
 }
@@ -1937,4 +2140,61 @@ const styles = StyleSheet.create({
 
   typeSelectBtn: { flex: 1, height: 38, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', justifyContent: 'center', alignItems: 'center', marginHorizontal: 4 },
   typeSelectText: { fontWeight: 'bold', fontSize: 13 },
+
+  fabSortButton: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    zIndex: 99,
+  },
+  fabSortText: { color: '#ffffff', fontWeight: '900', fontSize: 12 },
+  bottomSheetContainer: {
+    width: '100%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    maxHeight: '82%',
+  },
+  sortOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  equalSplitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  memberSplitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  splitCurrencyInput: {
+    width: 90,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
 });

@@ -25,63 +25,116 @@ export default function PulsingStageButton({
   const { t } = useLanguage();
   const btnColor = color || colors.primary;
 
-  const pulseScale = useRef(new Animated.Value(1)).current;
-  const pulseOpacity = useRef(new Animated.Value(0.65)).current;
+  // Animação 1: Anel Externo Principal (Expansão até 1.8x)
+  const pulseScale1 = useRef(new Animated.Value(1)).current;
+  const pulseOpacity1 = useRef(new Animated.Value(0.8)).current;
+
+  // Animação 2: Anel Secundário Interno (Ripples de Radar)
+  const pulseScale2 = useRef(new Animated.Value(1)).current;
+  const pulseOpacity2 = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
-    const pulseLoop = Animated.loop(
+    const loop1 = Animated.loop(
       Animated.parallel([
-        Animated.timing(pulseScale, {
-          toValue: variant === 'icon' ? 1.55 : 1.38,
-          duration: 1500,
-          easing: Easing.out(Easing.ease),
+        Animated.timing(pulseScale1, {
+          toValue: variant === 'icon' ? 1.8 : 1.55,
+          duration: 1600,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(pulseOpacity, {
+        Animated.timing(pulseOpacity1, {
           toValue: 0,
-          duration: 1500,
-          easing: Easing.out(Easing.ease),
+          duration: 1600,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ])
     );
 
-    pulseLoop.start();
-    return () => pulseLoop.stop();
+    const loop2 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(400),
+        Animated.parallel([
+          Animated.timing(pulseScale2, {
+            toValue: variant === 'icon' ? 1.45 : 1.3,
+            duration: 1400,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity2, {
+            toValue: 0,
+            duration: 1400,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    );
+
+    loop1.start();
+    loop2.start();
+
+    return () => {
+      loop1.stop();
+      loop2.stop();
+    };
   }, [variant]);
 
   if (variant === 'icon') {
     return (
-      <View style={[{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }, style]}>
+      <View style={[{ width: 38, height: 38, alignItems: 'center', justifyContent: 'center' }, style]}>
+        {/* Anel 1 Pulsante Externo */}
         <Animated.View
           style={{
             position: 'absolute',
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: btnColor + '35',
-            borderColor: btnColor + '80',
-            borderWidth: 1.5,
-            transform: [{ scale: pulseScale }],
-            opacity: pulseOpacity,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: btnColor + '45',
+            borderColor: btnColor + 'B0',
+            borderWidth: 2,
+            transform: [{ scale: pulseScale1 }],
+            opacity: pulseOpacity1,
           }}
         />
+
+        {/* Anel 2 Pulsante Interno */}
+        <Animated.View
+          style={{
+            position: 'absolute',
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: btnColor + '30',
+            borderColor: btnColor + '80',
+            borderWidth: 1.5,
+            transform: [{ scale: pulseScale2 }],
+            opacity: pulseOpacity2,
+          }}
+        />
+
+        {/* Botão Principal */}
         <Pressable
           style={({ pressed }) => [
             {
-              width: 36,
-              height: 36,
-              borderRadius: 18,
+              width: 38,
+              height: 38,
+              borderRadius: 19,
               backgroundColor: btnColor,
               alignItems: 'center',
               justifyContent: 'center',
-              transform: [{ scale: pressed ? 0.92 : 1 }],
+              transform: [{ scale: pressed ? 0.90 : 1 }],
+              shadowColor: btnColor,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.6,
+              shadowRadius: 6,
+              elevation: 5,
             },
           ]}
           onPress={onPress}
           hitSlop={6}
         >
-          <Ionicons name={iconName === 'mic' ? 'mic' : 'play'} size={18} color="#ffffff" />
+          <Ionicons name={iconName === 'mic' ? 'mic' : 'play'} size={20} color="#ffffff" />
         </Pressable>
       </View>
     );
@@ -90,21 +143,37 @@ export default function PulsingStageButton({
   const buttonLabel = label || t('startStageBtn') || 'MODO PALCO';
   const iconSize = size === 'small' ? 14 : size === 'large' ? 20 : 16;
   const paddingVertical = size === 'small' ? 6 : size === 'large' ? 14 : 10;
-  const paddingHorizontal = size === 'small' ? 12 : size === 'large' ? 24 : 16;
+  const paddingHorizontal = size === 'small' ? 14 : size === 'large' ? 26 : 18;
   const fontSize = size === 'small' ? 11 : size === 'large' ? 15 : 13;
 
   return (
     <View style={[styles.outerWrapper, style]}>
-      {/* Camada Anéis Pulsantes Externos (Pulsação Expandida) */}
+      {/* Anel 1 Pulsante Externo */}
       <Animated.View
         style={[
           styles.pulseRing,
           {
-            backgroundColor: btnColor + '30',
+            backgroundColor: btnColor + '40',
+            borderColor: btnColor + '99',
+            borderRadius: 30,
+            borderWidth: 2,
+            transform: [{ scale: pulseScale1 }],
+            opacity: pulseOpacity1,
+          },
+        ]}
+      />
+
+      {/* Anel 2 Pulsante Interno */}
+      <Animated.View
+        style={[
+          styles.pulseRing,
+          {
+            backgroundColor: btnColor + '25',
             borderColor: btnColor + '70',
             borderRadius: 30,
-            transform: [{ scale: pulseScale }],
-            opacity: pulseOpacity,
+            borderWidth: 1.5,
+            transform: [{ scale: pulseScale2 }],
+            opacity: pulseOpacity2,
           },
         ]}
       />
@@ -117,7 +186,12 @@ export default function PulsingStageButton({
             backgroundColor: btnColor,
             paddingVertical,
             paddingHorizontal,
-            transform: [{ scale: pressed ? 0.96 : 1 }],
+            transform: [{ scale: pressed ? 0.95 : 1 }],
+            shadowColor: btnColor,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.5,
+            shadowRadius: 10,
+            elevation: 6,
           },
         ]}
         onPress={onPress}
@@ -139,18 +213,12 @@ const styles = StyleSheet.create({
   },
   pulseRing: {
     ...StyleSheet.absoluteFillObject,
-    borderWidth: 1.5,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
     zIndex: 2,
   },
   buttonText: {

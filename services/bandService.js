@@ -230,5 +230,26 @@ export const bandService = {
       console.error('Error in bandService.deleteBandMember:', error);
       throw error;
     }
+  },
+
+  // ===== GESTÃO DE DIVISÃO DE CACHÊ POR INTEGRANTE =====
+  async saveShowCacheSplit(setlistId, splitsMap) {
+    try {
+      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
+      await AsyncStorage.setItem(`cache_split_${setlistId}`, JSON.stringify(splitsMap || {}));
+    } catch (error) {
+      console.error('Error in bandService.saveShowCacheSplit:', error);
+    }
+  },
+
+  async getShowCacheSplit(setlistId) {
+    try {
+      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
+      const data = await AsyncStorage.getItem(`cache_split_${setlistId}`);
+      return data ? JSON.parse(data) : {};
+    } catch (error) {
+      console.error('Error in bandService.getShowCacheSplit:', error);
+      return {};
+    }
   }
 };
