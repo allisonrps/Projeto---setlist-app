@@ -2549,7 +2549,7 @@ function MainApp() {
 
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingHorizontal: 6, paddingTop: 12, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
           {/* CARROSSEL DE BANDAS NA ABA DE BANDAS */}

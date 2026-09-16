@@ -754,7 +754,7 @@ export default function SongDetailScreen({
               value={chords}
               onChangeText={setChords}
               multiline
-              placeholder={t('chordsFormLabel') ? `Cole ou digite os acordes e cifras aqui...` : 'Chords...'}
+              placeholder={t('chordsPlaceholder')}
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
               autoComplete="off"
@@ -773,7 +773,7 @@ export default function SongDetailScreen({
               value={lyrics}
               onChangeText={setLyrics}
               multiline
-              placeholder={t('lyricsFormLabel') ? `Cole ou digite a letra da música aqui...` : 'Lyrics...'}
+              placeholder={t('lyricsPlaceholder')}
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
               autoComplete="off"
@@ -793,7 +793,7 @@ export default function SongDetailScreen({
               value={tabs}
               onChangeText={setTabs}
               multiline
-              placeholder={t('tabsFormLabel') ? `Cole ou digite as tablaturas aqui...` : 'Tabs...'}
+              placeholder={t('tabsPlaceholder')}
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
               autoComplete="off"

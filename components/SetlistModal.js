@@ -17,6 +17,7 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const ROW_HEIGHT = 56;
 
@@ -512,6 +513,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const [tempCustomNotes, setTempCustomNotes] = useState('');
   const [tempCustomDuration, setTempCustomDuration] = useState('');
   const [isDraggingActive, setIsDraggingActive] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -831,19 +833,44 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                   <View style={styles.rowInputs}>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('dateLabel').toUpperCase()} *</Text>
-                      <TextInput
-                        style={[styles.input, { 
-                          backgroundColor: colors.inputBackground, 
-                          color: colors.inputText,
-                          borderColor: colors.border
-                        }]}
-                        value={date}
-                        onChangeText={setDate}
-                        placeholder={t('datePlaceholder') || 'AAAA-MM-DD'}
-                        placeholderTextColor={colors.textMuted}
-                        autoComplete="off"
-                        importantForAutofill="no"
-                      />
+                      <Pressable onPress={() => setShowDatePicker(true)}>
+                        <View pointerEvents="none">
+                          <TextInput
+                            style={[styles.input, { 
+                              backgroundColor: colors.inputBackground, 
+                              color: colors.inputText,
+                              borderColor: colors.border
+                            }]}
+                            value={date}
+                            editable={false}
+                            placeholder={t('datePlaceholder') || 'AAAA-MM-DD'}
+                            placeholderTextColor={colors.textMuted}
+                          />
+                        </View>
+                      </Pressable>
+
+                      {showDatePicker && (
+                        <DateTimePicker
+                          value={(() => {
+                            if (date && date.includes('-')) {
+                              const [y, m, d] = date.split('-').map(n => parseInt(n, 10));
+                              if (y && m && d) return new Date(y, m - 1, d);
+                            }
+                            return new Date();
+                          })()}
+                          mode="date"
+                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                          onChange={(event, selectedDate) => {
+                            setShowDatePicker(Platform.OS === 'ios');
+                            if (selectedDate && event.type !== 'dismissed') {
+                              const yyyy = selectedDate.getFullYear();
+                              const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                              const dd = String(selectedDate.getDate()).padStart(2, '0');
+                              setDate(`${yyyy}-${mm}-${dd}`);
+                            }
+                          }}
+                        />
+                      )}
                     </View>
                     <View style={{ flex: 1.2 }}>
                       <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('localLabel').toUpperCase()}</Text>

@@ -169,6 +169,7 @@ const translations = {
     viewAllBands: 'Ver todas as bandas',
 
     // Gestão de Bandas
+    bands: 'Bandas / Projetos',
     addBand: '+ Banda',
     newBand: 'NOVA BANDA',
     editBand: 'EDITAR BANDA',
@@ -233,6 +234,9 @@ const translations = {
     songInfoCapo: 'Capo',
     songInfoKey: 'Tom',
 
+    songSingular: 'música',
+    songPlural: 'músicas',
+
     // Gestão de Setlists
     addSetlist: '+ Setlist',
     newSetlist: 'NOVO SETLIST',
@@ -253,7 +257,7 @@ const translations = {
     cachetPlaceholder: 'Ex: 500',
     dateLabel: 'DATA *',
     localLabel: 'LOCAL',
-    cachêLabel: 'CACHÊ (R$)',
+    cachêLabel: 'Cachê',
     notesLabel: 'OBSERVAÇÕES DO EVENTO',
     availableSongs: 'MÚSICAS DISPONÍVEIS',
     songsLabel: 'MÚSICAS DISPONÍVEIS',
@@ -681,6 +685,7 @@ const translations = {
     viewAllBands: 'View all bands',
 
     // Band Management
+    bands: 'Bands / Projects',
     addBand: '+ Band',
     newBand: 'NEW BAND',
     editBand: 'EDIT BAND',
@@ -745,6 +750,9 @@ const translations = {
     songInfoCapo: 'Capo',
     songInfoKey: 'Key',
 
+    songSingular: 'song',
+    songPlural: 'songs',
+
     // Setlist Management
     addSetlist: '+ Setlist',
     newSetlist: 'NEW SETLIST',
@@ -765,7 +773,7 @@ const translations = {
     cachetPlaceholder: 'e.g. 500',
     dateLabel: 'DATE *',
     localLabel: 'LOCATION',
-    cachêLabel: 'CACHET ($)',
+    cachêLabel: 'Cachet',
     notesLabel: 'EVENT NOTES',
     availableSongs: 'AVAILABLE SONGS',
     songsLabel: 'AVAILABLE SONGS',
@@ -1193,6 +1201,7 @@ const translations = {
     viewAllBands: 'Ver todas las bandas',
 
     // Gestión de Bandas
+    bands: 'Bandas / Proyectos',
     addBand: '+ Banda',
     newBand: 'NUEVA BANDA',
     editBand: 'EDITAR BANDA',
@@ -1257,6 +1266,9 @@ const translations = {
     songInfoCapo: 'Capo',
     songInfoKey: 'Tono',
 
+    songSingular: 'canción',
+    songPlural: 'canciones',
+
     // Gestión de Setlists
     addSetlist: '+ Setlist',
     newSetlist: 'NUEVO SETLIST',
@@ -1277,7 +1289,7 @@ const translations = {
     cachetPlaceholder: 'ej. 500',
     dateLabel: 'FECHA *',
     localLabel: 'LUGAR',
-    cachêLabel: 'PAGO ($)',
+    cachêLabel: 'Pago',
     notesLabel: 'NOTAS DEL EVENTO',
     availableSongs: 'CANCIONES DISPONIBLES',
     songsLabel: 'CANCIONES DISPONIBLES',

@@ -19,6 +19,7 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { bandService } from '../services/bandService';
 import SongListItem from './SongListItem';
 
@@ -132,6 +133,9 @@ export default function BandDetailScreen({
   const [finDate, setFinDate] = useState('');
   const [finStatus, setFinStatus] = useState('paid'); // 'paid' | 'pending'
   const [finNotes, setFinNotes] = useState('');
+  const [showFinDatePicker, setShowFinDatePicker] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   // Repertoire Sort State
   const [repertoireSort, setRepertoireSort] = useState('name_asc'); // 'name_asc' | 'name_desc' | 'band_asc' | 'band_desc'
@@ -1133,7 +1137,7 @@ export default function BandDetailScreen({
                           <Text style={[styles.styleTagName, { color: colors.text }]}>{item.tag}</Text>
                         </View>
                         <Text style={[styles.styleTagMeta, { color: colors.textMuted }]}>
-                          {item.count} {item.count === 1 ? 'música' : 'músicas'} ({item.percentage}%)
+                          {item.count} {item.count === 1 ? (t('songSingular') || 'música') : (t('songPlural') || 'músicas')} ({item.percentage}%)
                         </Text>
                       </View>
 
@@ -1563,13 +1567,17 @@ export default function BandDetailScreen({
 
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data (DD/MM/AAAA):</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <TextInput
-                  style={[styles.cleanInput, { flex: 1, backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                  placeholder="DD/MM/AAAA"
-                  placeholderTextColor={colors.textMuted}
-                  value={finDate}
-                  onChangeText={setFinDate}
-                />
+                <Pressable style={{ flex: 1 }} onPress={() => setShowFinDatePicker(true)}>
+                  <View pointerEvents="none">
+                    <TextInput
+                      style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                      placeholder="DD/MM/AAAA"
+                      placeholderTextColor={colors.textMuted}
+                      value={finDate}
+                      editable={false}
+                    />
+                  </View>
+                </Pressable>
                 <Pressable
                   style={({ pressed }) => [
                     {
@@ -1598,6 +1606,29 @@ export default function BandDetailScreen({
                   <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.primary }}>{t('today')}</Text>
                 </Pressable>
               </View>
+
+              {showFinDatePicker && (
+                <DateTimePicker
+                  value={(() => {
+                    if (finDate && finDate.includes('/')) {
+                      const [d, m, y] = finDate.split('/').map(n => parseInt(n, 10));
+                      if (y && m && d) return new Date(y, m - 1, d);
+                    }
+                    return new Date();
+                  })()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, selectedDate) => {
+                    setShowFinDatePicker(Platform.OS === 'ios');
+                    if (selectedDate && event.type !== 'dismissed') {
+                      const dd = String(selectedDate.getDate()).padStart(2, '0');
+                      const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                      const yyyy = selectedDate.getFullYear();
+                      setFinDate(`${dd}/${mm}/${yyyy}`);
+                    }
+                  }}
+                />
+              )}
             </ScrollView>
 
             <View style={styles.modalFooterRow}>
@@ -1666,26 +1697,80 @@ export default function BandDetailScreen({
               <View style={[styles.periodRow, { marginTop: 12 }]}>
                 <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('startDateLabel')}</Text>
-                  <TextInput
-                    style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                    placeholder="DD/MM/AAAA"
-                    placeholderTextColor={colors.textMuted}
-                    value={memberStartDate}
-                    onChangeText={setMemberStartDate}
-                  />
+                  <Pressable onPress={() => setShowStartDatePicker(true)}>
+                    <View pointerEvents="none">
+                      <TextInput
+                        style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                        placeholder="DD/MM/AAAA"
+                        placeholderTextColor={colors.textMuted}
+                        value={memberStartDate}
+                        editable={false}
+                      />
+                    </View>
+                  </Pressable>
                 </View>
 
                 <View style={[styles.cleanFormGroup, { flex: 1 }]}>
                   <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('endDateLabel')}</Text>
-                  <TextInput
-                    style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                    placeholder="DD/MM/AAAA"
-                    placeholderTextColor={colors.textMuted}
-                    value={memberEndDate}
-                    onChangeText={setMemberEndDate}
-                  />
+                  <Pressable onPress={() => setShowEndDatePicker(true)}>
+                    <View pointerEvents="none">
+                      <TextInput
+                        style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                        placeholder="DD/MM/AAAA"
+                        placeholderTextColor={colors.textMuted}
+                        value={memberEndDate}
+                        editable={false}
+                      />
+                    </View>
+                  </Pressable>
                 </View>
               </View>
+
+              {showStartDatePicker && (
+                <DateTimePicker
+                  value={(() => {
+                    if (memberStartDate && memberStartDate.includes('/')) {
+                      const [d, m, y] = memberStartDate.split('/').map(n => parseInt(n, 10));
+                      if (y && m && d) return new Date(y, m - 1, d);
+                    }
+                    return new Date();
+                  })()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, selectedDate) => {
+                    setShowStartDatePicker(Platform.OS === 'ios');
+                    if (selectedDate && event.type !== 'dismissed') {
+                      const dd = String(selectedDate.getDate()).padStart(2, '0');
+                      const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                      const yyyy = selectedDate.getFullYear();
+                      setMemberStartDate(`${dd}/${mm}/${yyyy}`);
+                    }
+                  }}
+                />
+              )}
+
+              {showEndDatePicker && (
+                <DateTimePicker
+                  value={(() => {
+                    if (memberEndDate && memberEndDate.includes('/')) {
+                      const [d, m, y] = memberEndDate.split('/').map(n => parseInt(n, 10));
+                      if (y && m && d) return new Date(y, m - 1, d);
+                    }
+                    return new Date();
+                  })()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, selectedDate) => {
+                    setShowEndDatePicker(Platform.OS === 'ios');
+                    if (selectedDate && event.type !== 'dismissed') {
+                      const dd = String(selectedDate.getDate()).padStart(2, '0');
+                      const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                      const yyyy = selectedDate.getFullYear();
+                      setMemberEndDate(`${dd}/${mm}/${yyyy}`);
+                    }
+                  }}
+                />
+              )}
 
               <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberStatusLabel')}</Text>
               <View style={styles.statusPillGroup}>
