@@ -22,6 +22,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
 import { DraggableSortableList } from './SetlistModal';
 import PulsingStageButton from './PulsingStageButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
 
@@ -87,6 +88,7 @@ export default function SetlistDetailScreen({
   const [tempCustomNotes, setTempCustomNotes] = useState('');
   const [tempCustomDuration, setTempCustomDuration] = useState('');
   const [isDraggingActive, setIsDraggingActive] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const initialDataRef = useRef(null);
 
@@ -145,7 +147,7 @@ export default function SetlistDetailScreen({
         setNotes('');
         setIsFavorite(false);
         setSelectedSongs([]);
-        setShowDetailsLayer(true); // Open details by default for new setlist
+        setShowDetailsLayer(false); // Closed by default for all setlists
 
         initialDataRef.current = {
           name: '',
@@ -514,14 +516,20 @@ export default function SetlistDetailScreen({
               </Pressable>
 
               {/* Duplicate / Copy Setlist */}
-              {setlist && setlist.id && onCopy ? (
+              {onCopy ? (
                 <Pressable
                   style={({ pressed }) => [
                     styles.circleActionBtn,
                     { backgroundColor: colors.primary + '25' },
                     pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
                   ]}
-                  onPress={() => onCopy(setlist.id)}
+                  onPress={() => {
+                    if (setlist && setlist.id) {
+                      onCopy(setlist.id);
+                    } else {
+                      Alert.alert(t('info') || 'Informação', 'Salve o setlist antes de duplicar.');
+                    }
+                  }}
                   hitSlop={6}
                 >
                   <Ionicons name="copy-outline" size={18} color={colors.primary} />
@@ -589,7 +597,7 @@ export default function SetlistDetailScreen({
                 ]}
                 value={name}
                 onChangeText={setName}
-                placeholder={t('setlistNamePlaceholder') || 'Nome do Setlist'}
+                placeholder=""
                 placeholderTextColor={colors.textMuted}
                 autoComplete="off"
                 importantForAutofill="no"
@@ -771,20 +779,56 @@ export default function SetlistDetailScreen({
                 <View style={styles.formTwoColumns}>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                      {t('dateLabel') || 'DATA (DD/MM/AAAA)'}
+                      {t('dateLabel') || 'DATA'}
                     </Text>
-                    <TextInput
-                      style={[
+                    <Pressable
+                      onPress={() => setShowDatePicker(true)}
+                      style={({ pressed }) => [
                         styles.cleanInput,
-                        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
+                        {
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          opacity: pressed ? 0.7 : 1
+                        }
                       ]}
-                      value={date}
-                      onChangeText={setDate}
-                      placeholder="25/12/2026"
-                      placeholderTextColor={colors.textMuted}
-                      autoComplete="off"
-                      importantForAutofill="no"
-                    />
+                    >
+                      <Text style={{ color: date ? colors.inputText : colors.textMuted, fontSize: 13, fontWeight: date ? '600' : '400' }}>
+                        {date || ''}
+                      </Text>
+                      <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                    </Pressable>
+
+                    {showDatePicker && (
+                      <DateTimePicker
+                        value={(() => {
+                          if (date && date.includes('-')) {
+                            const [y, m, d] = date.split('-').map(n => parseInt(n, 10));
+                            if (y && m && d) return new Date(y, m - 1, d);
+                          } else if (date && date.includes('/')) {
+                            const parts = date.split('/').map(n => parseInt(n, 10));
+                            if (parts.length === 3) {
+                              const [d, m, y] = parts;
+                              const fullY = y < 100 ? 2000 + y : y;
+                              return new Date(fullY, m - 1, d);
+                            }
+                          }
+                          return new Date();
+                        })()}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={(event, selectedDate) => {
+                          setShowDatePicker(Platform.OS === 'ios');
+                          if (selectedDate && event.type !== 'dismissed') {
+                            const yyyy = selectedDate.getFullYear();
+                            const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                            const dd = String(selectedDate.getDate()).padStart(2, '0');
+                            setDate(`${yyyy}-${mm}-${dd}`);
+                          }
+                        }}
+                      />
+                    )}
                   </View>
 
                   <View style={{ flex: 1.2 }}>
@@ -798,7 +842,7 @@ export default function SetlistDetailScreen({
                       ]}
                       value={local}
                       onChangeText={setLocal}
-                      placeholder="Espaço das Américas"
+                      placeholder=""
                       placeholderTextColor={colors.textMuted}
                       autoComplete="off"
                       importantForAutofill="no"
@@ -820,7 +864,7 @@ export default function SetlistDetailScreen({
                         ]}
                         value={cachê}
                         onChangeText={setCachê}
-                        placeholder="2500"
+                        placeholder=""
                         placeholderTextColor={colors.textMuted}
                         keyboardType="numeric"
                         autoComplete="off"
@@ -840,7 +884,7 @@ export default function SetlistDetailScreen({
                       ]}
                       value={notes}
                       onChangeText={setNotes}
-                      placeholder="Passagem de som às 18h..."
+                      placeholder=""
                       placeholderTextColor={colors.textMuted}
                       autoComplete="off"
                       importantForAutofill="no"
@@ -977,7 +1021,7 @@ export default function SetlistDetailScreen({
                   style={[styles.pickerSearchInput, { color: colors.inputText }]}
                   value={pickerSearch}
                   onChangeText={setPickerSearch}
-                  placeholder={t('searchSongPlaceholder') || 'Buscar música, artista ou estilo...'}
+                  placeholder=""
                   placeholderTextColor={colors.textMuted}
                   autoComplete="off"
                   importantForAutofill="no"
@@ -1107,7 +1151,7 @@ export default function SetlistDetailScreen({
                       style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: colors.inputText }]}
                       value={tempCustomDuration}
                       onChangeText={setTempCustomDuration}
-                      placeholder="10 min"
+                      placeholder=""
                       placeholderTextColor={colors.textMuted}
                       autoFocus
                     />
@@ -1121,7 +1165,7 @@ export default function SetlistDetailScreen({
                       style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: colors.inputText, minHeight: 60, textAlignVertical: 'top' }]}
                       value={tempCustomNotes}
                       onChangeText={setTempCustomNotes}
-                      placeholder="Ex: Fala do Vocalista, Trocar Instrumento..."
+                      placeholder=""
                       placeholderTextColor={colors.textMuted}
                       multiline
                       autoFocus
