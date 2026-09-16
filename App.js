@@ -695,10 +695,31 @@ function MainApp() {
 
   const reloadAllData = async () => {
     try {
-      const allBands = await bandService.getAll();
+      const rawBands = await bandService.getAll();
       const allSongs = await songService.getAll(searchQuery, selectedStyles, songSortBy, songSortOrder);
       const allSongsUnfilteredData = await songService.getAll();
       const rawSetlists = await setlistService.getAll();
+
+      // Enriquecer bandas com estatísticas resumidas (repertório, integrantes, finanças)
+      const allBands = await Promise.all(
+        (rawBands || []).map(async (b) => {
+          try {
+            const bSongs = await bandService.getBandSongs(b.id);
+            const bMembers = await bandService.getBandMembers(b.id);
+            const bFinances = await bandService.getBandFinances(b.id);
+            return {
+              ...b,
+              songsCount: bSongs ? bSongs.length : 0,
+              membersCount: (bMembers || []).filter(m => (m.status || 'active') === 'active').length,
+              styles: Array.from(new Set((bSongs || []).flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean)))).slice(0, 3),
+              finances: bFinances || [],
+              songsList: bSongs || []
+            };
+          } catch (e) {
+            return b;
+          }
+        })
+      );
 
       // Mapear cada setlist para carregar suas músicas associadas na ordem correta
       const fullSetlists = await Promise.all(
@@ -2562,58 +2583,107 @@ function MainApp() {
             </View>
           ) : (
             filteredBands.map(band => {
-              const bSetlists = setlists.filter(s => s.myBandId === band.id);
+              const bSetlists = setlists.filter(s => s && s.myBandId === band.id);
+              const showsCount = bSetlists.filter(s => s.type === 'show').length;
+              const rehearsalsCount = bSetlists.filter(s => s.type !== 'show').length;
+              const songsCount = band.songsCount || 0;
+              const membersCount = band.membersCount || 0;
+              const topStyles = (band.styles || []).slice(0, 3);
+
+              // Financial cachets per year
+              const currentYear = new Date().getFullYear();
+              const prevYear = currentYear - 1;
+              let currentYearCache = 0;
+              let prevYearCache = 0;
+
+              bSetlists.forEach(sl => {
+                const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
+                const amt = parseFloat(String(rawCache || 0).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+                if (amt > 0 && sl.date) {
+                  const cleanDate = String(sl.date).trim();
+                  let yr = 0;
+                  if (cleanDate.includes('-')) {
+                    yr = parseInt(cleanDate.split('-')[0], 10);
+                  } else if (cleanDate.includes('/')) {
+                    const parts = cleanDate.split('/');
+                    if (parts.length === 3) {
+                      yr = parseInt(parts[2], 10);
+                      if (yr < 100) yr += 2000;
+                    }
+                  }
+                  if (yr === currentYear) currentYearCache += amt;
+                  else if (yr === prevYear) prevYearCache += amt;
+                }
+              });
+
+              (band.finances || []).forEach(fin => {
+                if (fin.type === 'income' && fin.amount > 0) {
+                  const cleanDate = String(fin.date || '').trim();
+                  let yr = 0;
+                  if (cleanDate.includes('-')) {
+                    yr = parseInt(cleanDate.split('-')[0], 10);
+                  } else if (cleanDate.includes('/')) {
+                    const parts = cleanDate.split('/');
+                    if (parts.length === 3) {
+                      yr = parseInt(parts[2], 10);
+                      if (yr < 100) yr += 2000;
+                    }
+                  }
+                  if (yr === currentYear) currentYearCache += fin.amount;
+                  else if (yr === prevYear) prevYearCache += fin.amount;
+                }
+              });
+
               return (
                 <Pressable
                   key={band.id}
                   style={({ pressed }) => [
                     {
                       backgroundColor: colors.cardBackground,
-                      borderColor: colors.border,
-                      borderWidth: 1.5,
+                      borderRadius: 20,
+                      padding: 18,
                       marginBottom: 16,
-                      borderRadius: 16,
-                      padding: 16,
+                      elevation: 4,
                       shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 3 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 5,
-                      elevation: 3,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.12,
+                      shadowRadius: 8,
                       transform: [{ scale: pressed ? 0.98 : 1 }]
                     }
                   ]}
                   onPress={() => setActiveBandDetail(band)}
                 >
-                  {/* Cabeçalho do Card da Banda */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                  {/* Cabeçalho do Card (Logo + Nome + Status) */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
                     <View style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
+                      width: 64,
+                      height: 64,
+                      borderRadius: 32,
                       borderWidth: 2,
                       borderColor: colors.primary,
-                      backgroundColor: colors.primary + '15',
+                      backgroundColor: colors.primary + '18',
                       justifyContent: 'center',
                       alignItems: 'center',
                       marginRight: 14,
                     }}>
                       {band.imageUri ? (
-                        <Image source={{ uri: band.imageUri }} style={{ width: 54, height: 54, borderRadius: 27 }} />
+                        <Image source={{ uri: band.imageUri }} style={{ width: 58, height: 58, borderRadius: 29 }} />
                       ) : (
-                        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary }}>
+                        <Text style={{ fontSize: 24, fontWeight: '900', color: colors.primary }}>
                           {getBandInitials(band.name)}
                         </Text>
                       )}
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }} numberOfLines={1}>
+                      <Text style={{ fontSize: 19, fontWeight: '900', color: colors.text, letterSpacing: -0.2 }} numberOfLines={1}>
                         {band.name}
                       </Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 6 }} />
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: '#10b981', letterSpacing: 0.5 }}>
-                          PROJETO ATIVO
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: '#10b981', letterSpacing: 0.4 }}>
+                          PROJETO ATIVO • Desde {currentYear - 1}
                         </Text>
                       </View>
                     </View>
@@ -2621,34 +2691,81 @@ function MainApp() {
                     <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
                   </View>
 
-                  {/* Resumão Grid com Métricas */}
+                  {/* Resumão do Projeto: Grid de Métricas (Sem Bordas, Vidro Moderno) */}
+                  <View style={{
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    borderRadius: 14,
+                    padding: 12,
+                    gap: 10,
+                    marginBottom: 14
+                  }}>
+                    {/* Linha 1: Músicas & Integrantes */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Ionicons name="disc-outline" size={16} color={colors.primary} />
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                          {songsCount} {songsCount === 1 ? 'música' : 'músicas'} no repertório
+                        </Text>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Ionicons name="people-outline" size={16} color={colors.primary} />
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                          {membersCount} {membersCount === 1 ? 'integrante' : 'integrantes'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Linha 2: Shows & Ensaios */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                        {showsCount} {showsCount === 1 ? 'Show' : 'Shows'} • {rehearsalsCount} {rehearsalsCount === 1 ? 'Ensaio' : 'Ensaios'}
+                      </Text>
+                    </View>
+
+                    {/* Linha 3: 3 Principais Estilos */}
+                    {topStyles.length > 0 && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <Ionicons name="pricetag-outline" size={15} color={colors.textMuted} />
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                          {topStyles.map(st => (
+                            <View key={st} style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                              <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>{st}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Mostrador de Cachê Acumulado (Ano Atual e Ano Anterior) */}
                   <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                    backgroundColor: isDark ? '#18181b' : '#f4f4f5',
                     borderRadius: 12,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
                     marginBottom: 10
                   }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="calendar-outline" size={15} color={colors.primary} />
-                      <Text style={{ fontSize: 12, color: colors.text, fontWeight: '800' }}>
-                        {bSetlists.length} {bSetlists.length === 1 ? 'Evento' : 'Eventos'}
+                      <Ionicons name="cash-outline" size={16} color="#10b981" />
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
+                        Cachê {currentYear}: <Text style={{ color: '#10b981', fontWeight: '900' }}>$ {currentYearCache.toFixed(2)}</Text>
                       </Text>
                     </View>
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="disc-outline" size={15} color={colors.primary} />
-                      <Text style={{ fontSize: 12, color: colors.text, fontWeight: '800' }}>
-                        Repertório Exclusivo
+                    {prevYearCache > 0 && (
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
+                        Acumulado {prevYear}: <Text style={{ color: colors.text, fontWeight: '900' }}>$ {prevYearCache.toFixed(2)}</Text>
                       </Text>
-                    </View>
+                    )}
                   </View>
 
-                  {/* Ações Rápidas do Card */}
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 2 }}>
+                  {/* Rodapé de Ação */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingTop: 2 }}>
                     <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>
                       Abrir Painel Completo →
                     </Text>
