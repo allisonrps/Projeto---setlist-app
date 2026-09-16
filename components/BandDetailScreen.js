@@ -240,8 +240,8 @@ export default function BandDetailScreen({
       (song.originalBand || '').toLowerCase().includes(query) ||
       (song.style || '').toLowerCase().includes(query);
 
-    const matchesStyle = !selectedStyleFilter || 
-      (song.style || '').toLowerCase().includes(selectedStyleFilter.toLowerCase());
+    const matchesStyle = selectedStyleFilters.length === 0 || 
+      selectedStyleFilters.some(filterTag => (song.style || '').toLowerCase().includes(filterTag.toLowerCase()));
 
     return matchesSearch && matchesStyle;
   }).sort((a, b) => {
