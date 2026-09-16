@@ -11,12 +11,14 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
+import PulsingStageButton from './PulsingStageButton';
 
 export default function SetlistDetailModal({ 
   visible, 
   onClose, 
   setlist, 
   onStartPerformance,
+  onCopy,
   onToggleRehearsalStatus,
   onUpdateSongRehearsalNotes,
   onEditSong
@@ -133,23 +135,49 @@ export default function SetlistDetailModal({
               ) : null}
             </View>
 
-            {/* Ação Modo Palco */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.performanceButton, 
-                { backgroundColor: colors.primary },
-                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
-              ]}
-              onPress={() => {
-                onClose();
-                onStartPerformance(setlist);
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <Ionicons name="play" size={16} color="#fff" />
-                <Text style={styles.performanceButtonText}>{t('startStageBtn')}</Text>
+            {/* Ação Modo Palco com Pulsação e Criar Cópia */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+              <View style={{ flex: 1 }}>
+                <PulsingStageButton
+                  onPress={() => {
+                    onClose();
+                    onStartPerformance(setlist);
+                  }}
+                  label={t('startStageBtn')}
+                  size="medium"
+                  style={{ width: '100%' }}
+                />
               </View>
-            </Pressable>
+
+              {onCopy ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    {
+                      backgroundColor: colors.primary + '18',
+                      borderColor: colors.primary + '45',
+                      borderWidth: 1,
+                      paddingVertical: 10,
+                      paddingHorizontal: 14,
+                      borderRadius: 24,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      opacity: pressed ? 0.75 : 1,
+                    }
+                  ]}
+                  onPress={() => {
+                    onClose();
+                    onCopy(setlist.id);
+                  }}
+                >
+                  <Ionicons name="copy-outline" size={16} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
+                    {t('createCopy') || 'Duplicar'}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
 
             {/* Músicas */}
             <Text style={[styles.sectionLabel, { color: colors.text }]}>

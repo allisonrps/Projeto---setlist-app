@@ -24,48 +24,13 @@ import { DraggableSortableList } from './SetlistModal';
 
 const { width } = Dimensions.get('window');
 
-function PulsingStageButton({ onPress, color, iconName = "mic" }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 1800,
-        useNativeDriver: true,
-      })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [anim]);
-
-  const scale = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.6],
-  });
-
-  const opacity = anim.interpolate({
-    inputRange: [0, 0.6, 1],
-    outputRange: [0.7, 0.3, 0],
-  });
-
+function CircleHeaderActionBtn({ iconName, onPress, style }) {
   return (
-    <View style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', marginLeft: 6 }}>
-      <Animated.View
-        style={{
-          position: 'absolute',
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: color,
-          transform: [{ scale }],
-          opacity,
-        }}
-      />
+    <View style={styles.actionCircleWrapper}>
       <Pressable
         style={({ pressed }) => [
           styles.circleActionBtn,
-          { backgroundColor: color, marginHorizontal: 0 },
+          style,
           pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
         ]}
         onPress={onPress}
@@ -85,6 +50,7 @@ export default function SetlistDetailScreen({
   onBack,
   onSave,
   onDelete,
+  onCopy,
   onShare,
   onStartPerformance,
   onExportDoc,
@@ -545,6 +511,21 @@ export default function SetlistDetailScreen({
               >
                 <Ionicons name="save-outline" size={18} color={colors.success} />
               </Pressable>
+
+              {/* Duplicate / Copy Setlist */}
+              {setlist && setlist.id && onCopy ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.circleActionBtn,
+                    { backgroundColor: colors.primary + '25' },
+                    pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+                  ]}
+                  onPress={() => onCopy(setlist.id)}
+                  hitSlop={6}
+                >
+                  <Ionicons name="copy-outline" size={18} color={colors.primary} />
+                </Pressable>
+              ) : null}
 
               {/* Share */}
               <Pressable

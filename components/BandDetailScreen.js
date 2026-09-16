@@ -581,16 +581,32 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         
-        {/* HEADER HERO CLEAN COM LOGO E IMAGEM DE MARCA D'ÁGUA NO FUNDO */}
-        <View style={[styles.headerHeroContainer, { backgroundColor: colors.background }]}>
+        {/* HEADER HERO COM TEXTURAS, DESENHOS DE MÚSICA E MARCA D'ÁGUA */}
+        <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#f8fafc' }]}>
+          {/* 1. Imagem de Marca d'Água no fundo (com opacidade suave) */}
           {(band.imageUri || band.image || band.logo) && (
             <Image
               source={{ uri: band.imageUri || band.image || band.logo }}
-              style={[StyleSheet.absoluteFillObject, { opacity: 0.18 }]}
+              style={[StyleSheet.absoluteFillObject, { opacity: 0.16 }]}
               resizeMode="cover"
-              blurRadius={2}
+              blurRadius={3}
             />
           )}
+
+          {/* 2. Texturas e Desenhos Artísticos de Música no Fundo */}
+          <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            {/* Brilho Radial de Fundo */}
+            <View style={[styles.bgHeaderGlow, { backgroundColor: colors.primary + '18' }]} />
+            
+            {/* Ícones Desenhos Flutuantes de Música */}
+            <Ionicons name="musical-notes" size={48} color={colors.primary} style={styles.floatingIcon1} />
+            <Ionicons name="disc-outline" size={54} color={colors.secondary} style={styles.floatingIcon2} />
+            <Ionicons name="radio-outline" size={38} color={colors.textMuted} style={styles.floatingIcon3} />
+            <Ionicons name="sparkles" size={28} color={colors.primary} style={styles.floatingIcon4} />
+            <Ionicons name="headset-outline" size={42} color={colors.secondary} style={styles.floatingIcon5} />
+          </View>
+
+          {/* Barra de Navegação Superior */}
           <View style={styles.topRowNav}>
             <Pressable style={[styles.headerIconButton, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
               <Ionicons name="arrow-back" size={20} color={colors.text} />
@@ -606,18 +622,36 @@ export default function BandDetailScreen({
             </View>
           </View>
 
-          {/* LOGO REDUZIDO EM 50% E MAIS PRÓXIMO DO LIMITE SUPERIOR DA TELA */}
+          {/* LOGO CENTRALIZADO E BADGE DE METADADOS */}
           <View style={styles.logoCenterContainerTop}>
-            <View style={[styles.avatarCircleCompact, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
-              {band.imageUri ? (
-                <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
-              ) : (
-                <Text style={[styles.avatarInitialsCompact, { color: colors.primary }]}>
-                  {getBandInitials(band.name)}
-                </Text>
-              )}
+            <View style={[styles.avatarGlowOuter, { borderColor: colors.primary + '40', backgroundColor: colors.primary + '10' }]}>
+              <View style={[styles.avatarCircleCompact, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                {band.imageUri ? (
+                  <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
+                ) : (
+                  <Text style={[styles.avatarInitialsCompact, { color: colors.primary }]}>
+                    {getBandInitials(band.name)}
+                  </Text>
+                )}
+              </View>
             </View>
             <Text style={[styles.bandTitleText, { color: colors.text }]}>{band.name}</Text>
+            
+            {/* Subtítulo Badges da Banda */}
+            <View style={styles.bandMetaBadgeRow}>
+              <View style={[styles.bandMetaPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                <Ionicons name="people" size={11} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={[styles.bandMetaPillText, { color: colors.primary }]}>
+                  {activeMembers.length} {t('membersBadge') || 'INTEGRANTES'}
+                </Text>
+              </View>
+              <View style={[styles.bandMetaPill, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '35' }]}>
+                <Ionicons name="musical-notes" size={11} color={colors.secondary} style={{ marginRight: 4 }} />
+                <Text style={[styles.bandMetaPillText, { color: colors.secondary }]}>
+                  {bandSongs.length} MÚSICAS
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
 
@@ -1048,6 +1082,7 @@ export default function BandDetailScreen({
         {/* ABA 4: FINANCEIRO */}
         {activeTab === 'financial' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
+            {/* CARD 1: RESUMO FINANCEIRO */}
             <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="wallet-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
@@ -1086,22 +1121,94 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
 
-            {combinedFinances.length > 0 && (
+            {/* CARD 2: SHOWS E CACHÊS DOS EVENTOS DA BANDA */}
+            <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
+              <View style={styles.cardPanelHeaderRow}>
+                <Ionicons name="cash-outline" size={20} color="#10b981" style={{ marginRight: 8 }} />
+                <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
+                  {t('showsAndCaches') || 'Shows e Cachês dos Eventos'}
+                </Text>
+              </View>
+
+              {(() => {
+                const showEvents = (bandSetlists || []).filter(s => s && s.type === 'show');
+                if (showEvents.length === 0) {
+                  return (
+                    <View style={{ paddingVertical: 14, alignItems: 'center' }}>
+                      <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
+                        Nenhum show cadastrado para esta banda ainda.
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return showEvents.map(sl => {
+                  const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
+                  const cacheVal = parseCurrency(rawCache);
+                  const badgeDate = getFormattedDateBadge(sl.date, language);
+
+                  return (
+                    <Pressable
+                      key={sl.id}
+                      style={({ pressed }) => [
+                        styles.financeItemRow,
+                        { borderBottomColor: colors.border, opacity: pressed ? 0.75 : 1 }
+                      ]}
+                      onPress={() => onSelectSetlist && onSelectSetlist(sl)}
+                    >
+                      {/* Badge de Data */}
+                      <View style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        backgroundColor: colors.primary + '12',
+                        borderColor: colors.primary + '30',
+                        borderWidth: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 10
+                      }}>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>{badgeDate.month}</Text>
+                      </View>
+
+                      {/* Nome e Local do Show */}
+                      <View style={{ flex: 1, paddingRight: 6 }}>
+                        <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
+                          {sl.name || 'Show Sem Nome'}
+                        </Text>
+                        <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                          <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {sl.local || 'Local não informado'}
+                        </Text>
+                      </View>
+
+                      {/* Valor do Cachê */}
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: cacheVal > 0 ? '#10b981' : colors.textMuted }}>
+                          {cacheVal > 0 ? `$ ${cacheVal.toFixed(2)}` : (t('noCachetDefined') || 'Sem Cachê')}
+                        </Text>
+                        <View style={{ backgroundColor: cacheVal > 0 ? '#10b98120' : isDark ? '#3f3f46' : '#e4e4e7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 2 }}>
+                          <Text style={{ color: cacheVal > 0 ? '#10b981' : colors.textMuted, fontSize: 9, fontWeight: '900' }}>
+                            {cacheVal > 0 ? 'CACHÊ DE SHOW' : 'A DEFINIR'}
+                          </Text>
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                });
+              })()}
+            </View>
+
+            {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS */}
+            {finances.length > 0 && (
               <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
-                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Lançamentos</Text>
-                {combinedFinances.map(item => {
+                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Lançamentos Manuais</Text>
+                {finances.map(item => {
                   const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
                   return (
                     <View key={item.id} style={[styles.financeItemRow, { borderBottomColor: colors.border }]}>
                       <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Text style={[styles.financeItemTitle, { color: colors.text }]}>{item.title}</Text>
-                          {item.isAutoShow && (
-                            <View style={{ backgroundColor: '#10b98120', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6 }}>
-                              <Text style={{ color: '#10b981', fontSize: 10, fontWeight: 'bold' }}>AUTO SHOW</Text>
-                            </View>
-                          )}
-                        </View>
+                        <Text style={[styles.financeItemTitle, { color: colors.text }]}>{item.title}</Text>
                         <Text style={[styles.financeItemMeta, { color: colors.textMuted }]}>{item.date || ''}</Text>
                       </View>
 
@@ -1112,28 +1219,20 @@ export default function BandDetailScreen({
                         {item.type === 'income' ? '+' : '-'} $ {amtVal.toFixed(2)}
                       </Text>
 
-                      {!item.isAutoShow ? (
-                        <>
-                          <Pressable
-                            style={styles.financeStatusBadge}
-                            onPress={() => handleToggleFinanceStatus(item)}
-                          >
-                            <Ionicons
-                              name={item.status === 'paid' ? 'checkmark-circle' : 'time-outline'}
-                              size={16}
-                              color={item.status === 'paid' ? '#10b981' : '#f59e0b'}
-                            />
-                          </Pressable>
+                      <Pressable
+                        style={styles.financeStatusBadge}
+                        onPress={() => handleToggleFinanceStatus(item)}
+                      >
+                        <Ionicons
+                          name={item.status === 'paid' ? 'checkmark-circle' : 'time-outline'}
+                          size={16}
+                          color={item.status === 'paid' ? '#10b981' : '#f59e0b'}
+                        />
+                      </Pressable>
 
-                          <Pressable style={{ marginLeft: 8 }} onPress={() => handleDeleteFinanceEntry(item)}>
-                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                          </Pressable>
-                        </>
-                      ) : (
-                        <View style={styles.financeStatusBadge}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                        </View>
-                      )}
+                      <Pressable style={{ marginLeft: 8 }} onPress={() => handleDeleteFinanceEntry(item)}>
+                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                      </Pressable>
                     </View>
                   );
                 })}
@@ -1748,6 +1847,48 @@ const styles = StyleSheet.create({
   financeItemMeta: { fontSize: 12 },
   financeItemAmount: { fontSize: 14, fontWeight: 'bold', marginHorizontal: 8 },
   financeStatusBadge: { padding: 4 },
+
+  bgHeaderGlow: {
+    position: 'absolute',
+    top: -40,
+    alignSelf: 'center',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    opacity: 0.6,
+  },
+  floatingIcon1: { position: 'absolute', top: 20, left: 16, opacity: 0.12, transform: [{ rotate: '-15deg' }] },
+  floatingIcon2: { position: 'absolute', top: 75, right: 20, opacity: 0.10, transform: [{ rotate: '20deg' }] },
+  floatingIcon3: { position: 'absolute', bottom: 15, left: 35, opacity: 0.08 },
+  floatingIcon4: { position: 'absolute', top: 30, right: 75, opacity: 0.15 },
+  floatingIcon5: { position: 'absolute', bottom: 25, right: 45, opacity: 0.09, transform: [{ rotate: '-10deg' }] },
+
+  avatarGlowOuter: {
+    padding: 3,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    marginBottom: 6,
+  },
+  bandMetaBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  bandMetaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  bandMetaPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
 
   createEventBtn: { height: 44, borderRadius: 8, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', marginBottom: 16 },
   createEventBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 14 },

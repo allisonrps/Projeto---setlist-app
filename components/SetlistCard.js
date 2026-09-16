@@ -10,6 +10,7 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
+import PulsingStageButton from './PulsingStageButton';
 
 const getBandInitials = (name) => {
   if (!name || !name.trim()) return '?';
@@ -435,19 +436,13 @@ export default function SetlistCard({
             </View>
           )}
 
-          {/* Botão Principal: Modo Palco */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.performanceButton,
-              { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.98 : 1 }] }
-            ]}
+          {/* Botão Principal: Modo Palco com Pulsação Expandida */}
+          <PulsingStageButton
             onPress={() => onStartPerformance(setlist)}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <Ionicons name="play" size={16} color="#fff" />
-              <Text style={styles.performanceButtonText}>{t('startStageBtn')}</Text>
-            </View>
-          </Pressable>
+            label={t('startStageBtn')}
+            size="medium"
+            style={{ width: '100%', marginVertical: 8 }}
+          />
 
           {/* Barra de Ações Rápidas do Setlist */}
           <View style={[styles.actionsBar, { borderTopColor: colors.border }]}>

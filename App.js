@@ -2211,106 +2211,155 @@ function MainApp() {
           </Text>
 
           {upcomingSetlists.length === 0 ? (
-            <View style={{ padding: 20, alignItems: 'center', backgroundColor: colors.cardBackground, borderRadius: 12, borderWidth: 1, borderColor: colors.border }}>
-              <Ionicons name="calendar-outline" size={40} color={colors.textMuted} />
-              <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13 }}>Nenhum evento próximo agendado.</Text>
+            <View style={{ padding: 24, alignItems: 'center', backgroundColor: colors.cardBackground, borderRadius: 16, borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name="calendar-outline" size={42} color={colors.textMuted} />
+              <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 13, fontWeight: '500' }}>Nenhum evento próximo agendado.</Text>
             </View>
           ) : (
             (() => {
               let lastUpcomingHeader = null;
-              return upcomingSetlists.map((setlist) => {
+              return upcomingSetlists.map((setlist, idx) => {
                 const badge = getFormattedDateBadge(setlist.date, language);
                 const header = getMonthYearHeader(setlist.date);
                 const showHeader = header !== lastUpcomingHeader;
                 if (showHeader) lastUpcomingHeader = header;
+                const isHeroNext = idx === 0;
 
                 return (
                   <View key={setlist.id}>
                     {showHeader && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 10, gap: 8 }}>
                         <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
                           {header}
                         </Text>
                         <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
                       </View>
                     )}
+
                     <Pressable
                       style={({ pressed }) => [
-                        styles.bandCard,
                         {
                           backgroundColor: colors.cardBackground,
-                          borderColor: colors.border,
-                          borderWidth: 1.5,
-                          marginBottom: 10,
+                          borderColor: isHeroNext ? colors.primary : colors.border,
+                          borderWidth: isHeroNext ? 2 : 1,
+                          borderRadius: isHeroNext ? 20 : 16,
+                          marginBottom: 12,
+                          padding: 14,
+                          shadowColor: isHeroNext ? colors.primary : colors.shadowColor,
+                          shadowOffset: { width: 0, height: isHeroNext ? 4 : 2 },
+                          shadowOpacity: isHeroNext ? 0.2 : 0.08,
+                          shadowRadius: isHeroNext ? 10 : 4,
+                          elevation: isHeroNext ? 4 : 2,
                           transform: [{ scale: pressed ? 0.98 : 1 }],
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          padding: 12
                         }
                       ]}
                       onPress={() => {
                         setActiveSetlistDetail(setlist);
                       }}
                     >
-                      <View style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 8,
-                        borderWidth: 1.5,
-                        borderColor: colors.border,
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}>
-                        <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 18 }}>{badge.day}</Text>
-                        <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
-                      </View>
+                      {/* Badge "PRÓXIMO EVENTO HERO" para o 1º evento */}
+                      {isHeroNext && (
+                        <View style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: colors.primary + '18',
+                          borderColor: colors.primary + '40',
+                          borderWidth: 1,
+                          borderRadius: 12,
+                          paddingHorizontal: 10,
+                          paddingVertical: 3,
+                          alignSelf: 'flex-start',
+                          marginBottom: 10,
+                          gap: 6
+                        }}>
+                          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#10b981' }} />
+                          <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary, letterSpacing: 1 }}>
+                            {t('nextEventHero') || 'PRÓXIMO EVENTO'}
+                          </Text>
+                        </View>
+                      )}
 
-                      <View style={{ marginLeft: 10 }}>
-                        {setlist.bandImageUri ? (
-                          <Image source={{ uri: setlist.bandImageUri }} style={{ width: 42, height: 42, borderRadius: 21 }} />
-                        ) : (
-                          <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: colors.border, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>
-                              {getBandInitials(setlist.bandName || '')}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {/* Square Date Badge Arredondado */}
+                        <View style={{
+                          width: 52,
+                          height: 52,
+                          borderRadius: 14,
+                          borderWidth: 1.5,
+                          borderColor: isHeroNext ? colors.primary + '50' : colors.border,
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginRight: 12
+                        }}>
+                          <Text style={{ fontSize: 17, fontWeight: '900', color: colors.text, lineHeight: 18 }}>{badge.day}</Text>
+                          <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
+                        </View>
 
-                      <View style={{ flex: 1, marginLeft: 10, justifyContent: 'center' }}>
-                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }} numberOfLines={1}>
-                          {setlist.name || 'Sem Nome'}
-                        </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                          <View style={{
-                            backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
-                            borderColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '30',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            paddingHorizontal: 8,
-                            paddingVertical: 2,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 4
-                          }}>
-                            <Ionicons 
-                              name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                              size={10} 
-                              color={setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success} 
-                            />
-                            <Text style={{ 
-                              fontSize: 10, 
-                              fontWeight: '900', 
-                              color: setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success 
+                        {/* Band Logo Avatar */}
+                        <View style={{ marginRight: 10 }}>
+                          {setlist.bandImageUri ? (
+                            <Image source={{ uri: setlist.bandImageUri }} style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.border }} />
+                          ) : (
+                            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
+                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>
+                                {getBandInitials(setlist.bandName || '')}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+
+                        {/* Setlist Info */}
+                        <View style={{ flex: 1, justifyContent: 'center' }}>
+                          <Text style={{ fontSize: 15, fontWeight: '900', color: colors.text }} numberOfLines={1}>
+                            {setlist.name || 'Sem Nome'}
+                          </Text>
+                          
+                          {/* Subtítulo: Tipo e Local */}
+                          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                            <View style={{
+                              backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
+                              borderColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '30',
+                              borderWidth: 1,
+                              borderRadius: 6,
+                              paddingHorizontal: 7,
+                              paddingVertical: 2,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 4
                             }}>
-                              {t(setlist.type).toUpperCase()}
-                            </Text>
+                              <Ionicons 
+                                name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
+                                size={10} 
+                                color={setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success} 
+                              />
+                              <Text style={{ 
+                                fontSize: 9.5, 
+                                fontWeight: '900', 
+                                color: setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success 
+                              }}>
+                                {t(setlist.type).toUpperCase()}
+                              </Text>
+                            </View>
+
+                            {setlist.local ? (
+                              <Text style={{ fontSize: 11, color: colors.textMuted }} numberOfLines={1}>
+                                <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {setlist.local}
+                              </Text>
+                            ) : null}
+
+                            {setlist.type === 'show' && setlist.cachê ? (
+                              <View style={{ backgroundColor: '#10b98118', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 6 }}>
+                                <Text style={{ fontSize: 10, color: '#10b981', fontWeight: '800' }}>
+                                  $ {setlist.cachê}
+                                </Text>
+                              </View>
+                            ) : null}
                           </View>
                         </View>
-                      </View>
 
-                      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 6 }} />
+                      </View>
                     </Pressable>
                   </View>
                 );
@@ -3656,6 +3705,7 @@ function MainApp() {
         onClose={() => { setShowDetailModal(false); setActiveSetlist(null); }}
         setlist={activeSetlist ? (setlists.find(s => s.id === activeSetlist.id) || activeSetlist) : null}
         onStartPerformance={handleStartPerformance}
+        onCopy={handleDuplicateSetlist}
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
         onEditSong={handleEditSong}
@@ -3710,6 +3760,7 @@ function MainApp() {
         onBack={handleCloseSetlistDetail}
         onSave={handleSaveSetlist}
         onDelete={handleDeleteSetlist}
+        onCopy={handleDuplicateSetlist}
         onShare={handleShareSetlist}
         onStartPerformance={handleStartPerformance}
         onExportDoc={handleExportDoc}
