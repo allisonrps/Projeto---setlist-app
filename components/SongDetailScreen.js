@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../hooks/useLanguage';
 import PulsingStageButton from './PulsingStageButton';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (Platform.OS === 'android' && !global.nativeFabricUIManager && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
