@@ -2208,7 +2208,7 @@ function MainApp() {
             <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
               <Text style={[styles.headerCountText, { color: colors.primary }]}>{upcomingSetlists.length}</Text>
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Próximos Eventos</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home') || 'Home'}</Text>
           </View>
 
           <Pressable 
@@ -2928,7 +2928,7 @@ function MainApp() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="funnel-outline" size={14} color={colors.textMuted} />
             <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted, letterSpacing: 0.5 }}>
-              {language === 'en' ? 'SORT BY:' : language === 'es' ? 'ORDENAR POR:' : 'ORDENAR POR:'}
+              {t('sortBy')}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -2956,7 +2956,7 @@ function MainApp() {
                 fontWeight: '800', 
                 color: songSortBy === 'band' ? colors.primary : colors.textMuted 
               }}>
-                {language === 'en' ? 'Band' : language === 'es' ? 'Banda' : 'Banda'} {songSortBy === 'band' ? (songSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : ''}
+                {t('band')} {songSortBy === 'band' ? (songSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : ''}
               </Text>
             </Pressable>
 
@@ -2984,7 +2984,7 @@ function MainApp() {
                 fontWeight: '800', 
                 color: songSortBy === 'name' ? colors.primary : colors.textMuted 
               }}>
-                {language === 'en' ? 'Song' : language === 'es' ? 'Canción' : 'Música'} {songSortBy === 'name' ? (songSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : ''}
+                {t('song')} {songSortBy === 'name' ? (songSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : ''}
               </Text>
             </Pressable>
           </View>
@@ -3269,7 +3269,7 @@ function MainApp() {
                         <Text style={[styles.headerCountText, { color: colors.primary }]}>{pastSetlists.length}</Text>
                       </View>
                       <Text style={[styles.sectionTitle, { color: colors.text, fontSize: 15, marginBottom: 0 }]}>
-                        {language === 'en' ? 'PAST' : language === 'es' ? 'ANTIGUAS' : 'ANTIGAS'}
+                        {t('pastEvents')}
                       </Text>
                     </View>
                     <Pressable 
