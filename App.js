@@ -3422,7 +3422,7 @@ function MainApp() {
               <View>
                 <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('primaryColor')}</Text>
                 <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                  {primaryColor.toUpperCase()} • {t('tapToChange')}
+                  {t('tapToChange')}
                 </Text>
               </View>
 
@@ -3462,7 +3462,7 @@ function MainApp() {
               <View>
                 <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('secondaryColor')}</Text>
                 <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                  {secondaryColor.toUpperCase()} • {t('tapToChange')}
+                  {t('tapToChange')}
                 </Text>
               </View>
 
@@ -4095,7 +4095,7 @@ function MainApp() {
               </Pressable>
             </View>
 
-            <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingVertical: 12 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, justifyContent: 'center', paddingVertical: 18 }}>
               {THEME_COLORS.map((color) => {
                 const isSelected = primaryColor === color;
                 return (
@@ -4103,16 +4103,10 @@ function MainApp() {
                     key={color}
                     style={({ pressed }) => [
                       {
-                        width: '28%',
-                        flexGrow: 1,
-                        padding: 12,
-                        borderRadius: 14,
-                        backgroundColor: isSelected ? color + '20' : (isDark ? '#18181b' : '#f4f4f5'),
-                        borderColor: isSelected ? color : colors.border,
-                        borderWidth: isSelected ? 2 : 1,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
+                        padding: 3,
+                        borderRadius: 25,
+                        borderWidth: isSelected ? 3 : 0,
+                        borderColor: isSelected ? color : 'transparent',
                         opacity: pressed ? 0.8 : 1
                       }
                     ]}
@@ -4121,16 +4115,25 @@ function MainApp() {
                       setShowPrimaryColorSheet(false);
                     }}
                   >
-                    <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: color, justifyContent: 'center', alignItems: 'center', borderWidth: isSelected ? 2 : 0, borderColor: '#fff' }}>
-                      {isSelected && <Ionicons name="checkmark" size={18} color="#ffffff" />}
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: color,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      elevation: 3,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 3
+                    }}>
+                      {isSelected && <Ionicons name="checkmark" size={22} color="#ffffff" />}
                     </View>
-                    <Text style={{ fontSize: 10, fontWeight: '800', color: isSelected ? color : colors.text, textAlign: 'center' }}>
-                      {color.toUpperCase()}
-                    </Text>
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </View>
           </View>
         </Pressable>
       </Modal>
@@ -4154,7 +4157,7 @@ function MainApp() {
               </Pressable>
             </View>
 
-            <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingVertical: 12 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, justifyContent: 'center', paddingVertical: 18 }}>
               {THEME_COLORS.map((color) => {
                 const isSelected = secondaryColor === color;
                 return (
@@ -4162,16 +4165,10 @@ function MainApp() {
                     key={color}
                     style={({ pressed }) => [
                       {
-                        width: '28%',
-                        flexGrow: 1,
-                        padding: 12,
-                        borderRadius: 14,
-                        backgroundColor: isSelected ? color + '20' : (isDark ? '#18181b' : '#f4f4f5'),
-                        borderColor: isSelected ? color : colors.border,
-                        borderWidth: isSelected ? 2 : 1,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
+                        padding: 3,
+                        borderRadius: 25,
+                        borderWidth: isSelected ? 3 : 0,
+                        borderColor: isSelected ? color : 'transparent',
                         opacity: pressed ? 0.8 : 1
                       }
                     ]}
@@ -4180,16 +4177,25 @@ function MainApp() {
                       setShowSecondaryColorSheet(false);
                     }}
                   >
-                    <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: color, justifyContent: 'center', alignItems: 'center', borderWidth: isSelected ? 2 : 0, borderColor: '#fff' }}>
-                      {isSelected && <Ionicons name="checkmark" size={18} color="#ffffff" />}
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: color,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      elevation: 3,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 3
+                    }}>
+                      {isSelected && <Ionicons name="checkmark" size={22} color="#ffffff" />}
                     </View>
-                    <Text style={{ fontSize: 10, fontWeight: '800', color: isSelected ? color : colors.text, textAlign: 'center' }}>
-                      {color.toUpperCase()}
-                    </Text>
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </View>
           </View>
         </Pressable>
       </Modal>
