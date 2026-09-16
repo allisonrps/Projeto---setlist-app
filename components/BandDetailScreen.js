@@ -1273,41 +1273,75 @@ export default function BandDetailScreen({
               })()}
             </View>
 
-            {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS */}
+            {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS (MESMO MODELO DE SHOWS COM BADGE DE DATA, VALOR E LIXEIRA NA DIREITA, SEM CHECK) */}
             {finances.length > 0 && (
               <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
                 <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Outros</Text>
                 {finances.map(item => {
                   const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
+                  const badgeDate = getFormattedDateBadge(item.date, language);
+                  const isIncome = item.type === 'income';
+
                   return (
-                    <View key={item.id} style={[styles.financeItemRow, { borderBottomColor: colors.border }]}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.financeItemTitle, { color: colors.text }]}>{item.title}</Text>
-                        <Text style={[styles.financeItemMeta, { color: colors.textMuted }]}>{item.date || ''}</Text>
+                    <Pressable
+                      key={item.id}
+                      style={({ pressed }) => [
+                        styles.financeItemRow,
+                        { borderBottomColor: colors.border, opacity: pressed ? 0.8 : 1 }
+                      ]}
+                      onPress={() => handleOpenEditFinance(item)}
+                    >
+                      {/* Badge de Data na lateral esquerda */}
+                      <View style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '15',
+                        borderColor: (isIncome ? '#10b981' : '#ef4444') + '30',
+                        borderWidth: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 10
+                      }}>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: '800', color: isIncome ? '#10b981' : '#ef4444' }}>{badgeDate.month}</Text>
                       </View>
 
-                      <Text style={[
-                        styles.financeItemAmount,
-                        { color: item.type === 'income' ? '#10b981' : '#ef4444' }
-                      ]}>
-                        {item.type === 'income' ? '+' : '-'} $ {amtVal.toFixed(2)}
-                      </Text>
+                      {/* Nome e Descrição / Categoria */}
+                      <View style={{ flex: 1, paddingRight: 6 }}>
+                        <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
+                          {item.title || 'Lançamento'}
+                        </Text>
+                        <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                          {item.category || (isIncome ? 'Entrada' : 'Saída')}
+                        </Text>
+                      </View>
 
-                      <Pressable
-                        style={styles.financeStatusBadge}
-                        onPress={() => handleToggleFinanceStatus(item)}
-                      >
-                        <Ionicons
-                          name={item.status === 'paid' ? 'checkmark-circle' : 'time-outline'}
-                          size={16}
-                          color={item.status === 'paid' ? '#10b981' : '#f59e0b'}
-                        />
-                      </Pressable>
+                      {/* Valor do Lançamento + Lixeira na direita (sem o botão check) */}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={{ alignItems: 'flex-end' }}>
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: isIncome ? '#10b981' : '#ef4444' }}>
+                            {isIncome ? '+' : '-'} $ {amtVal.toFixed(2)}
+                          </Text>
+                          <View style={{ backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4, marginTop: 2 }}>
+                            <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
+                              {isIncome ? 'RECEITA' : 'DESPESA'}
+                            </Text>
+                          </View>
+                        </View>
 
-                      <Pressable style={{ marginLeft: 8 }} onPress={() => handleDeleteFinanceEntry(item)}>
-                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                      </Pressable>
-                    </View>
+                        <Pressable 
+                          style={{ padding: 4 }} 
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFinanceEntry(item);
+                          }}
+                          hitSlop={8}
+                        >
+                          <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                        </Pressable>
+                      </View>
+                    </Pressable>
                   );
                 })}
               </View>
@@ -2138,6 +2172,10 @@ const styles = StyleSheet.create({
   typeSelectBtn: { flex: 1, height: 38, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', justifyContent: 'center', alignItems: 'center', marginHorizontal: 4 },
   typeSelectText: { fontWeight: 'bold', fontSize: 13 },
 
+  tabContentFlex: {
+    flex: 1,
+    position: 'relative',
+  },
   fabSortButtonCircular: {
     position: 'absolute',
     bottom: 24,
