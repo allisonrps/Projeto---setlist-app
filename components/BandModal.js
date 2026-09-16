@@ -115,7 +115,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
 
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA DE INÍCIO (DIA/MÊS/ANO)</Text>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('startDateFormLabel')}</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
                   placeholder="Ex: 15/04/2024"
@@ -125,10 +125,10 @@ export default function BandModal({ visible, onClose, onSave, band }) {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>DATA FIM (OPCIONAL)</Text>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('endDateFormLabel')}</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                  placeholder="Ex: Atual ou 10/12/2025"
+                  placeholder="Ex: 10/12/2025"
                   placeholderTextColor={colors.textMuted}
                   value={endDate}
                   onChangeText={setEndDate}

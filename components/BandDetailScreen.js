@@ -768,7 +768,7 @@ export default function BandDetailScreen({
                 <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
                 <TextInput
                   style={[styles.searchInput, { color: colors.text, flex: 1, fontSize: 13 }]}
-                  placeholder="Buscar no repertório..."
+                  placeholder={t('searchRepertoire') || 'Buscar no repertório...'}
                   placeholderTextColor={colors.textMuted}
                   value={repertoireSearch}
                   onChangeText={setRepertoireSearch}
@@ -882,9 +882,9 @@ export default function BandDetailScreen({
               {filteredBandSongs.length === 0 ? (
                 <View style={styles.emptyContainer}>
                   <Ionicons name="disc-outline" size={48} color={colors.textMuted} />
-                  <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma música no repertório</Text>
+                  <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('noSongsInRepertoire')}</Text>
                   <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
-                    Clique no botão "+" para vincular músicas da sua coleção a esta banda.
+                    {t('bandSongsSubtitle')}
                   </Text>
                 </View>
               ) : (
@@ -941,20 +941,20 @@ export default function BandDetailScreen({
               onPress={handleOpenAddMember}
             >
               <Ionicons name="person-add-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.openFormBtnText}>Adicionar Integrante</Text>
+              <Text style={styles.openFormBtnText}>{t('addMember')}</Text>
             </Pressable>
 
             {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
             <View style={styles.memberSectionHeader}>
               <View style={styles.sectionHeaderTitleGroup}>
                 <View style={styles.activeDot} />
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>INTEGRANTES ATIVOS ({activeMembers.length})</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('activeMembers')} ({activeMembers.length})</Text>
               </View>
             </View>
 
             {activeMembers.length === 0 ? (
               <View style={[styles.cardPanelNoBorder, { backgroundColor: colors.card, alignItems: 'center', padding: 24 }]}>
-                <Text style={{ color: colors.textMuted, fontSize: 14 }}>Nenhum integrante ativo cadastrado.</Text>
+                <Text style={{ color: colors.textMuted, fontSize: 14 }}>{t('noActiveMembers')}</Text>
               </View>
             ) : (
               activeMembers.map(item => {
@@ -1031,8 +1031,8 @@ export default function BandDetailScreen({
                   />
                   <Text style={[styles.toggleInactiveBtnText, { color: colors.text }]}>
                     {showInactiveMembers
-                      ? `Ocultar Integrantes Inativos (${inactiveMembers.length})`
-                      : `Exibir Integrantes Inativos (${inactiveMembers.length})`}
+                      ? `${t('hideInactiveMembers')} (${inactiveMembers.length})`
+                      : `${t('showInactiveMembers')} (${inactiveMembers.length})`}
                   </Text>
                 </Pressable>
 
@@ -1058,7 +1058,7 @@ export default function BandDetailScreen({
                                   </View>
                                 ))}
                                 <View style={styles.inactivePill}>
-                                  <Text style={styles.inactivePillText}>Inativo</Text>
+                                  <Text style={styles.inactivePillText}>{t('inactive')}</Text>
                                 </View>
                               </View>
                             </View>
@@ -1112,7 +1112,7 @@ export default function BandDetailScreen({
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="stats-chart" size={20} color={colors.primary} style={{ marginRight: 8 }} />
                 <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
-                  Estilos do Repertorio
+                  {t('repertoireStyles')}
                 </Text>
               </View>
 
@@ -1120,7 +1120,7 @@ export default function BandDetailScreen({
                 <View style={styles.emptyContainer}>
                   <Ionicons name="pie-chart-outline" size={40} color={colors.textMuted} />
                   <Text style={[styles.emptySubtitle, { color: colors.textMuted, marginTop: 8 }]}>
-                    Nenhuma tag de estilo definida nas músicas desta banda.
+                    {t('noStyleTags')}
                   </Text>
                 </View>
               ) : (
@@ -1160,26 +1160,26 @@ export default function BandDetailScreen({
             <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="wallet-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-                <Text style={[styles.cardPanelTitle, { color: colors.text }]}>Resumo Financeiro</Text>
+                <Text style={[styles.cardPanelTitle, { color: colors.text }]}>{t('financialSummary')}</Text>
               </View>
 
               <View style={styles.financeSummaryGrid}>
                 <View style={[styles.financeSummaryCard, { backgroundColor: '#10b98115' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: '#10b981' }]}>Entradas</Text>
+                  <Text style={[styles.financeSummaryLabel, { color: '#10b981' }]}>{t('incomes')}</Text>
                   <Text style={[styles.financeSummaryValue, { color: '#10b981' }]}>
                     $ {totalIncome.toFixed(2)}
                   </Text>
                 </View>
 
                 <View style={[styles.financeSummaryCard, { backgroundColor: '#ef444415' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: '#ef4444' }]}>Saídas</Text>
+                  <Text style={[styles.financeSummaryLabel, { color: '#ef4444' }]}>{t('expenses')}</Text>
                   <Text style={[styles.financeSummaryValue, { color: '#ef4444' }]}>
                     $ {totalExpense.toFixed(2)}
                   </Text>
                 </View>
 
                 <View style={[styles.financeSummaryCard, { backgroundColor: netBalance >= 0 ? '#3b82f615' : '#f59e0b15' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>Saldo</Text>
+                  <Text style={[styles.financeSummaryLabel, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>{t('balance')}</Text>
                   <Text style={[styles.financeSummaryValue, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>
                     $ {netBalance.toFixed(2)}
                   </Text>
@@ -1191,7 +1191,7 @@ export default function BandDetailScreen({
                 onPress={handleOpenAddFinance}
               >
                 <Ionicons name="add" size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                <Text style={styles.addFinanceBtnText}>Novo Lançamento</Text>
+                <Text style={styles.addFinanceBtnText}>{t('newEntry')}</Text>
               </Pressable>
             </View>
 
@@ -1210,7 +1210,7 @@ export default function BandDetailScreen({
                   return (
                     <View style={{ paddingVertical: 14, alignItems: 'center' }}>
                       <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
-                        Nenhum show cadastrado para esta banda ainda.
+                        {t('noShowsForBand')}
                       </Text>
                     </View>
                   );
@@ -1249,21 +1249,21 @@ export default function BandDetailScreen({
                       {/* Nome e Local do Show */}
                       <View style={{ flex: 1, paddingRight: 6 }}>
                         <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
-                          {sl.name || 'Show Sem Nome'}
+                          {sl.name || t('untitledShow')}
                         </Text>
                         <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                          <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {sl.local || 'Local não informado'}
+                          <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {sl.local || t('noLocationSpecified')}
                         </Text>
                       </View>
 
                       {/* Valor do Cachê */}
                       <View style={{ alignItems: 'flex-end' }}>
                         <Text style={{ fontSize: 14, fontWeight: '900', color: cacheVal > 0 ? '#10b981' : colors.textMuted }}>
-                          {cacheVal > 0 ? `$ ${cacheVal.toFixed(2)}` : (t('noCachetDefined') || 'Sem Cachê')}
+                          {cacheVal > 0 ? `$ ${cacheVal.toFixed(2)}` : t('noCachetDefined')}
                         </Text>
                         <View style={{ backgroundColor: cacheVal > 0 ? '#10b98120' : isDark ? '#3f3f46' : '#e4e4e7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 2 }}>
                           <Text style={{ color: cacheVal > 0 ? '#10b981' : colors.textMuted, fontSize: 9, fontWeight: '900' }}>
-                            {cacheVal > 0 ? 'CACHÊ DE SHOW' : 'A DEFINIR'}
+                            {cacheVal > 0 ? t('showCachet') : t('toBeDefined')}
                           </Text>
                         </View>
                       </View>
@@ -1276,7 +1276,7 @@ export default function BandDetailScreen({
             {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS (MESMO MODELO DE SHOWS COM BADGE DE DATA, VALOR E LIXEIRA NA DIREITA, SEM CHECK) */}
             {finances.length > 0 && (
               <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
-                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Outros</Text>
+                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>{t('otherFinances')}</Text>
                 {finances.map(item => {
                   const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
                   const badgeDate = getFormattedDateBadge(item.date, language);
@@ -1325,7 +1325,7 @@ export default function BandDetailScreen({
                           </Text>
                           <View style={{ backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4, marginTop: 2 }}>
                             <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
-                              {isIncome ? 'RECEITA' : 'DESPESA'}
+                              {isIncome ? t('income') : t('expense')}
                             </Text>
                           </View>
                         </View>
@@ -1357,15 +1357,15 @@ export default function BandDetailScreen({
               onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
             >
               <Ionicons name="add" size={20} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.createEventBtnText}>Novo Evento</Text>
+              <Text style={styles.createEventBtnText}>{t('newEvent')}</Text>
             </Pressable>
 
             {bandSetlists.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Ionicons name="calendar-outline" size={48} color={colors.textMuted} />
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum evento agendado</Text>
+                <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('noEventsScheduled')}</Text>
                 <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
-                  Os shows e ensaios desta banda aparecerão nesta lista.
+                  {t('bandEventsSubtitle')}
                 </Text>
               </View>
             ) : (
@@ -1394,7 +1394,7 @@ export default function BandDetailScreen({
                             styles.typePillText,
                             { color: setlist.type === 'show' ? '#ef4444' : '#3b82f6' }
                           ]}>
-                            {setlist.type === 'show' ? 'SHOW' : 'ENSAIO'}
+                            {setlist.type === 'show' ? t('show').toUpperCase() : t('rehearsal').toUpperCase()}
                           </Text>
                         </View>
 
@@ -1425,7 +1425,7 @@ export default function BandDetailScreen({
         >
           <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <View style={styles.modalHeaderRow}>
-              <Text style={[styles.modalTitleText, { color: colors.text }]}>Vincular Músicas da Coleção</Text>
+              <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('linkCollectionSongs')}</Text>
               <Pressable onPress={() => setShowSongPickerModal(false)}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
               </Pressable>
@@ -1435,7 +1435,7 @@ export default function BandDetailScreen({
               <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text, flex: 1, fontSize: 13 }]}
-                placeholder="Buscar música da coleção..."
+                placeholder={t('searchCollectionSong')}
                 placeholderTextColor={colors.textMuted}
                 value={pickerSearch}
                 onChangeText={setPickerSearch}
@@ -1512,7 +1512,7 @@ export default function BandDetailScreen({
           <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '80%' }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitleText, { color: colors.text }]}>
-                {editingFinanceItem ? 'Editar Lançamento' : 'Novo Lançamento'}
+                {editingFinanceItem ? t('editEntry') : t('newEntry')}
               </Text>
               <Pressable onPress={() => setShowAddFinanceModal(false)}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
@@ -1520,7 +1520,7 @@ export default function BandDetailScreen({
             </View>
 
             <ScrollView>
-              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Descrição: *</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('descriptionLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder=""
@@ -1529,7 +1529,7 @@ export default function BandDetailScreen({
                 onChangeText={setFinTitle}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Valor (R$): *</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('amountLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder=""
@@ -1539,7 +1539,7 @@ export default function BandDetailScreen({
                 onChangeText={setFinAmount}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Tipo:</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('entryTypeLabel')}</Text>
               <View style={{ flexDirection: 'row', marginTop: 6, marginBottom: 12 }}>
                 <Pressable
                   style={[
@@ -1595,7 +1595,7 @@ export default function BandDetailScreen({
                   }}
                 >
                   <Ionicons name="calendar-outline" size={18} color={colors.primary} />
-                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.primary }}>Hoje</Text>
+                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.primary }}>{t('today')}</Text>
                 </Pressable>
               </View>
             </ScrollView>
@@ -1605,13 +1605,13 @@ export default function BandDetailScreen({
                 style={[styles.modalCancelBtn, { borderColor: colors.border }]}
                 onPress={() => setShowAddFinanceModal(false)}
               >
-                <Text style={{ color: colors.text }}>Cancelar</Text>
+                <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
                 onPress={handleSaveFinanceEntry}
               >
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Salvar</Text>
+                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('save')}</Text>
               </Pressable>
             </View>
           </View>
@@ -1627,7 +1627,7 @@ export default function BandDetailScreen({
           <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '85%' }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitleText, { color: colors.text }]}>
-                {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
+                {editingMemberId ? t('editMember') : t('newMember')}
               </Text>
               <Pressable onPress={handleCancelEditMember}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
@@ -1635,7 +1635,7 @@ export default function BandDetailScreen({
             </View>
 
             <ScrollView>
-              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Nome: *</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('memberNameLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder=""
@@ -1644,7 +1644,7 @@ export default function BandDetailScreen({
                 onChangeText={setMemberName}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Função / Instrumento (separe por vírgula):</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberRoleLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder="Ex: Vocal, Guitarra, Baixo"
@@ -1653,7 +1653,7 @@ export default function BandDetailScreen({
                 onChangeText={setMemberRole}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Contato (WhatsApp):</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberPhoneLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                 placeholder="Ex: (11) 99999-9999"
@@ -1665,7 +1665,7 @@ export default function BandDetailScreen({
 
               <View style={[styles.periodRow, { marginTop: 12 }]}>
                 <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Início:</Text>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('startDateLabel')}</Text>
                   <TextInput
                     style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                     placeholder="DD/MM/AAAA"
@@ -1676,7 +1676,7 @@ export default function BandDetailScreen({
                 </View>
 
                 <View style={[styles.cleanFormGroup, { flex: 1 }]}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Fim:</Text>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('endDateLabel')}</Text>
                   <TextInput
                     style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
                     placeholder="DD/MM/AAAA"
@@ -1687,7 +1687,7 @@ export default function BandDetailScreen({
                 </View>
               </View>
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Status do Integrante:</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberStatusLabel')}</Text>
               <View style={styles.statusPillGroup}>
                 <Pressable
                   style={[
@@ -1697,7 +1697,7 @@ export default function BandDetailScreen({
                   onPress={() => setMemberStatus('active')}
                 >
                   <Ionicons name="checkmark-circle" size={16} color={memberStatus === 'active' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
-                  <Text style={[styles.statusPillText, { color: memberStatus === 'active' ? '#ffffff' : colors.text }]}>Ativo</Text>
+                  <Text style={[styles.statusPillText, { color: memberStatus === 'active' ? '#ffffff' : colors.text }]}>{t('active')}</Text>
                 </Pressable>
 
                 <Pressable
@@ -1708,7 +1708,7 @@ export default function BandDetailScreen({
                   onPress={() => setMemberStatus('inactive')}
                 >
                   <Ionicons name="close-circle" size={16} color={memberStatus === 'inactive' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
-                  <Text style={[styles.statusPillText, { color: memberStatus === 'inactive' ? '#ffffff' : colors.text }]}>Inativo</Text>
+                  <Text style={[styles.statusPillText, { color: memberStatus === 'inactive' ? '#ffffff' : colors.text }]}>{t('inactive')}</Text>
                 </Pressable>
               </View>
             </ScrollView>
@@ -1718,13 +1718,13 @@ export default function BandDetailScreen({
                 style={[styles.modalCancelBtn, { borderColor: colors.border }]}
                 onPress={handleCancelEditMember}
               >
-                <Text style={{ color: colors.text }}>Cancelar</Text>
+                <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
                 onPress={handleSaveMember}
               >
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Salvar Integrante</Text>
+                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveMember')}</Text>
               </Pressable>
             </View>
           </View>
@@ -1736,7 +1736,7 @@ export default function BandDetailScreen({
         <Pressable style={styles.modalOverlay} onPress={() => setShowSortModal(false)}>
           <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <View style={styles.modalHeaderRow}>
-              <Text style={[styles.modalTitleText, { color: colors.text }]}>Organizar Repertório</Text>
+              <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('organizeRepertoire')}</Text>
               <Pressable onPress={() => setShowSortModal(false)}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
               </Pressable>
@@ -1744,10 +1744,10 @@ export default function BandDetailScreen({
 
             <View style={{ gap: 8, marginVertical: 12 }}>
               {[
-                { id: 'name_asc', label: 'Nome da Música (A - Z)', icon: 'text' },
-                { id: 'name_desc', label: 'Nome da Música (Z - A)', icon: 'text' },
-                { id: 'band_asc', label: 'Banda Original (A - Z)', icon: 'disc' },
-                { id: 'band_desc', label: 'Banda Original (Z - A)', icon: 'disc' },
+                { id: 'name_asc', label: t('songNameAsc'), icon: 'text' },
+                { id: 'name_desc', label: t('songNameDesc'), icon: 'text' },
+                { id: 'band_asc', label: t('bandNameAsc'), icon: 'disc' },
+                { id: 'band_desc', label: t('bandNameDesc'), icon: 'disc' },
               ].map(opt => {
                 const isSelected = repertoireSort === opt.id;
                 return (
@@ -1785,7 +1785,7 @@ export default function BandDetailScreen({
           <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <View style={styles.modalHeaderRow}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.modalTitleText, { color: colors.text }]}>Divisão de Cachê por Integrante</Text>
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('cacheSplitTitle')}</Text>
                 <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700', marginTop: 2 }}>
                   {selectedShowForSplit ? selectedShowForSplit.name : ''}
                 </Text>
@@ -1798,14 +1798,14 @@ export default function BandDetailScreen({
             {/* Subcabeçalho com botão Dividir Igualmente */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10, paddingHorizontal: 4 }}>
               <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '700' }}>
-                Total Cachê: <Text style={{ color: '#10b981', fontWeight: '900', fontSize: 14 }}>$ {(parseCurrency(selectedShowForSplit ? (selectedShowForSplit.cachê || selectedShowForSplit.cache || selectedShowForSplit.valCache || selectedShowForSplit.value) : 0)).toFixed(2)}</Text>
+                {t('totalCachet')} <Text style={{ color: '#10b981', fontWeight: '900', fontSize: 14 }}>$ {(parseCurrency(selectedShowForSplit ? (selectedShowForSplit.cachê || selectedShowForSplit.cache || selectedShowForSplit.valCache || selectedShowForSplit.value) : 0)).toFixed(2)}</Text>
               </Text>
               <Pressable
                 style={[styles.equalSplitBtn, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
                 onPress={handleDivideCachetEqually}
               >
                 <Ionicons name="calculator-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>Dividir Igualmente</Text>
+                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{t('divideEqually')}</Text>
               </Pressable>
             </View>
 
@@ -1813,7 +1813,7 @@ export default function BandDetailScreen({
             <ScrollView style={{ maxHeight: 280, marginVertical: 8 }}>
               {activeMembers.length === 0 ? (
                 <Text style={{ textAlign: 'center', color: colors.textMuted, marginVertical: 20 }}>
-                  Nenhum integrante ativo cadastrado nesta banda.
+                  {t('noActiveMembersBand')}
                 </Text>
               ) : (
                 activeMembers.map(m => {
@@ -1848,10 +1848,10 @@ export default function BandDetailScreen({
 
             <View style={styles.modalFooterRow}>
               <Pressable style={[styles.modalCancelBtn, { borderColor: colors.border }]} onPress={() => setShowCacheSplitModal(false)}>
-                <Text style={{ color: colors.text }}>Cancelar</Text>
+                <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]} onPress={handleSaveCachetSplit}>
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Salvar Divisão</Text>
+                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveSplit')}</Text>
               </Pressable>
             </View>
           </View>
