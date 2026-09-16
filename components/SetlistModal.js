@@ -837,7 +837,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     }]}
                     value={name}
                     onChangeText={setName}
-                    placeholder=""
+                    placeholder={t('setlistNamePlaceholder') || 'Nome do Evento'}
                     placeholderTextColor={colors.textMuted}
                     autoComplete="off"
                     importantForAutofill="no"
