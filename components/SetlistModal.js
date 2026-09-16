@@ -824,7 +824,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     }]}
                     value={name}
                     onChangeText={setName}
-                    placeholder={t('setlistNamePlaceholder') || 'Nome do Evento'}
+                    placeholder=""
                     placeholderTextColor={colors.textMuted}
                     autoComplete="off"
                     importantForAutofill="no"
@@ -833,20 +833,24 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                   <View style={styles.rowInputs}>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('dateLabel').toUpperCase()} *</Text>
-                      <Pressable onPress={() => setShowDatePicker(true)}>
-                        <View pointerEvents="none">
-                          <TextInput
-                            style={[styles.input, { 
-                              backgroundColor: colors.inputBackground, 
-                              color: colors.inputText,
-                              borderColor: colors.border
-                            }]}
-                            value={date}
-                            editable={false}
-                            placeholder={t('datePlaceholder') || 'AAAA-MM-DD'}
-                            placeholderTextColor={colors.textMuted}
-                          />
-                        </View>
+                      <Pressable 
+                        onPress={() => setShowDatePicker(true)}
+                        style={({ pressed }) => [
+                          styles.input, 
+                          { 
+                            backgroundColor: colors.inputBackground, 
+                            borderColor: colors.border,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            opacity: pressed ? 0.7 : 1
+                          }
+                        ]}
+                      >
+                        <Text style={{ color: date ? colors.inputText : colors.textMuted, fontSize: 13, fontWeight: date ? '600' : '400' }}>
+                          {date || ''}
+                        </Text>
+                        <Ionicons name="calendar-outline" size={18} color={colors.primary} />
                       </Pressable>
 
                       {showDatePicker && (
@@ -882,7 +886,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         }]}
                         value={local}
                         onChangeText={setLocal}
-                        placeholder={t('localPlaceholder') || 'Ex: Bar do Zé, Estúdio X...'}
+                        placeholder=""
                         placeholderTextColor={colors.textMuted}
                         autoComplete="off"
                         importantForAutofill="no"
@@ -1182,7 +1186,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('durationLabel').toUpperCase()}</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
-                  placeholder={t('durationExamplePlaceholder')}
+                  placeholder=""
                   placeholderTextColor={colors.textMuted}
                   value={tempCustomDuration}
                   onChangeText={setTempCustomDuration}
