@@ -14,6 +14,7 @@ import {
   Dimensions,
   Vibration,
   Linking,
+  StatusBar,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -108,9 +109,8 @@ export default function BandDetailScreen({
   const [selectedPickerSongIds, setSelectedPickerSongIds] = useState(new Set());
   const [pickerSearch, setPickerSearch] = useState('');
 
-  // Band Members Data & Form (Form oculto por padrão, cartões expansíveis)
-  const [members, setMembers] = useState([]);
-  const [showMemberForm, setShowMemberForm] = useState(false);
+  // Member Modal State
+  const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
@@ -188,7 +188,7 @@ export default function BandDetailScreen({
     });
   };
 
-  // Financial Calculations
+  // Financial Calculations including Show Caches
   const parseCurrency = (valStr) => {
     if (!valStr) return 0;
     const clean = String(valStr)
@@ -198,30 +198,39 @@ export default function BandDetailScreen({
     return parseFloat(clean) || 0;
   };
 
-  let totalSetlistIncome = 0;
+  const autoShowFinances = [];
   bandSetlists.forEach(sl => {
-    if (sl.type === 'show' && sl.cachê) {
-      const val = parseCurrency(sl.cachê);
-      totalSetlistIncome += val;
+    const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
+    if (sl.type === 'show' && rawCache) {
+      const amt = parseCurrency(rawCache);
+      if (amt > 0) {
+        autoShowFinances.push({
+          id: `auto_show_${sl.id}`,
+          title: `Show: ${sl.name || 'Sem título'}`,
+          amount: amt,
+          type: 'income',
+          date: sl.date || '',
+          status: 'paid',
+          isAutoShow: true,
+        });
+      }
     }
   });
 
-  let customPaidIncome = 0;
-  let customPaidExpense = 0;
-  let customPendingIncome = 0;
+  const combinedFinances = [...autoShowFinances, ...finances];
 
-  finances.forEach(f => {
-    const amt = parseFloat(f.amount) || 0;
+  let totalIncome = 0;
+  let totalExpense = 0;
+
+  combinedFinances.forEach(f => {
+    const amt = typeof f.amount === 'number' ? f.amount : (parseFloat(f.amount) || 0);
     if (f.type === 'income') {
-      if (f.status === 'paid') customPaidIncome += amt;
-      else customPendingIncome += amt;
+      if (f.status === 'paid') totalIncome += amt;
     } else {
-      if (f.status === 'paid') customPaidExpense += amt;
+      if (f.status === 'paid') totalExpense += amt;
     }
   });
 
-  const totalIncome = totalSetlistIncome + customPaidIncome;
-  const totalExpense = customPaidExpense;
   const netBalance = totalIncome - totalExpense;
 
   // Filtered band repertoire (Favoritas no topo)
@@ -393,12 +402,23 @@ export default function BandDetailScreen({
       setMemberEndDate('');
       setMemberStatus('active');
       setEditingMemberId(null);
-      setShowMemberForm(false);
+      setShowMemberModal(false);
       await loadData();
     } catch (e) {
       console.error('Error in handleSaveMember:', e);
       Alert.alert('Erro', 'Não foi possível salvar o integrante.');
     }
+  };
+
+  const handleOpenAddMember = () => {
+    setEditingMemberId(null);
+    setMemberName('');
+    setMemberRole('');
+    setMemberPhone('');
+    setMemberStartDate('');
+    setMemberEndDate('');
+    setMemberStatus('active');
+    setShowMemberModal(true);
   };
 
   const handleOpenEditMember = (member) => {
@@ -409,7 +429,7 @@ export default function BandDetailScreen({
     setMemberStartDate(member.startDate || '');
     setMemberEndDate(member.endDate || '');
     setMemberStatus(member.status || 'active');
-    setShowMemberForm(true);
+    setShowMemberModal(true);
   };
 
   const handleCancelEditMember = () => {
@@ -420,7 +440,7 @@ export default function BandDetailScreen({
     setMemberStartDate('');
     setMemberEndDate('');
     setMemberStatus('active');
-    setShowMemberForm(false);
+    setShowMemberModal(false);
   };
 
   const handleDeleteMember = (member) => {
@@ -560,8 +580,16 @@ export default function BandDetailScreen({
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         
-        {/* HEADER HERO CLEAN COM LOGO MAIS ALTO E DIMINUÍDO EM 50% */}
+        {/* HEADER HERO CLEAN COM LOGO E IMAGEM DE MARCA D'ÁGUA NO FUNDO */}
         <View style={[styles.headerHeroContainer, { backgroundColor: colors.background }]}>
+          {(band.imageUri || band.image || band.logo) && (
+            <Image
+              source={{ uri: band.imageUri || band.image || band.logo }}
+              style={[StyleSheet.absoluteFillObject, { opacity: 0.18 }]}
+              resizeMode="cover"
+              blurRadius={2}
+            />
+          )}
           <View style={styles.topRowNav}>
             <Pressable style={[styles.headerIconButton, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
               <Ionicons name="arrow-back" size={20} color={colors.text} />
@@ -798,128 +826,14 @@ export default function BandDetailScreen({
         {activeTab === 'members' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             
-            {/* BOTÃO PARA ABRIR FORMULÁRIO (OCULTO POR PADRÃO) */}
-            {!showMemberForm ? (
-              <Pressable
-                style={[styles.openFormBtn, { backgroundColor: colors.primary }]}
-                onPress={() => setShowMemberForm(true)}
-              >
-                <Ionicons name="person-add-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
-                <Text style={styles.openFormBtnText}>Adicionar Integrante</Text>
-              </Pressable>
-            ) : (
-              /* FORMULÁRIO OCULTÁVEL */
-              <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
-                <View style={styles.cardPanelHeaderRow}>
-                  <Ionicons name="person-add-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-                  <Text style={[styles.cardPanelTitle, { color: colors.text, flex: 1 }]}>
-                    {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
-                  </Text>
-                  <Pressable onPress={handleCancelEditMember}>
-                    <Ionicons name="close" size={22} color={colors.textMuted} />
-                  </Pressable>
-                </View>
-
-                <View style={styles.cleanFormGroup}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Nome: *</Text>
-                  <TextInput
-                    style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-                    placeholder=""
-                    placeholderTextColor={colors.textMuted}
-                    value={memberName}
-                    onChangeText={setMemberName}
-                  />
-                </View>
-
-                <View style={styles.cleanFormGroup}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Função / Instrumento:</Text>
-                  <TextInput
-                    style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-                    placeholder=""
-                    placeholderTextColor={colors.textMuted}
-                    value={memberRole}
-                    onChangeText={setMemberRole}
-                  />
-                </View>
-
-                <View style={styles.cleanFormGroup}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Contato (WhatsApp):</Text>
-                  <TextInput
-                    style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-                    placeholder=""
-                    placeholderTextColor={colors.textMuted}
-                    keyboardType="phone-pad"
-                    value={memberPhone}
-                    onChangeText={setMemberPhone}
-                  />
-                </View>
-
-                {/* PERÍODO DE ATIVIDADE */}
-                <View style={styles.periodRow}>
-                  <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
-                    <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Início:</Text>
-                    <TextInput
-                      style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-                      placeholder=""
-                      placeholderTextColor={colors.textMuted}
-                      value={memberStartDate}
-                      onChangeText={setMemberStartDate}
-                    />
-                  </View>
-
-                  <View style={[styles.cleanFormGroup, { flex: 1 }]}>
-                    <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Fim:</Text>
-                    <TextInput
-                      style={[styles.cleanInput, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-                      placeholder=""
-                      placeholderTextColor={colors.textMuted}
-                      value={memberEndDate}
-                      onChangeText={setMemberEndDate}
-                    />
-                  </View>
-                </View>
-
-                {/* STATUS ATIVO / INATIVO */}
-                <View style={styles.cleanFormGroup}>
-                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Status do Integrante:</Text>
-                  <View style={styles.statusPillGroup}>
-                    <Pressable
-                      style={[
-                        styles.statusPillBtn,
-                        memberStatus === 'active' && { backgroundColor: '#10b981', borderColor: '#10b981' }
-                      ]}
-                      onPress={() => setMemberStatus('active')}
-                    >
-                      <Ionicons name="checkmark-circle" size={16} color={memberStatus === 'active' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
-                      <Text style={[styles.statusPillText, { color: memberStatus === 'active' ? '#ffffff' : colors.text }]}>Ativo</Text>
-                    </Pressable>
-
-                    <Pressable
-                      style={[
-                        styles.statusPillBtn,
-                        memberStatus === 'inactive' && { backgroundColor: '#6b7280', borderColor: '#6b7280' }
-                      ]}
-                      onPress={() => setMemberStatus('inactive')}
-                    >
-                      <Ionicons name="close-circle" size={16} color={memberStatus === 'inactive' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
-                      <Text style={[styles.statusPillText, { color: memberStatus === 'inactive' ? '#ffffff' : colors.text }]}>Inativo</Text>
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View style={styles.formActionRow}>
-                  <Pressable style={styles.cancelFormBtn} onPress={handleCancelEditMember}>
-                    <Text style={[styles.cancelFormBtnText, { color: colors.textMuted }]}>Cancelar</Text>
-                  </Pressable>
-                  <Pressable style={[styles.saveFormBtn, { backgroundColor: colors.primary }]} onPress={handleSaveMember}>
-                    <Ionicons name={editingMemberId ? "checkmark" : "add"} size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                    <Text style={styles.saveFormBtnText}>
-                      {editingMemberId ? 'Salvar Alterações' : 'Salvar Integrante'}
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
+            {/* BOTÃO PARA ABRIR MODAL DE NOVO INTEGRANTE */}
+            <Pressable
+              style={[styles.openFormBtn, { backgroundColor: colors.primary }]}
+              onPress={handleOpenAddMember}
+            >
+              <Ionicons name="person-add-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+              <Text style={styles.openFormBtnText}>Adicionar Integrante</Text>
+            </Pressable>
 
             {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
             <View style={styles.memberSectionHeader}>
@@ -1143,21 +1057,21 @@ export default function BandDetailScreen({
                 <View style={[styles.financeSummaryCard, { backgroundColor: '#10b98115' }]}>
                   <Text style={[styles.financeSummaryLabel, { color: '#10b981' }]}>Entradas</Text>
                   <Text style={[styles.financeSummaryValue, { color: '#10b981' }]}>
-                    R$ {totalIncome.toFixed(2)}
+                    $ {totalIncome.toFixed(2)}
                   </Text>
                 </View>
 
                 <View style={[styles.financeSummaryCard, { backgroundColor: '#ef444415' }]}>
                   <Text style={[styles.financeSummaryLabel, { color: '#ef4444' }]}>Saídas</Text>
                   <Text style={[styles.financeSummaryValue, { color: '#ef4444' }]}>
-                    R$ {totalExpense.toFixed(2)}
+                    $ {totalExpense.toFixed(2)}
                   </Text>
                 </View>
 
                 <View style={[styles.financeSummaryCard, { backgroundColor: netBalance >= 0 ? '#3b82f615' : '#f59e0b15' }]}>
                   <Text style={[styles.financeSummaryLabel, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>Saldo</Text>
                   <Text style={[styles.financeSummaryValue, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>
-                    R$ {netBalance.toFixed(2)}
+                    $ {netBalance.toFixed(2)}
                   </Text>
                 </View>
               </View>
@@ -1171,39 +1085,57 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
 
-            {finances.length > 0 && (
+            {combinedFinances.length > 0 && (
               <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
                 <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Lançamentos</Text>
-                {finances.map(item => (
-                  <View key={item.id} style={[styles.financeItemRow, { borderBottomColor: colors.border }]}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.financeItemTitle, { color: colors.text }]}>{item.title}</Text>
-                      <Text style={[styles.financeItemMeta, { color: colors.textMuted }]}>{item.date || ''}</Text>
+                {combinedFinances.map(item => {
+                  const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
+                  return (
+                    <View key={item.id} style={[styles.financeItemRow, { borderBottomColor: colors.border }]}>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text style={[styles.financeItemTitle, { color: colors.text }]}>{item.title}</Text>
+                          {item.isAutoShow && (
+                            <View style={{ backgroundColor: '#10b98120', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6 }}>
+                              <Text style={{ color: '#10b981', fontSize: 10, fontWeight: 'bold' }}>AUTO SHOW</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={[styles.financeItemMeta, { color: colors.textMuted }]}>{item.date || ''}</Text>
+                      </View>
+
+                      <Text style={[
+                        styles.financeItemAmount,
+                        { color: item.type === 'income' ? '#10b981' : '#ef4444' }
+                      ]}>
+                        {item.type === 'income' ? '+' : '-'} $ {amtVal.toFixed(2)}
+                      </Text>
+
+                      {!item.isAutoShow ? (
+                        <>
+                          <Pressable
+                            style={styles.financeStatusBadge}
+                            onPress={() => handleToggleFinanceStatus(item)}
+                          >
+                            <Ionicons
+                              name={item.status === 'paid' ? 'checkmark-circle' : 'time-outline'}
+                              size={16}
+                              color={item.status === 'paid' ? '#10b981' : '#f59e0b'}
+                            />
+                          </Pressable>
+
+                          <Pressable style={{ marginLeft: 8 }} onPress={() => handleDeleteFinanceEntry(item)}>
+                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                          </Pressable>
+                        </>
+                      ) : (
+                        <View style={styles.financeStatusBadge}>
+                          <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                        </View>
+                      )}
                     </View>
-
-                    <Text style={[
-                      styles.financeItemAmount,
-                      { color: item.type === 'income' ? '#10b981' : '#ef4444' }
-                    ]}>
-                      {item.type === 'income' ? '+' : '-'} R$ {parseFloat(item.amount).toFixed(2)}
-                    </Text>
-
-                    <Pressable
-                      style={styles.financeStatusBadge}
-                      onPress={() => handleToggleFinanceStatus(item)}
-                    >
-                      <Ionicons
-                        name={item.status === 'paid' ? 'checkmark-circle' : 'time-outline'}
-                        size={16}
-                        color={item.status === 'paid' ? '#10b981' : '#f59e0b'}
-                      />
-                    </Pressable>
-
-                    <Pressable style={{ marginLeft: 8 }} onPress={() => handleDeleteFinanceEntry(item)}>
-                      <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                    </Pressable>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             )}
           </ScrollView>
@@ -1477,17 +1409,136 @@ export default function BandDetailScreen({
         </View>
       </Modal>
 
+      {/* MODAL ADICIONAR/EDITAR INTEGRANTE (BOTTOM SHEET) */}
+      <Modal visible={showMemberModal} animationType="slide" transparent>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '85%' }]}>
+            <View style={styles.modalHeaderRow}>
+              <Text style={[styles.modalTitleText, { color: colors.text }]}>
+                {editingMemberId ? 'Editar Integrante' : 'Novo Integrante'}
+              </Text>
+              <Pressable onPress={handleCancelEditMember}>
+                <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+              </Pressable>
+            </View>
+
+            <ScrollView>
+              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Nome: *</Text>
+              <TextInput
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                placeholder=""
+                placeholderTextColor={colors.textMuted}
+                value={memberName}
+                onChangeText={setMemberName}
+              />
+
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Função / Instrumento (separe por vírgula):</Text>
+              <TextInput
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                placeholder="Ex: Vocal, Guitarra, Baixo"
+                placeholderTextColor={colors.textMuted}
+                value={memberRole}
+                onChangeText={setMemberRole}
+              />
+
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Contato (WhatsApp):</Text>
+              <TextInput
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                placeholder="Ex: (11) 99999-9999"
+                placeholderTextColor={colors.textMuted}
+                keyboardType="phone-pad"
+                value={memberPhone}
+                onChangeText={setMemberPhone}
+              />
+
+              <View style={[styles.periodRow, { marginTop: 12 }]}>
+                <View style={[styles.cleanFormGroup, { flex: 1, marginRight: 8 }]}>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Início:</Text>
+                  <TextInput
+                    style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                    placeholder="DD/MM/AAAA"
+                    placeholderTextColor={colors.textMuted}
+                    value={memberStartDate}
+                    onChangeText={setMemberStartDate}
+                  />
+                </View>
+
+                <View style={[styles.cleanFormGroup, { flex: 1 }]}>
+                  <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data Fim:</Text>
+                  <TextInput
+                    style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
+                    placeholder="DD/MM/AAAA"
+                    placeholderTextColor={colors.textMuted}
+                    value={memberEndDate}
+                    onChangeText={setMemberEndDate}
+                  />
+                </View>
+              </View>
+
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Status do Integrante:</Text>
+              <View style={styles.statusPillGroup}>
+                <Pressable
+                  style={[
+                    styles.statusPillBtn,
+                    memberStatus === 'active' && { backgroundColor: '#10b981', borderColor: '#10b981' }
+                  ]}
+                  onPress={() => setMemberStatus('active')}
+                >
+                  <Ionicons name="checkmark-circle" size={16} color={memberStatus === 'active' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
+                  <Text style={[styles.statusPillText, { color: memberStatus === 'active' ? '#ffffff' : colors.text }]}>Ativo</Text>
+                </Pressable>
+
+                <Pressable
+                  style={[
+                    styles.statusPillBtn,
+                    memberStatus === 'inactive' && { backgroundColor: '#6b7280', borderColor: '#6b7280' }
+                  ]}
+                  onPress={() => setMemberStatus('inactive')}
+                >
+                  <Ionicons name="close-circle" size={16} color={memberStatus === 'inactive' ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
+                  <Text style={[styles.statusPillText, { color: memberStatus === 'inactive' ? '#ffffff' : colors.text }]}>Inativo</Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooterRow}>
+              <Pressable
+                style={[styles.modalCancelBtn, { borderColor: colors.border }]}
+                onPress={handleCancelEditMember}
+              >
+                <Text style={{ color: colors.text }}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
+                onPress={handleSaveMember}
+              >
+                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Salvar Integrante</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0,
+    paddingBottom: Platform.OS === 'android' ? 12 : 0,
+  },
   headerHeroContainer: {
     width: '100%',
-    paddingTop: Platform.OS === 'ios' ? 44 : 8,
+    paddingTop: Platform.OS === 'ios' ? 44 : 12,
     paddingHorizontal: 16,
     paddingBottom: 12,
+    position: 'relative',
+    overflow: 'hidden',
   },
   topRowNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   topRowActions: { flexDirection: 'row' },
@@ -1710,8 +1761,8 @@ const styles = StyleSheet.create({
   typePillText: { fontSize: 10, fontWeight: 'bold' },
   eventLocalText: { fontSize: 12, flex: 1 },
 
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 16 },
-  pickerModalContainer: { borderRadius: 16, padding: 16, maxHeight: '85%' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  pickerModalContainer: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, height: '85%', maxHeight: '90%' },
   modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   modalTitleText: { fontSize: 18, fontWeight: 'bold' },
   pickerSearchInputWrapper: { flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 8, paddingHorizontal: 10, marginBottom: 12 },

@@ -11,6 +11,7 @@ import {
   Platform,
   Animated,
   Easing,
+  StatusBar,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
@@ -873,7 +874,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'android' ? 10 : 20,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : (Platform.OS === 'ios' ? 44 : 10),
     paddingBottom: 0,
     paddingHorizontal: 8,
     borderBottomWidth: 0,
@@ -980,7 +981,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
     paddingTop: 2,
-    paddingBottom: Platform.OS === 'ios' ? 18 : 8,
+    paddingBottom: Platform.OS === 'android' ? 24 : (Platform.OS === 'ios' ? 18 : 8),
     borderTopWidth: 0,
     gap: 8,
     alignItems: 'center',
