@@ -490,7 +490,7 @@ export function DraggableSortableList({
   );
 }
 
-export default function SetlistModal({ visible, onClose, onSave, setlist, bands = [], songs = [] }) {
+export default function SetlistModal({ visible, onClose, onSave, setlist, bands = [], songs = [], onEditSong, onCopy }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
 
@@ -541,7 +541,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
         setCachê('');
         setNotes('');
         setSelectedSongs([]);
-        setShowEventDetails(true);
+        setShowEventDetails(false);
       }
       setShowSongSelectorModal(false);
       setSelectedPickerSongIds(new Set());
@@ -709,12 +709,25 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                   {setlist ? (setlist.name || t('editSetlist')) : t('newSetlist')}
                 </Text>
               </View>
-              <Pressable 
-              style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
-              onPress={onClose}
-            >
-              <Ionicons name="close" size={20} color={colors.danger} />
-            </Pressable>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                {setlist && setlist.id && onCopy && (
+                  <Pressable 
+                    style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
+                    onPress={() => {
+                      onCopy(setlist.id);
+                      onClose();
+                    }}
+                  >
+                    <Ionicons name="copy-outline" size={20} color={colors.primary} />
+                  </Pressable>
+                )}
+                <Pressable 
+                  style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
+                  onPress={onClose}
+                >
+                  <Ionicons name="close" size={20} color={colors.danger} />
+                </Pressable>
+              </View>
             </View>
 
             <ScrollView 
@@ -1060,7 +1073,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 <Ionicons name="search" size={16} color={colors.textMuted} style={{ marginRight: 8 }} />
                 <TextInput
                   style={[styles.searchBarInput, { color: colors.inputText }]}
-                  placeholder={t('searchPlaceholder') || 'Buscar por música ou artista...'}
+                  placeholder=""
                   placeholderTextColor={colors.textMuted}
                   value={pickerSearch}
                   onChangeText={setPickerSearch}

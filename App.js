@@ -3938,6 +3938,7 @@ function MainApp() {
         bands={bands}
         songs={allSongsUnfiltered}
         onEditSong={handleEditSong}
+        onCopy={handleDuplicateSetlist}
       />
 
       <SetlistDetailModal
