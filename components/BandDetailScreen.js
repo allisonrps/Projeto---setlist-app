@@ -67,6 +67,59 @@ const getFormattedDateBadge = (dateStr, lang) => {
   return { day: String(day).padStart(2, '0'), month: months[monthNum] || '---' };
 };
 
+const parseDateForSort = (dateStr) => {
+  if (!dateStr) return 0;
+  const clean = dateStr.trim();
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) return new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+      return new Date(year, parts[1] - 1, parts[0]).getTime();
+    }
+  }
+  return 0;
+};
+
+const getMonthYearHeader = (dateStr, lang = 'pt') => {
+  if (!dateStr || !dateStr.trim()) return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
+  const clean = dateStr.trim();
+  let year = '';
+  let monthNum = -1;
+
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      year = parts[0];
+      monthNum = parseInt(parts[1], 10) - 1;
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        year = parts[0];
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  }
+
+  const monthsPt = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const monthsEs = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+  const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
+
+  if (monthNum >= 0 && monthNum < 12 && year) {
+    return `${months[monthNum]} ${year}`;
+  }
+  return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
+};
+
 const STYLE_COLOR_PALETTE = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
 ];
@@ -180,8 +233,10 @@ export default function BandDetailScreen({
 
   if (!visible || !band) return null;
 
-  // Filter setlists belonging to this band
-  const bandSetlists = (allSetlists || []).filter(s => s && s.myBandId === band.id);
+  // Filter setlists belonging to this band sorted by date
+  const bandSetlists = (allSetlists || [])
+    .filter(s => s && s.myBandId === band.id)
+    .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
   // Separate active and inactive members
   const activeMembers = (members || []).filter(m => (m.status || 'active') === 'active');
@@ -1210,7 +1265,10 @@ export default function BandDetailScreen({
               </View>
 
               {(() => {
-                const showEvents = (bandSetlists || []).filter(s => s && s.type === 'show');
+                const showEvents = (bandSetlists || [])
+                  .filter(s => s && s.type === 'show')
+                  .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+
                 if (showEvents.length === 0) {
                   return (
                     <View style={{ paddingVertical: 14, alignItems: 'center' }}>
@@ -1221,58 +1279,71 @@ export default function BandDetailScreen({
                   );
                 }
 
+                let lastShowHeader = '';
                 return showEvents.map(sl => {
+                  const header = getMonthYearHeader(sl.date, language);
+                  const showHeader = header !== lastShowHeader;
+                  if (showHeader) lastShowHeader = header;
                   const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
                   const cacheVal = parseCurrency(rawCache);
                   const badgeDate = getFormattedDateBadge(sl.date, language);
 
                   return (
-                    <Pressable
-                      key={sl.id}
-                      style={({ pressed }) => [
-                        styles.financeItemRow,
-                        { borderBottomColor: colors.border, opacity: pressed ? 0.75 : 1 }
-                      ]}
-                      onPress={() => handleOpenCacheSplitModal(sl)}
-                    >
-                      {/* Badge de Data */}
-                      <View style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 10,
-                        backgroundColor: colors.primary + '12',
-                        borderColor: colors.primary + '30',
-                        borderWidth: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: 10
-                      }}>
-                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
-                        <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>{badgeDate.month}</Text>
-                      </View>
+                    <View key={sl.id}>
+                      {showHeader && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
+                          <Text style={{ fontSize: 10.5, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                            {header}
+                          </Text>
+                          <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                        </View>
+                      )}
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.financeItemRow,
+                          { borderBottomColor: colors.border, opacity: pressed ? 0.75 : 1 }
+                        ]}
+                        onPress={() => handleOpenCacheSplitModal(sl)}
+                      >
+                        {/* Badge de Data */}
+                        <View style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 10,
+                          backgroundColor: colors.primary + '12',
+                          borderColor: colors.primary + '30',
+                          borderWidth: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginRight: 10
+                        }}>
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
+                          <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>{badgeDate.month}</Text>
+                        </View>
 
-                      {/* Nome e Local do Show */}
-                      <View style={{ flex: 1, paddingRight: 6 }}>
-                        <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
-                          {sl.name || t('untitledShow')}
-                        </Text>
-                        <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                          <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {sl.local || t('noLocationSpecified')}
-                        </Text>
-                      </View>
-
-                      {/* Valor do Cachê */}
-                      <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={{ fontSize: 14, fontWeight: '900', color: cacheVal > 0 ? '#10b981' : colors.textMuted }}>
-                          {cacheVal > 0 ? `$ ${cacheVal.toFixed(2)}` : t('noCachetDefined')}
-                        </Text>
-                        <View style={{ backgroundColor: cacheVal > 0 ? '#10b98120' : isDark ? '#3f3f46' : '#e4e4e7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 2 }}>
-                          <Text style={{ color: cacheVal > 0 ? '#10b981' : colors.textMuted, fontSize: 9, fontWeight: '900' }}>
-                            {cacheVal > 0 ? t('showCachet') : t('toBeDefined')}
+                        {/* Nome e Local do Show */}
+                        <View style={{ flex: 1, paddingRight: 6 }}>
+                          <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
+                            {sl.name || t('untitledShow')}
+                          </Text>
+                          <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                            <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {sl.local || t('noLocationSpecified')}
                           </Text>
                         </View>
-                      </View>
-                    </Pressable>
+
+                        {/* Valor do Cachê */}
+                        <View style={{ alignItems: 'flex-end' }}>
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: cacheVal > 0 ? '#10b981' : colors.textMuted }}>
+                            {cacheVal > 0 ? `$ ${cacheVal.toFixed(2)}` : t('noCachetDefined')}
+                          </Text>
+                          <View style={{ backgroundColor: cacheVal > 0 ? '#10b98120' : isDark ? '#3f3f46' : '#e4e4e7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 2 }}>
+                            <Text style={{ color: cacheVal > 0 ? '#10b981' : colors.textMuted, fontSize: 9, fontWeight: '900' }}>
+                              {cacheVal > 0 ? t('showCachet') : t('toBeDefined')}
+                            </Text>
+                          </View>
+                        </View>
+                      </Pressable>
+                    </View>
                   );
                 });
               })()}
@@ -1280,76 +1351,96 @@ export default function BandDetailScreen({
 
             {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS (MESMO MODELO DE SHOWS COM BADGE DE DATA, VALOR E LIXEIRA NA DIREITA, SEM CHECK) */}
             {finances.length > 0 && (
-              <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
-                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>{t('otherFinances')}</Text>
-                {finances.map(item => {
-                  const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
-                  const badgeDate = getFormattedDateBadge(item.date, language);
-                  const isIncome = item.type === 'income';
+              (() => {
+                const sortedFinances = [...(finances || [])].sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+                let lastFinHeader = '';
 
-                  return (
-                    <Pressable
-                      key={item.id}
-                      style={({ pressed }) => [
-                        styles.financeItemRow,
-                        { borderBottomColor: colors.border, opacity: pressed ? 0.8 : 1 }
-                      ]}
-                      onPress={() => handleOpenEditFinance(item)}
-                    >
-                      {/* Badge de Data na lateral esquerda */}
-                      <View style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 10,
-                        backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '15',
-                        borderColor: (isIncome ? '#10b981' : '#ef4444') + '30',
-                        borderWidth: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: 10
-                      }}>
-                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
-                        <Text style={{ fontSize: 9, fontWeight: '800', color: isIncome ? '#10b981' : '#ef4444' }}>{badgeDate.month}</Text>
-                      </View>
+                return (
+                  <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
+                    <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>{t('otherFinances')}</Text>
+                    {sortedFinances.map(item => {
+                      const header = getMonthYearHeader(item.date, language);
+                      const showHeader = header !== lastFinHeader;
+                      if (showHeader) lastFinHeader = header;
+                      const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
+                      const badgeDate = getFormattedDateBadge(item.date, language);
+                      const isIncome = item.type === 'income';
 
-                      {/* Nome e Descrição / Categoria */}
-                      <View style={{ flex: 1, paddingRight: 6 }}>
-                        <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
-                          {item.title || 'Lançamento'}
-                        </Text>
-                        <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                          {item.category || (isIncome ? 'Entrada' : 'Saída')}
-                        </Text>
-                      </View>
+                      return (
+                        <View key={item.id}>
+                          {showHeader && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
+                              <Text style={{ fontSize: 10.5, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                                {header}
+                              </Text>
+                              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                            </View>
+                          )}
 
-                      {/* Valor do Lançamento + Lixeira na direita (sem o botão check) */}
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <View style={{ alignItems: 'flex-end' }}>
-                          <Text style={{ fontSize: 14, fontWeight: '900', color: isIncome ? '#10b981' : '#ef4444' }}>
-                            {isIncome ? '+' : '-'} $ {amtVal.toFixed(2)}
-                          </Text>
-                          <View style={{ backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4, marginTop: 2 }}>
-                            <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
-                              {isIncome ? t('income') : t('expense')}
-                            </Text>
-                          </View>
+                          <Pressable
+                            style={({ pressed }) => [
+                              styles.financeItemRow,
+                              { borderBottomColor: colors.border, opacity: pressed ? 0.8 : 1 }
+                            ]}
+                            onPress={() => handleOpenEditFinance(item)}
+                          >
+                            {/* Badge de Data na lateral esquerda */}
+                            <View style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 10,
+                              backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '15',
+                              borderColor: (isIncome ? '#10b981' : '#ef4444') + '30',
+                              borderWidth: 1,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              marginRight: 10
+                            }}>
+                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, lineHeight: 16 }}>{badgeDate.day}</Text>
+                              <Text style={{ fontSize: 9, fontWeight: '800', color: isIncome ? '#10b981' : '#ef4444' }}>{badgeDate.month}</Text>
+                            </View>
+
+                            {/* Nome e Descrição / Categoria */}
+                            <View style={{ flex: 1, paddingRight: 6 }}>
+                              <Text style={[styles.financeItemTitle, { color: colors.text }]} numberOfLines={1}>
+                                {item.title || 'Lançamento'}
+                              </Text>
+                              <Text style={[styles.financeItemMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                                {item.category || (isIncome ? 'Entrada' : 'Saída')}
+                              </Text>
+                            </View>
+
+                            {/* Valor do Lançamento + Lixeira na direita (sem o botão check) */}
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                              <View style={{ alignItems: 'flex-end' }}>
+                                <Text style={{ fontSize: 14, fontWeight: '900', color: isIncome ? '#10b981' : '#ef4444' }}>
+                                  {isIncome ? '+' : '-'} $ {amtVal.toFixed(2)}
+                                </Text>
+                                <View style={{ backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4, marginTop: 2 }}>
+                                  <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
+                                    {isIncome ? t('income') : t('expense')}
+                                  </Text>
+                                </View>
+                              </View>
+
+                              <Pressable 
+                                style={{ padding: 4 }} 
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteFinanceEntry(item);
+                                }}
+                                hitSlop={8}
+                              >
+                                <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                              </Pressable>
+                            </View>
+                          </Pressable>
                         </View>
-
-                        <Pressable 
-                          style={{ padding: 4 }} 
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            handleDeleteFinanceEntry(item);
-                          }}
-                          hitSlop={8}
-                        >
-                          <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                        </Pressable>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
+                      );
+                    })}
+                  </View>
+                );
+              })()
             )}
           </ScrollView>
         )}
@@ -1374,58 +1465,90 @@ export default function BandDetailScreen({
                 </Text>
               </View>
             ) : (
-              bandSetlists.map(setlist => {
-                const dateBadge = getFormattedDateBadge(setlist.date, language);
-                return (
-                  <Pressable
-                    key={setlist.id}
-                    style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    onPress={() => onSelectSetlist ? onSelectSetlist(setlist) : onExportDoc(setlist)}
-                  >
-                    <View style={[styles.dateBadgeBox, { backgroundColor: colors.primary + '15' }]}>
-                      <Text style={[styles.dateBadgeDay, { color: colors.primary }]}>{dateBadge.day}</Text>
-                      <Text style={[styles.dateBadgeMonth, { color: colors.primary }]}>{dateBadge.month}</Text>
-                    </View>
+              (() => {
+                let lastEventHeader = '';
+                return bandSetlists.map(setlist => {
+                  const header = getMonthYearHeader(setlist.date, language);
+                  const showHeader = header !== lastEventHeader;
+                  if (showHeader) lastEventHeader = header;
+                  const dateBadge = getFormattedDateBadge(setlist.date, language);
 
-                    <View style={styles.eventCardBody}>
-                      <Text style={[styles.eventTitle, { color: colors.text }]}>{setlist.name}</Text>
-                      
-                      <View style={styles.eventMetaRow}>
-                        <View style={[
-                          styles.typePill,
-                          { backgroundColor: setlist.type === 'show' ? '#ef444420' : '#3b82f620' }
-                        ]}>
-                          <Text style={[
-                            styles.typePillText,
-                            { color: setlist.type === 'show' ? '#ef4444' : '#3b82f6' }
-                          ]}>
-                            {setlist.type === 'show' ? t('show').toUpperCase() : t('rehearsal').toUpperCase()}
-                          </Text>
+                  return (
+                    <View key={setlist.id}>
+                      {showHeader && (() => {
+                        const mGroup = bandSetlists.filter(s => getMonthYearHeader(s.date, language) === header);
+                        const mShows = mGroup.filter(s => s.type === 'show').length;
+                        const mRehearsals = mGroup.filter(s => s.type !== 'show').length;
+                        return (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                              {header}
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 2 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mShows}</Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                <Ionicons name="headset-outline" size={13} color={colors.primary} />
+                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mRehearsals}</Text>
+                              </View>
+                            </View>
+                            <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                          </View>
+                        );
+                      })()}
+
+                      <Pressable
+                        style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        onPress={() => onSelectSetlist ? onSelectSetlist(setlist) : onExportDoc(setlist)}
+                      >
+                        <View style={[styles.dateBadgeBox, { backgroundColor: colors.primary + '15' }]}>
+                          <Text style={[styles.dateBadgeDay, { color: colors.primary }]}>{dateBadge.day}</Text>
+                          <Text style={[styles.dateBadgeMonth, { color: colors.primary }]}>{dateBadge.month}</Text>
                         </View>
 
-                        {setlist.local ? (
-                          <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
-                            📍 {setlist.local}
-                          </Text>
-                        ) : null}
-                      </View>
-                    </View>
+                        <View style={styles.eventCardBody}>
+                          <Text style={[styles.eventTitle, { color: colors.text }]}>{setlist.name}</Text>
+                          
+                          <View style={styles.eventMetaRow}>
+                            <View style={[
+                              styles.typePill,
+                              { backgroundColor: setlist.type === 'show' ? '#ef444420' : '#3b82f620' }
+                            ]}>
+                              <Text style={[
+                                styles.typePillText,
+                                { color: setlist.type === 'show' ? '#ef4444' : '#3b82f6' }
+                              ]}>
+                                {setlist.type === 'show' ? t('show').toUpperCase() : t('rehearsal').toUpperCase()}
+                              </Text>
+                            </View>
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Pressable
-                        style={({ pressed }) => [{ padding: 6, marginRight: 4, opacity: pressed ? 0.7 : 1 }]}
-                        onPress={(e) => {
-                          e.stopPropagation && e.stopPropagation();
-                          if (onCopy) onCopy(setlist.id);
-                        }}
-                      >
-                        <Ionicons name="copy-outline" size={18} color={colors.primary} />
+                            {setlist.local ? (
+                              <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
+                                📍 {setlist.local}
+                              </Text>
+                            ) : null}
+                          </View>
+                        </View>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Pressable
+                            style={({ pressed }) => [{ padding: 6, marginRight: 4, opacity: pressed ? 0.7 : 1 }]}
+                            onPress={(e) => {
+                              e.stopPropagation && e.stopPropagation();
+                              if (onCopy) onCopy(setlist.id);
+                            }}
+                          >
+                            <Ionicons name="copy-outline" size={18} color={colors.primary} />
+                          </Pressable>
+                          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                        </View>
                       </Pressable>
-                      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
                     </View>
-                  </Pressable>
-                );
-              })
+                  );
+                });
+              })()
             )}
           </ScrollView>
         )}
