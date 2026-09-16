@@ -2207,9 +2207,6 @@ function MainApp() {
       <View style={{ flex: 1 }}>
         <View style={styles.tabHeaderRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
-              <Text style={[styles.headerCountText, { color: colors.primary }]}>{upcomingSetlists.length}</Text>
-            </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home') || 'Home'}</Text>
           </View>
 
@@ -2220,7 +2217,7 @@ function MainApp() {
             ]}
             onPress={() => { setActiveSetlistDetail({}); }}
           >
-            <Text style={styles.quickAddText}>+ Criar Evento</Text>
+            <Text style={styles.quickAddText}>{t('createEventBtn')}</Text>
           </Pressable>
         </View>
 
@@ -2230,9 +2227,14 @@ function MainApp() {
           showsVerticalScrollIndicator={false}
         >
           {/* LISTA DE EVENTOS PRÓXIMOS COM SEPARADORES POR MÊS */}
-          <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>
-            Próximos Eventos ({upcomingSetlists.length})
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+              <Text style={[styles.headerCountText, { color: colors.primary }]}>{upcomingSetlists.length}</Text>
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('upcomingEvents')}
+            </Text>
+          </View>
 
           {upcomingSetlists.length === 0 ? (
             <View style={{ padding: 24, alignItems: 'center', backgroundColor: colors.cardBackground, borderRadius: 16, borderWidth: 1, borderColor: colors.border }}>
@@ -2523,7 +2525,7 @@ function MainApp() {
             <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
               <Text style={[styles.headerCountText, { color: colors.primary }]}>{bands.length}</Text>
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Bandas / Projetos</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('bands')}</Text>
           </View>
 
           <Pressable 
@@ -2536,7 +2538,7 @@ function MainApp() {
               setShowBandModal(true);
             }}
           >
-            <Text style={styles.quickAddText}>+ Criar Banda</Text>
+            <Text style={styles.quickAddText}>{t('createBandBtn')}</Text>
           </Pressable>
         </View>
 
@@ -4689,5 +4691,34 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheetContainer: {
+    width: '100%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitleText: {
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
 });
