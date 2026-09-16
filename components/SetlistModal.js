@@ -901,7 +901,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         }]}
                         value={cachê}
                         onChangeText={setCachê}
-                        placeholder={t('cachetPlaceholder') || 'Ex: 500'}
+                        placeholder=""
                         placeholderTextColor={colors.textMuted}
                         keyboardType="numeric"
                         autoComplete="off"
@@ -919,7 +919,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     }]}
                     value={notes}
                     onChangeText={setNotes}
-                    placeholder={t('notePlaceholder') || 'Ex: Levar cabos extras...'}
+                    placeholder=""
                     placeholderTextColor={colors.textMuted}
                     multiline
                     numberOfLines={2}
@@ -1195,7 +1195,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('notesLabel').toUpperCase()}</Text>
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border, minHeight: 60 }]}
-              placeholder={t('typeNotePrompt')}
+              placeholder=""
               placeholderTextColor={colors.textMuted}
               value={tempCustomNotes}
               onChangeText={setTempCustomNotes}
