@@ -1276,7 +1276,7 @@ export default function BandDetailScreen({
             {/* CARD 3: OUTROS LANÇAMENTOS MANUAIS */}
             {finances.length > 0 && (
               <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginTop: 16 }]}>
-                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Lançamentos Manuais</Text>
+                <Text style={[styles.cardPanelTitle, { color: colors.text, marginBottom: 12 }]}>Outros</Text>
                 {finances.map(item => {
                   const amtVal = typeof item.amount === 'number' ? item.amount : (parseFloat(item.amount) || 0);
                   return (
@@ -2138,6 +2138,21 @@ const styles = StyleSheet.create({
   typeSelectBtn: { flex: 1, height: 38, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', justifyContent: 'center', alignItems: 'center', marginHorizontal: 4 },
   typeSelectText: { fontWeight: 'bold', fontSize: 13 },
 
+  fabSortButtonCircular: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    zIndex: 999,
+  },
   fabSortButton: {
     position: 'absolute',
     bottom: 24,

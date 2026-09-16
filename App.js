@@ -2224,7 +2224,7 @@ function MainApp() {
 
         <ScrollView 
           style={{ flex: 1 }} 
-          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingHorizontal: 8, paddingTop: 16, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
           {/* LISTA DE EVENTOS PRÓXIMOS COM SEPARADORES POR MÊS */}
@@ -2277,16 +2277,16 @@ function MainApp() {
                       style={({ pressed }) => [
                         {
                           backgroundColor: colors.cardBackground,
-                          borderColor: isHeroNext ? colors.primary : colors.border,
-                          borderWidth: isHeroNext ? 2 : 1,
-                          borderRadius: isHeroNext ? 20 : 16,
+                          borderWidth: 0,
+                          borderColor: 'transparent',
+                          borderRadius: 16,
                           marginBottom: 12,
                           padding: 14,
-                          shadowColor: isHeroNext ? colors.primary : colors.shadowColor,
-                          shadowOffset: { width: 0, height: isHeroNext ? 4 : 2 },
-                          shadowOpacity: isHeroNext ? 0.2 : 0.08,
-                          shadowRadius: isHeroNext ? 10 : 4,
-                          elevation: isHeroNext ? 4 : 2,
+                          shadowColor: colors.shadowColor,
+                          shadowOffset: { width: 0, height: 3 },
+                          shadowOpacity: 0.08,
+                          shadowRadius: 6,
+                          elevation: 3,
                           transform: [{ scale: pressed ? 0.98 : 1 }],
                         }
                       ]}
@@ -2294,27 +2294,6 @@ function MainApp() {
                         setActiveSetlistDetail(setlist);
                       }}
                     >
-                      {/* Badge "PRÓXIMO EVENTO HERO" para o 1º evento */}
-                      {isHeroNext && (
-                        <View style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          backgroundColor: colors.primary + '18',
-                          borderColor: colors.primary + '40',
-                          borderWidth: 1,
-                          borderRadius: 12,
-                          paddingHorizontal: 10,
-                          paddingVertical: 3,
-                          alignSelf: 'flex-start',
-                          marginBottom: 10,
-                          gap: 6
-                        }}>
-                          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#10b981' }} />
-                          <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary, letterSpacing: 1 }}>
-                            {t('nextEventHero') || 'PRÓXIMO EVENTO'}
-                          </Text>
-                        </View>
-                      )}
 
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {/* Square Date Badge Arredondado */}
@@ -2385,13 +2364,7 @@ function MainApp() {
                               </Text>
                             ) : null}
 
-                            {setlist.type === 'show' && setlist.cachê ? (
-                              <View style={{ backgroundColor: '#10b98118', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 6 }}>
-                                <Text style={{ fontSize: 10, color: '#10b981', fontWeight: '800' }}>
-                                  $ {setlist.cachê}
-                                </Text>
-                              </View>
-                            ) : null}
+
                           </View>
                         </View>
 

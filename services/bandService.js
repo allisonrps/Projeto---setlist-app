@@ -235,8 +235,15 @@ export const bandService = {
   // ===== GESTÃO DE DIVISÃO DE CACHÊ POR INTEGRANTE =====
   async saveShowCacheSplit(setlistId, splitsMap) {
     try {
-      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
-      await AsyncStorage.setItem(`cache_split_${setlistId}`, JSON.stringify(splitsMap || {}));
+      const key = `cache_split_${setlistId}`;
+      const jsonVal = JSON.stringify(splitsMap || {});
+      try {
+        await db.runAsync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);', [key, jsonVal]);
+      } catch (sqle) {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(key, jsonVal);
+        }
+      }
     } catch (error) {
       console.error('Error in bandService.saveShowCacheSplit:', error);
     }
@@ -244,9 +251,19 @@ export const bandService = {
 
   async getShowCacheSplit(setlistId) {
     try {
-      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
-      const data = await AsyncStorage.getItem(`cache_split_${setlistId}`);
-      return data ? JSON.parse(data) : {};
+      const key = `cache_split_${setlistId}`;
+      try {
+        const rows = await db.getAllAsync('SELECT value FROM settings WHERE key = ?;', [key]);
+        if (rows && rows.length > 0 && rows[0].value) {
+          return JSON.parse(rows[0].value);
+        }
+      } catch (sqle) {}
+
+      if (typeof localStorage !== 'undefined') {
+        const data = localStorage.getItem(key);
+        if (data) return JSON.parse(data);
+      }
+      return {};
     } catch (error) {
       console.error('Error in bandService.getShowCacheSplit:', error);
       return {};

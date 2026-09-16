@@ -141,7 +141,8 @@ export default function SetlistCard({
         styles.card, 
         { 
           backgroundColor: isDark ? 'rgba(30, 41, 59, 0.45)' : 'rgba(255, 255, 255, 0.7)', 
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.18)',
+          borderColor: 'transparent',
+          borderWidth: 0,
           shadowColor: colors.shadowColor,
           shadowOpacity: isDark ? 0.15 : 0.06,
           shadowRadius: 6,
@@ -258,15 +259,6 @@ export default function SetlistCard({
               </View>
             ) : null}
 
-            {/* Cachê */}
-            {setlist.type === 'show' && setlist.cachê ? (
-              <View style={[styles.miniInfoBadge, { backgroundColor: colors.success + '15', borderColor: colors.success + '35' }]}>
-                <Ionicons name="cash-outline" size={9.5} color={colors.success} style={{ marginRight: 3.5 }} />
-                <Text style={[styles.miniInfoText, { color: colors.success }]}>
-                  R$ {setlist.cachê}
-                </Text>
-              </View>
-            ) : null}
             
             {/* Observações */}
             {setlist.notes ? (
