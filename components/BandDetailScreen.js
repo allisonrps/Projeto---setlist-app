@@ -1046,34 +1046,64 @@ export default function BandDetailScreen({
         {activeTab === 'members' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             
-            {/* CARD DISCRETO: QUEM É VOCÊ NA BANDA (Abre Bottom Sheet Modal) */}
+            {/* SELETOR INTERATIVO MEU PERFIL ("QUEM É VOCÊ NA BANDA") */}
             {(() => {
               const meMember = members.find(m => m.id === myMemberId);
               return (
                 <Pressable
                   style={({ pressed }) => [
-                    styles.whoAreYouDiscreteBar,
+                    styles.whoAreYouEnhancedBar,
                     {
-                      backgroundColor: colors.cardBackground,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
                       borderColor: meMember ? colors.primary + '60' : colors.border,
-                      borderWidth: 1,
-                      opacity: pressed ? 0.8 : 1,
+                      borderWidth: 1.5,
+                      opacity: pressed ? 0.85 : 1,
+                      transform: [{ scale: pressed ? 0.99 : 1 }]
                     }
                   ]}
                   onPress={() => setShowWhoAreYouModal(true)}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                    <View style={[styles.whoAreYouDiscreteIconBox, { backgroundColor: colors.primary + '18' }]}>
-                      <Ionicons name="star" size={14} color={colors.primary} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                    <View style={[
+                      styles.whoAreYouAvatarCircle,
+                      {
+                        backgroundColor: meMember ? colors.primary : colors.primary + '18',
+                      }
+                    ]}>
+                      <Ionicons name={meMember ? "person" : "person-outline"} size={18} color={meMember ? "#ffffff" : colors.primary} />
                     </View>
-                    <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
-                      Quem é você:
-                    </Text>
-                    <Text style={{ fontSize: 13, fontWeight: '900', color: meMember ? colors.primary : colors.textMuted }} numberOfLines={1}>
-                      {meMember ? `${meMember.name} (VOCÊ)` : 'Selecionar...'}
-                    </Text>
+
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ fontSize: 10.5, fontWeight: '800', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Meu Perfil na Banda
+                        </Text>
+                        {meMember && (
+                          <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8 }}>
+                            <Text style={{ fontSize: 9, fontWeight: '900', color: '#ffffff' }}>VOCÊ</Text>
+                          </View>
+                        )}
+                      </View>
+
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: meMember ? colors.text : colors.primary, marginTop: 1 }} numberOfLines={1}>
+                        {meMember ? meMember.name : 'Selecionar quem é você...'}
+                      </Text>
+                    </View>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+
+                  <View style={[
+                    styles.whoAreYouActionPill,
+                    {
+                      backgroundColor: meMember ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)') : colors.primary + '18',
+                      borderColor: meMember ? colors.border : colors.primary + '40',
+                      borderWidth: 1,
+                    }
+                  ]}>
+                    <Text style={{ fontSize: 11, fontWeight: '900', color: meMember ? colors.textMuted : colors.primary }}>
+                      {meMember ? 'Alterar' : 'Escolher'}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={13} color={meMember ? colors.textMuted : colors.primary} />
+                  </View>
                 </Pressable>
               );
             })()}
@@ -1421,7 +1451,7 @@ export default function BandDetailScreen({
                                 {header}
                               </Text>
 
-                              {/* Pílula 1: Cachê Total */}
+                              {/* Pílula 1: Cachê Total (Apenas Ícone + Valor) */}
                               <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
@@ -1435,11 +1465,11 @@ export default function BandDetailScreen({
                               }}>
                                 <Ionicons name="trending-up" size={12} color="#10b981" />
                                 <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981' }}>
-                                  Total: + $ {monthIncomeTotal.toFixed(2)}
+                                  + $ {monthIncomeTotal.toFixed(2)}
                                 </Text>
                               </View>
 
-                              {/* Pílula 2: Minha Parte (Do lado do Cachê Total!) */}
+                              {/* Pílula 2: Minha Parte (Apenas Ícone + Valor) */}
                               <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
@@ -1453,7 +1483,7 @@ export default function BandDetailScreen({
                               }}>
                                 <Ionicons name="star" size={11} color={colors.primary} />
                                 <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>
-                                  Minha parte: $ {myShare.toFixed(2)}
+                                  $ {myShare.toFixed(2)}
                                 </Text>
                               </View>
 
@@ -2624,21 +2654,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  whoAreYouDiscreteBar: {
+  whoAreYouEnhancedBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
-    marginBottom: 14,
-  },
-  whoAreYouDiscreteIconBox: {
-    width: 28,
-    height: 28,
     borderRadius: 14,
+    marginBottom: 14,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  whoAreYouAvatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  whoAreYouActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   whoAreYouCard: {
     borderRadius: 14,

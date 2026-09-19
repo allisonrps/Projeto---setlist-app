@@ -2778,7 +2778,7 @@ function MainApp() {
                         {sortedTags.map(item => (
                           <View key={item.tag} style={{ backgroundColor: colors.primary + '18', borderColor: colors.primary + '30', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2.5, borderRadius: 6 }}>
                             <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>
-                              {`${item.tag} ${item.percentage}%`}
+                              {item.tag}
                             </Text>
                           </View>
                         ))}
