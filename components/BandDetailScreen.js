@@ -15,6 +15,8 @@ import {
   Vibration,
   Linking,
   StatusBar,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -194,6 +196,47 @@ export default function BandDetailScreen({
   // Repertoire Sort State
   const [repertoireSort, setRepertoireSort] = useState('name_asc'); // 'name_asc' | 'name_desc' | 'band_asc' | 'band_desc'
   const [showSortModal, setShowSortModal] = useState(false);
+
+  // My Member Profile State ("Quem é você nesta banda")
+  const [myMemberId, setMyMemberId] = useState(band?.myMemberId || null);
+
+  useEffect(() => {
+    if (band) {
+      setMyMemberId(band.myMemberId || null);
+    }
+  }, [band]);
+
+  const handleSelectMyMember = async (memberId) => {
+    const newId = myMemberId === memberId ? null : memberId;
+    setMyMemberId(newId);
+    if (band && band.id) {
+      await bandService.updateMyMemberId(band.id, newId);
+    }
+  };
+
+  // Draggable Floating FAB PanResponder for Add (+) Button
+  const fabPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const fabPanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 4 || Math.abs(gestureState.dy) > 4;
+      },
+      onPanResponderGrant: () => {
+        fabPan.setOffset({
+          x: fabPan.x._value,
+          y: fabPan.y._value,
+        });
+        fabPan.setValue({ x: 0, y: 0 });
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dx: fabPan.x, dy: fabPan.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        fabPan.flattenOffset();
+      },
+    })
+  ).current;
 
   // Member Cachet Split Modal State
   const [showCacheSplitModal, setShowCacheSplitModal] = useState(false);
@@ -866,11 +909,14 @@ export default function BandDetailScreen({
                 </Pressable>
               )}
 
+              {/* Botão de Reordenar Lista (Do lado do botão de tags!) */}
               <Pressable
                 style={[
                   styles.roundIconButton,
                   {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary + '18',
+                    borderColor: colors.primary + '40',
+                    borderWidth: 1,
                     width: 44,
                     height: 44,
                     borderRadius: 22,
@@ -878,9 +924,9 @@ export default function BandDetailScreen({
                     alignItems: 'center'
                   }
                 ]}
-                onPress={handleOpenSongPicker}
+                onPress={() => setShowSortModal(true)}
               >
-                <Ionicons name="add" size={22} color="#ffffff" />
+                <Ionicons name="swap-vertical" size={20} color={colors.primary} />
               </Pressable>
             </View>
 
@@ -972,22 +1018,26 @@ export default function BandDetailScreen({
               )}
             </ScrollView>
 
-            {/* BOTÃO FLUTUANTE (FAB) CIRCULAR SOMENTE ÍCONE COM 30% DE TRANSPARÊNCIA */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.fabSortButtonCircular,
+            {/* BOTÃO DE MAIS FLUTUANTE TRANSPARENTE E ARRASTÁVEL (DRAGGABLE FAB) */}
+            <Animated.View
+              {...fabPanResponder.panHandlers}
+              style={[
+                styles.draggableFabButton,
                 {
-                  backgroundColor: colors.primary,
-                  opacity: pressed ? 0.9 : 0.7,
-                  transform: [{ scale: pressed ? 0.90 : 1 }],
-                  shadowColor: colors.primary,
+                  backgroundColor: colors.primary + '85',
+                  borderColor: colors.primary,
+                  transform: [{ translateX: fabPan.x }, { translateY: fabPan.y }],
                 }
               ]}
-              onPress={() => setShowSortModal(true)}
-              hitSlop={6}
             >
-              <Ionicons name="swap-vertical" size={20} color="#ffffff" />
-            </Pressable>
+              <Pressable
+                style={styles.draggableFabInnerPressable}
+                onPress={handleOpenSongPicker}
+                hitSlop={8}
+              >
+                <Ionicons name="add" size={26} color="#ffffff" />
+              </Pressable>
+            </Animated.View>
           </View>
         )}
 
@@ -995,6 +1045,56 @@ export default function BandDetailScreen({
         {activeTab === 'members' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             
+            {/* CARD: QUEM É VOCÊ NESTA BANDA */}
+            <View style={[styles.whoAreYouCard, { backgroundColor: colors.cardBackground, borderColor: colors.primary + '35' }]}>
+              <View style={styles.whoAreYouHeaderRow}>
+                <View style={[styles.whoAreYouIconBox, { backgroundColor: colors.primary + '18' }]}>
+                  <Ionicons name="star" size={20} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.whoAreYouTitle, { color: colors.text }]}>Quem é você nesta Banda?</Text>
+                  <Text style={[styles.whoAreYouSub, { color: colors.textMuted }]}>
+                    Selecione o seu perfil para calcular a sua parte nos ganhos da banda
+                  </Text>
+                </View>
+              </View>
+
+              {members.length === 0 ? (
+                <Text style={{ fontSize: 11.5, color: colors.textMuted, fontStyle: 'italic', marginTop: 8 }}>
+                  Cadastre os integrantes da banda abaixo para selecionar seu perfil.
+                </Text>
+              ) : (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                  {members.map(m => {
+                    const isMe = myMemberId === m.id;
+                    return (
+                      <Pressable
+                        key={m.id}
+                        style={({ pressed }) => [
+                          styles.whoAreYouChip,
+                          {
+                            backgroundColor: isMe ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                            borderColor: isMe ? colors.primary : colors.border,
+                            opacity: pressed ? 0.8 : 1,
+                          }
+                        ]}
+                        onPress={() => handleSelectMyMember(m.id)}
+                      >
+                        <Ionicons
+                          name={isMe ? "checkmark-circle" : "person-outline"}
+                          size={14}
+                          color={isMe ? '#ffffff' : colors.textMuted}
+                        />
+                        <Text style={[styles.whoAreYouChipText, { color: isMe ? '#ffffff' : colors.text }]}>
+                          {m.name} {isMe ? '(VOCÊ)' : ''}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
             {/* BOTÃO PARA ABRIR MODAL DE NOVO INTEGRANTE */}
             <Pressable
               style={[styles.openFormBtn, { backgroundColor: colors.primary }]}
@@ -1021,16 +1121,22 @@ export default function BandDetailScreen({
                 const periodText = getMemberPeriodText(item);
                 const isExpanded = expandedMemberIds.has(item.id);
                 const hasExtraDetails = periodText || item.phone;
+                const isMe = item.id === myMemberId;
 
                 return (
-                  <View key={item.id} style={[styles.memberCardNoBorder, { backgroundColor: colors.card }]}>
+                  <View key={item.id} style={[styles.memberCardNoBorder, { backgroundColor: colors.card, borderColor: isMe ? colors.primary + '50' : 'transparent', borderWidth: isMe ? 1.5 : 0 }]}>
                     <View style={styles.memberCardTopRow}>
                       <View style={styles.memberCardLeft}>
-                        <View style={[styles.memberAvatarCircle, { backgroundColor: colors.primary + '20' }]}>
-                          <Ionicons name="person" size={18} color={colors.primary} />
+                        <View style={[styles.memberAvatarCircle, { backgroundColor: isMe ? colors.primary : colors.primary + '20' }]}>
+                          <Ionicons name={isMe ? "star" : "person"} size={18} color={isMe ? "#ffffff" : colors.primary} />
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, gap: 4 }}>
                           <Text style={[styles.memberNameText, { color: colors.text }]}>{item.name}</Text>
+                          {isMe && (
+                            <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 6 }}>
+                              <Text style={{ fontSize: 9.5, fontWeight: '900', color: '#ffffff' }}>VOCÊ</Text>
+                            </View>
+                          )}
                           {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
                             <View key={idx} style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
                               <Text style={styles.roleBadgeText}>{roleTag}</Text>
@@ -1317,31 +1423,79 @@ export default function BandDetailScreen({
                         const monthIncomeTotal = monthGroup
                           .filter(i => i.type === 'income')
                           .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+                        const monthExpenseTotal = monthGroup
+                          .filter(i => i.type === 'expense')
+                          .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+                        const monthNetProfit = monthIncomeTotal - monthExpenseTotal;
+                        const activeMembersCount = members.filter(m => m.status === 'active').length || members.length || 1;
+                        const myShare = monthNetProfit > 0 ? (monthNetProfit / activeMembersCount) : 0;
+                        const meMember = members.find(m => m.id === myMemberId);
 
                         return (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
-                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
-                              {header}
-                            </Text>
-
-                            <View style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 4,
-                              backgroundColor: '#10b98115',
-                              borderColor: '#10b98140',
-                              borderWidth: 1,
-                              paddingHorizontal: 8,
-                              paddingVertical: 2.5,
-                              borderRadius: 12
-                            }}>
-                              <Ionicons name="trending-up" size={12} color="#10b981" />
-                              <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981' }}>
-                                + $ {monthIncomeTotal.toFixed(2)}
+                          <View style={{ marginTop: 14, marginBottom: 8 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                              <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                                {header}
                               </Text>
+
+                              <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 4,
+                                backgroundColor: '#10b98115',
+                                borderColor: '#10b98140',
+                                borderWidth: 1,
+                                paddingHorizontal: 8,
+                                paddingVertical: 2.5,
+                                borderRadius: 12
+                              }}>
+                                <Ionicons name="trending-up" size={12} color="#10b981" />
+                                <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981' }}>
+                                  + $ {monthIncomeTotal.toFixed(2)}
+                                </Text>
+                              </View>
+
+                              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
                             </View>
 
-                            <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                            {/* CARD: SUA PARTE NO MÊS */}
+                            <View style={[
+                              styles.monthlyShareCard,
+                              {
+                                backgroundColor: isDark ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                                borderColor: '#10b98140',
+                                borderWidth: 1,
+                                borderRadius: 12,
+                                padding: 10,
+                              }
+                            ]}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#10b98125', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Ionicons name="wallet-outline" size={17} color="#10b981" />
+                                  </View>
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.text }}>
+                                      {meMember ? `Sua Parte no Mês (${meMember.name})` : 'Sua Parte no Mês'}
+                                    </Text>
+                                    <Text style={{ fontSize: 10, color: colors.textMuted }}>
+                                      {meMember
+                                        ? `Divisão proporcional entre os ${activeMembersCount} integrantes ativos`
+                                        : 'Selecione quem é você na aba "Membros"'}
+                                    </Text>
+                                  </View>
+                                </View>
+
+                                <View style={{ alignItems: 'flex-end' }}>
+                                  <Text style={{ fontSize: 15, fontWeight: '900', color: '#10b981' }}>
+                                    $ {myShare.toFixed(2)}
+                                  </Text>
+                                  <Text style={{ fontSize: 9.5, fontWeight: '700', color: colors.textMuted }}>
+                                    (Líquido: $ {monthNetProfit.toFixed(2)})
+                                  </Text>
+                                </View>
+                              </View>
+                            </View>
                           </View>
                         );
                       })()}
@@ -2404,7 +2558,70 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
-    zIndex: 99,
+    zIndex: 999,
+  },
+  draggableFabButton: {
+    position: 'absolute',
+    bottom: 80,
+    right: 20,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    zIndex: 999,
+  },
+  draggableFabInnerPressable: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  whoAreYouCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 14,
+  },
+  whoAreYouHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  whoAreYouIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  whoAreYouTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  whoAreYouSub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  whoAreYouChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  whoAreYouChipText: {
+    fontSize: 12,
+    fontWeight: '800',
   },
   fabSortText: { color: '#ffffff', fontWeight: '900', fontSize: 12 },
   bottomSheetContainer: {

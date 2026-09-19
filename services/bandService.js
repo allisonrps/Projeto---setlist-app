@@ -45,6 +45,14 @@ export const bandService = {
     }
   },
 
+  async updateMyMemberId(bandId, memberId) {
+    try {
+      await db.runAsync('UPDATE my_bands SET myMemberId = ? WHERE id = ?;', [memberId, bandId]);
+    } catch (error) {
+      console.error('Error in bandService.updateMyMemberId:', error);
+    }
+  },
+
   // ===== GESTÃO DE REPERTÓRIO DA BANDA (band_songs) =====
   async getBandSongs(bandId) {
     try {

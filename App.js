@@ -2607,7 +2607,31 @@ function MainApp() {
               const rehearsalsCount = bSetlists.filter(s => s.type !== 'show').length;
               const songsCount = band.songsCount || 0;
               const membersCount = band.membersCount || 0;
-              const topStyles = (band.styles || []).slice(0, 3);
+
+              // Top 4 style tags by percentage
+              const tagCounts = {};
+              let totalTagsCount = 0;
+              const bSongs = songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase()))));
+              bSongs.forEach(s => {
+                if (s.style && s.style.trim()) {
+                  s.style.split(',').forEach(st => {
+                    const cleanTag = st.trim();
+                    if (cleanTag) {
+                      tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
+                      totalTagsCount += 1;
+                    }
+                  });
+                }
+              });
+
+              const sortedTags = Object.keys(tagCounts)
+                .map(tag => ({
+                  tag,
+                  count: tagCounts[tag],
+                  percentage: totalTagsCount > 0 ? Math.round((tagCounts[tag] / totalTagsCount) * 100) : 0
+                }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 4);
 
               // Financial cachets per year
               const currentYear = new Date().getFullYear();
@@ -2743,14 +2767,16 @@ function MainApp() {
                     </View>
                   </View>
 
-                  {/* 3 Principais Estilos */}
-                  {topStyles.length > 0 && (
+                  {/* 4 Principais Estilos com Porcentagem */}
+                  {sortedTags.length > 0 && (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, paddingHorizontal: 2 }}>
-                      <Ionicons name="pricetag-outline" size={14} color={colors.textMuted} />
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                        {topStyles.map(st => (
-                          <View key={st} style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                            <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>{st}</Text>
+                      <Ionicons name="pricetag-outline" size={13} color={colors.textMuted} />
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, flex: 1 }}>
+                        {sortedTags.map(item => (
+                          <View key={item.tag} style={{ backgroundColor: colors.primary + '18', borderColor: colors.primary + '30', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2.5, borderRadius: 6 }}>
+                            <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>
+                              {`${item.tag} ${item.percentage}%`}
+                            </Text>
                           </View>
                         ))}
                       </View>

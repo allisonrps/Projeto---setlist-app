@@ -749,27 +749,47 @@ export default function SyncModal({
                           </Text>
                         </View>
 
-                        {/* Opção 1: Todas as Músicas */}
+                        {/* Opção 1: TUDO Completo */}
                         <TouchableOpacity
                           style={[styles.scopeCardBtn, { backgroundColor: cardBg, borderColor: colors.primary + '40' }]}
-                          onPress={() => handleSelectShareScope('all')}
+                          onPress={() => handleSelectShareScope('all_full')}
                           activeOpacity={0.8}
                         >
                           <View style={[styles.scopeCardIconBox, { backgroundColor: colors.primary + '18' }]}>
-                            <Ionicons name="library-outline" size={22} color={colors.primary} />
+                            <Ionicons name="sparkles" size={22} color={colors.primary} />
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
-                              Todas as Músicas
+                              TUDO Completo
                             </Text>
                             <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
-                              Backup completo: todas as bandas, repertório e setlists
+                              Backup total: todas as bandas, repertórios, setlists, membros e finanças
                             </Text>
                           </View>
                           <Ionicons name="chevron-forward" size={18} color={colors.primary} />
                         </TouchableOpacity>
 
-                        {/* Opção 2: Conteúdo de uma Banda Específica */}
+                        {/* Opção 2: Compartilhar Músicas (Toda Coleção) */}
+                        <TouchableOpacity
+                          style={[styles.scopeCardBtn, { backgroundColor: cardBg, borderColor: '#3b82f640' }]}
+                          onPress={() => handleSelectShareScope('all_songs')}
+                          activeOpacity={0.8}
+                        >
+                          <View style={[styles.scopeCardIconBox, { backgroundColor: '#3b82f618' }]}>
+                            <Ionicons name="musical-notes-outline" size={22} color="#3b82f6" />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
+                              Compartilhar Músicas (Toda Coleção)
+                            </Text>
+                            <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
+                              Apenas o seu acervo completo de músicas com letras e cifras
+                            </Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={18} color="#3b82f6" />
+                        </TouchableOpacity>
+
+                        {/* Opção 3: Compartilhar Banda Específica (Repertório, Setlists e Membros) */}
                         <TouchableOpacity
                           style={[
                             styles.scopeCardBtn,
@@ -783,10 +803,10 @@ export default function SyncModal({
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
-                              Conteúdo de uma Banda Específica
+                              Banda Específica (Repertório, Setlists e Membros)
                             </Text>
                             <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
-                              Compartilha apenas as músicas e setlists da banda escolhida
+                              Envie o repertório, setlists e membros da banda escolhida
                             </Text>
                           </View>
                           <Ionicons name={showBandPicker ? "chevron-up" : "chevron-down"} size={18} color={colors.secondary} />

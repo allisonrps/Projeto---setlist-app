@@ -635,6 +635,14 @@ const createWebDB = () => {
         saveToStorage();
         return { lastInsertRowId: id };
       }
+      if (sql.includes('UPDATE my_bands SET myMemberId')) {
+        const band = data.my_bands.find(b => b.id === params[1]);
+        if (band) {
+          band.myMemberId = params[0];
+          saveToStorage();
+        }
+        return {};
+      }
       if (sql.includes('UPDATE my_bands')) {
         const band = data.my_bands.find(b => b.id === params[4] || b.id === params[2]);
         if (band) {
@@ -1110,6 +1118,9 @@ export const createTables = async () => {
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE band_members ADD COLUMN status TEXT DEFAULT 'active';");
+    } catch (e) {}
+    try {
+      await db.execAsync('ALTER TABLE my_bands ADD COLUMN myMemberId INTEGER;');
     } catch (e) {}
 
     // Migração de chords em songs
