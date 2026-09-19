@@ -36,6 +36,10 @@ export default function SongListItem({
     ? song.style.split(',').map(s => s.trim()).filter(Boolean)
     : [];
 
+  const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+  const hasChords = !!(song.chords && song.chords.trim());
+  const hasTabs = !!(song.tabs && song.tabs.trim());
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -108,8 +112,15 @@ export default function SongListItem({
         )}
       </View>
 
+      {/* Vertical 3 dots indicator: Letra (Blue), Cifra (Green), Tablatura (Purple) */}
+      <View style={styles.contentIndicatorColumn}>
+        <View style={[styles.contentDot, { backgroundColor: hasLyrics ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)') }]} />
+        <View style={[styles.contentDot, { backgroundColor: hasChords ? '#10b981' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)') }]} />
+        <View style={[styles.contentDot, { backgroundColor: hasTabs ? '#8b5cf6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)') }]} />
+      </View>
+
       {extraRightComponent ? (
-        <View style={{ marginLeft: 10 }}>
+        <View style={{ marginLeft: 8 }}>
           {extraRightComponent}
         </View>
       ) : null}
@@ -173,5 +184,18 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.2,
+  },
+  contentIndicatorColumn: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 3,
+    marginLeft: 8,
+    marginRight: 4,
+  },
+  contentDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });

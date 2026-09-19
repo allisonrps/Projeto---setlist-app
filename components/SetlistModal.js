@@ -423,6 +423,14 @@ export function DraggableSortableList({
                   )}
                 </Pressable>
 
+                {!isPause && !isNote && (
+                  <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2.5, marginHorizontal: 4 }}>
+                    <View style={{ width: 5.5, height: 5.5, borderRadius: 3, backgroundColor: (song.lyrics && song.lyrics.trim()) ? '#3b82f6' : (colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)') }} />
+                    <View style={{ width: 5.5, height: 5.5, borderRadius: 3, backgroundColor: (song.chords && song.chords.trim()) ? '#10b981' : (colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)') }} />
+                    <View style={{ width: 5.5, height: 5.5, borderRadius: 3, backgroundColor: (song.tabs && song.tabs.trim()) ? '#8b5cf6' : (colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)') }} />
+                  </View>
+                )}
+
                 {/* Botões de Mover para Cima / Baixo para precisão rápida */}
                 {activeIdx === null && !isDragging && (
                   <View style={{ flexDirection: 'column', gap: 2, marginRight: 2 }}>

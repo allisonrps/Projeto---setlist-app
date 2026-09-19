@@ -2161,8 +2161,8 @@ const styles = StyleSheet.create({
   },
   stylePillTextCompact: { fontSize: 10.5, fontWeight: '800' },
 
-  listPadding: { padding: 16, paddingBottom: 40 },
-  dedicatedTabPadding: { padding: 16, paddingBottom: 40 },
+  listPadding: { padding: 16, paddingBottom: 110 },
+  dedicatedTabPadding: { padding: 16, paddingBottom: 110 },
 
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
@@ -2378,7 +2378,7 @@ const styles = StyleSheet.create({
   },
   fabSortButtonCircular: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 80,
     right: 20,
     width: 46,
     height: 46,
@@ -2393,7 +2393,7 @@ const styles = StyleSheet.create({
   },
   fabSortButton: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 80,
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',

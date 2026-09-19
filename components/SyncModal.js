@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
+import { bandService } from '../services/bandService';
 
 const { width, height } = Dimensions.get('window');
 const SCANNER_SIZE = Math.min(width * 0.72, 280);
@@ -46,7 +47,10 @@ export default function SyncModal({
   const [connectedSession, setConnectedSession] = useState(null);
   const [torch, setTorch] = useState(false);
 
-  // Phone-to-phone QR generation state
+  // Phone-to-phone QR generation state & scope: null | 'all' | { bandId: number, bandName: string }
+  const [shareScope, setShareScope] = useState(null);
+  const [availableBands, setAvailableBands] = useState([]);
+  const [showBandPicker, setShowBandPicker] = useState(false);
   const [generatingQr, setGeneratingQr] = useState(false);
   const [generatedSession, setGeneratedSession] = useState(null);
   const [qrTransferred, setQrTransferred] = useState(false);
@@ -120,6 +124,10 @@ export default function SyncModal({
       setTorch(false);
       setGeneratedSession(null);
       setQrTransferred(false);
+      setShareScope(null);
+      setShowBandPicker(false);
+
+      bandService.getAll().then(b => setAvailableBands(b || [])).catch(() => {});
 
       if (!permission?.granted) {
         requestPermission();
@@ -143,13 +151,16 @@ export default function SyncModal({
     setActiveTab(tab);
     setScanned(false);
     setConnectedSession(null);
-    if (tab === 'generate' && !generatedSession) {
-      handleGenerateQrCode();
-    }
+  };
+
+  const handleSelectShareScope = async (scope) => {
+    setShareScope(scope);
+    setShowBandPicker(false);
+    await handleGenerateQrCode(scope);
   };
 
   // Generate QR Code for another phone to scan
-  const handleGenerateQrCode = async () => {
+  const handleGenerateQrCode = async (targetScope = shareScope) => {
     setGeneratingQr(true);
     setQrTransferred(false);
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -157,6 +168,34 @@ export default function SyncModal({
     try {
       // 1. Get local database backup
       const fullBackup = await getAllDataForBackup();
+      let payloadToShare = fullBackup;
+
+      if (targetScope && typeof targetScope === 'object' && targetScope.bandId) {
+        const bandId = targetScope.bandId;
+        const bandName = targetScope.bandName || '';
+
+        const filteredSetlists = (fullBackup.setlists || []).filter(sl => sl.myBandId === bandId);
+        const filteredSongs = (fullBackup.songs || []).filter(s =>
+          s.myBandId === bandId ||
+          (s.originalBand && bandName && s.originalBand.toLowerCase().includes(bandName.toLowerCase()))
+        );
+        const filteredBands = (fullBackup.bands || []).filter(b => b.id === bandId);
+
+        payloadToShare = {
+          app: 'SetlistsAppBackup',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          scopeBand: bandName,
+          summary: {
+            totalBands: filteredBands.length,
+            totalSongs: filteredSongs.length,
+            totalSetlists: filteredSetlists.length
+          },
+          bands: filteredBands,
+          songs: filteredSongs,
+          setlists: filteredSetlists
+        };
+      }
 
       // 2. Create session on relay API via GET
       const createRes = await fetch(`${SYNC_API_DEFAULT}?action=create_session`);
@@ -174,7 +213,7 @@ export default function SyncModal({
             sessionId,
             pin,
             target: 'app',
-            data: fullBackup,
+            data: payloadToShare,
           }),
         });
         const sendResult = await sendRes.json();
@@ -635,6 +674,20 @@ export default function SyncModal({
                       </View>
                     ) : generatedSession ? (
                       <View style={styles.qrDisplayBox}>
+                        {/* Scope Badge */}
+                        <View style={[styles.scopeBadgePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                          <Ionicons
+                            name={shareScope === 'all' ? "library" : "people"}
+                            size={14}
+                            color={colors.primary}
+                          />
+                          <Text style={[styles.scopeBadgeText, { color: colors.primary }]} numberOfLines={1}>
+                            {shareScope === 'all'
+                              ? 'Compartilhando: Todas as Músicas'
+                              : `Compartilhando: Banda "${shareScope?.bandName || ''}"`}
+                          </Text>
+                        </View>
+
                         {/* QR Code Image */}
                         <View style={styles.qrImageContainer}>
                           <Image
@@ -664,31 +717,105 @@ export default function SyncModal({
                           </Text>
                         </View>
 
-                        {/* Status / Regenerate */}
-                        <TouchableOpacity
-                          style={[styles.refreshQrBtn, { borderColor: borderColor }]}
-                          onPress={handleGenerateQrCode}
-                        >
-                          <Ionicons name="refresh" size={16} color={colors.textMuted} />
-                          <Text style={[styles.refreshQrBtnText, { color: colors.textMuted }]}>{t('generateNewCode')}</Text>
-                        </TouchableOpacity>
+                        {/* Action Buttons: Change Content / Refresh */}
+                        <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                          <TouchableOpacity
+                            style={[styles.refreshQrBtn, { borderColor: colors.primary, backgroundColor: colors.primary + '12' }]}
+                            onPress={() => { setGeneratedSession(null); setShareScope(null); }}
+                          >
+                            <Ionicons name="options-outline" size={15} color={colors.primary} />
+                            <Text style={[styles.refreshQrBtnText, { color: colors.primary }]}>Alterar Conteúdo</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[styles.refreshQrBtn, { borderColor: borderColor }]}
+                            onPress={() => handleGenerateQrCode(shareScope)}
+                          >
+                            <Ionicons name="refresh" size={15} color={colors.textMuted} />
+                            <Text style={[styles.refreshQrBtnText, { color: colors.textMuted }]}>{t('generateNewCode')}</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     ) : (
-                      <View style={styles.generateEmptyBox}>
-                        <Ionicons name="share-social-outline" size={42} color={colors.primary} />
-                        <Text style={[styles.generateEmptyTitle, { color: colors.text }]}>
-                          {t('shareWithNearbyPhone')}
-                        </Text>
-                        <Text style={[styles.generateEmptyDesc, { color: colors.textMuted }]}>
-                          {t('shareWithNearbyPhoneDesc')}
-                        </Text>
+                      /* Prompt user to select what to share before generating QR */
+                      <View style={styles.scopeSelectionWrapper}>
+                        <View style={styles.scopePromptHeader}>
+                          <Ionicons name="share-social-outline" size={32} color={colors.primary} />
+                          <Text style={[styles.scopePromptTitle, { color: colors.text }]}>
+                            O que você quer compartilhar?
+                          </Text>
+                          <Text style={[styles.scopePromptDesc, { color: colors.textMuted }]}>
+                            Escolha se quer enviar todas as suas músicas ou o conteúdo de uma banda específica
+                          </Text>
+                        </View>
+
+                        {/* Opção 1: Todas as Músicas */}
                         <TouchableOpacity
-                          style={[styles.generateActionBtn, { backgroundColor: colors.primary }]}
-                          onPress={handleGenerateQrCode}
+                          style={[styles.scopeCardBtn, { backgroundColor: cardBg, borderColor: colors.primary + '40' }]}
+                          onPress={() => handleSelectShareScope('all')}
+                          activeOpacity={0.8}
                         >
-                          <Ionicons name="qr-code-outline" size={18} color="#fff" />
-                          <Text style={styles.generateActionBtnText}>{t('generateQrNowBtn')}</Text>
+                          <View style={[styles.scopeCardIconBox, { backgroundColor: colors.primary + '18' }]}>
+                            <Ionicons name="library-outline" size={22} color={colors.primary} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
+                              Todas as Músicas
+                            </Text>
+                            <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
+                              Backup completo: todas as bandas, repertório e setlists
+                            </Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={18} color={colors.primary} />
                         </TouchableOpacity>
+
+                        {/* Opção 2: Conteúdo de uma Banda Específica */}
+                        <TouchableOpacity
+                          style={[
+                            styles.scopeCardBtn,
+                            { backgroundColor: cardBg, borderColor: showBandPicker ? colors.secondary : borderColor }
+                          ]}
+                          onPress={() => setShowBandPicker(!showBandPicker)}
+                          activeOpacity={0.8}
+                        >
+                          <View style={[styles.scopeCardIconBox, { backgroundColor: colors.secondary + '18' }]}>
+                            <Ionicons name="people-outline" size={22} color={colors.secondary} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
+                              Conteúdo de uma Banda Específica
+                            </Text>
+                            <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
+                              Compartilha apenas as músicas e setlists da banda escolhida
+                            </Text>
+                          </View>
+                          <Ionicons name={showBandPicker ? "chevron-up" : "chevron-down"} size={18} color={colors.secondary} />
+                        </TouchableOpacity>
+
+                        {/* Lista de Bandas quando Opção 2 é expandida */}
+                        {showBandPicker && (
+                          <View style={[styles.bandPickerContainer, { backgroundColor: cardBg, borderColor: borderColor }]}>
+                            {availableBands.length === 0 ? (
+                              <Text style={{ fontSize: 12, color: colors.textMuted, fontStyle: 'italic', padding: 8, textAlign: 'center' }}>
+                                Nenhuma banda cadastrada ainda.
+                              </Text>
+                            ) : (
+                              availableBands.map(band => (
+                                <TouchableOpacity
+                                  key={band.id}
+                                  style={[styles.bandPickerRow, { borderBottomColor: borderColor }]}
+                                  onPress={() => handleSelectShareScope({ bandId: band.id, bandName: band.name })}
+                                >
+                                  <Ionicons name="radio-button-on" size={15} color={colors.secondary} />
+                                  <Text style={[styles.bandPickerText, { color: colors.text }]} numberOfLines={1}>
+                                    {band.name}
+                                  </Text>
+                                  <Ionicons name="arrow-forward" size={14} color={colors.secondary} />
+                                </TouchableOpacity>
+                              ))
+                            )}
+                          </View>
+                        )}
                       </View>
                     )}
                   </View>
@@ -1176,5 +1303,81 @@ const styles = StyleSheet.create({
   rescanBtnText: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  scopeSelectionWrapper: {
+    width: '100%',
+    gap: 10,
+    paddingVertical: 4,
+  },
+  scopePromptHeader: {
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  scopePromptTitle: {
+    fontSize: 15.5,
+    fontWeight: '800',
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  scopePromptDesc: {
+    fontSize: 11.5,
+    textAlign: 'center',
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  scopeCardBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.2,
+    gap: 12,
+  },
+  scopeCardIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scopeCardTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  scopeCardDesc: {
+    fontSize: 11,
+    marginTop: 1,
+  },
+  bandPickerContainer: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 4,
+    marginTop: 2,
+  },
+  bandPickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    gap: 10,
+  },
+  bandPickerText: {
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1,
+  },
+  scopeBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  scopeBadgeText: {
+    fontSize: 11.5,
+    fontWeight: '800',
   },
 });

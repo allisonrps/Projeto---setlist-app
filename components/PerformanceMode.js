@@ -276,24 +276,14 @@ export default function PerformanceMode({
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         
-        {/* 1. Controles Superiores Ultra Compactos (Única Linha) */}
+        {/* 1. Controles Superiores com SCROLL no Centro (Ordem: Letra Cifra Tablatura Links SCROLL A+ A- X) */}
         <View style={[styles.stageTopControls, { borderBottomColor: colors.border, backgroundColor: colors.cardBackground }]}>
           
-          {/* Botão Circular de Fechar */}
-          <Pressable 
-            style={({ pressed }) => [
-              styles.circleBtn, 
-              { backgroundColor: colors.danger + '22', opacity: pressed ? 0.7 : 1 }
-            ]} 
-            onPress={onClose}
-          >
-            <Ionicons name="close" size={18} color={colors.danger} />
-          </Pressable>
-
-          {/* Botões Circulares de Seleção de Aba (Letra, Cifra, Tablatura) */}
-          {currentSong.id !== -1 && (
-            <View style={styles.stageTabButtonsRow}>
-              {[
+          {/* Esquerda: Letra, Cifra, Tablatura, Links */}
+          <View style={styles.stageTopLeftGroup}>
+            {/* Abas: Letra, Cifra, Tablatura */}
+            {currentSong.id !== -1 && (
+              [
                 { key: 'lyrics', icon: 'document-text-outline', iconActive: 'document-text', hasContent: !!currentSong.lyrics?.trim() },
                 { key: 'chords', icon: 'musical-notes-outline', iconActive: 'musical-notes', hasContent: !!currentSong.chords?.trim() },
                 { key: 'tabs', icon: 'list-outline', iconActive: 'list', hasContent: !!currentSong.tabs?.trim() },
@@ -312,44 +302,22 @@ export default function PerformanceMode({
                 >
                   <Ionicons 
                     name={activeView === tab.key ? tab.iconActive : tab.icon} 
-                    size={17} 
+                    size={16} 
                     color={activeView === tab.key ? '#fff' : (tab.hasContent ? colors.text : colors.textMuted)} 
                   />
                 </Pressable>
-              ))}
-            </View>
-          )}
-
-          {/* Ajustes Circulares de Tamanho da Fonte (A- A+), Rolagem e Links */}
-          <View style={styles.fontSizeControlsRow}>
-            {currentSong.id !== -1 && (
-              <Pressable 
-                disabled={showSongList}
-                style={({ pressed }) => [
-                  styles.circleBtn, 
-                  { 
-                    backgroundColor: currentScrollSpeed !== 'none' ? '#10b98125' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
-                    opacity: showSongList ? 0.15 : (pressed ? 0.75 : 1) 
-                  }
-                ]} 
-                onPress={handleCycleSpeed}
-              >
-                {currentScrollSpeed === 'none' ? (
-                  <Ionicons name="play-outline" size={16} color={colors.text} />
-                ) : (
-                  <Text style={{ fontSize: 10.5, fontWeight: '900', color: '#10b981' }}>{`${currentScrollSpeed}x`}</Text>
-                )}
-              </Pressable>
+              ))
             )}
 
-            {currentSong.id !== -1 && currentSong.links && currentSong.links.length > 0 && (
+            {/* Links */}
+            {currentSong.id !== -1 && (
               <Pressable 
-                disabled={showSongList}
+                disabled={showSongList || !currentSong.links || currentSong.links.length === 0}
                 style={({ pressed }) => [
                   styles.circleBtn, 
                   { 
                     backgroundColor: showLinks ? colors.primary : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
-                    opacity: showSongList ? 0.15 : (pressed ? 0.75 : 1) 
+                    opacity: (showSongList || !currentSong.links || currentSong.links.length === 0) ? 0.15 : (pressed ? 0.75 : 1) 
                   }
                 ]} 
                 onPress={() => setShowLinks(!showLinks)}
@@ -357,6 +325,47 @@ export default function PerformanceMode({
                 <Ionicons name="link-outline" size={16} color={showLinks ? '#fff' : colors.text} />
               </Pressable>
             )}
+          </View>
+
+          {/* CENTRO DESTACADO: SCROLL */}
+          {currentSong.id !== -1 && (
+            <Pressable 
+              disabled={showSongList}
+              style={({ pressed }) => [
+                styles.scrollCenterHighlightedBtn, 
+                { 
+                  backgroundColor: currentScrollSpeed !== 'none' ? '#10b981' : (isDark ? '#10b98125' : '#10b98118'),
+                  borderColor: '#10b981',
+                  opacity: showSongList ? 0.2 : (pressed ? 0.8 : 1) 
+                }
+              ]} 
+              onPress={handleCycleSpeed}
+            >
+              <Ionicons 
+                name={currentScrollSpeed === 'none' ? "play-outline" : "speedometer-outline"} 
+                size={14} 
+                color={currentScrollSpeed !== 'none' ? '#ffffff' : '#10b981'} 
+              />
+              <Text style={[
+                styles.scrollCenterBtnText,
+                { color: currentScrollSpeed !== 'none' ? '#ffffff' : '#10b981' }
+              ]}>
+                {currentScrollSpeed === 'none' ? 'SCROLL' : `SCROLL ${currentScrollSpeed}x`}
+              </Text>
+            </Pressable>
+          )}
+
+          {/* Direita: A+, A-, X */}
+          <View style={styles.stageTopRightGroup}>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.circleBtn, 
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.75 : 1 }
+              ]} 
+              onPress={() => adjustFontSize(2)}
+            >
+              <Text style={[styles.circleFontBtnText, { color: colors.text }]}>A+</Text>
+            </Pressable>
 
             <Pressable 
               style={({ pressed }) => [
@@ -367,16 +376,19 @@ export default function PerformanceMode({
             >
               <Text style={[styles.circleFontBtnText, { color: colors.text }]}>A-</Text>
             </Pressable>
+
+            {/* Fechar X */}
             <Pressable 
               style={({ pressed }) => [
                 styles.circleBtn, 
-                { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.75 : 1 }
+                { backgroundColor: colors.danger + '22', opacity: pressed ? 0.7 : 1 }
               ]} 
-              onPress={() => adjustFontSize(2)}
+              onPress={onClose}
             >
-              <Text style={[styles.circleFontBtnText, { color: colors.text }]}>A+</Text>
+              <Ionicons name="close" size={18} color={colors.danger} />
             </Pressable>
           </View>
+
         </View>
 
         {/* Links Rápidos de Apoio (Alternável - Exibido entre os controles e o nome da música) */}
@@ -875,29 +887,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : (Platform.OS === 'ios' ? 44 : 10),
-    paddingBottom: 0,
-    paddingHorizontal: 8,
+    paddingBottom: 6,
+    paddingHorizontal: 6,
     borderBottomWidth: 0,
   },
+  stageTopLeftGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  stageTopRightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  scrollCenterHighlightedBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    gap: 4,
+    elevation: 3,
+    shadowColor: '#10b981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  scrollCenterBtnText: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 0.3,
+  },
   circleBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   circleFontBtnText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
   },
   stageTabButtonsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 4,
   },
   fontSizeControlsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 4,
   },
   marqueeHeaderRow: {
     flexDirection: 'row',
@@ -937,7 +978,7 @@ const styles = StyleSheet.create({
   },
   lyricsContent: {
     paddingVertical: 2,
-    paddingBottom: 6,
+    paddingBottom: 40,
     flexGrow: 1,
   },
   songListContainer: {
@@ -946,7 +987,7 @@ const styles = StyleSheet.create({
   },
   songListContent: {
     paddingVertical: 6,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   songListItemCard: {
     paddingVertical: 10,
@@ -980,8 +1021,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    paddingTop: 2,
-    paddingBottom: Platform.OS === 'android' ? 24 : (Platform.OS === 'ios' ? 18 : 8),
+    paddingTop: 6,
+    paddingBottom: Platform.OS === 'android' ? 44 : (Platform.OS === 'ios' ? 36 : 20),
     borderTopWidth: 0,
     gap: 8,
     alignItems: 'center',
