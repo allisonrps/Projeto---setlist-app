@@ -2124,6 +2124,8 @@ export default function BandDetailScreen({
             </View>
           </View>
         </Pressable>
+      </Modal>
+
       {/* MODAL BOTTOM SHEET SELETOR: QUEM É VOCÊ NESTA BANDA */}
       <Modal visible={showWhoAreYouModal} animationType="slide" transparent onRequestClose={() => setShowWhoAreYouModal(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setShowWhoAreYouModal(false)}>
@@ -2281,8 +2283,6 @@ export default function BandDetailScreen({
           </View>
         </KeyboardAvoidingView>
       </Modal>
-
-    </Modal>
   );
 }
 
