@@ -2611,7 +2611,10 @@ function MainApp() {
               // Top 4 style tags by percentage
               const tagCounts = {};
               let totalTagsCount = 0;
-              const bSongs = songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase()))));
+              const bSongs = (band.songsList && band.songsList.length > 0)
+                ? band.songsList
+                : songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase()))));
+              
               bSongs.forEach(s => {
                 if (s.style && s.style.trim()) {
                   s.style.split(',').forEach(st => {
