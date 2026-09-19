@@ -2283,6 +2283,8 @@ export default function BandDetailScreen({
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+    </Modal>
   );
 }
 
