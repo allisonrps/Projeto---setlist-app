@@ -215,7 +215,7 @@ export default function BandDetailScreen({
     }
   };
 
-  // Draggable Floating FAB PanResponder for Add (+) Button
+  // Draggable Floating FAB PanResponder for Add (+) Button with screen border clamping
   const fabPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const fabPanResponder = useRef(
     PanResponder.create({
@@ -235,6 +235,28 @@ export default function BandDetailScreen({
       ),
       onPanResponderRelease: () => {
         fabPan.flattenOffset();
+        const currentX = fabPan.x._value;
+        const currentY = fabPan.y._value;
+        const screenWidth = Dimensions.get('window').width;
+        const screenHeight = Dimensions.get('window').height;
+
+        // Calculate maximum allowed translation so button stays inside screen
+        const minX = -(screenWidth - 60);
+        const maxX = 10;
+        const minY = -(screenHeight - 160);
+        const maxY = 50;
+
+        const clampedX = Math.max(minX, Math.min(maxX, currentX));
+        const clampedY = Math.max(minY, Math.min(maxY, currentY));
+
+        if (clampedX !== currentX || clampedY !== currentY) {
+          Animated.spring(fabPan, {
+            toValue: { x: clampedX, y: clampedY },
+            useNativeDriver: false,
+            friction: 7,
+            tension: 50,
+          }).start();
+        }
       },
     })
   ).current;
@@ -408,7 +430,17 @@ export default function BandDetailScreen({
     const favA = a.isFavorite ? 1 : 0;
     const favB = b.isFavorite ? 1 : 0;
     if (favA !== favB) return favB - favA;
-    return (a.name || '').localeCompare(b.name || '');
+
+    if (repertoireSort === 'name_desc') {
+      return (b.name || '').localeCompare(a.name || '');
+    } else if (repertoireSort === 'band_asc') {
+      return (a.originalBand || '').localeCompare(b.originalBand || '') || (a.name || '').localeCompare(b.name || '');
+    } else if (repertoireSort === 'band_desc') {
+      return (b.originalBand || '').localeCompare(a.originalBand || '') || (a.name || '').localeCompare(b.name || '');
+    } else {
+      // default: name_asc
+      return (a.name || '').localeCompare(b.name || '');
+    }
   });
 
   // Extract unique tags for repertoire filter
@@ -1036,7 +1068,7 @@ export default function BandDetailScreen({
                 onPress={handleOpenSongPicker}
                 hitSlop={8}
               >
-                <Ionicons name="add" size={26} color="#ffffff" />
+                <Ionicons name="add" size={22} color="#ffffff" />
               </Pressable>
             </Animated.View>
           </View>
@@ -1046,76 +1078,64 @@ export default function BandDetailScreen({
         {activeTab === 'members' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             
-            {/* SELETOR INTERATIVO MEU PERFIL ("QUEM É VOCÊ NA BANDA") */}
-            {(() => {
-              const meMember = members.find(m => m.id === myMemberId);
-              return (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.whoAreYouEnhancedBar,
-                    {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
-                      borderColor: meMember ? colors.primary + '60' : colors.border,
-                      borderWidth: 1.5,
-                      opacity: pressed ? 0.85 : 1,
-                      transform: [{ scale: pressed ? 0.99 : 1 }]
-                    }
-                  ]}
-                  onPress={() => setShowWhoAreYouModal(true)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                    <View style={[
-                      styles.whoAreYouAvatarCircle,
+            {/* LINHA DE PERFIL ('VOCÊ:') + BOTÃO REDONDO '+' DE ADICIONAR INTEGRANTE */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              {(() => {
+                const meMember = members.find(m => m.id === myMemberId);
+                return (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.whoAreYouEnhancedBar,
                       {
-                        backgroundColor: meMember ? colors.primary : colors.primary + '18',
+                        flex: 1,
+                        marginBottom: 0,
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
+                        borderColor: meMember ? colors.primary + '60' : colors.border,
+                        borderWidth: 1.5,
+                        opacity: pressed ? 0.85 : 1,
+                        transform: [{ scale: pressed ? 0.99 : 1 }]
                       }
-                    ]}>
-                      <Ionicons name={meMember ? "person" : "person-outline"} size={18} color={meMember ? "#ffffff" : colors.primary} />
-                    </View>
-
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Text style={{ fontSize: 10.5, fontWeight: '800', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                          Meu Perfil na Banda
-                        </Text>
-                        {meMember && (
-                          <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8 }}>
-                            <Text style={{ fontSize: 9, fontWeight: '900', color: '#ffffff' }}>VOCÊ</Text>
-                          </View>
-                        )}
-                      </View>
-
-                      <Text style={{ fontSize: 14, fontWeight: '900', color: meMember ? colors.text : colors.primary, marginTop: 1 }} numberOfLines={1}>
-                        {meMember ? meMember.name : 'Selecionar quem é você...'}
+                    ]}
+                    onPress={() => setShowWhoAreYouModal(true)}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                      <Ionicons name="star" size={16} color={colors.primary} />
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                        Você:
+                      </Text>
+                      <Text style={{ fontSize: 13, fontWeight: '900', color: meMember ? colors.primary : colors.textMuted }} numberOfLines={1}>
+                        {meMember ? meMember.name : 'Selecionar...'}
                       </Text>
                     </View>
-                  </View>
+                    <Ionicons name="chevron-forward" size={15} color={meMember ? colors.primary : colors.textMuted} />
+                  </Pressable>
+                );
+              })()}
 
-                  <View style={[
-                    styles.whoAreYouActionPill,
-                    {
-                      backgroundColor: meMember ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)') : colors.primary + '18',
-                      borderColor: meMember ? colors.border : colors.primary + '40',
-                      borderWidth: 1,
-                    }
-                  ]}>
-                    <Text style={{ fontSize: 11, fontWeight: '900', color: meMember ? colors.textMuted : colors.primary }}>
-                      {meMember ? 'Alterar' : 'Escolher'}
-                    </Text>
-                    <Ionicons name="chevron-forward" size={13} color={meMember ? colors.textMuted : colors.primary} />
-                  </View>
-                </Pressable>
-              );
-            })()}
-
-            {/* BOTÃO PARA ABRIR MODAL DE NOVO INTEGRANTE */}
-            <Pressable
-              style={[styles.openFormBtn, { backgroundColor: colors.primary }]}
-              onPress={handleOpenAddMember}
-            >
-              <Ionicons name="person-add-outline" size={18} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.openFormBtnText}>{t('addMember')}</Text>
-            </Pressable>
+              {/* BOTÃO REDONDO DE ADICIONAR INTEGRANTE (SINAL DE + DO LADO DO CARD VOCÊ) */}
+              <Pressable
+                style={({ pressed }) => [
+                  {
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: colors.primary,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    elevation: 3,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 3,
+                    transform: [{ scale: pressed ? 0.94 : 1 }]
+                  }
+                ]}
+                onPress={handleOpenAddMember}
+                hitSlop={6}
+              >
+                <Ionicons name="person-add" size={20} color="#ffffff" />
+              </Pressable>
+            </View>
 
             {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
             <View style={styles.memberSectionHeader}>
@@ -2635,24 +2655,24 @@ const styles = StyleSheet.create({
   draggableFabButton: {
     position: 'absolute',
     bottom: 80,
-    right: 20,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
-    shadowRadius: 6,
+    shadowRadius: 5,
     zIndex: 999,
   },
   draggableFabInnerPressable: {
     width: '100%',
     height: '100%',
-    borderRadius: 26,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
