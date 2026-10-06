@@ -82,11 +82,11 @@ export default function SongListItem({
               <>
                 <Text style={styles.songNamePart}>{song.name}</Text>
                 <Text style={{ fontWeight: '600', color: colors.textMuted }}> - </Text>
-                <Text style={[styles.bandNamePart, { color: colors.secondary }]}>{song.originalBand}</Text>
+                <Text style={[styles.bandNamePart, { color: colors.primary }]}>{song.originalBand}</Text>
               </>
             ) : (
               <>
-                <Text style={[styles.bandNamePart, { color: colors.secondary }]}>{song.originalBand}</Text>
+                <Text style={[styles.bandNamePart, { color: colors.primary }]}>{song.originalBand}</Text>
                 <Text style={{ fontWeight: '600', color: colors.textMuted }}> - </Text>
                 <Text style={styles.songNamePart}>{song.name}</Text>
               </>
@@ -102,10 +102,10 @@ export default function SongListItem({
                 key={idx}
                 style={[
                   styles.metaChip,
-                  { backgroundColor: colors.primary + '16' }
+                  { backgroundColor: colors.secondary + '16' }
                 ]}
               >
-                <Text style={[styles.metaChipText, { color: colors.primary }]}>{tag}</Text>
+                <Text style={[styles.metaChipText, { color: colors.secondary }]}>{tag}</Text>
               </View>
             ))}
           </View>

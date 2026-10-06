@@ -31,20 +31,20 @@ export default function ImportOptionsModal({
   const isSetlist = type === 'setlist';
   const isBackup = type === 'backup';
 
-  let badgeText = (t('shareSongLabel') || 'MÚSICA').toUpperCase();
-  let mainTitle = t('importTitleSong') || 'Importar Música';
-  let subTitle = t('importSongSubtitle') || 'Adicione uma nova música ao seu repertório';
+  let badgeText = (t('shareSongLabel')).toUpperCase();
+  let mainTitle = t('importTitleSong');
+  let subTitle = t('importSongSubtitle');
   let headerIcon = 'musical-note';
 
   if (isSetlist) {
-    badgeText = (t('shareSetlistLabel') || 'SETLIST').toUpperCase();
-    mainTitle = t('importTitleSetlist') || 'Importar Setlist';
-    subTitle = t('importSetlistSubtitle') || 'Importe um roteiro de show ou ensaio';
+    badgeText = (t('shareSetlistLabel')).toUpperCase();
+    mainTitle = t('importTitleSetlist');
+    subTitle = t('importSetlistSubtitle');
     headerIcon = 'list';
   } else if (isBackup) {
-    badgeText = (t('fileTypeLabelBackup') || 'BACKUP').toUpperCase();
-    mainTitle = t('restoreBackupTitle') || 'Restaurar Backup';
-    subTitle = t('restoreBackupSubtitle') || 'Restaure dados completos do app';
+    badgeText = (t('fileTypeLabelBackup')).toUpperCase();
+    mainTitle = t('restoreBackupTitle');
+    subTitle = t('restoreBackupSubtitle');
     headerIcon = 'save-outline';
   }
 
@@ -118,7 +118,7 @@ export default function ImportOptionsModal({
           {/* Body Options */}
           <View style={styles.body}>
             <Text style={[styles.promptText, { color: colors.textMuted }]}>
-              {t('importOptionsSubtitle') || 'Escolha como deseja importar:'}
+              {t('importOptionsSubtitle')}
             </Text>
 
             {/* Option 1: SCAN QR CODE / PIN (Highlighted) */}
@@ -145,14 +145,14 @@ export default function ImportOptionsModal({
               <View style={styles.optionTextCol}>
                 <View style={styles.optionTitleRow}>
                   <Text style={[styles.optionTitle, { color: colors.text }]}>
-                    {t('importOptionQrTitle') || 'Ler QR Code (Câmera ou PIN)'}
+                    {t('importOptionQrTitle')}
                   </Text>
                   <View style={[styles.badgeRecommend, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.badgeRecommendText}>INSTANTÂNEO</Text>
+                    <Text style={styles.badgeRecommendText}>{t('instant')}</Text>
                   </View>
                 </View>
                 <Text style={[styles.optionDesc, { color: colors.textMuted }]}>
-                  {t('importOptionQrDesc') || 'Aponte a câmera para o QR de outro celular/PC ou digite o PIN.'}
+                  {t('importOptionQrDesc')}
                 </Text>
               </View>
               <Ionicons
@@ -185,10 +185,10 @@ export default function ImportOptionsModal({
               </View>
               <View style={styles.optionTextCol}>
                 <Text style={[styles.optionTitle, { color: colors.text }]}>
-                  {t('importOptionFileTitle') || 'Selecionar Arquivo (.json)'}
+                  {t('importOptionFileTitle')}
                 </Text>
                 <Text style={[styles.optionDesc, { color: colors.textMuted }]}>
-                  {t('importOptionFileDesc') || 'Abra um arquivo .json salvo no seu aparelho ou WhatsApp.'}
+                  {t('importOptionFileDesc')}
                 </Text>
               </View>
               <Ionicons
@@ -221,10 +221,10 @@ export default function ImportOptionsModal({
               </View>
               <View style={styles.optionTextCol}>
                 <Text style={[styles.optionTitle, { color: colors.text }]}>
-                  {t('importOptionTextTitle') || 'Colar Código / Texto JSON'}
+                  {t('importOptionTextTitle')}
                 </Text>
                 <Text style={[styles.optionDesc, { color: colors.textMuted }]}>
-                  {t('importOptionTextDesc') || 'Cole o código ou texto copiado no editor de texto.'}
+                  {t('importOptionTextDesc')}
                 </Text>
               </View>
               <Ionicons
@@ -241,7 +241,7 @@ export default function ImportOptionsModal({
               onPress={onClose}
             >
               <Text style={[styles.cancelBtnText, { color: colors.textMuted }]}>
-                {t('cancel') || 'Cancelar'}
+                {t('cancel')}
               </Text>
             </TouchableOpacity>
           </View>

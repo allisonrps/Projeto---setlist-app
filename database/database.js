@@ -631,7 +631,20 @@ const createWebDB = () => {
       // INSERT / UPDATE / DELETE de Bandas
       if (sql.includes('INSERT INTO my_bands')) {
         const id = Math.max(...data.my_bands.map(b => b.id || 0), 0) + 1;
-        data.my_bands.push({ id, name: params[0], imageUri: params[1], startDate: params[2] || '', endDate: params[3] || '' });
+        data.my_bands.push({
+          id,
+          name: params[0],
+          imageUri: params[1],
+          startDate: params[2] || '',
+          endDate: params[3] || '',
+          bandType: params[4] || 'cover',
+          isCover: params[5] !== undefined ? params[5] : 1,
+          isAutoral: params[6] !== undefined ? params[6] : 0,
+          city: params[7] || '',
+          state: params[8] || '',
+          country: params[9] || 'Brasil',
+          genres: params[10] || '[]',
+        });
         saveToStorage();
         return { lastInsertRowId: id };
       }
@@ -643,14 +656,26 @@ const createWebDB = () => {
         }
         return {};
       }
-      if (sql.includes('UPDATE my_bands')) {
-        const band = data.my_bands.find(b => b.id === params[4] || b.id === params[2]);
+      if (sql.includes('UPDATE my_bands') && !sql.includes('UPDATE my_bands SET myMemberId')) {
+        const bandId = params[params.length - 1];
+        const band = data.my_bands.find(b => b.id === bandId);
         if (band) {
           band.name = params[0];
           band.imageUri = params[1];
           if (params.length >= 4) {
             band.startDate = params[2] || '';
             band.endDate = params[3] || '';
+          }
+          if (params.length >= 7) {
+            band.bandType = params[4] || 'cover';
+            band.isCover = params[5] !== undefined ? params[5] : 1;
+            band.isAutoral = params[6] !== undefined ? params[6] : 0;
+          }
+          if (params.length >= 11) {
+            band.city = params[7] || '';
+            band.state = params[8] || '';
+            band.country = params[9] || 'Brasil';
+            band.genres = params[10] || '[]';
           }
           saveToStorage();
         }
@@ -726,26 +751,46 @@ const createWebDB = () => {
       // INSERT / UPDATE / DELETE de Setlists
       if (sql.includes('INSERT INTO setlists')) {
         const id = Math.max(...data.setlists.map(s => s.id || 0), 0) + 1;
+        // Inserção com suporte flexível a parâmetros
+        const isFull = params.length >= 7;
         data.setlists.push({
           id,
-          type: params[0],
-          myBandId: params[1],
-          date: params[2],
-          local: params[3],
-          cachê: params[4],
+          name: isFull ? params[0] : '',
+          type: isFull ? params[1] : params[0],
+          myBandId: isFull ? params[2] : params[1],
+          date: isFull ? params[3] : params[2],
+          time: isFull && params.length >= 8 ? params[4] : '',
+          local: isFull ? (params.length >= 8 ? params[5] : params[4]) : params[3],
+          cachê: isFull ? (params.length >= 8 ? params[6] : params[5]) : params[4],
+          notes: isFull ? (params.length >= 8 ? params[7] : params[6]) : '',
+          isFavorite: 0,
           createdAt: new Date().toISOString(),
         });
         saveToStorage();
         return { lastInsertRowId: id };
       }
       if (sql.includes('UPDATE setlists')) {
-        const setlist = data.setlists.find(s => s.id === params[5]);
+        const updateId = params[params.length - 1];
+        const setlist = data.setlists.find(s => s.id === updateId);
         if (setlist) {
-          setlist.type = params[0];
-          setlist.myBandId = params[1];
-          setlist.date = params[2];
-          setlist.local = params[3];
-          setlist.cachê = params[4];
+          if (params.length >= 8) {
+            setlist.name = params[0];
+            setlist.type = params[1];
+            setlist.myBandId = params[2];
+            setlist.date = params[3];
+            setlist.time = params[4];
+            setlist.local = params[5];
+            setlist.cachê = params[6];
+            setlist.notes = params[7];
+          } else {
+            setlist.name = params[0];
+            setlist.type = params[1];
+            setlist.myBandId = params[2];
+            setlist.date = params[3];
+            setlist.local = params[4];
+            setlist.cachê = params[5];
+            setlist.notes = params[6];
+          }
           saveToStorage();
         }
         return {};
@@ -845,8 +890,12 @@ const createWebDB = () => {
         const startDate = params[4] || '';
         const endDate = params[5] || '';
         const status = params[6] || 'active';
+        const cycles = params[7] || '[]';
+        const username = params[8] || '';
+        const inviteMessage = params[9] || '';
+        const replyMessage = params[10] || '';
         const newId = Date.now() + Math.floor(Math.random() * 1000);
-        data.band_members.push({ id: newId, bandId, name, role, phone, startDate, endDate, status });
+        data.band_members.push({ id: newId, bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage });
         saveToStorage();
         return { lastInsertRowId: newId };
       }
@@ -859,7 +908,11 @@ const createWebDB = () => {
         const startDate = params[3] || '';
         const endDate = params[4] || '';
         const status = params[5] || 'active';
-        const id = params[6];
+        const cycles = params[6] || '[]';
+        const username = params[7] || '';
+        const inviteMessage = params[8] || '';
+        const replyMessage = params[9] || '';
+        const id = params[10] !== undefined ? params[10] : params[params.length - 1];
         const item = data.band_members.find(m => m.id === id);
         if (item) {
           item.name = name;
@@ -868,6 +921,10 @@ const createWebDB = () => {
           item.startDate = startDate;
           item.endDate = endDate;
           item.status = status;
+          if (cycles) item.cycles = cycles;
+          if (username !== undefined) item.username = username;
+          if (inviteMessage !== undefined) item.inviteMessage = inviteMessage;
+          if (replyMessage !== undefined) item.replyMessage = replyMessage;
           saveToStorage();
         }
         return { changes: 1 };
@@ -963,6 +1020,29 @@ if (isWeb) {
 
 export const db = dbInstance;
 
+
+import { Alert } from 'react-native';
+export const forceInsertMockSongs = async () => {
+  if (isWeb) return;
+  try {
+    for (const sample of SAMPLE_POP_ROCK_SONGS) {
+      const existing = await dbInstance.getAllAsync('SELECT id FROM songs WHERE name = ?;', [sample.name]);
+      if (!existing || existing.length === 0) {
+        await dbInstance.runAsync(
+          'INSERT INTO songs (name, originalBand, style, lyrics, chords) VALUES (?, ?, ?, ?, ?);',
+          [sample.name, sample.originalBand, sample.style, sample.lyrics || '', sample.chords || '']
+        );
+        try { await dbInstance.runAsync('UPDATE songs SET duration = ? WHERE name = ?', [sample.duration || '00:00', sample.name]); } catch(e) {}
+        try { await dbInstance.runAsync('UPDATE songs SET defaultView = ? WHERE name = ?', [sample.defaultView || 'lyrics', sample.name]); } catch(e) {}
+        try { await dbInstance.runAsync('UPDATE songs SET isFavorite = 0 WHERE name = ?', [sample.name]); } catch(e) {}
+      }
+    }
+  } catch (error) {
+    console.log('Mock insert failed: ' + error.message);
+  }
+};
+
+
 export const createTables = async () => {
   if (isWeb) {
     console.log("Web: Simulando tabelas do banco.");
@@ -1006,6 +1086,7 @@ export const createTables = async () => {
         type TEXT NOT NULL,
         myBandId INTEGER,
         date TEXT,
+        time TEXT,
         local TEXT,
         cachê TEXT,
         notes TEXT,
@@ -1120,7 +1201,40 @@ export const createTables = async () => {
       await db.execAsync("ALTER TABLE band_members ADD COLUMN status TEXT DEFAULT 'active';");
     } catch (e) {}
     try {
+      await db.execAsync("ALTER TABLE band_members ADD COLUMN username TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE band_members ADD COLUMN inviteMessage TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE band_members ADD COLUMN replyMessage TEXT;");
+    } catch (e) {}
+    try {
       await db.execAsync('ALTER TABLE my_bands ADD COLUMN myMemberId INTEGER;');
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN bandType TEXT DEFAULT 'cover';");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN isCover INTEGER DEFAULT 1;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN isAutoral INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN city TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN state TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN country TEXT DEFAULT 'Brasil';");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN genres TEXT DEFAULT '[]';");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN isNetworkVisible INTEGER DEFAULT 0;");
     } catch (e) {}
 
     // Migração de chords em songs
@@ -1252,6 +1366,18 @@ export const createTables = async () => {
         console.log("Nativo: Coluna 'rehearsalNotes' já existe.");
       } else {
         console.log("Nativo: Nota da migração de rehearsalNotes:", e.message);
+      }
+    }
+
+    // Migração de time em setlists
+    try {
+      await db.execAsync("ALTER TABLE setlists ADD COLUMN time TEXT;");
+      console.log("Nativo: Coluna 'time' adicionada em 'setlists'!");
+    } catch (e) {
+      if (e.message && e.message.includes("duplicate column name")) {
+        console.log("Nativo: Coluna 'time' já existe em setlists.");
+      } else {
+        console.log("Nativo: Nota da migração de time em setlists:", e.message);
       }
     }
 

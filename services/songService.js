@@ -1,4 +1,5 @@
 import { db } from '../database/database';
+import { sanitizeText, sanitizeMultiline, sanitizeUrl } from './sanitize';
 
 export const songService = {
   async getAll(searchQuery = '', styleFilter = '', sortBy = 'name', sortOrder = 'asc') {
@@ -77,7 +78,7 @@ export const songService = {
     try {
       const result = await db.runAsync(
         'INSERT INTO songs (name, originalBand, style, lyrics, chords, tabs, defaultView, duration, scrollSpeed, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0);',
-        [name, originalBand, style, lyrics, chords, tabs, defaultView || 'lyrics', duration || null, scrollSpeed || 'none']
+        [sanitizeText(name, 200), sanitizeText(originalBand, 200), sanitizeText(style, 300), sanitizeMultiline(lyrics, 10000), sanitizeMultiline(chords, 10000), sanitizeMultiline(tabs, 20000), sanitizeText(defaultView, 20) || 'lyrics', sanitizeText(duration, 10) || null, sanitizeText(scrollSpeed, 20) || 'none']
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -90,7 +91,7 @@ export const songService = {
     try {
       await db.runAsync(
         'UPDATE songs SET name = ?, originalBand = ?, style = ?, lyrics = ?, chords = ?, tabs = ?, defaultView = ?, duration = ?, scrollSpeed = ? WHERE id = ?;',
-        [name, originalBand, style, lyrics, chords, tabs, defaultView || 'lyrics', duration || null, scrollSpeed || 'none', id]
+        [sanitizeText(name, 200), sanitizeText(originalBand, 200), sanitizeText(style, 300), sanitizeMultiline(lyrics, 10000), sanitizeMultiline(chords, 10000), sanitizeMultiline(tabs, 20000), sanitizeText(defaultView, 20) || 'lyrics', sanitizeText(duration, 10) || null, sanitizeText(scrollSpeed, 20) || 'none', id]
       );
     } catch (error) {
       console.error('Error in songService.update:', error);
@@ -111,10 +112,11 @@ export const songService = {
     try {
       await db.runAsync('DELETE FROM song_links WHERE songId = ?;', [songId]);
       for (const link of links) {
-        if (link.url && link.url.trim()) {
+        const cleanUrl = sanitizeUrl(link.url);
+        if (cleanUrl) {
           await db.runAsync(
             'INSERT INTO song_links (songId, type, url) VALUES (?, ?, ?);',
-            [songId, link.type, link.url]
+            [songId, sanitizeText(link.type, 50), cleanUrl]
           );
         }
       }

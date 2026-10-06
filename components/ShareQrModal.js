@@ -132,9 +132,9 @@ export default function ShareQrModal({
                 pollIntervalRef.current = null;
               }
               Alert.alert(
-                t('itemTransferSuccessTitle') || 'Transferência Concluída! 🎉',
-                t('itemTransferSuccessMsg') || 'O item foi transferido e importado com sucesso no outro dispositivo!',
-                [{ text: t('done') || 'OK', onPress: onClose }]
+                t('itemTransferSuccessTitle'),
+                t('itemTransferSuccessMsg'),
+                [{ text: t('done'), onPress: onClose }]
               );
             }
           } catch (e) {
@@ -174,7 +174,7 @@ export default function ShareQrModal({
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
-                  {isSong ? (t('shareQrModalTitleSong') || 'Compartilhar Música via QR') : (t('shareQrModalTitleSetlist') || 'Compartilhar Setlist via QR')}
+                  {isSong ? t('shareQrModalTitleSong') : t('shareQrModalTitleSetlist')}
                 </Text>
                 <Text style={[styles.subtitle, { color: colors.primary }]} numberOfLines={1}>
                   {currentItem.title}
@@ -206,7 +206,7 @@ export default function ShareQrModal({
                     <View style={styles.qrLoadingOverlay}>
                       <ActivityIndicator size="small" color={colors.primary} />
                       <Text style={[styles.qrLoadingText, { color: colors.textMuted }]}>
-                        {t('generatingItemQr') || 'Gerando QR Code...'}
+                        {t('generatingItemQr')}
                       </Text>
                     </View>
                   )}
@@ -215,7 +215,7 @@ export default function ShareQrModal({
                 {/* PIN Code Box */}
                 <View style={[styles.pinBox, { backgroundColor: innerBg, borderColor: colors.primary + '55' }]}>
                   <Text style={[styles.pinLabel, { color: colors.textMuted }]}>
-                    {t('shareQrPinLabel') || 'CÓDIGO PIN'}
+                    {t('shareQrPinLabel')}
                   </Text>
                   <Text style={[styles.pinValue, { color: colors.primary }]}>
                     {sessionInfo.pin.slice(0, 3)} {sessionInfo.pin.slice(3)}
@@ -226,7 +226,7 @@ export default function ShareQrModal({
                 <View style={[styles.instructionBox, { backgroundColor: innerBg, borderColor }]}>
                   <Ionicons name="scan-outline" size={20} color={colors.primary} style={{ marginTop: 2 }} />
                   <Text style={[styles.instructionText, { color: colors.text }]}>
-                    {t('shareQrInstruction') || 'Aponte a câmera do outro celular em Sincronizar ➔ Ler QR (ou digite o PIN) para importar este item instantaneamente!'}
+                    {t('shareQrInstruction')}
                   </Text>
                 </View>
 
@@ -238,7 +238,7 @@ export default function ShareQrModal({
                 >
                   <Ionicons name="refresh" size={15} color={colors.textMuted} />
                   <Text style={[styles.refreshBtnText, { color: colors.textMuted }]}>
-                    {t('generateNewCode') || 'Gerar Novo Código'}
+                    {t('generateNewCode')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -246,7 +246,7 @@ export default function ShareQrModal({
               <View style={styles.loadingBox}>
                 <ActivityIndicator size="large" color={colors.primary} />
                 <Text style={[styles.loadingText, { color: colors.text }]}>
-                  {t('generatingItemQr') || 'Gerando QR Code...'}
+                  {t('generatingItemQr')}
                 </Text>
               </View>
             )}

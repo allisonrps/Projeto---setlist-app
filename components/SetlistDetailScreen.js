@@ -70,6 +70,7 @@ export default function SetlistDetailScreen({
   const [type, setType] = useState('show'); // 'show' | 'ensaio' | 'repertório'
   const [bandId, setBandId] = useState(null);
   const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [local, setLocal] = useState('');
   const [cachê, setCachê] = useState('');
   const [notes, setNotes] = useState('');
@@ -89,6 +90,7 @@ export default function SetlistDetailScreen({
   const [tempCustomDuration, setTempCustomDuration] = useState('');
   const [isDraggingActive, setIsDraggingActive] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const initialDataRef = useRef(null);
 
@@ -100,6 +102,7 @@ export default function SetlistDetailScreen({
         const sType = setlist.type || 'show';
         const sBandId = setlist.myBandId || (bands.length > 0 ? bands[0].id : null);
         const sDate = setlist.date || '';
+        const sTime = setlist.time || '';
         const sLocal = setlist.local || '';
         const sCachê = setlist.cachê || '';
         const sNotes = setlist.notes || '';
@@ -118,6 +121,7 @@ export default function SetlistDetailScreen({
         setType(sType);
         setBandId(sBandId);
         setDate(sDate);
+        setTime(sTime);
         setLocal(sLocal);
         setCachê(sCachê);
         setNotes(sNotes);
@@ -130,6 +134,7 @@ export default function SetlistDetailScreen({
           type: sType,
           bandId: sBandId,
           date: sDate,
+          time: sTime,
           local: sLocal,
           cachê: sCachê,
           notes: sNotes,
@@ -142,6 +147,7 @@ export default function SetlistDetailScreen({
         setType('repertório');
         setBandId(defaultBandId);
         setDate('');
+        setTime('');
         setLocal('');
         setCachê('');
         setNotes('');
@@ -154,6 +160,7 @@ export default function SetlistDetailScreen({
           type: 'repertório',
           bandId: defaultBandId,
           date: '',
+          time: '',
           local: '',
           cachê: '',
           notes: '',
@@ -187,19 +194,19 @@ export default function SetlistDetailScreen({
   const handleBackWithCheck = () => {
     if (hasUnsavedChanges()) {
       Alert.alert(
-        t('attention') || 'Atenção',
-        t('unsavedChangesMsg') || 'Você tem alterações não salvas no setlist. Deseja sair sem salvar?',
+        t('attention'),
+        t('unsavedChangesMsg'),
         [
-          { text: t('cancel') || 'Cancelar', style: 'cancel' },
+          { text: t('cancel'), style: 'cancel' },
           {
-            text: t('leaveWithoutSaving') || 'Sair sem Salvar',
+            text: t('leaveWithoutSaving'),
             style: 'destructive',
             onPress: () => {
               onBack();
             },
           },
           {
-            text: t('saveAndLeave') || 'Salvar e Sair',
+            text: t('saveAndLeave'),
             onPress: () => {
               handleSaveInternal();
             },
@@ -213,17 +220,17 @@ export default function SetlistDetailScreen({
 
   const handleSaveInternal = () => {
     if (!name.trim()) {
-      Alert.alert(t('attention') || 'Atenção', t('alertSetlistName') || 'Por favor, informe o nome do setlist.');
+      Alert.alert(t('attention'), t('alertSetlistName'));
       setShowDetailsLayer(true);
       return;
     }
     if (!bandId && bands.length > 0) {
-      Alert.alert(t('attention') || 'Atenção', t('alertSelectBand') || 'Por favor, selecione uma banda para o setlist.');
+      Alert.alert(t('attention'), t('alertSelectBand'));
       setShowDetailsLayer(true);
       return;
     }
     if (selectedSongs.length === 0) {
-      Alert.alert(t('attention') || 'Atenção', t('alertSelectSong') || 'Adicione ao menos uma música ao roteiro.');
+      Alert.alert(t('attention'), t('alertSelectSong'));
       return;
     }
 
@@ -233,6 +240,7 @@ export default function SetlistDetailScreen({
       type,
       myBandId: bandId,
       date: date.trim(),
+      time: time.trim(),
       local: local.trim(),
       cachê: type === 'show' ? cachê.trim() : null,
       notes: notes.trim(),
@@ -245,12 +253,12 @@ export default function SetlistDetailScreen({
   const handleDeleteWithConfirm = () => {
     if (!setlist || !setlist.id) return;
     Alert.alert(
-      t('deleteSetlistConfirmTitle') || 'Excluir Setlist',
-      t('deleteSetlistConfirmMsg') || 'Tem certeza que deseja excluir este setlist permanentemente?',
+      t('deleteSetlistConfirmTitle'),
+      t('deleteSetlistConfirmMsg'),
       [
-        { text: t('cancel') || 'Cancelar', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: t('delete') || 'Excluir',
+          text: t('delete'),
           style: 'destructive',
           onPress: () => {
             onDelete(setlist.id);
@@ -279,18 +287,37 @@ export default function SetlistDetailScreen({
 
   const handleAddPause = () => {
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
-    setSelectedSongs([...selectedSongs, { id: -1, customNotes: '', customDuration: '10 min' }]);
+    const newIdx = selectedSongs.length;
+    setSelectedSongs(prev => [...prev, { id: -1, customNotes: '', customDuration: '10 min' }]);
+    setEditingCustomIndex(newIdx);
+    setTempCustomNotes('');
+    setTempCustomDuration('10 min');
   };
 
   const handleAddNote = () => {
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
-    setSelectedSongs([...selectedSongs, { id: -2, customNotes: '', customDuration: '' }]);
+    const newIdx = selectedSongs.length;
+    setSelectedSongs(prev => [...prev, { id: -2, customNotes: '', customDuration: '' }]);
+    setEditingCustomIndex(newIdx);
+    setTempCustomNotes('');
+    setTempCustomDuration('');
   };
 
   const handleOpenCustomItemEditor = (index, song) => {
     setEditingCustomIndex(index);
     setTempCustomNotes(song.customNotes || '');
     setTempCustomDuration(song.customDuration || '');
+  };
+
+  const handleCloseCustomItemEditor = () => {
+    if (editingCustomIndex !== null) {
+      const item = selectedSongs[editingCustomIndex];
+      // If closing an empty note that was just added, remove it
+      if (item && item.id === -2 && !item.customNotes && !tempCustomNotes.trim()) {
+        setSelectedSongs(prev => prev.filter((_, idx) => idx !== editingCustomIndex));
+      }
+      setEditingCustomIndex(null);
+    }
   };
 
   const handleSaveCustomItem = () => {
@@ -364,9 +391,9 @@ export default function SetlistDetailScreen({
   const orderedSongs = selectedSongs
     .map((item) => {
       const songInfo = item.id === -1 
-        ? { id: -1, name: 'PAUSA', originalBand: '', style: 'PAUSA' } 
+        ? { id: -1, name: t('pauseItem'), originalBand: '', style: t('pauseItem') } 
         : item.id === -2
-        ? { id: -2, name: 'ANOTAÇÃO', originalBand: '', style: 'ANOTAÇÃO' }
+        ? { id: -2, name: t('noteItem'), originalBand: '', style: t('noteItem') }
         : songs.find((s) => s.id === item.id);
       
       if (!songInfo) return null;
@@ -427,7 +454,30 @@ export default function SetlistDetailScreen({
   const totalRealSongsCount = selectedSongs.filter(s => s.id !== -1 && s.id !== -2).length;
 
   const currentBand = bands.find(b => String(b.id) === String(bandId));
-  const bandDisplayName = currentBand ? currentBand.name : (bands.length === 0 ? '' : 'Sem Banda');
+  const bandDisplayName = currentBand ? currentBand.name : (bands.length === 0 ? '' : t('noBand'));
+
+  const getBandInitials = (bName) => {
+    if (!bName) return 'B';
+    const words = bName.trim().split(/\s+/);
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return bName.slice(0, 2).toUpperCase();
+  };
+
+  const getCompactDate = (dStr) => {
+    if (!dStr) return '';
+    const clean = dStr.trim();
+    if (clean.includes('-')) {
+      const parts = clean.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
+    }
+    if (clean.includes('/')) {
+      const parts = clean.split('/');
+      if (parts.length >= 2) return `${parts[0]}/${parts[1]}`;
+    }
+    return clean;
+  };
 
   // 3 Layers Color Scheme:
   // Layer 1 (Header): Darkest
@@ -458,7 +508,7 @@ export default function SetlistDetailScreen({
   const getFullSetlistPayload = () => ({
     ...(setlist || {}),
     id: setlist?.id || 'temp_' + Date.now(),
-    name: name.trim() || 'Setlist',
+    name: name.trim() || t('setlistDefaultName'),
     type,
     myBandId: bandId,
     bandName: bandDisplayName,
@@ -527,7 +577,7 @@ export default function SetlistDetailScreen({
                     if (setlist && setlist.id) {
                       onCopy(setlist.id);
                     } else {
-                      Alert.alert(t('info') || 'Informação', 'Salve o setlist antes de duplicar.');
+                      Alert.alert(t('info'), t('alertSaveBeforeDuplicate'));
                     }
                   }}
                   hitSlop={6}
@@ -587,70 +637,124 @@ export default function SetlistDetailScreen({
             </View>
           </View>
 
-          {/* Centered Setlist Title & Band in Parentheses */}
-          <View style={styles.headerTitleCenterContainer}>
-            <View style={styles.headerInlineRow}>
-              <TextInput
-                style={[
-                  styles.headerTitleInlineInput,
-                  { color: colors.text, fontSize: 18 }
-                ]}
-                value={name}
-                onChangeText={setName}
-                placeholder={t('setlistNamePlaceholder') || 'Nome do Setlist'}
-                placeholderTextColor={colors.textMuted}
-                autoComplete="off"
-                importantForAutofill="no"
-                textAlign="center"
-              />
-              {bandDisplayName ? (
-                <Text style={[styles.headerParenthesesText, { color: colors.secondary, fontSize: 15 }]}>
-                  {` (${bandDisplayName})`}
-                </Text>
-              ) : null}
-            </View>
+          {/* Header Event Container: Logo da banda à esquerda em CÍRCULO ocupando 2 linhas + Coluna (Linha 1: Tag de Tipo + Nome do Evento, Linha 2: Tags com primária/secundária) */}
+          <View style={styles.headerEventContainer}>
+            {/* Logo da Banda à esquerda (Círculo) */}
+            <Pressable
+              onPress={() => setShowDetailsLayer(prev => !prev)}
+              style={({ pressed }) => [
+                styles.headerBandLogoBox,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.12)',
+                  opacity: pressed ? 0.8 : 1,
+                }
+              ]}
+              hitSlop={6}
+              accessibilityLabel={`Banda: ${bandDisplayName || 'Selecionar banda'}`}
+            >
+              {currentBand?.imageUri ? (
+                <Image source={{ uri: currentBand.imageUri }} style={styles.headerBandLogoImg} />
+              ) : (
+                <View style={[styles.headerBandLogoPlaceholder, { backgroundColor: colors.primary + '18' }]}>
+                  <Text style={[styles.headerBandLogoInitial, { color: colors.primary }]}>
+                    {getBandInitials(currentBand?.name)}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
 
-            {/* Centered Metadata / Quick Stats Badges */}
-            <View style={styles.headerBadgesRow}>
-              {/* Type Badge */}
-              <View style={[styles.headerMetaBadge, { backgroundColor: typeColor + '20' }]}>
-                <Ionicons 
-                  name={type === 'show' ? 'mic' : type === 'ensaio' ? 'musical-notes' : 'clipboard'} 
-                  size={11} 
-                  color={typeColor} 
+            {/* Coluna com as 2 linhas */}
+            <View style={styles.headerEventInfoCol}>
+              {/* Linha 1: Tag de Tipo (SHOW/ENSAIO/REPERTÓRIO) NA FRENTE + Nome do Evento */}
+              <View style={styles.headerEventNameRow}>
+                <Pressable
+                  onPress={() => setShowDetailsLayer(prev => !prev)}
+                  style={[
+                    styles.headerTypePill,
+                    {
+                      backgroundColor: typeColor + '20',
+                      borderColor: typeColor + '40',
+                    }
+                  ]}
+                  hitSlop={4}
+                >
+                  <Ionicons 
+                    name={type === 'show' ? 'mic' : type === 'ensaio' ? 'musical-notes' : 'clipboard'} 
+                    size={10.5} 
+                    color={typeColor} 
+                  />
+                  <Text style={[styles.headerTypePillText, { color: typeColor }]}>
+                    {type.toUpperCase()}
+                  </Text>
+                </Pressable>
+
+                <TextInput
+                  style={[
+                    styles.headerTitleInlineInput,
+                    { color: colors.text, fontSize: 16 }
+                  ]}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder={t('setlistNamePlaceholder') || 'Nome do Evento'}
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={200}
+                  autoComplete="off"
+                  importantForAutofill="no"
+                  textAlign="left"
                 />
-                <Text style={[styles.headerMetaBadgeText, { color: typeColor }]}>
-                  {type.toUpperCase()}
-                </Text>
               </View>
 
-              {/* Songs Count Badge */}
-              <View style={[styles.headerMetaBadge, { backgroundColor: colors.primary + '18' }]}>
-                <Ionicons name="list" size={11} color={colors.primary} />
-                <Text style={[styles.headerMetaBadgeText, { color: colors.primary }]}>
-                  {totalRealSongsCount} {t('songsBadge') || 'Músicas'}
-                </Text>
+              {/* Linha 2: Tags Abaixo (Cores Primária e Secundária) */}
+              <View style={styles.headerBadgesRow}>
+                {/* Tag de Músicas: SÓ O ÍCONE E O NÚMERO (Cor Primária) */}
+                <View style={[styles.headerMetaBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                  <Ionicons name="musical-notes" size={11} color={colors.primary} />
+                  <Text style={[styles.headerMetaBadgeText, { color: colors.primary }]}>
+                    {totalRealSongsCount}
+                  </Text>
+                </View>
+
+                {/* Tag de Duração (Cor Secundária) */}
+                {totalDurationStr ? (
+                  <View style={[styles.headerMetaBadge, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '35' }]}>
+                    <Ionicons name="time-outline" size={11} color={colors.secondary} />
+                    <Text style={[styles.headerMetaBadgeText, { color: colors.secondary }]}>
+                      {totalDurationStr}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Tag de Data Simplificada (Cor Primária) */}
+                {date ? (
+                  <View style={[styles.headerMetaBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                    <Ionicons name="calendar-outline" size={11} color={colors.primary} />
+                    <Text style={[styles.headerMetaBadgeText, { color: colors.primary }]}>
+                      {getCompactDate(date)}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Tag de Horário (Cor Secundária) */}
+                {time ? (
+                  <View style={[styles.headerMetaBadge, { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '35' }]}>
+                    <Ionicons name="alarm-outline" size={11} color={colors.secondary} />
+                    <Text style={[styles.headerMetaBadgeText, { color: colors.secondary, fontWeight: '800' }]}>
+                      {time}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Tag de Local (Cor Primária) */}
+                {local ? (
+                  <View style={[styles.headerMetaBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35', maxWidth: 110 }]}>
+                    <Ionicons name="location-outline" size={11} color={colors.primary} />
+                    <Text style={[styles.headerMetaBadgeText, { color: colors.primary }]} numberOfLines={1}>
+                      {local}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
-
-              {/* Duration Badge */}
-              {totalDurationStr ? (
-                <View style={[styles.headerMetaBadge, { backgroundColor: colors.secondary + '18' }]}>
-                  <Ionicons name="time-outline" size={11} color={colors.secondary} />
-                  <Text style={[styles.headerMetaBadgeText, { color: colors.secondary }]}>
-                    {totalDurationStr}
-                  </Text>
-                </View>
-              ) : null}
-
-              {/* Date Badge */}
-              {date ? (
-                <View style={[styles.headerMetaBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]}>
-                  <Ionicons name="calendar-outline" size={11} color={colors.textMuted} />
-                  <Text style={[styles.headerMetaBadgeText, { color: colors.textMuted }]}>
-                    {date}
-                  </Text>
-                </View>
-              ) : null}
             </View>
           </View>
         </View>
@@ -675,7 +779,7 @@ export default function SetlistDetailScreen({
                 color={colors.primary}
               />
               <Text style={[styles.detailsToggleTitle, { color: colors.text }]}>
-                {t('setlistTabDetails') || 'Detalhes do Setlist'}
+                {t('setlistTabDetails')}
               </Text>
             </View>
           </Pressable>
@@ -686,12 +790,12 @@ export default function SetlistDetailScreen({
                 {/* Row 1: Tipo do Setlist */}
                 <View style={{ marginBottom: 10 }}>
                   <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                    {t('typeText') || 'TIPO DO SETLIST'}
+                    {t('typeText')}
                   </Text>
                   <View style={styles.pillSelectorRow}>
                     {[
-                      { key: 'show', label: t('show') || 'Show', icon: 'mic-outline' },
-                      { key: 'ensaio', label: t('rehearsal') || 'Ensaio', icon: 'musical-notes-outline' }
+                      { key: 'show', label: t('show'), icon: 'mic-outline' },
+                      { key: 'ensaio', label: t('rehearsal'), icon: 'musical-notes-outline' }
                     ].map((item) => {
                       const isSelected = type === item.key;
                       const itemColor = getTypeColor(item.key);
@@ -732,7 +836,7 @@ export default function SetlistDetailScreen({
                 {bands.length > 0 && (
                   <View style={{ marginBottom: 10 }}>
                     <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                      {t('band') || 'BANDA'}
+                      {t('band')}
                     </Text>
                     <ScrollView
                       horizontal
@@ -775,11 +879,11 @@ export default function SetlistDetailScreen({
                   </View>
                 )}
 
-                {/* Row 3: Data & Local */}
+                {/* Row 3: Data & Horário */}
                 <View style={styles.formTwoColumns}>
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1.1 }}>
                     <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                      {t('dateLabel') || 'DATA'}
+                      {t('dateLabel')}
                     </Text>
                     <Pressable
                       onPress={() => setShowDatePicker(true)}
@@ -831,23 +935,83 @@ export default function SetlistDetailScreen({
                     )}
                   </View>
 
-                  <View style={{ flex: 1.2 }}>
+                  <View style={{ flex: 0.9 }}>
                     <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                      {t('localLabel') || 'LOCAL / EVENTO'}
+                      {t('timeLabel') || 'HORÁRIO'}
                     </Text>
-                    <TextInput
-                      style={[
+                    <Pressable
+                      onPress={() => setShowTimePicker(true)}
+                      style={({ pressed }) => [
                         styles.cleanInput,
-                        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
+                        {
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          opacity: pressed ? 0.7 : 1
+                        }
                       ]}
-                      value={local}
-                      onChangeText={setLocal}
-                      placeholder=""
-                      placeholderTextColor={colors.textMuted}
-                      autoComplete="off"
-                      importantForAutofill="no"
-                    />
+                    >
+                      <Text style={{ color: time ? colors.inputText : colors.textMuted, fontSize: 13, fontWeight: time ? '600' : '400' }}>
+                        {time || (t('timePlaceholder') || '--:--')}
+                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        {time ? (
+                          <Pressable hitSlop={6} onPress={(e) => { e.stopPropagation(); setTime(''); }}>
+                            <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+                          </Pressable>
+                        ) : null}
+                        <Ionicons name="time-outline" size={16} color={colors.primary} />
+                      </View>
+                    </Pressable>
+
+                    {showTimePicker && (
+                      <DateTimePicker
+                        value={(() => {
+                          if (time && time.includes(':')) {
+                            const [h, m] = time.split(':').map(n => parseInt(n, 10));
+                            const d = new Date();
+                            d.setHours(h || 0, m || 0, 0, 0);
+                            return d;
+                          }
+                          const d = new Date();
+                          d.setHours(20, 0, 0, 0);
+                          return d;
+                        })()}
+                        mode="time"
+                        is24Hour={true}
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={(event, selectedDate) => {
+                          setShowTimePicker(Platform.OS === 'ios');
+                          if (selectedDate && event.type !== 'dismissed') {
+                            const hh = String(selectedDate.getHours()).padStart(2, '0');
+                            const mm = String(selectedDate.getMinutes()).padStart(2, '0');
+                            setTime(`${hh}:${mm}`);
+                          }
+                        }}
+                      />
+                    )}
                   </View>
+                </View>
+
+                {/* Local */}
+                <View style={{ marginTop: 10 }}>
+                  <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                    {t('localLabel')}
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.cleanInput,
+                      { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
+                    ]}
+                    value={local}
+                    onChangeText={setLocal}
+                    placeholder=""
+                    placeholderTextColor={colors.textMuted}
+                    maxLength={200}
+                    autoComplete="off"
+                    importantForAutofill="no"
+                  />
                 </View>
 
                 {/* Row 4: Cachê & Observações */}
@@ -855,7 +1019,7 @@ export default function SetlistDetailScreen({
                   {type === 'show' && (
                     <View style={{ flex: 0.9 }}>
                       <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                        {t('cacheLabel') || 'CACHÊ (R$)'}
+                        {t('cacheLabel')}
                       </Text>
                       <TextInput
                         style={[
@@ -867,6 +1031,7 @@ export default function SetlistDetailScreen({
                         placeholder=""
                         placeholderTextColor={colors.textMuted}
                         keyboardType="numeric"
+                        maxLength={20}
                         autoComplete="off"
                         importantForAutofill="no"
                       />
@@ -875,7 +1040,7 @@ export default function SetlistDetailScreen({
 
                   <View style={{ flex: 1.5 }}>
                     <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                      {t('notesLabel') || 'OBSERVAÇÕES DO EVENTO'}
+                      {t('notesLabel')}
                     </Text>
                     <TextInput
                       style={[
@@ -886,6 +1051,7 @@ export default function SetlistDetailScreen({
                       onChangeText={setNotes}
                       placeholder=""
                       placeholderTextColor={colors.textMuted}
+                      maxLength={1000}
                       autoComplete="off"
                       importantForAutofill="no"
                     />
@@ -911,35 +1077,35 @@ export default function SetlistDetailScreen({
             >
               <Ionicons name="add-circle-outline" size={15} color="#fff" />
               <Text style={styles.roteiroBtnText}>
-                Música
+                {t('song')}
               </Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.roteiroBtn,
-                { backgroundColor: colors.secondary + '22' },
+                { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35', borderWidth: 1 },
                 pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] }
               ]}
               onPress={handleAddPause}
             >
-              <Ionicons name="pause-outline" size={15} color={colors.secondary} />
-              <Text style={[styles.roteiroBtnText, { color: colors.secondary }]}>
-                Pausa
+              <Ionicons name="pause-outline" size={15} color={colors.primary} />
+              <Text style={[styles.roteiroBtnText, { color: colors.primary }]}>
+                {t('pause')}
               </Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.roteiroBtn,
-                { backgroundColor: colors.warning + '22' },
+                { backgroundColor: colors.secondary + '18', borderColor: colors.secondary + '35', borderWidth: 1 },
                 pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] }
               ]}
               onPress={handleAddNote}
             >
-              <Ionicons name="document-text-outline" size={15} color={colors.warning} />
-              <Text style={[styles.roteiroBtnText, { color: colors.warning }]}>
-                Anotação
+              <Ionicons name="document-text-outline" size={15} color={colors.secondary} />
+              <Text style={[styles.roteiroBtnText, { color: colors.secondary }]}>
+                {t('note')}
               </Text>
             </Pressable>
           </View>
@@ -956,7 +1122,7 @@ export default function SetlistDetailScreen({
               <View style={styles.emptyRoteiroContainer}>
                 <Ionicons name="musical-notes-outline" size={38} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 8 }} />
                 <Text style={[styles.emptyRoteiroText, { color: colors.textMuted }]}>
-                  {t('noSongsInSetlistYet') || 'Nenhuma música no roteiro ainda.'}
+                  {t('noSongsInSetlistYet')}
                 </Text>
                 <Pressable
                   style={({ pressed }) => [
@@ -968,7 +1134,7 @@ export default function SetlistDetailScreen({
                 >
                   <Ionicons name="add" size={16} color={colors.primary} />
                   <Text style={{ fontSize: 12.5, fontWeight: '800', color: colors.primary }}>
-                    {t('addFirstSong') || 'Adicionar Músicas'}
+                    {t('addFirstSong')}
                   </Text>
                 </Pressable>
               </View>
@@ -1000,10 +1166,10 @@ export default function SetlistDetailScreen({
               <View style={styles.pickerHeader}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.pickerTitle, { color: colors.text }]}>
-                    {t('selectSongsForSetlist') || 'Selecionar Músicas'}
+                    {t('selectSongsForSetlist')}
                   </Text>
                   <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                    {selectedPickerSongIds.size} {t('selectedCount') || 'selecionada(s)'}
+                    {selectedPickerSongIds.size} {t('selectedCount')}
                   </Text>
                 </View>
                 <Pressable
@@ -1023,6 +1189,7 @@ export default function SetlistDetailScreen({
                   onChangeText={setPickerSearch}
                   placeholder=""
                   placeholderTextColor={colors.textMuted}
+                  maxLength={100}
                   autoComplete="off"
                   importantForAutofill="no"
                 />
@@ -1049,7 +1216,7 @@ export default function SetlistDetailScreen({
                     color={isAllFilteredSelected ? colors.primary : colors.textMuted} 
                   />
                   <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.text }}>
-                    {isAllFilteredSelected ? (t('deselectAll') || 'Desmarcar Todas') : (t('selectAllFiltered') || 'Marcar Todas Filtradas')}
+                    {isAllFilteredSelected ? t('deselectAll') : t('selectAllFiltered')}
                   </Text>
                 </Pressable>
               </View>
@@ -1058,7 +1225,7 @@ export default function SetlistDetailScreen({
               <ScrollView style={styles.pickerSongList} keyboardShouldPersistTaps="handled">
                 {filteredPickerSongs.length === 0 ? (
                   <Text style={{ textAlign: 'center', color: colors.textMuted, paddingVertical: 24, fontStyle: 'italic' }}>
-                    {t('noSongsFound') || 'Nenhuma música encontrada.'}
+                    {t('noSongsFoundInPicker')}
                   </Text>
                 ) : (
                   filteredPickerSongs.map((song) => {
@@ -1113,78 +1280,121 @@ export default function SetlistDetailScreen({
               >
                 <Ionicons name="checkmark-circle" size={17} color="#fff" />
                 <Text style={styles.pickerConfirmBtnText}>
-                  {t('addSelectedSongsBtn') || `ADICIONAR SELECIONADAS (${selectedPickerSongIds.size})`}
+                  {`${t('addSelectedCount')} (${selectedPickerSongIds.size})`}
                 </Text>
               </Pressable>
             </View>
           </View>
         </Modal>
 
-        {/* Modal: Custom Item Editor (Pausas e Anotações) */}
+        {/* Modal: Custom Item Editor (Pausas e Anotações) como BOTTOM SHEET */}
         {editingCustomIndex !== null && (
           <Modal
             visible={true}
             transparent={true}
-            animationType="fade"
-            onRequestClose={() => setEditingCustomIndex(null)}
+            animationType="slide"
+            onRequestClose={handleCloseCustomItemEditor}
           >
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={[styles.pickerOverlay, { backgroundColor: 'rgba(0,0,0,0.7)' }]}
+              style={styles.customBottomSheetOverlay}
             >
-              <View style={[styles.customEditorBox, { backgroundColor: colors.cardBackground }]}>
-                <View style={styles.pickerHeader}>
-                  <Text style={[styles.pickerTitle, { color: colors.text }]}>
-                    {selectedSongs[editingCustomIndex]?.id === -1 ? (t('editPause') || 'Editar Pausa') : (t('editNote') || 'Editar Anotação')}
-                  </Text>
-                  <Pressable onPress={() => setEditingCustomIndex(null)}>
-                    <Ionicons name="close" size={20} color={colors.danger} />
+              <Pressable style={styles.customBottomSheetBackdrop} onPress={handleCloseCustomItemEditor} />
+              <View style={[styles.customBottomSheetContent, { backgroundColor: colors.cardBackground, borderTopColor: colors.border }]}>
+                {/* Drag handle */}
+                <View style={[styles.bottomSheetDragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]} />
+
+                <View style={styles.bottomSheetHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons
+                      name={selectedSongs[editingCustomIndex]?.id === -1 ? "pause-circle" : "document-text"}
+                      size={20}
+                      color={selectedSongs[editingCustomIndex]?.id === -1 ? colors.primary : colors.secondary}
+                    />
+                    <Text style={[styles.bottomSheetTitle, { color: colors.text }]}>
+                      {selectedSongs[editingCustomIndex]?.id === -1 ? (t('editPauseTitle') || 'Configurar Pausa') : (t('editNoteTitle') || 'Configurar Anotação')}
+                    </Text>
+                  </View>
+                  <Pressable onPress={handleCloseCustomItemEditor} hitSlop={8}>
+                    <Ionicons name="close" size={20} color={colors.textMuted} />
                   </Pressable>
                 </View>
 
                 {selectedSongs[editingCustomIndex]?.id === -1 ? (
-                  <View style={{ marginBottom: 14 }}>
-                    <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                      {t('pauseDurationLabel') || 'DURAÇÃO DO CRONÔMETRO (Ex: 10 min, 05:00)'}
+                  <View style={{ marginBottom: 18, marginTop: 4 }}>
+                    <Text style={[styles.fieldLabel, { color: colors.primary }]}>
+                      {t('pauseDurationLabel') || 'DURAÇÃO DA PAUSA (Ex: 10 min, 05:00)'}
                     </Text>
                     <TextInput
-                      style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: colors.inputText }]}
+                      style={[
+                        styles.cleanInput,
+                        {
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                          color: colors.inputText,
+                          borderColor: colors.primary + '40',
+                          borderWidth: 1,
+                        }
+                      ]}
                       value={tempCustomDuration}
                       onChangeText={setTempCustomDuration}
-                      placeholder=""
+                      placeholder="10 min"
                       placeholderTextColor={colors.textMuted}
+                      maxLength={10}
                       autoFocus
                     />
                   </View>
                 ) : (
-                  <View style={{ marginBottom: 14 }}>
-                    <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                  <View style={{ marginBottom: 18, marginTop: 4 }}>
+                    <Text style={[styles.fieldLabel, { color: colors.secondary }]}>
                       {t('noteTextLabel') || 'TEXTO DA ANOTAÇÃO / RECADOS DE PALCO'}
                     </Text>
                     <TextInput
-                      style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: colors.inputText, minHeight: 60, textAlignVertical: 'top' }]}
+                      style={[
+                        styles.cleanInput,
+                        {
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                          color: colors.inputText,
+                          borderColor: colors.secondary + '40',
+                          borderWidth: 1,
+                          minHeight: 80,
+                          textAlignVertical: 'top',
+                          paddingTop: 10,
+                        }
+                      ]}
                       value={tempCustomNotes}
                       onChangeText={setTempCustomNotes}
-                      placeholder=""
+                      placeholder={t('notePlaceholder') || 'Digite sua anotação ou aviso...'}
                       placeholderTextColor={colors.textMuted}
                       multiline
+                      maxLength={1000}
                       autoFocus
                     />
                   </View>
                 )}
 
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.pickerConfirmBtn,
-                    { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
-                  ]}
-                  onPress={handleSaveCustomItem}
-                >
-                  <Ionicons name="checkmark" size={17} color="#fff" />
-                  <Text style={styles.pickerConfirmBtnText}>
-                    {t('confirm') || 'CONFIRMAR'}
-                  </Text>
-                </Pressable>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <Pressable
+                    style={[styles.bottomSheetCancelBtn, { borderColor: colors.border }]}
+                    onPress={handleCloseCustomItemEditor}
+                  >
+                    <Text style={{ color: colors.text, fontWeight: '700' }}>{t('cancel') || 'Cancelar'}</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      styles.bottomSheetSaveBtn,
+                      {
+                        backgroundColor: selectedSongs[editingCustomIndex]?.id === -1 ? colors.primary : colors.secondary
+                      }
+                    ]}
+                    onPress={handleSaveCustomItem}
+                  >
+                    <Ionicons name="checkmark" size={17} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                      {t('confirm') || 'Salvar'}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </KeyboardAvoidingView>
           </Modal>
@@ -1231,51 +1441,89 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  headerTitleCenterContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerInlineRow: {
+  headerEventContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 6,
+    gap: 12,
+  },
+  headerBandLogoBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    overflow: 'hidden',
     justifyContent: 'center',
-    flexWrap: 'nowrap',
-    maxWidth: '100%',
+    alignItems: 'center',
+  },
+  headerBandLogoImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
+  },
+  headerBandLogoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 24,
+  },
+  headerBandLogoInitial: {
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  headerEventInfoCol: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  headerEventNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerTypePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 7,
+    borderWidth: 1,
+  },
+  headerTypePillText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
   headerTitleInlineInput: {
+    flex: 1,
     fontWeight: '900',
     letterSpacing: -0.2,
     paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
-    textAlign: 'center',
-    flexShrink: 1,
-  },
-  headerParenthesesText: {
-    fontWeight: '800',
-    letterSpacing: -0.2,
-    flexShrink: 1,
+    textAlign: 'left',
   },
   headerBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 4,
+    gap: 5,
   },
   headerMetaBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
+    gap: 3.5,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 8,
   },
   headerMetaBadgeText: {
     fontSize: 10.5,
     fontWeight: '900',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
 
   // ===== LAYER 2: DETAILS =====
@@ -1496,16 +1744,60 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Custom Item Editor
-  customEditorBox: {
-    marginHorizontal: 16,
-    marginBottom: 'auto',
-    marginTop: 'auto',
-    borderRadius: 20,
-    padding: 20,
+  // Custom Item Bottom Sheet (Pausa & Anotação)
+  customBottomSheetOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  customBottomSheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  customBottomSheetContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     shadowColor: '#000',
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 10,
-    elevation: 10,
+    elevation: 12,
+  },
+  bottomSheetDragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 14,
+  },
+  bottomSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  bottomSheetTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+  },
+  bottomSheetCancelBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  bottomSheetSaveBtn: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
   },
 });

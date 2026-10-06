@@ -84,7 +84,7 @@ export default function SetlistDetailModal({
                 {setlist.name || t('detailTitle')}
               </Text>
               <Text style={[styles.bandSubtitle, { color: colors.primary }]} numberOfLines={1}>
-                {setlist.bandName || (language === 'en' ? 'No band associated' : language === 'es' ? 'Banda no asociada' : 'Banda não associada')}
+                {setlist.bandName || t('noBandAssociated')}
               </Text>
             </View>
             <Pressable 
@@ -101,14 +101,14 @@ export default function SetlistDetailModal({
               <View style={styles.infoRow}>
                 <Ionicons name="calendar-outline" size={15} color={colors.primary} style={{ width: 24, textAlign: 'center' }} />
                 <Text style={[styles.infoText, { color: colors.text }]}>
-                  {language === 'en' ? 'Date' : language === 'es' ? 'Fecha' : 'Data'}: <Text style={styles.infoBold}>{setlist.date}</Text>
+                  {t('dateText')}: <Text style={styles.infoBold}>{setlist.date}</Text>
                 </Text>
               </View>
               {setlist.local ? (
                 <View style={styles.infoRow}>
                   <Ionicons name="pin-outline" size={15} color={colors.primary} style={{ width: 24, textAlign: 'center' }} />
                   <Text style={[styles.infoText, { color: colors.text }]}>
-                    {language === 'en' ? 'Venue' : language === 'es' ? 'Lugar' : 'Local'}: <Text style={styles.infoBold}>{setlist.local}</Text>
+                    {t('venue')}: <Text style={styles.infoBold}>{setlist.local}</Text>
                   </Text>
                 </View>
               ) : null}
@@ -129,7 +129,7 @@ export default function SetlistDetailModal({
               {setlist.notes ? (
                 <View style={[styles.infoRow, { alignItems: 'flex-start' }]}>
                   <Text style={[styles.infoText, { color: colors.text, flex: 1, paddingLeft: 4 }]}>
-                    {language === 'en' ? 'Notes' : language === 'es' ? 'Notas' : 'Obs'}: <Text style={styles.infoBold}>{setlist.notes}</Text>
+                    {t('obsShort')}: <Text style={styles.infoBold}>{setlist.notes}</Text>
                   </Text>
                 </View>
               ) : null}
@@ -173,7 +173,7 @@ export default function SetlistDetailModal({
                 >
                   <Ionicons name="copy-outline" size={16} color={colors.primary} />
                   <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
-                    {t('createCopy') || 'Duplicar'}
+                    {t('createCopy')}
                   </Text>
                 </Pressable>
               ) : null}
@@ -181,7 +181,7 @@ export default function SetlistDetailModal({
 
             {/* Músicas */}
             <Text style={[styles.sectionLabel, { color: colors.text }]}>
-              {t('songs')} ({totalSongs}) {totalDuration && `• ${language === 'en' ? 'Duration' : language === 'es' ? 'Duración' : 'Tempo'}: ${totalDuration}`}
+              {t('songs')} ({totalSongs}) {totalDuration && `• ${t('durationShort')}: ${totalDuration}`}
             </Text>
 
             {totalSongs === 0 ? (
@@ -241,14 +241,14 @@ export default function SetlistDetailModal({
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                             <Ionicons name="pause-circle-outline" size={13} color={colors.secondary} />
                             <Text style={[styles.songName, { color: colors.secondary, fontWeight: '950' }]}>
-                              {(t('pauseTitle') || 'PAUSE').toUpperCase()}
+                              {(t('pauseTitle')).toUpperCase()}
                             </Text>
                           </View>
                         ) : isNote ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                             <Ionicons name="document-text-outline" size={13} color={colors.warning} />
                             <Text style={[styles.songName, { color: colors.warning, fontWeight: '900', fontStyle: 'italic', flex: 1 }]} numberOfLines={1}>
-                              {song.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}
+                              {song.customNotes || (t('noteTitle'))}
                             </Text>
                           </View>
                         ) : (
@@ -264,6 +264,7 @@ export default function SetlistDetailModal({
 
                             {showRehearsalInput && (
                               <TextInput
+                                maxLength={200}
                                 style={{ 
                                   backgroundColor: isDark ? 'rgba(0,0,0,0.15)' : '#fff', 
                                   color: colors.inputText, 

@@ -16,9 +16,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import QRCode from 'react-native-qrcode-svg';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { bandService } from '../services/bandService';
+import { songService } from '../services/songService';
 
 const { width, height } = Dimensions.get('window');
 const SCANNER_SIZE = Math.min(width * 0.72, 280);
@@ -51,6 +53,10 @@ export default function SyncModal({
   const [shareScope, setShareScope] = useState(null);
   const [availableBands, setAvailableBands] = useState([]);
   const [showBandPicker, setShowBandPicker] = useState(false);
+  const [availableSongs, setAvailableSongs] = useState([]);
+  const [selectedSongIds, setSelectedSongIds] = useState(new Set());
+  const [songSearchQuery, setSongSearchQuery] = useState('');
+  const [shareScopeStep, setShareScopeStep] = useState('options'); // 'options' | 'songs'
   const [generatingQr, setGeneratingQr] = useState(false);
   const [generatedSession, setGeneratedSession] = useState(null);
   const [qrTransferred, setQrTransferred] = useState(false);
@@ -125,9 +131,34 @@ export default function SyncModal({
       setGeneratedSession(null);
       setQrTransferred(false);
       setShareScope(null);
+      setShareScopeStep('options');
       setShowBandPicker(false);
 
       bandService.getAll().then(b => setAvailableBands(b || [])).catch(() => {});
+      
+      const loadInitialSongs = async () => {
+        try {
+          let s = [];
+          if (getAllDataForBackup) {
+            const b = await getAllDataForBackup();
+            if (b && b.songs && b.songs.length > 0) {
+              s = b.songs;
+            }
+          }
+          if (!s || s.length === 0) {
+            s = (await songService.getAll()) || [];
+          }
+          setAvailableSongs(s || []);
+          setSelectedSongIds(new Set((s || []).map(item => item.id)));
+        } catch (err) {
+          try {
+            const s = (await songService.getAll()) || [];
+            setAvailableSongs(s);
+            setSelectedSongIds(new Set(s.map(item => item.id)));
+          } catch (e) {}
+        }
+      };
+      loadInitialSongs();
 
       if (!permission?.granted) {
         requestPermission();
@@ -153,9 +184,71 @@ export default function SyncModal({
     setConnectedSession(null);
   };
 
+  const handleOpenSongPicker = async () => {
+    try {
+      let songs = availableSongs;
+      if (!songs || songs.length === 0) {
+        if (getAllDataForBackup) {
+          try {
+            const b = await getAllDataForBackup();
+            if (b && b.songs && b.songs.length > 0) {
+              songs = b.songs;
+            }
+          } catch (err) {}
+        }
+        if (!songs || songs.length === 0) {
+          songs = (await songService.getAll()) || [];
+        }
+        setAvailableSongs(songs || []);
+      }
+      if (songs && songs.length > 0) {
+        setSelectedSongIds(new Set(songs.map(s => s.id)));
+      }
+      setSongSearchQuery('');
+      setShareScopeStep('songs');
+    } catch (e) {
+      setShareScopeStep('songs');
+    }
+  };
+
+  const handleToggleSongSelection = (id) => {
+    setSelectedSongIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAllSongs = () => {
+    if (selectedSongIds.size === availableSongs.length && availableSongs.length > 0) {
+      setSelectedSongIds(new Set());
+    } else {
+      setSelectedSongIds(new Set(availableSongs.map(s => s.id)));
+    }
+  };
+
+  const handleConfirmSongSelection = () => {
+    if (selectedSongIds.size === 0) {
+      Alert.alert(t('error') || 'Erro', t('noSongsSelectedWarning') || 'Selecione pelo menos uma música para compartilhar.');
+      return;
+    }
+    const scope = {
+      type: 'selected_songs',
+      songIds: Array.from(selectedSongIds),
+      count: selectedSongIds.size,
+      total: availableSongs.length,
+    };
+    handleSelectShareScope(scope);
+  };
+
   const handleSelectShareScope = async (scope) => {
     setShareScope(scope);
     setShowBandPicker(false);
+    setShareScopeStep('options');
     await handleGenerateQrCode(scope);
   };
 
@@ -170,7 +263,25 @@ export default function SyncModal({
       const fullBackup = await getAllDataForBackup();
       let payloadToShare = fullBackup;
 
-      if (targetScope && typeof targetScope === 'object' && targetScope.bandId) {
+      if (targetScope && typeof targetScope === 'object' && targetScope.type === 'selected_songs') {
+        const chosenIds = new Set(targetScope.songIds || []);
+        const filteredSongs = (fullBackup.songs || []).filter(s => chosenIds.has(s.id));
+
+        payloadToShare = {
+          app: 'SetlistsAppBackup',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          scopeSongs: true,
+          summary: {
+            totalBands: 0,
+            totalSongs: filteredSongs.length,
+            totalSetlists: 0
+          },
+          bands: [],
+          songs: filteredSongs,
+          setlists: []
+        };
+      } else if (targetScope && typeof targetScope === 'object' && targetScope.bandId) {
         const bandId = targetScope.bandId;
         const bandName = targetScope.bandName || '';
 
@@ -194,6 +305,21 @@ export default function SyncModal({
           bands: filteredBands,
           songs: filteredSongs,
           setlists: filteredSetlists
+        };
+      } else if (targetScope === 'all_songs') {
+        payloadToShare = {
+          app: 'SetlistsAppBackup',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          scopeSongs: true,
+          summary: {
+            totalBands: 0,
+            totalSongs: (fullBackup.songs || []).length,
+            totalSetlists: 0
+          },
+          bands: [],
+          songs: fullBackup.songs || [],
+          setlists: []
         };
       }
 
@@ -219,7 +345,7 @@ export default function SyncModal({
         const sendResult = await sendRes.json();
 
         if (!sendResult || !sendResult.success) {
-          throw new Error(sendResult?.error || 'Falha ao enviar dados para a sessão');
+          throw new Error(sendResult?.error || t('sendDataFailed'));
         }
 
         const qrPayload = JSON.stringify({
@@ -313,7 +439,7 @@ export default function SyncModal({
     setStatusMessage(t('pullingData'));
 
     try {
-      const apiUrl = sessionInfo.apiUrl || SYNC_API_DEFAULT;
+      const apiUrl = SYNC_API_DEFAULT; // SECURITY: Never trust apiUrl from QR code
       const res = await fetch(`${apiUrl}?action=poll_data&pin=${sessionInfo.pin}&sessionId=${sessionInfo.sessionId || ''}&receiver=app`);
       const result = await res.json();
 
@@ -385,7 +511,7 @@ export default function SyncModal({
       const fullBackup = await getAllDataForBackup();
       setStatusMessage(t('transmittingToPc'));
 
-      const apiUrl = connectedSession.apiUrl || SYNC_API_DEFAULT;
+      const apiUrl = SYNC_API_DEFAULT; // SECURITY: Never trust apiUrl from external sources
       const res = await fetch(`${apiUrl}?action=send_data`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -423,7 +549,7 @@ export default function SyncModal({
     setStatusMessage(t('fetchingWebData'));
 
     try {
-      const apiUrl = connectedSession.apiUrl || SYNC_API_DEFAULT;
+      const apiUrl = SYNC_API_DEFAULT; // SECURITY: Never trust apiUrl from external sources
       const res = await fetch(`${apiUrl}?action=poll_data&pin=${connectedSession.pin}&sessionId=${connectedSession.sessionId || ''}&receiver=app`);
       const result = await res.json();
 
@@ -450,6 +576,15 @@ export default function SyncModal({
     }
   };
 
+  // Filtered songs list for picker
+  const filteredSongsList = availableSongs.filter(song => {
+    if (!songSearchQuery.trim()) return true;
+    const q = songSearchQuery.trim().toLowerCase();
+    const nameMatch = song.name && song.name.toLowerCase().includes(q);
+    const bandMatch = song.originalBand && song.originalBand.toLowerCase().includes(q);
+    return nameMatch || bandMatch;
+  });
+
   // Solid background colors
   const cardBg = isDark ? '#131b2e' : '#ffffff';
   const innerBg = isDark ? '#0b0f19' : '#f1f5f9';
@@ -458,7 +593,7 @@ export default function SyncModal({
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={[styles.card, { backgroundColor: cardBg, borderColor: borderColor }]}>
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor: borderColor }, shareScopeStep === 'songs' && { height: Math.min(height * 0.88, 640) }]}>
           
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: borderColor }]}>
@@ -482,7 +617,161 @@ export default function SyncModal({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={styles.bodyScroll}>
+          {shareScopeStep === 'songs' ? (
+            /* TELA INTEGRADA: SELEÇÃO DE MÚSICAS COM SCROLL DIRETO E COMPLETO */
+            <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14 }}>
+              {/* Top Bar: Voltar e Contador */}
+              <View style={styles.pickerTopBar}>
+                <TouchableOpacity
+                  style={[styles.backBtnPill, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}
+                  onPress={() => setShareScopeStep('options')}
+                  activeOpacity={0.75}
+                >
+                  <Ionicons name="arrow-back" size={16} color={colors.primary} />
+                  <Text style={[styles.backBtnText, { color: colors.primary }]}>
+                    {t('backBtn') || 'Voltar'}
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={[styles.counterBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                  <Ionicons name="musical-notes" size={13} color={colors.primary} />
+                  <Text style={[styles.counterBadgeText, { color: colors.primary }]}>
+                    {selectedSongIds.size} / {availableSongs.length} {t('selectedSongsCount')}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={{ marginBottom: 8 }}>
+                <Text style={[styles.scopePromptTitle, { color: colors.text, fontSize: 16, marginBottom: 2 }]}>
+                  {t('selectSongsToShareTitle')}
+                </Text>
+                <Text style={[styles.scopePromptDesc, { color: colors.textMuted }]}>
+                  {t('selectSongsToShareDesc')}
+                </Text>
+              </View>
+
+              {/* Campo de Busca de Músicas */}
+              <View style={[styles.songSearchInputBox, { backgroundColor: innerBg, borderColor: borderColor }]}>
+                <Ionicons name="search" size={16} color={colors.textMuted} />
+                <TextInput
+                  style={[styles.songSearchTextInput, { color: colors.text }]}
+                  placeholder={t('searchSongPlaceholder')}
+                  placeholderTextColor={colors.textMuted}
+                  value={songSearchQuery}
+                  onChangeText={setSongSearchQuery}
+                  autoComplete="off"
+                  maxLength={100}
+                />
+                {songSearchQuery ? (
+                  <TouchableOpacity onPress={() => setSongSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+
+              {/* Barra de Ação Rápida: Marcar Todas / Desmarcar Todas */}
+              <View style={[styles.selectAllToolbar, { borderBottomColor: borderColor }]}>
+                <TouchableOpacity
+                  style={styles.selectAllToggleBtn}
+                  onPress={handleToggleSelectAllSongs}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={selectedSongIds.size === availableSongs.length && availableSongs.length > 0 ? "checkbox" : (selectedSongIds.size > 0 ? "remove-circle" : "square-outline")}
+                    size={20}
+                    color={colors.primary}
+                  />
+                  <Text style={[styles.selectAllToggleText, { color: colors.primary }]}>
+                    {selectedSongIds.size === availableSongs.length && availableSongs.length > 0 ? t('deselectAll') : t('selectAll')}
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={{ fontSize: 11.5, color: colors.textMuted, fontWeight: '600' }}>
+                  {selectedSongIds.size > 0 ? `${selectedSongIds.size} selecionada(s)` : (t('noneSelected') || 'Nenhuma')}
+                </Text>
+              </View>
+
+              {/* Lista de Músicas com Checkbox - SCROLLVIEW NATIVO DIRETO COM FLEX: 1 */}
+              <ScrollView
+                style={{ flex: 1, marginVertical: 4 }}
+                contentContainerStyle={{ paddingBottom: 14 }}
+                showsVerticalScrollIndicator={true}
+                keyboardShouldPersistTaps="handled"
+              >
+                {filteredSongsList.length === 0 ? (
+                  <View style={{ padding: 30, alignItems: 'center' }}>
+                    <Ionicons name="musical-notes-outline" size={32} color={colors.textMuted} />
+                    <Text style={{ marginTop: 8, color: colors.textMuted, fontSize: 13, textAlign: 'center' }}>
+                      {availableSongs.length === 0 ? (t('noSongsCollection') || 'Nenhuma música cadastrada.') : (t('noSearchResults') || 'Nenhuma música encontrada.')}
+                    </Text>
+                  </View>
+                ) : (
+                  filteredSongsList.map(song => {
+                    const isChecked = selectedSongIds.has(song.id);
+                    return (
+                      <TouchableOpacity
+                        key={song.id}
+                        style={[
+                          styles.songRowCard,
+                          { borderBottomColor: borderColor },
+                          isChecked && { backgroundColor: colors.primary + '0e' }
+                        ]}
+                        onPress={() => handleToggleSongSelection(song.id)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name={isChecked ? "checkbox" : "square-outline"}
+                          size={22}
+                          color={isChecked ? colors.primary : colors.textMuted}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.songRowTitle, { color: colors.text }]} numberOfLines={1}>
+                            {song.name}
+                          </Text>
+                          {song.originalBand ? (
+                            <Text style={[styles.songRowArtist, { color: colors.textMuted }]} numberOfLines={1}>
+                              {song.originalBand}
+                            </Text>
+                          ) : null}
+                        </View>
+                        {song.tone ? (
+                          <View style={[styles.songTonePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                            <Text style={[styles.songToneText, { color: colors.primary }]}>{song.tone}</Text>
+                          </View>
+                        ) : null}
+                      </TouchableOpacity>
+                    );
+                  })
+                )}
+              </ScrollView>
+
+              {/* Rodapé Fixo */}
+              <View style={[styles.pickerFooterRow, { borderTopColor: borderColor }]}>
+                <TouchableOpacity
+                  style={[styles.pickerCancelBtn, { borderColor: borderColor, backgroundColor: innerBg }]}
+                  onPress={() => setShareScopeStep('options')}
+                >
+                  <Text style={[styles.pickerCancelBtnText, { color: colors.text }]}>{t('cancel') || 'Cancelar'}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.pickerConfirmBtn,
+                    { backgroundColor: colors.primary, opacity: selectedSongIds.size === 0 ? 0.5 : 1 }
+                  ]}
+                  onPress={handleConfirmSongSelection}
+                  disabled={selectedSongIds.size === 0}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="qr-code-outline" size={17} color="#fff" />
+                  <Text style={styles.pickerConfirmBtnText}>
+                    {(t('generateQrWithSongsBtn') || 'Gerar QR Code ({count})').replace('{count}', selectedSongIds.size)}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={styles.bodyScroll}>
             {/* Session Connected Action Panel */}
             {connectedSession ? (
               <View style={styles.connectedContainer}>
@@ -677,27 +966,28 @@ export default function SyncModal({
                         {/* Scope Badge */}
                         <View style={[styles.scopeBadgePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
                           <Ionicons
-                            name={shareScope === 'all' ? "library" : "people"}
+                            name={shareScope?.bandId ? "people" : (shareScope?.type === 'selected_songs' || shareScope === 'all_songs' ? "musical-notes" : "sparkles")}
                             size={14}
                             color={colors.primary}
                           />
                           <Text style={[styles.scopeBadgeText, { color: colors.primary }]} numberOfLines={1}>
-                            {shareScope === 'all'
-                              ? 'Compartilhando: Todas as Músicas'
-                              : `Compartilhando: Banda "${shareScope?.bandName || ''}"`}
+                            {shareScope?.bandId
+                              ? t('sharingBand').replace('{name}', shareScope?.bandName || '')
+                              : shareScope?.type === 'selected_songs'
+                              ? (t('sharingSelectedSongs') || 'Compartilhando {count} música(s)').replace('{count}', shareScope.count)
+                              : shareScope === 'all_songs'
+                              ? t('sharingAllSongs')
+                              : (t('shareAllFullTitle') || 'Tudo')}
                           </Text>
                         </View>
 
-                        {/* QR Code Image */}
+                        {/* QR Code Vector Local */}
                         <View style={styles.qrImageContainer}>
-                          <Image
-                            source={{
-                              uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-                                generatedSession.qrPayload
-                              )}`,
-                            }}
-                            style={styles.qrImage}
-                            resizeMode="contain"
+                          <QRCode
+                            value={generatedSession.qrPayload}
+                            size={180}
+                            backgroundColor="#ffffff"
+                            color="#000000"
                           />
                         </View>
 
@@ -721,10 +1011,10 @@ export default function SyncModal({
                         <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
                           <TouchableOpacity
                             style={[styles.refreshQrBtn, { borderColor: colors.primary, backgroundColor: colors.primary + '12' }]}
-                            onPress={() => { setGeneratedSession(null); setShareScope(null); }}
+                            onPress={() => { setGeneratedSession(null); setShareScope(null); setShareScopeStep('options'); }}
                           >
                             <Ionicons name="options-outline" size={15} color={colors.primary} />
-                            <Text style={[styles.refreshQrBtnText, { color: colors.primary }]}>Alterar Conteúdo</Text>
+                            <Text style={[styles.refreshQrBtnText, { color: colors.primary }]}>{t('changeContentBtn')}</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
@@ -736,16 +1026,164 @@ export default function SyncModal({
                           </TouchableOpacity>
                         </View>
                       </View>
+                    ) : shareScopeStep === 'songs' ? (
+                      /* TELA INTEGRADA: SELEÇÃO DE MÚSICAS SOBREPONDO O MODAL DE OPÇÕES */
+                      <View style={styles.songsPickerView}>
+                        {/* Top Bar: Voltar e Contador */}
+                        <View style={styles.pickerTopBar}>
+                          <TouchableOpacity
+                            style={[styles.backBtnPill, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}
+                            onPress={() => setShareScopeStep('options')}
+                            activeOpacity={0.75}
+                          >
+                            <Ionicons name="arrow-back" size={16} color={colors.primary} />
+                            <Text style={[styles.backBtnText, { color: colors.primary }]}>
+                              {t('backBtn') || 'Voltar'}
+                            </Text>
+                          </TouchableOpacity>
+
+                          <View style={[styles.counterBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                            <Ionicons name="musical-notes" size={13} color={colors.primary} />
+                            <Text style={[styles.counterBadgeText, { color: colors.primary }]}>
+                              {selectedSongIds.size} / {availableSongs.length} {t('selectedSongsCount')}
+                            </Text>
+                          </View>
+                        </View>
+
+                        <View style={{ marginBottom: 10 }}>
+                          <Text style={[styles.scopePromptTitle, { color: colors.text, fontSize: 16, marginBottom: 2 }]}>
+                            {t('selectSongsToShareTitle')}
+                          </Text>
+                          <Text style={[styles.scopePromptDesc, { color: colors.textMuted }]}>
+                            {t('selectSongsToShareDesc')}
+                          </Text>
+                        </View>
+
+                        {/* Campo de Busca de Músicas */}
+                        <View style={[styles.songSearchInputBox, { backgroundColor: innerBg, borderColor: borderColor }]}>
+                          <Ionicons name="search" size={16} color={colors.textMuted} />
+                          <TextInput
+                            style={[styles.songSearchTextInput, { color: colors.text }]}
+                            placeholder={t('searchSongPlaceholder')}
+                            placeholderTextColor={colors.textMuted}
+                            value={songSearchQuery}
+                            onChangeText={setSongSearchQuery}
+                            autoComplete="off"
+                            maxLength={100}
+                          />
+                          {songSearchQuery ? (
+                            <TouchableOpacity onPress={() => setSongSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                            </TouchableOpacity>
+                          ) : null}
+                        </View>
+
+                        {/* Barra de Ação Rápida: Marcar Todas / Desmarcar Todas */}
+                        <View style={[styles.selectAllToolbar, { borderBottomColor: borderColor }]}>
+                          <TouchableOpacity
+                            style={styles.selectAllToggleBtn}
+                            onPress={handleToggleSelectAllSongs}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons
+                              name={selectedSongIds.size === availableSongs.length && availableSongs.length > 0 ? "checkbox" : (selectedSongIds.size > 0 ? "remove-circle" : "square-outline")}
+                              size={20}
+                              color={colors.primary}
+                            />
+                            <Text style={[styles.selectAllToggleText, { color: colors.primary }]}>
+                              {selectedSongIds.size === availableSongs.length && availableSongs.length > 0 ? t('deselectAll') : t('selectAll')}
+                            </Text>
+                          </TouchableOpacity>
+
+                          <Text style={{ fontSize: 11.5, color: colors.textMuted, fontWeight: '600' }}>
+                            {selectedSongIds.size > 0 ? `${selectedSongIds.size} selecionada(s)` : (t('noneSelected') || 'Nenhuma')}
+                          </Text>
+                        </View>
+
+                        {/* Lista de Músicas com Checkbox */}
+                        <ScrollView style={styles.songsPickerScrollView} showsVerticalScrollIndicator={false}>
+                          {filteredSongsList.length === 0 ? (
+                            <View style={{ padding: 26, alignItems: 'center' }}>
+                              <Ionicons name="musical-notes-outline" size={32} color={colors.textMuted} />
+                              <Text style={{ marginTop: 8, color: colors.textMuted, fontSize: 13, textAlign: 'center' }}>
+                                {availableSongs.length === 0 ? (t('noSongsCollection') || 'Nenhuma música cadastrada.') : (t('noSearchResults') || 'Nenhuma música encontrada.')}
+                              </Text>
+                            </View>
+                          ) : (
+                            filteredSongsList.map(song => {
+                              const isChecked = selectedSongIds.has(song.id);
+                              return (
+                                <TouchableOpacity
+                                  key={song.id}
+                                  style={[
+                                    styles.songRowCard,
+                                    { borderBottomColor: borderColor },
+                                    isChecked && { backgroundColor: colors.primary + '0e' }
+                                  ]}
+                                  onPress={() => handleToggleSongSelection(song.id)}
+                                  activeOpacity={0.7}
+                                >
+                                  <Ionicons
+                                    name={isChecked ? "checkbox" : "square-outline"}
+                                    size={22}
+                                    color={isChecked ? colors.primary : colors.textMuted}
+                                  />
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={[styles.songRowTitle, { color: colors.text }]} numberOfLines={1}>
+                                      {song.name}
+                                    </Text>
+                                    {song.originalBand ? (
+                                      <Text style={[styles.songRowArtist, { color: colors.textMuted }]} numberOfLines={1}>
+                                        {song.originalBand}
+                                      </Text>
+                                    ) : null}
+                                  </View>
+                                  {song.tone ? (
+                                    <View style={[styles.songTonePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                                      <Text style={[styles.songToneText, { color: colors.primary }]}>{song.tone}</Text>
+                                    </View>
+                                  ) : null}
+                                </TouchableOpacity>
+                              );
+                            })
+                          )}
+                        </ScrollView>
+
+                        {/* Rodapé com Botões de Cancelar e Gerar QR Code */}
+                        <View style={[styles.pickerFooterRow, { borderTopColor: borderColor }]}>
+                          <TouchableOpacity
+                            style={[styles.pickerCancelBtn, { borderColor: borderColor, backgroundColor: innerBg }]}
+                            onPress={() => setShareScopeStep('options')}
+                          >
+                            <Text style={[styles.pickerCancelBtnText, { color: colors.text }]}>{t('cancel') || 'Cancelar'}</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.pickerConfirmBtn,
+                              { backgroundColor: colors.primary, opacity: selectedSongIds.size === 0 ? 0.5 : 1 }
+                            ]}
+                            onPress={handleConfirmSongSelection}
+                            disabled={selectedSongIds.size === 0}
+                            activeOpacity={0.85}
+                          >
+                            <Ionicons name="qr-code-outline" size={17} color="#fff" />
+                            <Text style={styles.pickerConfirmBtnText}>
+                              {(t('generateQrWithSongsBtn') || 'Gerar QR Code ({count})').replace('{count}', selectedSongIds.size)}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
                     ) : (
                       /* Prompt user to select what to share before generating QR */
                       <View style={styles.scopeSelectionWrapper}>
                         <View style={styles.scopePromptHeader}>
                           <Ionicons name="share-social-outline" size={32} color={colors.primary} />
                           <Text style={[styles.scopePromptTitle, { color: colors.text }]}>
-                            O que você quer compartilhar?
+                            {t('whatToShareTitle')}
                           </Text>
                           <Text style={[styles.scopePromptDesc, { color: colors.textMuted }]}>
-                            Escolha se quer enviar todas as suas músicas ou o conteúdo de uma banda específica
+                            {t('whatToShareDesc')}
                           </Text>
                         </View>
 
@@ -760,10 +1198,10 @@ export default function SyncModal({
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
-                              TUDO Completo
+                              {t('shareAllFullTitle')}
                             </Text>
                             <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
-                              Backup total: todas as bandas, repertórios, setlists, membros e finanças
+                              {t('shareAllFullDesc')}
                             </Text>
                           </View>
                           <Ionicons name="chevron-forward" size={18} color={colors.primary} />
@@ -772,7 +1210,7 @@ export default function SyncModal({
                         {/* Opção 2: Compartilhar Músicas (Toda Coleção) */}
                         <TouchableOpacity
                           style={[styles.scopeCardBtn, { backgroundColor: cardBg, borderColor: '#3b82f640' }]}
-                          onPress={() => handleSelectShareScope('all_songs')}
+                          onPress={handleOpenSongPicker}
                           activeOpacity={0.8}
                         >
                           <View style={[styles.scopeCardIconBox, { backgroundColor: '#3b82f618' }]}>
@@ -780,10 +1218,10 @@ export default function SyncModal({
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
-                              Compartilhar Músicas (Toda Coleção)
+                              {t('shareAllSongsTitle')}
                             </Text>
                             <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
-                              Apenas o seu acervo completo de músicas com letras e cifras
+                              {t('shareAllSongsDesc')}
                             </Text>
                           </View>
                           <Ionicons name="chevron-forward" size={18} color="#3b82f6" />
@@ -803,10 +1241,10 @@ export default function SyncModal({
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.scopeCardTitle, { color: colors.text }]}>
-                              Banda Específica (Repertório, Setlists e Membros)
+                              {t('shareBandSpecificTitle')}
                             </Text>
                             <Text style={[styles.scopeCardDesc, { color: colors.textMuted }]}>
-                              Envie o repertório, setlists e membros da banda escolhida
+                              {t('shareBandSpecificDesc')}
                             </Text>
                           </View>
                           <Ionicons name={showBandPicker ? "chevron-up" : "chevron-down"} size={18} color={colors.secondary} />
@@ -817,7 +1255,7 @@ export default function SyncModal({
                           <View style={[styles.bandPickerContainer, { backgroundColor: cardBg, borderColor: borderColor }]}>
                             {availableBands.length === 0 ? (
                               <Text style={{ fontSize: 12, color: colors.textMuted, fontStyle: 'italic', padding: 8, textAlign: 'center' }}>
-                                Nenhuma banda cadastrada ainda.
+                                {t('noBandsYet')}
                               </Text>
                             ) : (
                               availableBands.map(band => (
@@ -884,6 +1322,7 @@ export default function SyncModal({
               </>
             )}
           </ScrollView>
+          )}
 
         </View>
       </View>
@@ -1398,6 +1837,135 @@ const styles = StyleSheet.create({
   },
   scopeBadgeText: {
     fontSize: 11.5,
+    fontWeight: '800',
+  },  // Song Picker Integrated Styles
+  songsPickerView: {
+    width: '100%',
+  },
+  pickerTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  backBtnPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  backBtnText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  counterBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  counterBadgeText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  songSearchInputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 40,
+    marginBottom: 8,
+  },
+  songSearchTextInput: {
+    flex: 1,
+    fontSize: 13,
+    paddingVertical: 0,
+  },
+  selectAllToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    marginBottom: 4,
+  },
+  selectAllToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  selectAllToggleText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  songsPickerScrollView: {
+    maxHeight: 280,
+    marginBottom: 10,
+  },
+  songRowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderRadius: 10,
+  },
+  songRowTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  songRowArtist: {
+    fontSize: 11.5,
+    marginTop: 1,
+  },
+  songTonePill: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  songToneText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  pickerFooterRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+  },
+  pickerCancelBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pickerCancelBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  pickerConfirmBtn: {
+    flex: 2,
+    height: 44,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  pickerConfirmBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
     fontWeight: '800',
   },
 });

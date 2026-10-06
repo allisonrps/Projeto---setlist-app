@@ -140,7 +140,7 @@ export default function PulsingStageButton({
     );
   }
 
-  const buttonLabel = label || t('startStageBtn') || 'MODO PALCO';
+  const buttonLabel = label || t('startStageBtn');
   const iconSize = size === 'small' ? 14 : size === 'large' ? 20 : 16;
   const paddingVertical = size === 'small' ? 6 : size === 'large' ? 14 : 10;
   const paddingHorizontal = size === 'small' ? 14 : size === 'large' ? 26 : 18;

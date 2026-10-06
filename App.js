@@ -15,6 +15,7 @@ import {
   Image,
   Linking,
   Modal,
+  LayoutAnimation,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -22,14 +23,22 @@ import * as DocumentPicker from 'expo-document-picker';
 import { createTables } from './database/database';
 import { ThemeProvider, useTheme } from './hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from './services/api';
 import { bandService } from './services/bandService';
 import { songService } from './services/songService';
 import { setlistService } from './services/setlistService';
+import { musiciansService } from './services/musiciansService';
 
 // Componentes
 import BandCarousel from './components/BandCarousel';
 import SongListItem from './components/SongListItem';
 import SetlistCard from './components/SetlistCard';
+import LoginScreen from './components/LoginScreen';
+import ProfileScreen from './components/ProfileScreen';
+import NetworkScreen from './components/NetworkScreen';
+import NetworkComingSoon from './components/NetworkComingSoon';
 import SettingsModal from './components/SettingsModal';
 import SyncModal from './components/SyncModal';
 import ShareQrModal from './components/ShareQrModal';
@@ -46,6 +55,10 @@ import PerformanceMode from './components/PerformanceMode';
 import ImportModal from './components/ImportModal';
 import FeatureTutorialModal from './components/FeatureTutorialModal';
 import SplashScreen from './components/SplashScreen';
+import MusicianProfileModal from './components/MusicianProfileModal';
+import BandProfileModal from './components/BandProfileModal';
+import ShareAgendaModal from './components/ShareAgendaModal';
+import YearPickerModal from './components/YearPickerModal';
 import { LanguageProvider, useLanguage } from './hooks/useLanguage';
 
 const THEME_COLORS = [
@@ -176,6 +189,40 @@ const getMonthYearHeader = (dateStr, lang = 'pt') => {
     return `${months[monthNum]} ${year}`;
   }
   return lang === 'en' ? 'EVENTS' : lang === 'es' ? 'EVENTOS' : 'EVENTOS';
+};
+
+const getMonthInfo = (dateStr, lang = 'pt') => {
+  if (!dateStr || !dateStr.trim()) return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
+  const clean = dateStr.trim();
+  let year = 0;
+  let monthNum = -1;
+
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      year = parseInt(parts[0], 10);
+      monthNum = parseInt(parts[1], 10) - 1;
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      let yStr = parts[2];
+      if (yStr.length === 2) yStr = `20${yStr}`;
+      year = parseInt(yStr, 10);
+      monthNum = parseInt(parts[1], 10) - 1;
+    }
+  }
+
+  const monthsPt = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const monthsEs = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+  const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
+
+  if (monthNum >= 0 && monthNum < 12 && year) {
+    return { name: `${months[monthNum]} ${year}`, year, index: monthNum };
+  }
+  return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
 };
 
 const getBandInitials = (name) => {
@@ -600,7 +647,10 @@ function MainApp() {
   const isDark = colors.isDark;
 
   // Estados de navegação e abas
-  const [currentTab, setCurrentTab] = useState('home'); // 'home' | 'songs' | 'setlists'
+  const [currentTab, setCurrentTab] = useState('home');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [socialView, setSocialView] = useState('feed'); // 'feed' | 'profile'
+  const [userProfile, setUserProfile] = useState(null); // 'home' | 'songs' | 'setlists'
   const [selectedBandId, setSelectedBandId] = useState(null);
   const [showStats, setShowStats] = useState(false);
   const [statsBandId, setStatsBandId] = useState(null);
@@ -610,10 +660,23 @@ function MainApp() {
   const [songs, setSongs] = useState([]);
   const [allSongsUnfiltered, setAllSongsUnfiltered] = useState([]);
   const [showPastSetlists, setShowPastSetlists] = useState(false);
+  const [expandedPastMonths, setExpandedPastMonths] = useState([]);
+  const [selectedHomeEventYear, setSelectedHomeEventYear] = useState(new Date().getFullYear());
+  const [showHomeYearPicker, setShowHomeYearPicker] = useState(false);
+  const [showHomeRevenue, setShowHomeRevenue] = useState(false);
+  const [showWebEditorCard, setShowWebEditorCard] = useState(false);
+  const [showBackupCard, setShowBackupCard] = useState(false);
+  const [showAboutCard, setShowAboutCard] = useState(false);
+  const [showThemeCard, setShowThemeCard] = useState(false);
+  const [showLanguageCard, setShowLanguageCard] = useState(false);
   const [setlists, setSetlists] = useState([]);
   const [songStyles, setSongStyles] = useState([]); // Lista de gêneros/estilos existentes para filtros
   const [dbReady, setDbReady] = useState(false);
   const [splashFinished, setSplashFinished] = useState(false);
+
+  // Convites Recebidos de Bandas / Projetos
+  const [receivedInvites, setReceivedInvites] = useState([]);
+  const [inviteReplies, setInviteReplies] = useState({});
 
   // Estados de busca e filtros
   const [searchQuery, setSearchQuery] = useState('');
@@ -642,6 +705,12 @@ function MainApp() {
   const [shareQrItem, setShareQrItem] = useState(null);
   const [selectedTutorialFeature, setSelectedTutorialFeature] = useState(null);
   const [hideFinancialValues, setHideFinancialValues] = useState(true);
+  const [showHomeFinances, setShowHomeFinances] = useState(false);
+  const [selectedMusicianProfile, setSelectedMusicianProfile] = useState(null);
+  const [showMusicianProfileModal, setShowMusicianProfileModal] = useState(false);
+  const [selectedBandProfile, setSelectedBandProfile] = useState(null);
+  const [showBandProfileModal, setShowBandProfileModal] = useState(false);
+  const [showShareHomeAgendaModal, setShowShareHomeAgendaModal] = useState(false);
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -695,7 +764,43 @@ function MainApp() {
       await createTables();
       console.log('Banco de dados inicializado com sucesso.');
       await reloadAllData();
-      setDbReady(true);
+      try {
+        const token = await AsyncStorage.getItem('jwt_token');
+        if (token) {
+          // Check if JWT is expired by decoding the payload
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.exp && payload.exp * 1000 > Date.now()) {
+              setIsLoggedIn(true);
+              try {
+                const isComp = await AsyncStorage.getItem('user_profile_completed');
+                if (isComp !== 'true') {
+                  const cached = await AsyncStorage.getItem('user_profile_cache');
+                  if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+                      await AsyncStorage.setItem('user_profile_completed', 'true');
+                    } else {
+                      setSocialView('profile');
+                    }
+                  } else {
+                    setSocialView('profile');
+                  }
+                }
+              } catch (e) {}
+            } else {
+              // Token expired, clean up
+              await AsyncStorage.removeItem('jwt_token');
+              await AsyncStorage.removeItem('user_info');
+            }
+          } catch (decodeErr) {
+            // Invalid token format, clean up
+            await AsyncStorage.removeItem('jwt_token');
+            await AsyncStorage.removeItem('user_info');
+          }
+        }
+      } catch (authErr) {}
+      setTimeout(() => setDbReady(true), 2500); // Forar ver a splash por pelo menos 2.5s
     } catch (error) {
       console.error('Erro na inicialização do aplicativo:', error);
     }
@@ -718,10 +823,11 @@ function MainApp() {
             return {
               ...b,
               songsCount: bSongs ? bSongs.length : 0,
-              membersCount: (bMembers || []).filter(m => (m.status || 'active') === 'active').length,
+              membersCount: (bMembers || []).filter(m => (m.status === 'active' || m.status === 'accepted' || (!m.status && m.status !== 'inactive' && m.status !== 'pending' && m.status !== 'rejected')) && m.status !== 'pending' && m.status !== 'rejected' && m.status !== 'inactive').length,
               styles: Array.from(new Set((bSongs || []).flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean)))).slice(0, 3),
               finances: bFinances || [],
-              songsList: bSongs || []
+              songsList: bSongs || [],
+              members: bMembers || []
             };
           } catch (e) {
             return b;
@@ -790,6 +896,22 @@ function MainApp() {
       setSetlists(fullSetlists);
       setSongStyles(allStyles);
 
+      try {
+        const cachedProfile = await AsyncStorage.getItem('user_profile_cache');
+        const userInfo = await AsyncStorage.getItem('user_info');
+        const savedDisplayName = await AsyncStorage.getItem('user_display_name');
+        let profileObj = null;
+        if (cachedProfile) {
+          try { profileObj = JSON.parse(cachedProfile); } catch (e) {}
+        } else if (userInfo) {
+          try { profileObj = JSON.parse(userInfo); } catch (e) {}
+        }
+        if (savedDisplayName && profileObj) {
+          profileObj.displayName = savedDisplayName;
+        }
+        if (profileObj) setUserProfile(profileObj);
+      } catch (e) {}
+
       // Sincronizar activeSetlist para que mudanças feitas no Modo Palco reflitam na tela sem reiniciá-lo
       if (activeSetlist) {
         const updated = fullSetlists.find(s => s.id === activeSetlist.id);
@@ -806,9 +928,280 @@ function MainApp() {
           }
         }
       }
+      await loadReceivedInvites();
     } catch (error) {
       console.error('Erro ao recarregar dados:', error);
     }
+  };
+
+  const loadReceivedInvites = async () => {
+    try {
+      const invs = await musiciansService.getInvitations();
+      const userCachedStr = await AsyncStorage.getItem('user_profile_cache');
+      const userInfoStr = await AsyncStorage.getItem('user_info');
+      let currentUsername = (userProfile?.username || '').toLowerCase().replace(/^@+/, '').trim();
+      if (!currentUsername && userCachedStr) {
+        try { currentUsername = (JSON.parse(userCachedStr).username || '').toLowerCase().replace(/^@+/, '').trim(); } catch (e) {}
+      }
+      if (!currentUsername && userInfoStr) {
+        try { currentUsername = (JSON.parse(userInfoStr).username || '').toLowerCase().replace(/^@+/, '').trim(); } catch (e) {}
+      }
+
+      // Filtrar: exibir SOMENTE convites direcionados ao usuário logado!
+      // Se o usuário foi quem enviou o convite para outro músico, o convite NÃO deve aparecer para ele aceitar/recusar.
+      const userInvites = (invs || []).filter(inv => {
+        const invitedUser = String(inv.invitedUsername || '').toLowerCase().replace(/^@+/, '').trim();
+        if (invitedUser === 'me' || invitedUser === 'you' || invitedUser === 'você' || invitedUser === 'voce') return true;
+        if (currentUsername && invitedUser === currentUsername) return true;
+        return false;
+      });
+
+      setReceivedInvites(userInvites);
+    } catch (e) {
+      console.error('Error loading received invites:', e);
+    }
+  };
+
+  const handleAcceptInvite = async (invitation) => {
+    try {
+      const replyMsg = inviteReplies[invitation.id] || '';
+
+      // Check if band already exists in user's bands
+      const allBands = await bandService.getAll();
+      let targetBand = allBands.find(b => 
+        (invitation.bandId && b.id === invitation.bandId) ||
+        (b.name && b.name.toLowerCase() === (invitation.bandName || '').toLowerCase())
+      );
+
+      let targetBandId;
+
+      if (targetBand) {
+        targetBandId = targetBand.id;
+      } else {
+        // Create the band in my_bands so user has full access
+        targetBandId = await bandService.insert(
+          invitation.bandName || 'Nova Banda',
+          invitation.bandImage || '',
+          new Date().getFullYear().toString(),
+          '',
+          'cover',
+          1,
+          0,
+          invitation.city || 'São Paulo',
+          invitation.state || 'SP',
+          invitation.country || 'Brasil',
+          JSON.stringify(invitation.genres || ['Rock', 'Indie', 'Pop'])
+        );
+
+        // Add band members:
+        if (Array.isArray(invitation.members) && invitation.members.length > 0) {
+          // Add all members specified in the invitation
+          for (const m of invitation.members) {
+            const isUser = m.status === 'pending' || m.username === 'me' || m.id === 'm4' || (m.name || '').toLowerCase() === 'você';
+            const memberStatus = isUser ? 'active' : (m.status || 'active');
+            const memberRole = isUser ? (invitation.role || m.role || 'Músico') : (m.role || 'Integrante');
+            const memberName = isUser ? (invitation.invitedName || m.name || 'Você') : m.name;
+            const memberUser = isUser ? (invitation.invitedUsername || m.username || 'me') : (m.username || '');
+            const memberSince = (m.since && m.since !== 'Pendente') ? m.since : new Date().getFullYear().toString();
+            await bandService.addBandMember(
+              targetBandId,
+              memberName,
+              memberRole,
+              m.phone || '',
+              memberSince,
+              '',
+              memberStatus,
+              '[]',
+              memberUser
+            );
+          }
+        } else {
+          // 1. Inviter / Band Leader
+          await bandService.addBandMember(
+            targetBandId,
+            invitation.senderName || 'Líder da Banda',
+            'Líder / Guitarrista',
+            '',
+            new Date().getFullYear().toString(),
+            '',
+            'active',
+            '[]',
+            invitation.senderUsername || 'lider_banda'
+          );
+
+          // 2. Current User (You)
+          await bandService.addBandMember(
+            targetBandId,
+            invitation.invitedName || 'Você',
+            invitation.role || 'Músico',
+            '',
+            new Date().getFullYear().toString(),
+            '',
+            'active',
+            '[]',
+            invitation.invitedUsername || 'me'
+          );
+        }
+
+        // Add initial repertoire from songs database
+        const existingSongs = await songService.getAll();
+        if (existingSongs && existingSongs.length > 0) {
+          const songIds = existingSongs.slice(0, 4).map(s => s.id);
+          await bandService.addSongsToBand(targetBandId, songIds);
+        }
+
+        // Add initial agenda item (show/setlist)
+        try {
+          const futureDate = new Date();
+          futureDate.setDate(futureDate.getDate() + 14);
+          const showDateStr = futureDate.toISOString().split('T')[0];
+          await setlistService.insert(
+            `Show de Estreia - ${invitation.bandName}`,
+            'show',
+            targetBandId,
+            showDateStr,
+            'Bar & Pub Rock',
+            '1200',
+            'Primeiro show oficial com a nova formação da banda!'
+          );
+        } catch (e) {}
+
+        // Add initial financial entry
+        try {
+          await bandService.addFinancialEntry(
+            targetBandId,
+            'Cachê Show de Estreia',
+            1200,
+            'income',
+            new Date().toISOString().split('T')[0],
+            'pending',
+            'Cachê previsto para o show de estreia'
+          );
+        } catch (e) {}
+      }
+
+      const now = new Date();
+      const todayFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+
+      // If invitation had a bandMemberId associated in database, activate it
+      if (invitation.bandMemberId) {
+        await bandService.updateMemberStatusAndReply(invitation.bandMemberId, 'active', replyMsg, todayFormatted);
+      } else if (targetBandId) {
+        // Fallback: locate member in band by username or name to ensure they are set to active
+        try {
+          const bMembers = await bandService.getBandMembers(targetBandId);
+          const targetMember = bMembers.find(m => 
+            (invitation.invitedUsername && m.username && m.username.toLowerCase() === invitation.invitedUsername.toLowerCase()) ||
+            (invitation.invitedName && m.name && m.name.toLowerCase() === invitation.invitedName.toLowerCase()) ||
+            (m.status === 'pending')
+          );
+          if (targetMember) {
+            await bandService.updateMemberStatusAndReply(targetMember.id, 'active', replyMsg, todayFormatted);
+          }
+        } catch (err) {}
+      }
+
+      // Mark invitation as accepted
+      await musiciansService.respondToInvitation(invitation.id, 'accepted', replyMsg);
+      await reloadAllData();
+      await loadReceivedInvites();
+
+      // Find the accepted band to offer direct access
+      const updatedBands = await bandService.getAll();
+      const acceptedBand = updatedBands.find(b => b.id === targetBandId || (b.name && b.name.toLowerCase() === (invitation.bandName || '').toLowerCase()));
+
+      Alert.alert(
+        '🎉 Convite Aceito!',
+        `Você agora faz parte da banda "${invitation.bandName}"! Você tem acesso completo ao repertório, integrantes, agenda e financeiro.`,
+        [
+          {
+            text: 'Acessar Banda',
+            onPress: () => {
+              if (acceptedBand) {
+                setActiveBandDetail(acceptedBand);
+              }
+            }
+          }
+        ]
+      );
+    } catch (err) {
+      console.error('Erro ao aceitar convite:', err);
+      Alert.alert('Erro', 'Não foi possível aceitar o convite.');
+    }
+  };
+
+  const handleRejectInvite = (invitation) => {
+    Alert.alert(
+      'Recusar Convite',
+      `Deseja realmente recusar o convite para a banda "${invitation.bandName}"? O card de convite será removido.`,
+      [
+        { text: 'Voltar', style: 'cancel' },
+        {
+          text: 'Recusar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete the invitation so the card disappears ("some")
+              await musiciansService.deleteInvitation(invitation.id);
+              if (invitation.bandMemberId) {
+                try {
+                  await bandService.deleteBandMember(invitation.bandMemberId);
+                } catch (e) {}
+              }
+              await loadReceivedInvites();
+              await reloadAllData();
+              Alert.alert('Convite Cancelado', `Você recusou o convite para a banda "${invitation.bandName}". O card foi removido.`);
+            } catch (err) {
+              console.error('Erro ao recusar convite:', err);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteInvite = async (inviteId) => {
+    await musiciansService.deleteInvitation(inviteId);
+    await loadReceivedInvites();
+  };
+
+  const handleOpenBandPublicProfile = (bandOrProject) => {
+    if (!bandOrProject) return;
+    if (showMusicianProfileModal) {
+      setShowMusicianProfileModal(false);
+    }
+    const bName = bandOrProject.bandName || bandOrProject.name || '';
+    
+    // Check if it's already in user's bands
+    const match = (bands || []).find(b =>
+      (bandOrProject.bandId && b.id === bandOrProject.bandId) ||
+      (bandOrProject.id && b.id === bandOrProject.id) ||
+      (b.name && bName && b.name.toLowerCase() === bName.toLowerCase())
+    );
+
+    let bandData;
+    if (match) {
+      bandData = { ...match, ...bandOrProject, id: match.id, name: match.name, bandName: match.name };
+    } else {
+      bandData = {
+        id: bandOrProject.bandId || bandOrProject.id,
+        name: bName,
+        bandName: bName,
+        imageUri: bandOrProject.imageUri || bandOrProject.logo || bandOrProject.bandImage || '',
+        bandImage: bandOrProject.imageUri || bandOrProject.logo || bandOrProject.bandImage || '',
+        city: bandOrProject.city,
+        state: bandOrProject.state,
+        country: bandOrProject.country,
+        genres: bandOrProject.genres || bandOrProject.styles || [],
+        description: bandOrProject.description || '',
+        members: bandOrProject.members || [],
+        songs: bandOrProject.songs || [],
+        schedule: bandOrProject.schedule || bandOrProject.agenda || []
+      };
+    }
+
+    setSelectedBandProfile(bandData);
+    setShowBandProfileModal(true);
   };
 
   // Recarregar músicas sempre que a busca, tags ou ordenação mudarem
@@ -824,15 +1217,40 @@ function MainApp() {
   const handleSaveBand = async (bandData) => {
     try {
       if (editingBand) {
-        await bandService.update(editingBand.id, bandData.name, bandData.imageUri, bandData.startDate, bandData.endDate);
+        await bandService.update(
+          editingBand.id,
+          bandData.name,
+          bandData.imageUri,
+          bandData.startDate,
+          bandData.endDate,
+          bandData.bandType,
+          bandData.isCover,
+          bandData.isAutoral,
+          bandData.city,
+          bandData.state,
+          bandData.country,
+          bandData.genres
+        );
       } else {
-        await bandService.insert(bandData.name, bandData.imageUri, bandData.startDate, bandData.endDate);
+        await bandService.insert(
+          bandData.name,
+          bandData.imageUri,
+          bandData.startDate,
+          bandData.endDate,
+          bandData.bandType,
+          bandData.isCover,
+          bandData.isAutoral,
+          bandData.city,
+          bandData.state,
+          bandData.country,
+          bandData.genres
+        );
       }
       await reloadAllData();
       setShowBandModal(false);
       setEditingBand(null);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar a banda.');
+      Alert.alert(t('error') || 'Erro', t('errorSavingBand') || 'Não foi possível salvar a banda.');
     }
   };
 
@@ -845,12 +1263,12 @@ function MainApp() {
     const bandId = typeof bandTarget === 'object' ? bandTarget.id : bandTarget;
     const bandName = typeof bandTarget === 'object' ? bandTarget.name : 'esta banda';
     Alert.alert(
-      'Confirmar Exclusão',
-      `Deseja realmente excluir a banda "${bandName}"? Todos os membros e lançamentos financeiros desta banda serão excluídos.`,
+      t('confirmDeleteBandTitle') || 'Confirmar Exclusão',
+      (t('confirmDeleteBandMsg') || 'Deseja realmente excluir a banda "{name}"? Todos os membros e lançamentos financeiros desta banda serão excluídos.').replace('{name}', bandName),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('cancel') || 'Cancelar', style: 'cancel' },
         {
-          text: 'Excluir',
+          text: t('delete') || 'Excluir',
           style: 'destructive',
           onPress: async () => {
             try {
@@ -861,7 +1279,7 @@ function MainApp() {
               await reloadAllData();
             } catch (err) {
               console.error('Error deleting band:', err);
-              Alert.alert('Erro', 'Não foi possível excluir a banda.');
+              Alert.alert(t('error') || 'Erro', t('errorDeletingBand') || 'Não foi possível excluir a banda.');
             }
           },
         },
@@ -933,7 +1351,7 @@ function MainApp() {
         setEditingSongFromBandDetail(null);
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar a música.');
+      Alert.alert(t('error') || 'Erro', t('errorSavingSong') || 'Não foi possível salvar a música.');
     }
   };
 
@@ -991,17 +1409,20 @@ function MainApp() {
   // ===== AÇÕES SETLISTS =====
   const handleSaveSetlist = async (setlistData) => {
     try {
-      if (setlistData && setlistData.id) {
+      const setlistId = setlistData?.id || editingSetlist?.id;
+      const cleanCache = setlistData?.cachê || setlistData?.cache || setlistData?.cacheê || '';
+      if (setlistId) {
         await setlistService.update(
-          setlistData.id,
+          setlistId,
           setlistData.name,
           setlistData.type,
           setlistData.myBandId,
           setlistData.date,
           setlistData.local,
-          setlistData.cachê,
+          cleanCache,
           setlistData.notes,
-          setlistData.songIds
+          setlistData.songIds,
+          setlistData.time || ''
         );
       } else {
         await setlistService.insert(
@@ -1010,9 +1431,10 @@ function MainApp() {
           setlistData.myBandId,
           setlistData.date,
           setlistData.local,
-          setlistData.cachê,
+          cleanCache,
           setlistData.notes,
-          setlistData.songIds
+          setlistData.songIds,
+          setlistData.time || ''
         );
       }
       await reloadAllData();
@@ -1024,7 +1446,7 @@ function MainApp() {
         setEditingSetlistFromBandDetail(null);
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar o setlist.');
+      Alert.alert(t('error') || 'Erro', t('errorSavingSetlist') || 'Não foi possível salvar o setlist.');
     }
   };
 
@@ -1094,7 +1516,7 @@ function MainApp() {
         bandName: setlist.bandName,
         date: setlist.date,
         local: setlist.local,
-        cachê: setlist.cachê,
+        cacheê: setlist.cacheê,
         notes: setlist.notes,
         songs: (setlist.songs || []).map(song => ({
           name: song.name,
@@ -1124,7 +1546,7 @@ function MainApp() {
       setShowShareOptionsModal(true);
     } catch (error) {
       console.error('Erro ao abrir opções de compartilhamento do setlist:', error);
-      Alert.alert(t('error') || 'Erro', 'Não foi possível preparar o compartilhamento.');
+      Alert.alert(t('error') || 'Erro', t('errorPreparingShare') || 'Não foi possível preparar o compartilhamento.');
     }
   };
 
@@ -1227,7 +1649,7 @@ function MainApp() {
       setShowShareOptionsModal(true);
     } catch (error) {
       console.error('Erro ao abrir opções de compartilhamento da música:', error);
-      Alert.alert(t('error') || 'Erro', 'Não foi possível preparar o compartilhamento.');
+      Alert.alert(t('error') || 'Erro', t('errorPreparingShare') || 'Não foi possível preparar o compartilhamento.');
     }
   };
 
@@ -1270,9 +1692,11 @@ function MainApp() {
           const blob = new Blob([jsonStr], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName;
-          link.click();
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
           URL.revokeObjectURL(url);
 
           if (navigator.clipboard) {
@@ -1282,7 +1706,7 @@ function MainApp() {
             Alert.alert(t('success') || 'Sucesso', `Arquivo "${fileName}" baixado com sucesso!`);
           }
         } else {
-          const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+          const fileUri = `${FileSystem.cacheeDirectory}${fileName}`;
           await FileSystem.writeAsStringAsync(fileUri, jsonStr, { encoding: 'utf8' });
 
           if (await Sharing.isAvailableAsync()) {
@@ -1297,7 +1721,7 @@ function MainApp() {
         }
       } catch (err) {
         console.error('Erro ao compartilhar arquivo JSON:', err);
-        Alert.alert(t('error') || 'Erro', 'Não foi possível compartilhar o arquivo.');
+        Alert.alert(t('error') || 'Erro', t('errorSharingFile') || 'Não foi possível compartilhar o arquivo.');
       }
     } else if (option === 'text') {
       try {
@@ -1334,7 +1758,7 @@ function MainApp() {
   const handleImportSong = async (importCode) => {
     try {
       if (!importCode || !importCode.trim()) {
-        Alert.alert('Erro', 'Código de importação inválido ou vazio.');
+        Alert.alert(t('error') || 'Erro', t('invalidImportCode') || 'Código de importação inválido ou vazio.');
         return false;
       }
 
@@ -1350,7 +1774,7 @@ function MainApp() {
       }
 
       if (!jsonData || jsonData.app !== 'SetlistsAppSong') {
-        Alert.alert('Erro', 'Código ou arquivo não corresponde a uma música válida do Setlist Band Manager.');
+        Alert.alert(t('error') || 'Erro', t('invalidSongCode') || 'Código ou arquivo não corresponde a uma música válida do Setlist Band Manager.');
         return false;
       }
 
@@ -1403,12 +1827,12 @@ function MainApp() {
         await songService.syncLinks(songId, newSong.links);
       }
 
-      Alert.alert('Sucesso', `Música "${newSong.name}" importada com sucesso!`);
+      Alert.alert(t('success') || 'Sucesso', (t('songImportedSuccess') || 'Música "{name}" importada com sucesso!').replace('{name}', newSong.name));
       await reloadAllData();
       return true;
     } catch (error) {
       console.error('Erro ao importar música:', error);
-      Alert.alert('Erro', 'Não foi possível decodificar o arquivo de música. Verifique a integridade dos dados.');
+      Alert.alert(t('error') || 'Erro', t('errorDecodingSongFile') || 'Não foi possível decodificar o arquivo de música. Verifique a integridade dos dados.');
       return false;
     }
   };
@@ -1475,19 +1899,21 @@ function MainApp() {
             const blob = new Blob([jsonStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            link.click();
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
             URL.revokeObjectURL(url);
 
             if (navigator.clipboard) {
               await navigator.clipboard.writeText(jsonStr);
-              Alert.alert('Sucesso', `Backup criado com sucesso! (${fileName}) e copiado para a área de transferência!`);
+              Alert.alert(t('success') || 'Sucesso', `${t('backupCreatedAlert') || 'Backup criado com sucesso!'} (${fileName}) ${t('codeCopied') || 'e copiado para a área de transferência!'}`);
             } else {
-              Alert.alert('Sucesso', `Backup criado com sucesso! (${fileName})`);
+              Alert.alert(t('success') || 'Sucesso', `${t('backupCreatedAlert') || 'Backup criado com sucesso!'} (${fileName})`);
             }
           } else {
-            const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+            const fileUri = `${FileSystem.cacheeDirectory}${fileName}`;
             await FileSystem.writeAsStringAsync(fileUri, jsonStr, { encoding: FileSystem.EncodingType.UTF8 });
 
             if (await Sharing.isAvailableAsync()) {
@@ -1502,29 +1928,29 @@ function MainApp() {
           }
         } catch (backupErr) {
           console.error('Erro ao salvar arquivo de backup:', backupErr);
-          Alert.alert('Erro', 'Não foi possível salvar o arquivo de backup.');
+          Alert.alert(t('error') || 'Erro', t('errorSavingBackupFile') || 'Não foi possível salvar o arquivo de backup.');
         }
       };
 
       // Mostrar resumo antes de gerar/exportar
       Alert.alert(
-        'Confirmar Backup',
-        `Deseja gerar o backup de seus dados?\n\nItens a serem salvos:\n• ${allBands.length} Bandas\n• ${allSongs.length} Músicas\n• ${allSetlists.length} Setlists/Playlists`,
+        t('confirmBackupTitle') || 'Confirmar Backup',
+        (t('confirmBackupSummary') || `Deseja gerar o backup de seus dados?\n\nItens a serem salvos:\n• {bands} Bandas\n• {songs} Músicas\n• {setlists} Setlists/Playlists`).replace('{bands}', allBands.length).replace('{songs}', allSongs.length).replace('{setlists}', allSetlists.length),
         [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Gerar Backup', style: 'default', onPress: performBackup }
+          { text: t('cancel') || 'Cancelar', style: 'cancel' },
+          { text: t('generateBackupBtn') || 'Gerar Backup', style: 'default', onPress: performBackup }
         ]
       );
     } catch (error) {
       console.error('Erro ao preparar backup total:', error);
-      Alert.alert('Erro', 'Não foi possível preparar o backup dos dados.');
+      Alert.alert(t('error') || 'Erro', t('errorPreparingBackup') || 'Não foi possível preparar o backup dos dados.');
     }
   };
 
   const handleRestoreBackup = async (backupJsonString) => {
     try {
       if (!backupJsonString || !backupJsonString.trim()) {
-        Alert.alert('Erro', 'Código de backup inválido ou vazio.');
+        Alert.alert(t('error') || 'Erro', t('invalidImportCode') || 'Código de backup inválido ou vazio.');
         return false;
       }
 
@@ -1544,7 +1970,7 @@ function MainApp() {
       }
 
       if (!backupData || backupData.app !== 'SetlistsAppBackup') {
-        Alert.alert('Erro', 'Os dados fornecidos não correspondem a um backup válido do Setlist Band Manager.');
+        Alert.alert(t('error') || 'Erro', t('invalidBackupData') || 'Os dados fornecidos não correspondem a um backup válido do Setlist Band Manager.');
         return false;
       }
 
@@ -1635,34 +2061,34 @@ function MainApp() {
                 newBandId,
                 sl.date || '',
                 sl.local || '',
-                sl.cachê || null,
+                sl.cacheê || null,
                 sl.notes || '',
                 newSongIds
               );
             }
           }
 
-          Alert.alert('Sucesso', 'Backup restaurado com sucesso!');
+          Alert.alert(t('success') || 'Sucesso', t('backupImportSuccess') || 'Backup restaurado com sucesso!');
           await reloadAllData();
         } catch (restoreErr) {
           console.error('Erro na gravação do backup:', restoreErr);
-          Alert.alert('Erro', 'Falha ao gravar os dados no banco.');
+          Alert.alert(t('error') || 'Erro', t('errorSavingToDb') || 'Falha ao gravar os dados no banco.');
         }
       };
 
       // Exibir alerta de confirmação detalhado com os contadores de metadados
       Alert.alert(
-        'Confirmar Restauração',
-        `Deseja restaurar este backup?\n\nEste arquivo contém:\n• ${numBands} Bandas\n• ${numSongs} Músicas\n• ${numSetlists} Setlists/Playlists\n\n(Músicas e bandas já cadastradas não serão duplicadas)`,
+        t('confirmRestoreTitle') || 'Confirmar Restauração',
+        (t('confirmRestoreMsg') || `Deseja restaurar este backup?\n\nEste arquivo contém:\n• {bands} Bandas\n• {songs} Músicas\n• {setlists} Setlists/Playlists\n\n(Músicas e bandas já cadastradas não serão duplicadas)`).replace('{bands}', numBands).replace('{songs}', numSongs).replace('{setlists}', numSetlists),
         [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Restaurar', style: 'default', onPress: performRestore }
+          { text: t('cancel') || 'Cancelar', style: 'cancel' },
+          { text: t('restoreBtn') || 'Restaurar', style: 'default', onPress: performRestore }
         ]
       );
       return true;
     } catch (error) {
       console.error('Erro ao restaurar backup:', error);
-      Alert.alert('Erro', 'Não foi possível restaurar o backup de dados. Verifique a integridade do arquivo.');
+      Alert.alert(t('error') || 'Erro', t('errorRestoringBackup') || 'Não foi possível restaurar o backup de dados. Verifique a integridade do arquivo.');
       return false;
     }
   };
@@ -1866,11 +2292,13 @@ function MainApp() {
         const link = document.createElement('a');
         link.href = url;
         link.download = safeFileName;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         URL.revokeObjectURL(url);
         Alert.alert(t('success') || 'Sucesso', `Arquivo "${safeFileName}" baixado com sucesso!`);
       } else {
-        const fileUri = `${FileSystem.cacheDirectory}${safeFileName}`;
+        const fileUri = `${FileSystem.cacheeDirectory}${safeFileName}`;
         
         await FileSystem.writeAsStringAsync(fileUri, fileContentWithBom, { encoding: 'utf8' });
 
@@ -1886,12 +2314,12 @@ function MainApp() {
             await Sharing.shareAsync(fileUri);
           }
         } else {
-          Alert.alert(t('error') || 'Erro', 'Serviço de compartilhamento de arquivos não disponível.');
+          Alert.alert(t('error') || 'Erro', t('shareServiceUnavailable') || 'Serviço de compartilhamento de arquivos não disponível.');
         }
       }
     } catch (error) {
       console.error('Erro ao exportar arquivo .doc:', error);
-      Alert.alert(t('error') || 'Erro', 'Não foi possível gerar ou exportar o arquivo .doc.');
+      Alert.alert(t('error') || 'Erro', t('errorGeneratingDoc') || 'Não foi possível gerar ou exportar o arquivo .doc.');
     }
   };
 
@@ -1993,7 +2421,7 @@ function MainApp() {
   const handleImportSetlist = async (jsonString) => {
     try {
       if (!jsonString || !jsonString.trim()) {
-        Alert.alert('Erro', 'Por favor, insira o código do setlist.');
+        Alert.alert(t('error') || 'Erro', t('enterSetlistCode') || 'Por favor, insira o código do setlist.');
         return false;
       }
 
@@ -2012,25 +2440,25 @@ function MainApp() {
             try {
               importData = JSON.parse(extracted);
             } catch (innerError) {
-              Alert.alert('Erro', 'Não foi possível ler um código de setlist válido na mensagem colada.');
+              Alert.alert(t('error') || 'Erro', t('invalidSetlistCode') || 'Não foi possível ler um código de setlist válido na mensagem colada.');
               return false;
             }
           }
         }
         
         if (!importData) {
-          Alert.alert('Erro', 'O código fornecido não contém dados válidos. Verifique se copiou a mensagem inteira.');
+          Alert.alert(t('error') || 'Erro', t('invalidDataCode') || 'O código fornecido não contém dados válidos. Verifique se copiou a mensagem inteira.');
           return false;
         }
       }
 
       if (importData.app !== 'SetlistsApp') {
-        Alert.alert('Erro', 'Este código não pertence a um setlist deste aplicativo.');
+        Alert.alert(t('error') || 'Erro', t('notSetlistCode') || 'Este código não pertence a um setlist deste aplicativo.');
         return false;
       }
 
       if (!importData.name || !importData.songs || !Array.isArray(importData.songs)) {
-        Alert.alert('Erro', 'O setlist importado possui dados incompletos ou inválidos.');
+        Alert.alert(t('error') || 'Erro', t('incompleteSetlistData') || 'O setlist importado possui dados incompletos ou inválidos.');
         return false;
       }
 
@@ -2110,17 +2538,17 @@ function MainApp() {
         bandId,
         importData.date || '',
         importData.local || '',
-        importData.cachê || null,
+        importData.cacheê || null,
         importData.notes || '',
         songIds
       );
 
       await reloadAllData();
-      Alert.alert('Sucesso', `Setlist "${finalName}" importado com sucesso com ${songIds.length} músicas!`);
+      Alert.alert(t('success') || 'Sucesso', (t('setlistImportedWithSongs') || 'Setlist "{name}" importado com sucesso com {count} músicas!').replace('{name}', finalName).replace('{count}', songIds.length));
       return true;
     } catch (error) {
       console.error('Erro ao importar setlist:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao importar o setlist.');
+      Alert.alert(t('error') || 'Erro', t('errorImportingSetlist') || 'Ocorreu um erro ao importar o setlist.');
       return false;
     }
   };
@@ -2167,8 +2595,8 @@ function MainApp() {
     targetSetlists.forEach((sl) => {
       if (sl.type === 'show') {
         totalShows++;
-        if (sl.cachê) {
-          const cleanVal = String(sl.cachê)
+        if (sl.cacheê) {
+          const cleanVal = String(sl.cacheê)
             .replace(/[^\d.,]/g, '')
             .replace(/\./g, '')
             .replace(',', '.');
@@ -2180,10 +2608,10 @@ function MainApp() {
       }
     });
 
-    const formattedCachê = totalCachê.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
+    const formattedCachê = `$ ${totalCachê.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
     return {
       songsCount: uniqueSongIds.size,
@@ -2195,6 +2623,23 @@ function MainApp() {
 
   // ===== RENDERS DAS ABAS =====
   const renderHomeTab = () => {
+    
+    const parseCurrency = (valStr) => {
+      if (!valStr) return 0;
+      if (typeof valStr === 'number') return valStr;
+      let s = String(valStr);
+      if (s.includes(',') && s.includes('.')) {
+        if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+          s = s.replace(/\./g, '').replace(',', '.');
+        } else {
+          s = s.replace(/,/g, '');
+        }
+      } else if (s.includes(',')) {
+        s = s.replace(',', '.');
+      }
+      return parseFloat(s.replace(/[^\d.-]/g, '')) || 0;
+    };
+
     const parseDate = (dStr) => {
       if (!dStr) return new Date(8640000000000000);
       const clean = dStr.trim();
@@ -2206,6 +2651,68 @@ function MainApp() {
       return isNaN(d.getTime()) ? new Date(8640000000000000) : d;
     };
 
+    const didUserParticipateInSetlist = (setlist, allBands, profile) => {
+      if (!setlist) return false;
+      const bandId = setlist.myBandId || setlist.bandId;
+      if (!bandId) return true; // Evento avulso do usuário
+
+      const band = (allBands || []).find(b => b.id === bandId);
+      if (!band) return true;
+
+      const eventDate = parseDate(setlist.date);
+      if (!eventDate || eventDate.getTime() === 8640000000000000) return true;
+
+      const members = band.members || [];
+      let userMember = null;
+      if (band.myMemberId) {
+        userMember = members.find(m => m.id === band.myMemberId);
+      }
+      if (!userMember) {
+        userMember = members.find(m => 
+          m.username === 'me' || 
+          (m.name || '').toLowerCase() === 'você' || 
+          (profile && profile.username && m.username && m.username.toLowerCase() === profile.username.toLowerCase()) ||
+          (profile && profile.displayName && m.name && m.name.toLowerCase() === profile.displayName.toLowerCase())
+        );
+      }
+
+      // Ciclos de atividade
+      if (userMember && userMember.cycles) {
+        try {
+          const parsedCycles = typeof userMember.cycles === 'string' ? JSON.parse(userMember.cycles) : userMember.cycles;
+          if (Array.isArray(parsedCycles) && parsedCycles.length > 0) {
+            return parsedCycles.some(c => {
+              const cStart = parseDate(c.startDate);
+              const cEnd = parseDate(c.endDate);
+              if (cStart && cStart.getTime() !== 8640000000000000 && eventDate < cStart) return false;
+              if (cEnd && cEnd.getTime() !== 8640000000000000 && eventDate > cEnd) return false;
+              return true;
+            });
+          }
+        } catch (e) {}
+      }
+
+      // Data de início do integrante na banda
+      const memberStartStr = userMember ? (userMember.startDate || userMember.since) : (band.startDate || '');
+      if (memberStartStr) {
+        const memberStartDate = parseDate(memberStartStr);
+        if (memberStartDate && memberStartDate.getTime() !== 8640000000000000 && eventDate < memberStartDate) {
+          return false;
+        }
+      }
+
+      // Data de saída do integrante da banda
+      const memberEndStr = userMember ? userMember.endDate : (band.endDate || '');
+      if (memberEndStr) {
+        const memberEndDate = parseDate(memberEndStr);
+        if (memberEndDate && memberEndDate.getTime() !== 8640000000000000 && eventDate > memberEndDate) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
     const upcomingSetlists = setlists
       .filter(s => isFutureDate(s.date))
       .sort((a, b) => parseDate(a.date) - parseDate(b.date));
@@ -2213,6 +2720,212 @@ function MainApp() {
     const pastSetlists = setlists
       .filter(s => !isFutureDate(s.date))
       .sort((a, b) => parseDate(b.date) - parseDate(a.date));
+
+    // Eventos do ano selecionado em que o usuário participou
+    const yearParticipatedEvents = setlists.filter(s => {
+      const mInfo = getMonthInfo(s.date, language);
+      return mInfo.year === selectedHomeEventYear && didUserParticipateInSetlist(s, bands, userProfile);
+    });
+    const homeShowCount = yearParticipatedEvents.filter(s => s.type === 'show').length;
+    const homeRehearsalCount = yearParticipatedEvents.filter(s => s.type !== 'show').length;
+
+    // Total Faturamento de todos os projetos do músico no ano selecionado (somente a parte recebida do músico)
+    const calculateMusicianYearRevenue = () => {
+      let total = 0;
+      const countedAutoShows = new Set();
+
+      // 1. Cachê dos eventos em que o músico participou no ano (apenas recebidos / pagos)
+      yearParticipatedEvents.forEach((s) => {
+        const isPaid = (s.cacheStatus || 'paid') === 'paid';
+        if (!isPaid) return;
+
+        const rawCache = s.cachê || s.cache || s.cacheê || s.valCache || s.value;
+        const amt = parseCurrency(rawCache);
+        if (amt > 0) {
+          const bandId = s.myBandId || s.bandId;
+          const b = (bands || []).find(band => band.id === bandId);
+          const myMemId = b?.myMemberId;
+
+          let userShare = null;
+          if (s.notes) {
+            try {
+              const parsed = typeof s.notes === 'string' && s.notes.startsWith('{') ? JSON.parse(s.notes) : null;
+              if (parsed && parsed._memberSplits) {
+                if (myMemId && parsed._memberSplits[myMemId] !== undefined) {
+                  userShare = parseCurrency(parsed._memberSplits[myMemId]);
+                } else {
+                  for (const [k, v] of Object.entries(parsed._memberSplits)) {
+                    const m = (b?.members || []).find(mem => String(mem.id) === String(k));
+                    if (m && (m.username === 'me' || (userProfile?.username && m.username?.toLowerCase() === userProfile.username.toLowerCase()) || (userProfile?.displayName && m.name?.toLowerCase() === userProfile.displayName.toLowerCase()))) {
+                      userShare = parseCurrency(v);
+                      break;
+                    }
+                  }
+                }
+              }
+            } catch (e) {}
+          }
+
+          if (userShare === null) {
+            if (b) {
+              const activeCount = (b.members || []).filter(m => m.status === 'active' || !m.status).length || 1;
+              userShare = amt / activeCount;
+            } else {
+              userShare = amt;
+            }
+          }
+
+          total += userShare;
+          countedAutoShows.add(s.id);
+        }
+      });
+
+      // 2. Lançamentos financeiros de todas as bandas do usuário no ano (apenas recebidos)
+      (bands || []).forEach((band) => {
+        const myMemId = band.myMemberId;
+        (band.finances || []).forEach((fin) => {
+          if (fin.type === 'income' && (fin.status || 'paid') === 'paid') {
+            const mInfo = getMonthInfo(fin.date, language);
+            if (mInfo.year === selectedHomeEventYear) {
+              if (fin.id && String(fin.id).startsWith('auto_show_')) {
+                const sId = parseInt(String(fin.id).replace('auto_show_', ''), 10);
+                if (countedAutoShows.has(sId)) return;
+              }
+
+              let userShare = null;
+              if (fin.notes) {
+                try {
+                  const parsed = typeof fin.notes === 'string' && fin.notes.startsWith('{') ? JSON.parse(fin.notes) : null;
+                  if (parsed && parsed._memberSplits && myMemId && parsed._memberSplits[myMemId] !== undefined) {
+                    userShare = parseCurrency(parsed._memberSplits[myMemId]);
+                  }
+                } catch (e) {}
+              }
+
+              if (userShare !== null) {
+                total += userShare;
+              } else if (!fin.isAutoShow && myMemId) {
+                const activeCount = (band.members || []).filter(m => m.status === 'active' || !m.status).length || 1;
+                total += (fin.amount || 0) / activeCount;
+              }
+            }
+          }
+        });
+      });
+
+      return total;
+    };
+
+    const musicianYearRevenue = calculateMusicianYearRevenue();
+    const formattedRevenue = `$ ${musicianYearRevenue.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+    const calculateMusicianMonthlyRevenues = () => {
+      const monthTotals = Array(12).fill(0);
+      const countedAutoShows = new Set();
+
+      yearParticipatedEvents.forEach((s) => {
+        const isPaid = (s.cacheStatus || 'paid') === 'paid';
+        if (!isPaid) return;
+
+        const rawCache = s.cachê || s.cache || s.cacheê || s.valCache || s.value;
+        const amt = parseCurrency(rawCache);
+        if (amt > 0) {
+          const d = parseDate(s.date);
+          const mIdx = d.getMonth();
+          if (mIdx >= 0 && mIdx < 12) {
+            const bandId = s.myBandId || s.bandId;
+            const b = (bands || []).find(band => band.id === bandId);
+            const myMemId = b?.myMemberId;
+
+            let userShare = null;
+            if (s.notes) {
+              try {
+                const parsed = typeof s.notes === 'string' && s.notes.startsWith('{') ? JSON.parse(s.notes) : null;
+                if (parsed && parsed._memberSplits) {
+                  if (myMemId && parsed._memberSplits[myMemId] !== undefined) {
+                    userShare = parseCurrency(parsed._memberSplits[myMemId]);
+                  } else {
+                    for (const [k, v] of Object.entries(parsed._memberSplits)) {
+                      const m = (b?.members || []).find(mem => String(mem.id) === String(k));
+                      if (m && (m.username === 'me' || (userProfile?.username && m.username?.toLowerCase() === userProfile.username.toLowerCase()) || (userProfile?.displayName && m.name?.toLowerCase() === userProfile.displayName.toLowerCase()))) {
+                        userShare = parseCurrency(v);
+                        break;
+                      }
+                    }
+                  }
+                }
+              } catch (e) {}
+            }
+
+            if (userShare === null) {
+              if (b) {
+                const activeCount = (b.members || []).filter(m => m.status === 'active' || !m.status).length || 1;
+                userShare = amt / activeCount;
+              } else {
+                userShare = amt;
+              }
+            }
+
+            monthTotals[mIdx] += userShare;
+          }
+          countedAutoShows.add(s.id);
+        }
+      });
+
+      (bands || []).forEach((band) => {
+        const myMemId = band.myMemberId;
+        (band.finances || []).forEach((fin) => {
+          if (fin.type === 'income' && (fin.status || 'paid') === 'paid') {
+            const mInfo = getMonthInfo(fin.date, language);
+            if (mInfo.year === selectedHomeEventYear) {
+              if (fin.id && String(fin.id).startsWith('auto_show_')) {
+                const sId = parseInt(String(fin.id).replace('auto_show_', ''), 10);
+                if (countedAutoShows.has(sId)) return;
+              }
+
+              const finDate = parseDate(fin.date);
+              const mIdx = finDate.getMonth();
+              if (mIdx >= 0 && mIdx < 12) {
+                let userShare = null;
+                if (fin.notes) {
+                  try {
+                    const parsed = typeof fin.notes === 'string' && fin.notes.startsWith('{') ? JSON.parse(fin.notes) : null;
+                    if (parsed && parsed._memberSplits && myMemId && parsed._memberSplits[myMemId] !== undefined) {
+                      userShare = parseCurrency(parsed._memberSplits[myMemId]);
+                    }
+                  } catch (e) {}
+                }
+
+                if (userShare !== null) {
+                  monthTotals[mIdx] += userShare;
+                } else if (!fin.isAutoShow && myMemId) {
+                  const activeCount = (band.members || []).filter(m => m.status === 'active' || !m.status).length || 1;
+                  monthTotals[mIdx] += (fin.amount || 0) / activeCount;
+                }
+              }
+            }
+          }
+        });
+      });
+
+      return monthTotals;
+    };
+
+    const monthNames = language === 'en'
+      ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      : language === 'es'
+      ? ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+      : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    const formatCompactCurrency = (num) => {
+      if (!num || num === 0) return '0';
+      if (num >= 1000000) return `${(num / 1000000).toFixed(1).replace('.0', '')}M`;
+      if (num >= 1000) return `${(num / 1000).toFixed(1).replace('.0', '')}k`;
+      return String(Math.round(num));
+    };
 
     return (
       <View style={{ flex: 1 }}>
@@ -2234,23 +2947,240 @@ function MainApp() {
 
         <ScrollView 
           style={{ flex: 1 }} 
-          contentContainerStyle={{ paddingHorizontal: 8, paddingTop: 16, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingTop: 10, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* LISTA DE EVENTOS PRÓXIMOS COM SEPARADORES POR MÊS */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
-              <Text style={[styles.headerCountText, { color: colors.primary }]}>{upcomingSetlists.length}</Text>
+          {/* CONTADOR TOTAL NO TOPO DA PÁGINA (CIRCULARES IGUAL DA AGENDA DA BANDA) */}
+          <View style={[styles.agendaSummaryCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
+            <View style={styles.agendaSummaryRow}>
+              
+              {/* CÍRCULO 1: ANO (CLICÁVEL PARA ESCOLHER ANO) */}
+              <View style={styles.summaryCircleCol}>
+                <Pressable
+                  onPress={() => setShowHomeYearPicker(true)}
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.summaryCircle,
+                    {
+                      backgroundColor: colors.primary + '15',
+                      borderColor: colors.primary + '35',
+                      opacity: pressed ? 0.7 : 1,
+                    }
+                  ]}
+                  accessibilityLabel="Selecionar ano no calendário"
+                >
+                  <Text style={[styles.summaryCircleValue, { color: colors.primary, fontSize: 16 }]}>
+                    {selectedHomeEventYear}
+                  </Text>
+                </Pressable>
+                <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                  {t('year') || 'Ano'}
+                </Text>
+              </View>
+
+              {/* CÍRCULO 2: SHOWS (COM ÍCONE EM CÍRCULO MENOR SOBREPONDO) */}
+              <View style={styles.summaryCircleCol}>
+                <View style={styles.summaryOverlapWrapper}>
+                  <View style={[styles.summaryCircle, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                    <Text style={[styles.summaryCircleValue, { color: colors.text, fontSize: 17, paddingLeft: 4 }]}>
+                      {homeShowCount}
+                    </Text>
+                  </View>
+                  <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                    <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                  </View>
+                </View>
+                <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                  {homeShowCount === 1 ? (t('show') || 'Show') : (t('shows') || 'Shows')}
+                </Text>
+              </View>
+
+              {/* CÍRCULO 3: ENSAIOS (COM ÍCONE EM CÍRCULO MENOR SOBREPONDO) */}
+              <View style={styles.summaryCircleCol}>
+                <View style={styles.summaryOverlapWrapper}>
+                  <View style={[styles.summaryCircle, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                    <Text style={[styles.summaryCircleValue, { color: colors.text, fontSize: 17, paddingLeft: 4 }]}>
+                      {homeRehearsalCount}
+                    </Text>
+                  </View>
+                  <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                    <Ionicons name="headset-outline" size={13} color={colors.primary} />
+                  </View>
+                </View>
+                <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                  {homeRehearsalCount === 1 ? (t('rehearsal') || 'Ensaio') : (t('rehearsals') || 'Ensaios')}
+                </Text>
+              </View>
+
+              {/* CÍRCULO 4: FATURAMENTO (OCULTO POR PADRÃO, CLIQUE PARA EXIBIR GRÁFICO) */}
+              <View style={styles.summaryCircleCol}>
+                <Pressable
+                  onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setShowHomeRevenue(prev => !prev);
+                  }}
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.summaryOverlapWrapper,
+                    pressed && { opacity: 0.75 }
+                  ]}
+                  accessibilityLabel="Alternar visibilidade do gráfico de faturamento"
+                >
+                  <View style={[styles.summaryCircle, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                    {showHomeRevenue ? (
+                      <Text style={[styles.summaryCircleValue, { color: colors.text, fontSize: musicianYearRevenue >= 1000 ? 13 : 15, paddingLeft: 4 }]}>
+                        {formatCompactCurrency(musicianYearRevenue)}
+                      </Text>
+                    ) : (
+                      <Ionicons name="eye-off-outline" size={17} color={colors.textMuted} style={{ paddingLeft: 3 }} />
+                    )}
+                  </View>
+                  <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                    <Ionicons name={showHomeRevenue ? "cash" : "cash-outline"} size={13} color={colors.primary} />
+                  </View>
+                </Pressable>
+                <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                  {t('cachet') || 'Cachê'}
+                </Text>
+              </View>
+
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('upcomingEvents')}
-            </Text>
+
+            {/* GRÁFICO MÊS A MÊS DO FATURAMENTO (QUANDO EXIBIDO) */}
+            {showHomeRevenue && (
+              <View
+                style={{
+                  marginTop: 14,
+                  padding: 12,
+                  borderRadius: 14,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                  borderColor: colors.primary + '30',
+                  borderWidth: 1,
+                }}
+              >
+                {/* Cabeçalho do Gráfico */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="bar-chart-outline" size={15} color={colors.primary} />
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
+                      {t('totalRevenue') || 'Faturamento'} ({selectedHomeEventYear})
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 13, fontWeight: '900', color: colors.primary }}>
+                    {formattedRevenue}
+                  </Text>
+                </View>
+
+                {/* Gráfico de Barras dos 12 Meses */}
+                {(() => {
+                  const monthlyRevenues = calculateMusicianMonthlyRevenues();
+                  const maxVal = Math.max(...monthlyRevenues, 10);
+                  const currentMonthIndex = new Date().getMonth();
+                  const isCurrentYear = selectedHomeEventYear === new Date().getFullYear();
+
+                  return (
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 105, paddingTop: 10 }}>
+                      {monthlyRevenues.map((rev, mIdx) => {
+                        const barHeight = Math.max(4, Math.round((rev / maxVal) * 65));
+                        const hasRev = rev > 0;
+                        const isCurrentMonth = isCurrentYear && mIdx === currentMonthIndex;
+
+                        return (
+                          <View key={mIdx} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
+                            {hasRev ? (
+                              <Text style={{ fontSize: 7.5, fontWeight: '800', color: colors.primary, marginBottom: 2 }}>
+                                {formatCompactCurrency(rev)}
+                              </Text>
+                            ) : (
+                              <View style={{ height: 10 }} />
+                            )}
+
+                            <View style={{
+                              width: '65%',
+                              maxWidth: 16,
+                              height: barHeight,
+                              backgroundColor: hasRev 
+                                ? colors.primary 
+                                : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                              borderRadius: 4,
+                              borderWidth: isCurrentMonth ? 1.5 : 0,
+                              borderColor: isCurrentMonth ? (isDark ? '#ffffff' : colors.text) : 'transparent',
+                            }} />
+
+                            <Text style={{
+                              fontSize: 8.5,
+                              fontWeight: isCurrentMonth ? '900' : '700',
+                              color: isCurrentMonth ? colors.primary : colors.textMuted,
+                              marginTop: 4,
+                            }}>
+                              {monthNames[mIdx]}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+                })()}
+              </View>
+            )}
+
+            {/* SELETOR EXCLUSIVO DE ANOS */}
+            <YearPickerModal
+              visible={showHomeYearPicker}
+              selectedYear={selectedHomeEventYear}
+              onSelectYear={(year) => setSelectedHomeEventYear(year)}
+              onClose={() => setShowHomeYearPicker(false)}
+            />
+          </View>
+          
+          {/* LISTA DE EVENTOS PRÓXIMOS COM SEPARADORES POR MÊS */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                <Text style={[styles.headerCountText, { color: colors.primary }]}>{upcomingSetlists.length}</Text>
+              </View>
+              <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>
+                {t('upcomingEvents')}
+              </Text>
+            </View>
+
+            {/* BOTÃO COMPARTILHAR AGENDA NA HOME (CIRCULAR, SOMENTE ÍCONE) */}
+            <Pressable
+              onPress={() => {
+                const homeShows = upcomingSetlists.filter(s => s.type === 'show' || !s.type);
+                if (homeShows.length === 0 && upcomingSetlists.length === 0) {
+                  Alert.alert(
+                    t('emptyAgendaShareTitle') || 'Agenda vazia',
+                    t('noUpcomingEvents') || 'Nenhum show agendado para compartilhar.'
+                  );
+                  return;
+                }
+                setShowShareHomeAgendaModal(true);
+              }}
+              style={({ pressed }) => [
+                {
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.primary + '18',
+                  borderWidth: 1.2,
+                  borderColor: colors.primary,
+                  opacity: pressed ? 0.75 : 1,
+                }
+              ]}
+              hitSlop={8}
+              accessibilityLabel={t('shareAgenda') || 'Compartilhar Agenda'}
+            >
+              <Ionicons name="share-social" size={17} color={colors.primary} />
+            </Pressable>
           </View>
 
           {upcomingSetlists.length === 0 ? (
             <View style={{ padding: 24, alignItems: 'center', backgroundColor: colors.cardBackground, borderRadius: 16, borderWidth: 1, borderColor: colors.border }}>
               <Ionicons name="calendar-outline" size={42} color={colors.textMuted} />
-              <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 13, fontWeight: '500' }}>Nenhum evento próximo agendado.</Text>
+              <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 13, fontWeight: '500' }}>{t('noUpcomingEvents') || 'Nenhum evento próximo agendado.'}</Text>
             </View>
           ) : (
             (() => {
@@ -2311,7 +3241,7 @@ function MainApp() {
                     >
 
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {/* Square Date Badge Arredondado */}
+                        {/* Square Date Badge Arredondado (ESQUERDA) */}
                         <View style={{
                           width: 52,
                           height: 52,
@@ -2327,26 +3257,13 @@ function MainApp() {
                           <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
                         </View>
 
-                        {/* Band Logo Avatar */}
-                        <View style={{ marginRight: 10 }}>
-                          {setlist.bandImageUri ? (
-                            <Image source={{ uri: setlist.bandImageUri }} style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.border }} />
-                          ) : (
-                            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
-                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>
-                                {getBandInitials(setlist.bandName || '')}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-
-                        {/* Setlist Info */}
-                        <View style={{ flex: 1, justifyContent: 'center' }}>
+                        {/* Setlist Info (CENTRO) */}
+                        <View style={{ flex: 1, justifyContent: 'center', marginRight: 10 }}>
                           <Text style={{ fontSize: 15, fontWeight: '900', color: colors.text }} numberOfLines={1}>
                             {setlist.name || 'Sem Nome'}
                           </Text>
                           
-                          {/* Subtítulo: Tipo e Local */}
+                          {/* Subtítulo: Tipo, Banda e Local */}
                           <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                             <View style={{
                               backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
@@ -2378,12 +3295,22 @@ function MainApp() {
                                 <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {setlist.local}
                               </Text>
                             ) : null}
-
-
                           </View>
                         </View>
 
-                        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 6 }} />
+                        {/* Band Logo Avatar (DIREITA) */}
+                        <View style={{ marginLeft: 4 }}>
+                          {setlist.bandImageUri ? (
+                            <Image source={{ uri: setlist.bandImageUri }} style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.border }} />
+                          ) : (
+                            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
+                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>
+                                {getBandInitials(setlist.bandName || '')}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+
                       </View>
                     </Pressable>
                   </View>
@@ -2392,128 +3319,147 @@ function MainApp() {
             })()
           )}
 
-          {/* SEÇÃO DE EVENTOS ANTERIORES COM SEPARADORES POR MÊS */}
+          {/* SEÇÃO DE EVENTOS ANTERIORES COM SEPARADORES POR MÊS (RECOLHIDOS POR PADRÃO) */}
           {pastSetlists.length > 0 && (
             <View style={{ marginTop: 24 }}>
-              <Pressable
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 8,
-                  backgroundColor: isDark ? '#27272a' : '#f1f5f9',
-                }}
-                onPress={() => setShowPastSetlists(!showPastSetlists)}
-              >
-                <Ionicons
-                  name={showPastSetlists ? "eye-off-outline" : "eye-outline"}
-                  size={18}
-                  color={colors.text}
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={{ fontSize: 13, fontWeight: 'bold', color: colors.text }}>
-                  {showPastSetlists
-                    ? `Ocultar Eventos Anteriores (${pastSetlists.length})`
-                    : `Exibir Eventos Anteriores (${pastSetlists.length})`}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                  <Text style={[styles.headerCountText, { color: colors.primary }]}>{pastSetlists.length}</Text>
+                </View>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  {t('pastEvents') || 'Eventos Anteriores'}
                 </Text>
-              </Pressable>
+              </View>
 
-              {showPastSetlists && (
-                <View style={{ marginTop: 12 }}>
-                  {(() => {
-                    let lastPastHeader = null;
-                    return pastSetlists.map((setlist) => {
-                      const badge = getFormattedDateBadge(setlist.date, language);
+              <View style={{ marginTop: 4 }}>
+                {(() => {
+                    const pastMonthsMap = pastSetlists.reduce((acc, setlist) => {
                       const header = getMonthYearHeader(setlist.date, language);
-                      const showHeader = header !== lastPastHeader;
-                      if (showHeader) lastPastHeader = header;
+                      if (!acc[header]) {
+                        acc[header] = [];
+                      }
+                      acc[header].push(setlist);
+                      return acc;
+                    }, {});
+
+                    return Object.keys(pastMonthsMap).map((header) => {
+                      const monthSetlists = pastMonthsMap[header];
+                      const isExpanded = expandedPastMonths.includes(header);
+                      const mShows = monthSetlists.filter(s => s.type === 'show').length;
+                      const mRehearsals = monthSetlists.filter(s => s.type !== 'show').length;
 
                       return (
-                        <View key={setlist.id}>
-                          {showHeader && (() => {
-                            const mPast = pastSetlists.filter(s => getMonthYearHeader(s.date, language) === header);
-                            const mShows = mPast.filter(s => s.type === 'show').length;
-                            const mRehearsals = mPast.filter(s => s.type !== 'show').length;
-                            return (
-                              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
-                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 0.8 }}>
-                                  {header}
-                                </Text>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 2 }}>
-                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                                    <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
-                                    <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted }}>{mShows}</Text>
-                                  </View>
-                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                                    <Ionicons name="headset-outline" size={13} color={colors.textMuted} />
-                                    <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted }}>{mRehearsals}</Text>
-                                  </View>
-                                </View>
-                                <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.4 }} />
-                              </View>
-                            );
-                          })()}
+                        <View key={header} style={{ marginBottom: 4 }}>
                           <Pressable
-                            style={({ pressed }) => [
-                              styles.bandCard,
-                              {
-                                backgroundColor: colors.cardBackground,
-                                borderColor: colors.border,
-                                borderWidth: 1,
-                                marginBottom: 10,
-                                opacity: 0.75,
-                                transform: [{ scale: pressed ? 0.98 : 1 }],
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                padding: 12
-                              }
-                            ]}
                             onPress={() => {
-                              setActiveSetlistDetail(setlist);
+                              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                              setExpandedPastMonths(prev =>
+                                prev.includes(header) ? prev.filter(h => h !== header) : [...prev, header]
+                              );
                             }}
+                            style={({ pressed }) => [{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginTop: 16,
+                              marginBottom: 10,
+                              gap: 8,
+                              opacity: pressed ? 0.75 : 1,
+                            }]}
                           >
-                            <View style={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: 8,
-                              borderWidth: 1,
-                              borderColor: colors.border,
-                              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                              justifyContent: 'center',
-                              alignItems: 'center'
-                            }}>
-                              <Text style={{ fontSize: 16, fontWeight: '900', color: colors.textMuted, lineHeight: 18 }}>{badge.day}</Text>
-                              <Text style={{ fontSize: 9, fontWeight: '800', color: colors.textMuted, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                              {header}
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 2 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mShows}</Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                <Ionicons name="headset-outline" size={13} color={colors.primary} />
+                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mRehearsals}</Text>
+                              </View>
                             </View>
-
-                            <View style={{ marginLeft: 10 }}>
-                              {setlist.bandImageUri ? (
-                                <Image source={{ uri: setlist.bandImageUri }} style={{ width: 42, height: 42, borderRadius: 21, opacity: 0.8 }} />
-                              ) : (
-                                <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: colors.border, justifyContent: 'center', alignItems: 'center' }}>
-                                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textMuted }}>
-                                    {getBandInitials(setlist.bandName || '')}
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-
-                            <View style={{ flex: 1, marginLeft: 10, justifyContent: 'center' }}>
-                              <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textMuted }} numberOfLines={1}>
-                                {setlist.name || 'Sem Nome'}
-                              </Text>
-                            </View>
-
-                            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                            <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                            <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={14} color={colors.primary} />
                           </Pressable>
+
+                          {isExpanded && (
+                            <View style={{ marginTop: 8 }}>
+                              {monthSetlists.map((setlist) => {
+                                const badge = getFormattedDateBadge(setlist.date, language);
+                                return (
+                                  <Pressable
+                                    key={setlist.id}
+                                    style={({ pressed }) => [
+                                      styles.bandCard,
+                                      {
+                                        backgroundColor: colors.cardBackground,
+                                        borderColor: colors.border,
+                                        borderWidth: 1,
+                                        marginBottom: 10,
+                                        opacity: 0.85,
+                                        transform: [{ scale: pressed ? 0.98 : 1 }],
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        padding: 12
+                                      }
+                                    ]}
+                                    onPress={() => {
+                                      setActiveSetlistDetail(setlist);
+                                    }}
+                                  >
+                                    {/* Date Badge (ESQUERDA) */}
+                                    <View style={{
+                                      width: 50,
+                                      height: 50,
+                                      borderRadius: 12,
+                                      borderWidth: 1,
+                                      borderColor: colors.border,
+                                      backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      marginRight: 12
+                                    }}>
+                                      <Text style={{ fontSize: 16, fontWeight: '900', color: colors.textMuted, lineHeight: 18 }}>{badge.day}</Text>
+                                      <Text style={{ fontSize: 9, fontWeight: '800', color: colors.textMuted, marginTop: 2, letterSpacing: 0.5 }}>{badge.month}</Text>
+                                    </View>
+
+                                    {/* Setlist Info (CENTRO) */}
+                                    <View style={{ flex: 1, justifyContent: 'center', marginRight: 10 }}>
+                                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textMuted }} numberOfLines={1}>
+                                        {setlist.name || 'Sem Nome'}
+                                      </Text>
+                                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                                        {setlist.local ? (
+                                          <Text style={{ fontSize: 11, color: colors.textMuted, opacity: 0.8 }} numberOfLines={1}>
+                                            <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {setlist.local}
+                                          </Text>
+                                        ) : null}
+                                      </View>
+                                    </View>
+
+                                    {/* Band Logo Avatar (DIREITA) */}
+                                    <View style={{ marginLeft: 4 }}>
+                                      {setlist.bandImageUri ? (
+                                        <Image source={{ uri: setlist.bandImageUri }} style={{ width: 40, height: 40, borderRadius: 20, opacity: 0.8 }} />
+                                      ) : (
+                                        <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.border, justifyContent: 'center', alignItems: 'center' }}>
+                                          <Text style={{ fontSize: 13, fontWeight: '900', color: colors.textMuted }}>
+                                            {getBandInitials(setlist.bandName || '')}
+                                          </Text>
+                                        </View>
+                                      )}
+                                    </View>
+                                  </Pressable>
+                                );
+                              })}
+                            </View>
+                          )}
                         </View>
                       );
                     });
                   })()}
                 </View>
-              )}
             </View>
           )}
 
@@ -2555,13 +3501,16 @@ function MainApp() {
 
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 6, paddingTop: 12, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingTop: 10, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
           {/* CARROSSEL DE BANDAS NA ABA DE BANDAS */}
           <BandCarousel
-            bands={bands}
-            selectedBandId={selectedBandId}
+              bands={bands}
+              setlists={setlists}
+              hideFinancialValues={hideFinancialValues}
+              onToggleHideFinancials={() => setHideFinancialValues(!hideFinancialValues)}
+              selectedBandId={selectedBandId}
             onSelectBand={(band) => {
               setActiveBandDetail(band);
             }}
@@ -2592,16 +3541,242 @@ function MainApp() {
             }}
           />
 
-          {filteredBands.length === 0 ? (
-            <View style={[styles.emptyContainer, { marginTop: 20 }]}>
-              <Ionicons name="people-outline" size={48} color={colors.textMuted} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma banda cadastrada</Text>
-              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
-                Clique em "+ Criar Banda" para adicionar seu projeto musical.
-              </Text>
-            </View>
-          ) : (
-            filteredBands.map(band => {
+          {(() => {
+            const pendingInvites = (receivedInvites || []).filter(i => i.status === 'pending');
+            const hasNoContent = filteredBands.length === 0 && pendingInvites.length === 0;
+
+            if (hasNoContent) {
+              return (
+                <View style={[styles.emptyContainer, { marginTop: 20 }]}>
+                  <Ionicons name="people-outline" size={48} color={colors.textMuted} />
+                  <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('noBandsRegistered') || 'Nenhuma banda cadastrada'}</Text>
+                  <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+                    {t('clickToAddBand') || 'Clique em "+ Criar Banda" para adicionar seu projeto musical.'}
+                  </Text>
+                </View>
+              );
+            }
+
+            return (
+              <>
+                {/* CARDS DE CONVITES RECEBIDOS (Apresentados como cards de banda com texto e botões de aceitar/recusar) */}
+                {pendingInvites.map(inv => {
+                  let inviteTags = [];
+                  if (inv.genres) {
+                    try {
+                      inviteTags = typeof inv.genres === 'string' && inv.genres.startsWith('[')
+                        ? JSON.parse(inv.genres)
+                        : (Array.isArray(inv.genres) ? inv.genres : String(inv.genres).split(',').map(s => s.trim()).filter(Boolean));
+                    } catch (e) {
+                      inviteTags = Array.isArray(inv.genres) ? inv.genres : String(inv.genres).split(',').map(s => s.trim()).filter(Boolean);
+                    }
+                  }
+                  if (!inviteTags || inviteTags.length === 0) {
+                    inviteTags = ['Rock', 'Indie', 'Post-Punk'];
+                  }
+                  inviteTags = inviteTags.map(t => String(t).replace(/^#+/, '').trim()).filter(Boolean).slice(0, 4);
+
+                  return (
+                    <Pressable
+                      key={`invite-band-${inv.id}`}
+                      style={({ pressed }) => [
+                        {
+                          backgroundColor: colors.cardBackground,
+                          borderRadius: 20,
+                          padding: 18,
+                          marginBottom: 16,
+                          elevation: 4,
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.12,
+                          shadowRadius: 8,
+                          borderWidth: 2,
+                          borderColor: isDark ? 'rgba(245, 158, 11, 0.45)' : 'rgba(245, 158, 11, 0.35)',
+                          transform: [{ scale: pressed ? 0.98 : 1 }]
+                        }
+                      ]}
+                      onPress={() => handleOpenBandPublicProfile(inv)}
+                    >
+                      {/* Cabeçalho do Card (Logo + Nome + Vaga + Local) */}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                        <View style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: 30,
+                          borderWidth: 2,
+                          borderColor: '#f59e0b',
+                          backgroundColor: isDark ? 'rgba(245, 158, 11, 0.18)' : 'rgba(245, 158, 11, 0.12)',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginRight: 14,
+                        }}>
+                          {inv.bandImage ? (
+                            <Image source={{ uri: inv.bandImage }} style={{ width: 54, height: 54, borderRadius: 27 }} />
+                          ) : (
+                            <Text style={{ fontSize: 22, fontWeight: '900', color: '#f59e0b' }}>
+                              {getBandInitials(inv.bandName)}
+                            </Text>
+                          )}
+                        </View>
+
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, letterSpacing: -0.2 }} numberOfLines={1}>
+                            {inv.bandName}
+                          </Text>
+
+                          <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.primary, marginTop: 2 }}>
+                            Vaga: {inv.role || 'Músico'}
+                          </Text>
+
+                          {(inv.city || inv.state) && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 }}>
+                              <Ionicons name="location-outline" size={11} color={colors.primary} />
+                              <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }} numberOfLines={1}>
+                                {[inv.city, inv.state].filter(Boolean).join(', ')}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+
+                      {/* Mostradores: Somente Ícones com os Números */}
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-around',
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                        borderRadius: 12,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        marginBottom: 10
+                      }}>
+                        {/* Músicas (Nota Musical) */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Ionicons name="musical-notes" size={18} color={colors.primary} />
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{inv.songsCount || 14}</Text>
+                        </View>
+
+                        {/* Integrantes */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Ionicons name="people-outline" size={18} color={colors.primary} />
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{inv.membersCount || 4}</Text>
+                        </View>
+
+                        {/* Shows */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{inv.showsCount || 3}</Text>
+                        </View>
+
+                        {/* Ensaios (Fone de Ouvido) */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Ionicons name="headset-outline" size={18} color={colors.primary} />
+                          <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{inv.rehearsalsCount || 8}</Text>
+                        </View>
+                      </View>
+
+                      {/* Até 4 Tags de Estilo da Banda (Pílulas) */}
+                      {inviteTags.length > 0 && (
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 5, marginBottom: 12, paddingHorizontal: 2 }}>
+                          {inviteTags.map((tag, idx) => (
+                            <View key={idx} style={{ backgroundColor: colors.primary + '18', borderColor: colors.primary + '30', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary }}>
+                                {tag}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+
+                      {/* TEXTO DE CONVITE ABAIXO DAS PÍLULAS DE ESTILO + BOTÕES CIRCULARES VERDE E VERMELHO */}
+                      <View style={{
+                        paddingTop: 12,
+                        borderTopWidth: 1,
+                        borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                      }}>
+                        {/* Texto de Convite */}
+                        <View style={{
+                          backgroundColor: isDark ? 'rgba(245, 158, 11, 0.08)' : 'rgba(245, 158, 11, 0.06)',
+                          borderColor: isDark ? 'rgba(245, 158, 11, 0.25)' : 'rgba(245, 158, 11, 0.2)',
+                          borderWidth: 1,
+                          borderRadius: 14,
+                          padding: 12,
+                          marginBottom: 12
+                        }}>
+                          <Text style={{ fontSize: 12.5, color: colors.text, fontStyle: 'italic', lineHeight: 18 }}>
+                            "{inv.message || `Convidamos você para integrar nossa banda como ${inv.role || 'músico(a)'}!`}"
+                          </Text>
+                        </View>
+
+                        {/* Linha com texto explicativo e botões circulares verde/vermelho */}
+                        <View style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingHorizontal: 2
+                        }}>
+                          <View style={{ flex: 1, marginRight: 12 }}>
+                            <Text style={{ fontSize: 12.5, fontWeight: '800', color: colors.text }}>
+                              Aceitar convite da banda?
+                            </Text>
+                            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
+                              Liberará repertório, membros e finanças
+                            </Text>
+                          </View>
+
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            {/* Botão Circular Vermelho (Recusar) */}
+                            <Pressable
+                              style={({ pressed }) => [{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 22,
+                                backgroundColor: '#ef4444',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                elevation: 4,
+                                shadowColor: '#ef4444',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.35,
+                                shadowRadius: 4,
+                                transform: [{ scale: pressed ? 0.90 : 1 }]
+                              }]}
+                              onPress={() => handleRejectInvite(inv)}
+                              hitSlop={8}
+                            >
+                              <Ionicons name="close" size={24} color="#ffffff" />
+                            </Pressable>
+
+                            {/* Botão Circular Verde (Aceitar) */}
+                            <Pressable
+                              style={({ pressed }) => [{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 22,
+                                backgroundColor: '#10b981',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                elevation: 4,
+                                shadowColor: '#10b981',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.35,
+                                shadowRadius: 4,
+                                transform: [{ scale: pressed ? 0.90 : 1 }]
+                              }]}
+                              onPress={() => handleAcceptInvite(inv)}
+                              hitSlop={8}
+                            >
+                              <Ionicons name="checkmark" size={24} color="#ffffff" />
+                            </Pressable>
+                          </View>
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+
+                {/* DEMAIS BANDAS */}
+                {filteredBands.map(band => {
               const bSetlists = setlists.filter(s => s && s.myBandId === band.id);
               const showsCount = bSetlists.filter(s => s.type === 'show').length;
               const rehearsalsCount = bSetlists.filter(s => s.type !== 'show').length;
@@ -2636,14 +3811,30 @@ function MainApp() {
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 4);
 
-              // Financial cachets per year
+              // Tags do estilo da banda (até 4 tags cadastradas ou fallback das músicas)
+              let bandTags = [];
+              if (band.genres) {
+                try {
+                  bandTags = typeof band.genres === 'string' && band.genres.startsWith('[')
+                    ? JSON.parse(band.genres)
+                    : String(band.genres).split(',').map(s => s.trim()).filter(Boolean);
+                } catch (e) {
+                  bandTags = String(band.genres).split(',').map(s => s.trim()).filter(Boolean);
+                }
+              }
+              if (bandTags.length === 0 && sortedTags.length > 0) {
+                bandTags = sortedTags.map(st => st.tag);
+              }
+              bandTags = bandTags.slice(0, 4);
+
+              // Financial cacheets per year
               const currentYear = new Date().getFullYear();
               const prevYear = currentYear - 1;
               let currentYearCache = 0;
               let prevYearCache = 0;
 
               bSetlists.forEach(sl => {
-                const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
+                const rawCache = sl.cacheê || sl.cache || sl.valCache || sl.value;
                 const amt = parseFloat(String(rawCache || 0).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
                 if (amt > 0 && sl.date) {
                   const cleanDate = String(sl.date).trim();
@@ -2729,6 +3920,15 @@ function MainApp() {
                       <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginTop: 2 }}>
                         {t('since')}: {band.startDate ? band.startDate : (currentYear - 1)}{band.endDate ? ` ${t('until')} ${band.endDate}` : ''}
                       </Text>
+
+                      {(band.city || band.state) && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 }}>
+                          <Ionicons name="location-outline" size={11} color={colors.primary} />
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }} numberOfLines={1}>
+                            {[band.city, band.state].filter(Boolean).join(', ')}{band.country && band.country !== 'Brasil' ? ` • ${band.country}` : ''}
+                          </Text>
+                        </View>
+                      )}
                     </View>
 
                     <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
@@ -2770,70 +3970,26 @@ function MainApp() {
                     </View>
                   </View>
 
-                  {/* 4 Principais Estilos com Porcentagem */}
-                  {sortedTags.length > 0 && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, paddingHorizontal: 2 }}>
-                      <Ionicons name="pricetag-outline" size={13} color={colors.textMuted} />
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, flex: 1 }}>
-                        {sortedTags.map(item => (
-                          <View key={item.tag} style={{ backgroundColor: colors.primary + '18', borderColor: colors.primary + '30', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2.5, borderRadius: 6 }}>
-                            <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>
-                              {item.tag}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
+                  {/* Até 4 Tags de Estilo da Banda */}
+                  {bandTags.length > 0 && (
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 5, marginBottom: 10, paddingHorizontal: 2 }}>
+                      {bandTags.map((tag, idx) => (
+                        <View key={idx} style={{ backgroundColor: colors.primary + '18', borderColor: colors.primary + '30', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                          <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary }}>
+                            {tag}
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   )}
 
-                  {/* Mostrador de Cachê Acumulado com Olho para Ocultar */}
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backgroundColor: isDark ? '#18181b' : '#f4f4f5',
-                    borderRadius: 12,
-                    paddingHorizontal: 12,
-                    paddingVertical: 8
-                  }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="cash-outline" size={16} color="#10b981" />
-                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
-                        Cachê {currentYear}: <Text style={{ color: '#10b981', fontWeight: '900' }}>
-                          {hideFinancialValues ? '$ ••••••' : `$ ${currentYearCache.toFixed(2)}`}
-                        </Text>
-                      </Text>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      {prevYearCache > 0 && (
-                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
-                          Acumulado {prevYear}: <Text style={{ color: colors.text, fontWeight: '900' }}>
-                            {hideFinancialValues ? '$ ••••••' : `$ ${prevYearCache.toFixed(2)}`}
-                          </Text>
-                        </Text>
-                      )}
-
-                      <Pressable
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          setHideFinancialValues(!hideFinancialValues);
-                        }}
-                        hitSlop={8}
-                        style={{ padding: 2 }}
-                      >
-                        <Ionicons
-                          name={hideFinancialValues ? "eye-off-outline" : "eye-outline"}
-                          size={16}
-                          color={colors.textMuted}
-                        />
-                      </Pressable>
-                    </View>
-                  </View>
+                  {/* Cache section removed as requested */}
                 </Pressable>
               );
-            })
-          )}
+            })}
+          </>
+        );
+      })()}
         </ScrollView>
       </View>
     );
@@ -2884,6 +4040,7 @@ function MainApp() {
             placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            maxLength={100}
           />
           <Pressable 
             style={({ pressed }) => [
@@ -2924,7 +4081,7 @@ function MainApp() {
                 styles.smallFilterChipText, 
                 { color: selectedStyles.length === 0 ? colors.primary : colors.text }
               ]}>
-                todos
+                {t('allLabel') || 'todos'}
               </Text>
             </Pressable>
 
@@ -2950,7 +4107,7 @@ function MainApp() {
                       if (selectedStyles.length < 4) {
                         setSelectedStyles([...selectedStyles, style]);
                       } else {
-                        Alert.alert('Limite atingido', 'Você pode selecionar no máximo 4 tags ao mesmo tempo.');
+                        Alert.alert(t('tagLimitReached') || 'Limite atingido', t('tagLimitMsg') || 'Você pode selecionar no máximo 4 tags ao mesmo tempo.');
                       }
                     }
                   }}
@@ -3384,451 +4541,610 @@ function MainApp() {
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* CARD 1: TEMA E APARÊNCIA */}
           <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setShowThemeCard(!showThemeCard);
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 0.3 }}>
+                    {t('themeAppearance')}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }} numberOfLines={1}>
+                    {themeMode === 'dark' ? t('dark') : t('light')} • {t('tapToChange')}
+                  </Text>
+                </View>
               </View>
-              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>
-                {t('themeAppearance')}
-              </Text>
-            </View>
+              <Ionicons
+                name={showThemeCard ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.primary}
+              />
+            </Pressable>
 
-            {/* Modo Claro / Escuro (CHAVINHA TOGGLE EXCLUSIVA) */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('themeMode')}</Text>
-                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                  {themeMode === 'dark' ? t('dark') : t('light')}
-                </Text>
-              </View>
+            {showThemeCard && (
+              <View style={{ marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                {/* Modo Claro / Escuro (CHAVINHA TOGGLE EXCLUSIVA) */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('themeMode')}</Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                      {themeMode === 'dark' ? t('dark') : t('light')}
+                    </Text>
+                  </View>
 
-              <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#18181b' : '#e4e4e7', borderRadius: 20, padding: 3, gap: 2 }}>
+                  <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#18181b' : '#e4e4e7', borderRadius: 20, padding: 3, gap: 2 }}>
+                    <Pressable
+                      style={[
+                        {
+                          paddingHorizontal: 14,
+                          paddingVertical: 8,
+                          borderRadius: 18,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          backgroundColor: themeMode === 'dark' ? colors.primary : 'transparent',
+                        }
+                      ]}
+                      onPress={() => setThemePreferences('dark', primaryColor, secondaryColor)}
+                    >
+                      <Ionicons name="moon" size={14} color={themeMode === 'dark' ? '#ffffff' : colors.textMuted} />
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: themeMode === 'dark' ? '#ffffff' : colors.textMuted }}>
+                        {t('dark')}
+                      </Text>
+                    </Pressable>
+
+                    <Pressable
+                      style={[
+                        {
+                          paddingHorizontal: 14,
+                          paddingVertical: 8,
+                          borderRadius: 18,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          backgroundColor: themeMode === 'light' ? colors.primary : 'transparent',
+                        }
+                      ]}
+                      onPress={() => setThemePreferences('light', primaryColor, secondaryColor)}
+                    >
+                      <Ionicons name="sunny" size={14} color={themeMode === 'light' ? '#ffffff' : colors.textMuted} />
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: themeMode === 'light' ? '#ffffff' : colors.textMuted }}>
+                        {t('light')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Cor Primária */}
                 <Pressable
-                  style={[
+                  style={({ pressed }) => [
                     {
-                      paddingHorizontal: 14,
-                      paddingVertical: 8,
-                      borderRadius: 18,
                       flexDirection: 'row',
                       alignItems: 'center',
-                      gap: 6,
-                      backgroundColor: themeMode === 'dark' ? colors.primary : 'transparent',
+                      justifyContent: 'space-between',
+                      paddingVertical: 12,
+                      borderTopWidth: 1,
+                      borderTopColor: colors.border,
+                      opacity: pressed ? 0.8 : 1
                     }
                   ]}
-                  onPress={() => setThemePreferences('dark', primaryColor, secondaryColor)}
+                  onPress={() => setShowPrimaryColorSheet(true)}
                 >
-                  <Ionicons name="moon" size={14} color={themeMode === 'dark' ? '#ffffff' : colors.textMuted} />
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: themeMode === 'dark' ? '#ffffff' : colors.textMuted }}>
-                    {t('dark')}
-                  </Text>
+                  <View>
+                    <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('primaryColor')}</Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                      {t('tapToChange')}
+                    </Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 19,
+                      backgroundColor: primaryColor,
+                      borderWidth: 3,
+                      borderColor: isDark ? '#ffffff' : colors.text,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      elevation: 4
+                    }}>
+                      <Ionicons name="color-palette" size={16} color="#ffffff" />
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                  </View>
                 </Pressable>
 
+                {/* Cor Secundária */}
                 <Pressable
-                  style={[
+                  style={({ pressed }) => [
                     {
-                      paddingHorizontal: 14,
-                      paddingVertical: 8,
-                      borderRadius: 18,
                       flexDirection: 'row',
                       alignItems: 'center',
-                      gap: 6,
-                      backgroundColor: themeMode === 'light' ? colors.primary : 'transparent',
+                      justifyContent: 'space-between',
+                      paddingVertical: 12,
+                      borderTopWidth: 1,
+                      borderTopColor: colors.border,
+                      opacity: pressed ? 0.8 : 1
                     }
                   ]}
-                  onPress={() => setThemePreferences('light', primaryColor, secondaryColor)}
+                  onPress={() => setShowSecondaryColorSheet(true)}
                 >
-                  <Ionicons name="sunny" size={14} color={themeMode === 'light' ? '#ffffff' : colors.textMuted} />
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: themeMode === 'light' ? '#ffffff' : colors.textMuted }}>
-                    {t('light')}
+                  <View>
+                    <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('secondaryColor')}</Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                      {t('tapToChange')}
+                    </Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 19,
+                      backgroundColor: secondaryColor,
+                      borderWidth: 3,
+                      borderColor: isDark ? '#ffffff' : colors.text,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      elevation: 4
+                    }}>
+                      <Ionicons name="color-palette" size={16} color="#ffffff" />
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                  </View>
+                </Pressable>
+              </View>
+            )}
+          </View>
+
+          {/* CARD 2: IDIOMA DO APLICATIVO */}
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setShowLanguageCard(!showLanguageCard);
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.secondary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="globe-outline" size={18} color={colors.secondary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 0.3 }}>
+                    {t('appLanguage')}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }} numberOfLines={1}>
+                    {language === 'pt' ? 'Português 🇧🇷' : language === 'en' ? 'English 🇺🇸' : 'Español 🇪🇸'}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons
+                name={showLanguageCard ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.secondary}
+              />
+            </Pressable>
+
+            {showLanguageCard && (
+              <View style={{ marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#18181b' : '#e4e4e7', borderRadius: 20, padding: 4, gap: 4 }}>
+                  <Pressable
+                    style={[
+                      {
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: language === 'pt' ? colors.secondary : 'transparent',
+                      }
+                    ]}
+                    onPress={() => setLanguage('pt')}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'pt' ? '#ffffff' : colors.textMuted }}>
+                      Português 🇧🇷
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      {
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: language === 'en' ? colors.secondary : 'transparent',
+                      }
+                    ]}
+                    onPress={() => setLanguage('en')}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'en' ? '#ffffff' : colors.textMuted }}>
+                      English 🇺🇸
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      {
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: language === 'es' ? colors.secondary : 'transparent',
+                      }
+                    ]}
+                    onPress={() => setLanguage('es')}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'es' ? '#ffffff' : colors.textMuted }}>
+                      Español 🇪🇸
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* CARD 3: QR-PIN SHARE */}
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setShowWebEditorCard(!showWebEditorCard);
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="qr-code-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 0.3 }}>
+                    {t('webEditorTitle')}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }} numberOfLines={1}>
+                    {t('webSyncSubtitle')}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons
+                name={showWebEditorCard ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.primary}
+              />
+            </Pressable>
+
+            {showWebEditorCard && (
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 18, marginBottom: 14 }}>
+                  {t('webSyncDesc')}
+                </Text>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    {
+                      backgroundColor: colors.primary,
+                      paddingVertical: 12,
+                      borderRadius: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      opacity: pressed ? 0.85 : 1,
+                    }
+                  ]}
+                  onPress={() => setShowSyncModal(true)}
+                >
+                  <Ionicons name="scan-outline" size={17} color="#fff" />
+                  <Text style={{ color: '#fff', fontSize: 13, fontWeight: '900' }}>
+                    {t('openSyncQrBtn')}
                   </Text>
                 </Pressable>
               </View>
-            </View>
-
-            {/* Cor Primária: APENAS UM CÍRCULO QUE ABRE O BOTTOM SHEET */}
-            <Pressable
-              style={({ pressed }) => [
-                {
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: colors.border,
-                  opacity: pressed ? 0.8 : 1
-                }
-              ]}
-              onPress={() => setShowPrimaryColorSheet(true)}
-            >
-              <View>
-                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('primaryColor')}</Text>
-                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                  {t('tapToChange')}
-                </Text>
-              </View>
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 19,
-                  backgroundColor: primaryColor,
-                  borderWidth: 3,
-                  borderColor: isDark ? '#ffffff' : colors.text,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  elevation: 4
-                }}>
-                  <Ionicons name="color-palette" size={16} color="#ffffff" />
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-              </View>
-            </Pressable>
-
-            {/* Cor Secundária: APENAS UM CÍRCULO QUE ABRE O BOTTOM SHEET */}
-            <Pressable
-              style={({ pressed }) => [
-                {
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: colors.border,
-                  opacity: pressed ? 0.8 : 1
-                }
-              ]}
-              onPress={() => setShowSecondaryColorSheet(true)}
-            >
-              <View>
-                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t('secondaryColor')}</Text>
-                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-                  {t('tapToChange')}
-                </Text>
-              </View>
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 19,
-                  backgroundColor: secondaryColor,
-                  borderWidth: 3,
-                  borderColor: isDark ? '#ffffff' : colors.text,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  elevation: 4
-                }}>
-                  <Ionicons name="color-palette" size={16} color="#ffffff" />
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-              </View>
-            </Pressable>
-          </View>
-
-          {/* CARD 2: IDIOMA DO APLICATIVO (TOGGLE SWITCH DESATIVA OS OUTROS) */}
-          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="globe-outline" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>
-                {t('appLanguage')}
-              </Text>
-            </View>
-
-            <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#18181b' : '#e4e4e7', borderRadius: 20, padding: 4, gap: 4 }}>
-              <Pressable
-                style={[
-                  {
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: language === 'pt' ? colors.primary : 'transparent',
-                  }
-                ]}
-                onPress={() => setLanguage('pt')}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'pt' ? '#ffffff' : colors.textMuted }}>
-                  Português 🇧🇷
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={[
-                  {
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: language === 'en' ? colors.primary : 'transparent',
-                  }
-                ]}
-                onPress={() => setLanguage('en')}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'en' ? '#ffffff' : colors.textMuted }}>
-                  English 🇺🇸
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={[
-                  {
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: language === 'es' ? colors.primary : 'transparent',
-                  }
-                ]}
-                onPress={() => setLanguage('es')}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '800', color: language === 'es' ? '#ffffff' : colors.textMuted }}>
-                  Español 🇪🇸
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* CARD 3: WEB EDITOR & SINCRONIZAÇÃO */}
-          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: '#6366f125', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="desktop-outline" size={18} color="#6366f1" />
-              </View>
-              <Text style={{ fontSize: 14, fontWeight: '900', color: '#6366f1', letterSpacing: 0.3 }}>
-                {t('webEditorTitle')}
-              </Text>
-            </View>
-
-            <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.text, marginTop: 4, marginBottom: 4 }}>
-              {t('webSyncSubtitle')}
-            </Text>
-
-            <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: 14 }}>
-              {t('webSyncDesc')}
-            </Text>
-
-            <Pressable
-              style={({ pressed }) => [
-                {
-                  backgroundColor: '#6366f1',
-                  paddingVertical: 12,
-                  borderRadius: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  opacity: pressed ? 0.85 : 1,
-                }
-              ]}
-              onPress={() => setShowSyncModal(true)}
-            >
-              <Ionicons name="scan-outline" size={17} color="#fff" />
-              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '900' }}>
-                {t('openSyncQrBtn')}
-              </Text>
-            </Pressable>
+            )}
           </View>
 
           {/* CARD 4: BACKUP E RESTAURAÇÃO DE DADOS */}
           <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.warning + '20', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="shield-checkmark-outline" size={18} color={colors.warning} />
-              </View>
-              <Text style={[styles.aboutSectionTitle, { color: colors.warning, marginBottom: 0 }]}>
-                {t('backupTipsTitle')}
-              </Text>
-            </View>
-
-            <Text style={{ fontSize: 12.5, color: colors.text, fontWeight: '800', marginBottom: 8 }}>
-              {t('protectDataLabel')}
-            </Text>
-
-            <View style={{ gap: 6, marginBottom: 16 }}>
-              {[t('tip2'), t('tip3')].map((tip, idx) => (
-                <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-                  <Ionicons name="checkmark-circle" size={13} color={colors.primary} style={{ marginTop: 2 }} />
-                  <Text style={{ fontSize: 11.5, color: colors.textMuted, lineHeight: 16, flex: 1 }}>
-                    {tip}
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setShowBackupCard(!showBackupCard);
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.secondary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="shield-checkmark-outline" size={18} color={colors.secondary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 0.3 }}>
+                    {t('backupTipsTitle')}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }} numberOfLines={1}>
+                    {t('protectDataLabel')}
                   </Text>
                 </View>
-              ))}
-            </View>
+              </View>
+              <Ionicons
+                name={showBackupCard ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.secondary}
+              />
+            </Pressable>
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Pressable
-                style={({ pressed }) => [
-                  {
-                    flex: 1,
-                    backgroundColor: colors.primary,
-                    paddingVertical: 12,
-                    borderRadius: 12,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                    opacity: pressed ? 0.8 : 1,
-                  }
-                ]}
-                onPress={handleBackupAll}
-              >
-                <Ionicons name="save-outline" size={15} color="#fff" />
-                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>
-                  {t('backupAllBtn')}
-                </Text>
-              </Pressable>
+            {showBackupCard && (
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                <View style={{ gap: 6, marginBottom: 16 }}>
+                  {[t('tip2'), t('tip3')].map((tip, idx) => (
+                    <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                      <Ionicons name="checkmark-circle" size={13} color={colors.secondary} style={{ marginTop: 2 }} />
+                      <Text style={{ fontSize: 11.5, color: colors.textMuted, lineHeight: 16, flex: 1 }}>
+                        {tip}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
 
-              <Pressable
-                style={({ pressed }) => [
-                  {
-                    flex: 1,
-                    backgroundColor: colors.primary + '18',
-                    paddingVertical: 12,
-                    borderRadius: 12,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                    opacity: pressed ? 0.8 : 1,
-                  }
-                ]}
-                onPress={() => handleOpenImportOptions('backup')}
-              >
-                <Ionicons name="download-outline" size={15} color={colors.primary} />
-                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '900' }}>
-                  {t('restoreBackupBtn')}
-                </Text>
-              </Pressable>
-            </View>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      {
+                        flex: 1,
+                        backgroundColor: colors.secondary,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        opacity: pressed ? 0.8 : 1,
+                      }
+                    ]}
+                    onPress={handleBackupAll}
+                  >
+                    <Ionicons name="save-outline" size={15} color="#fff" />
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>
+                      {t('backupAllBtn')}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={({ pressed }) => [
+                      {
+                        flex: 1,
+                        backgroundColor: colors.secondary + '18',
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        opacity: pressed ? 0.8 : 1,
+                      }
+                    ]}
+                    onPress={() => handleOpenImportOptions('backup')}
+                  >
+                    <Ionicons name="download-outline" size={15} color={colors.secondary} />
+                    <Text style={{ color: colors.secondary, fontSize: 11, fontWeight: '900' }}>
+                      {t('restoreBackupBtn')}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
           </View>
+
+          {/* CARD 5: SOBRE O APLICATIVO */}
+          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setShowAboutCard(!showAboutCard);
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="information-circle-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 0.3 }}>
+                    {t('aboutHeader')}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
+                    BandLink • v1.3.2
+                  </Text>
+                </View>
+              </View>
+              <Ionicons
+                name={showAboutCard ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.primary}
+              />
+            </Pressable>
+
+            {showAboutCard && (
+              <View style={{ marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                {/* Logo & Versão */}
+                <View style={{ alignItems: 'center', paddingVertical: 12 }}>
+                  <Pressable onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.setlistbandmanager.com').catch(err => console.error("Couldn't open Play Store", err))}>
+                    <Image source={require('./assets/logo.png')} style={styles.aboutLogo} resizeMode="contain" />
+                  </Pressable>
+                  <Text style={[styles.aboutAppTitle, { color: colors.primary, marginTop: 8 }]}>BANDLINK</Text>
+                  <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.2</Text>
+                  </View>
+                  
+                  <Pressable 
+                    onPress={() => Linking.openURL('https://www.setlistbandmanager.com').catch(err => console.error("Couldn't open URL", err))}
+                    style={({ pressed }) => [{ marginTop: 4, marginBottom: 2 }, pressed && { opacity: 0.7 }]}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <Ionicons name="globe-outline" size={13} color={colors.primary} />
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary, textDecorationLine: 'underline' }}>
+                        www.setlistbandmanager.com
+                      </Text>
+                    </View>
+                  </Pressable>
+
+                  <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '85%', marginVertical: 12 }} />
+                  
+                  <Text style={[styles.aboutDeveloperLabel, { color: colors.textMuted }]}>{t('aboutDev')}</Text>
+                  <Pressable 
+                    onPress={() => Linking.openURL('https://instagram.com/allison_rps').catch(err => console.error("Couldn't open URL", err))}
+                    style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+                  >
+                    <Text style={[styles.aboutDeveloperName, { color: colors.primary, textDecorationLine: 'underline' }]}>
+                      Allison Rodrigues
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {/* Descrição */}
+                <View style={{ marginTop: 12, padding: 12, borderRadius: 12, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <Ionicons name="document-text-outline" size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>{t('aboutTheApp')}</Text>
+                  </View>
+                  <Text style={[styles.aboutDescriptionText, { color: colors.textMuted, fontSize: 12, lineHeight: 17 }]}>
+                    {t('aboutAppDesc')}
+                  </Text>
+                </View>
+
+                {/* Funcionalidades com Tutoriais */}
+                <View style={{ marginTop: 14 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>{t('aboutFeatures')}</Text>
+                  </View>
+
+                  {getFeaturesList(language).map((feature) => (
+                    <Pressable
+                      key={feature.id}
+                      onPress={() => setSelectedTutorialFeature(feature)}
+                      style={({ pressed }) => [
+                        styles.aboutFeatureRow,
+                        {
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                          padding: 10,
+                          borderRadius: 10,
+                          borderWidth: 0,
+                          marginBottom: 8,
+                          flexDirection: 'column',
+                          alignItems: 'stretch',
+                        },
+                        pressed && { opacity: 0.7, transform: [{ scale: 0.99 }] }
+                      ]}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={{ width: 26, height: 26, borderRadius: 7, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                          <Ionicons name={feature.icon} size={14} color={colors.primary} />
+                        </View>
+                        <Text style={[styles.aboutFeatureTitle, { color: colors.text, fontSize: 12.5, fontWeight: '800', flex: 1 }]}>
+                          {feature.title}
+                        </Text>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 5, gap: 8 }}>
+                        <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted, fontSize: 11, flex: 1, lineHeight: 15 }]} numberOfLines={2}>
+                          {feature.subtitle}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '18', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 5, flexShrink: 0 }}>
+                          <Text style={{ fontSize: 9, fontWeight: '900', color: colors.primary }}>
+                            TUTORIAL
+                          </Text>
+                          <Ionicons name="chevron-forward" size={10} color={colors.primary} />
+                        </View>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+
         </ScrollView>
       </View>
     );
   };
 
-  const renderAboutTab = () => {
+  // Flag de controle da Rede BandLink:
+  // API na nuvem implantada e operacional no Azure App Service
+  const IS_NETWORK_LIVE = true;
+
+  const renderSocialTab = () => {
+    if (!IS_NETWORK_LIVE) {
+      return (
+        <View style={{
+          flex: 1,
+          marginHorizontal: -20,
+          marginTop: -(Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50),
+        }}>
+          <NetworkComingSoon />
+        </View>
+      );
+    }
+
+    const handleUserLogin = async () => {
+      setIsLoggedIn(true);
+      try {
+        const isCompleted = await AsyncStorage.getItem('user_profile_completed');
+        if (isCompleted === 'true') {
+          setSocialView('feed');
+        } else {
+          const cached = await AsyncStorage.getItem('user_profile_cache');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+              await AsyncStorage.setItem('user_profile_completed', 'true');
+              setSocialView('feed');
+              return;
+            }
+          }
+          setSocialView('profile');
+        }
+      } catch (e) {
+        setSocialView('profile');
+      }
+    };
+
     return (
       <View style={{ flex: 1 }}>
-        <View style={styles.tabHeaderRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '18' }]}>
-              <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
-            </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('aboutHeader')}</Text>
+        {isLoggedIn ? (
+          <View style={{
+            flex: 1,
+            marginHorizontal: -20,
+            marginTop: -(Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50),
+          }}>
+            {socialView === 'feed' ? (
+              <NetworkScreen 
+                onOpenProfile={() => setSocialView('profile')} 
+                onLogout={async () => { await api.logout(); setIsLoggedIn(false); }} 
+              />
+            ) : (
+              <ProfileScreen 
+                onBack={() => setSocialView('feed')} 
+                onLogout={async () => { await api.logout(); setIsLoggedIn(false); }} 
+                onOpenBandProfile={handleOpenBandPublicProfile}
+              />
+            )}
           </View>
-        </View>
-
-        <ScrollView 
-          style={{ flex: 1 }} 
-          contentContainerStyle={{ paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Card Principal de Versão */}
-          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)', alignItems: 'center', paddingVertical: 24 }]}>
-            <Image source={require('./assets/logo.png')} style={styles.aboutLogo} />
-            <Text style={[styles.aboutAppTitle, { color: colors.primary }]}>SETLIST BAND MANAGER</Text>
-            <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
-              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.0</Text>
-            </View>
-            
-            <Pressable 
-              onPress={() => Linking.openURL('https://www.setlistbandmanager.com').catch(err => console.error("Couldn't open URL", err))}
-              style={({ pressed }) => [{ marginTop: 4, marginBottom: 2 }, pressed && { opacity: 0.7 }]}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                <Ionicons name="globe-outline" size={13} color={colors.primary} />
-                <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary, textDecorationLine: 'underline' }}>
-                  www.setlistbandmanager.com
-                </Text>
-              </View>
-            </Pressable>
-
-            <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '85%', marginVertical: 14 }} />
-            
-            <Text style={[styles.aboutDeveloperLabel, { color: colors.textMuted }]}>{t('aboutDev')}</Text>
-            <Pressable 
-              onPress={() => Linking.openURL('https://instagram.com/allison_rps').catch(err => console.error("Couldn't open URL", err))}
-              style={({ pressed }) => [pressed && { opacity: 0.7 }]}
-            >
-              <Text style={[styles.aboutDeveloperName, { color: colors.primary, textDecorationLine: 'underline' }]}>
-                Allison Rodrigues
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Card de Descrição */}
-          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="document-text-outline" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('aboutTheApp')}</Text>
-            </View>
-            <Text style={[styles.aboutDescriptionText, { color: colors.textMuted }]}>
-              {t('aboutAppDesc')}
-            </Text>
-          </View>
-
-          {/* Card de Funcionalidades com Tutoriais Interativos */}
-          <View style={[styles.aboutCard, { backgroundColor: isDark ? 'rgba(23, 30, 46, 0.75)' : 'rgba(255, 255, 255, 0.9)' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.aboutSectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('aboutFeatures')}</Text>
-            </View>
-            
-            {getFeaturesList(language).map((feature) => (
-              <Pressable
-                key={feature.id}
-                onPress={() => setSelectedTutorialFeature(feature)}
-                style={({ pressed }) => [
-                  styles.aboutFeatureRow,
-                  {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                    padding: 12,
-                    borderRadius: 12,
-                    borderWidth: 0,
-                    marginBottom: 8,
-                    flexDirection: 'column',
-                    alignItems: 'stretch',
-                  },
-                  pressed && { opacity: 0.7, transform: [{ scale: 0.99 }] }
-                ]}
-              >
-                {/* Linha 1: Ícone + Título */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
-                    <Ionicons name={feature.icon} size={15} color={colors.primary} />
-                  </View>
-                  <Text style={[styles.aboutFeatureTitle, { color: colors.text, fontSize: 13, fontWeight: '800', flex: 1 }]}>
-                    {feature.title}
-                  </Text>
-                </View>
-
-                {/* Linha 2: Descrição na esquerda + Botão de Tutorial na direita */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, gap: 8 }}>
-                  <Text style={[styles.aboutFeatureDesc, { color: colors.textMuted, fontSize: 11, flex: 1, lineHeight: 15 }]} numberOfLines={2}>
-                    {feature.subtitle}
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, flexShrink: 0 }}>
-                    <Text style={{ fontSize: 9.5, fontWeight: '900', color: colors.primary }}>
-                      TUTORIAL
-                    </Text>
-                    <Ionicons name="chevron-forward" size={11} color={colors.primary} />
-                  </View>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        </ScrollView>
+        ) : (
+          <LoginScreen onLogin={handleUserLogin} />
+        )}
       </View>
     );
   };
@@ -3855,79 +5171,83 @@ function MainApp() {
             {currentTab === 'songs' && renderSongsTab()}
             {currentTab === 'bands' && renderBandsTab()}
             {currentTab === 'options' && renderOptionsTab()}
-            {currentTab === 'about' && renderAboutTab()}
+            {currentTab === 'social' && renderSocialTab()}
           </View>
 
-          {/* Barra de Navegação Inferior (com aba de Opções antes de Sobre) */}
+          {/* Barra de Navegação Inferior (Ordem: Home -> Bandas -> Rede (Destacada) -> Músicas -> Opções) */}
           <View style={[styles.bottomNav, { backgroundColor: colors.cardBackground, borderTopColor: colors.border }]}>
+            <Pressable style={styles.tabItem} onPress={() => setCurrentTab('home')}>
+              <Ionicons name={currentTab === 'home' ? 'home' : 'home-outline'} size={23} color={currentTab === 'home' ? colors.primary : colors.textMuted} />
+              <Text style={[styles.tabText, { color: currentTab === 'home' ? colors.primary : colors.textMuted }]}>{t('home')}</Text>
+            </Pressable>
+            
+            <Pressable style={styles.tabItem} onPress={() => setCurrentTab('bands')}>
+              <Ionicons name={currentTab === 'bands' ? 'people' : 'people-outline'} size={23} color={currentTab === 'bands' ? colors.primary : colors.textMuted} />
+              <Text style={[styles.tabText, { color: currentTab === 'bands' ? colors.primary : colors.textMuted }]}>{t('bandsTab') || 'Bandas'}</Text>
+            </Pressable>
+
+            {/* ABA CENTRAL DESTACADA: REDE (Círculo sobressaindo à barra) */}
             <Pressable
-              style={styles.tabItem}
-              onPress={() => setCurrentTab('home')}
+              style={styles.tabItemRaised}
+              onPress={async () => {
+                setCurrentTab('social');
+                if (isLoggedIn) {
+                  try {
+                    const isCompleted = await AsyncStorage.getItem('user_profile_completed');
+                    if (isCompleted === 'true') {
+                      setSocialView('feed');
+                    } else {
+                      const cached = await AsyncStorage.getItem('user_profile_cache');
+                      if (cached) {
+                        const parsed = JSON.parse(cached);
+                        if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+                          await AsyncStorage.setItem('user_profile_completed', 'true');
+                          setSocialView('feed');
+                          return;
+                        }
+                      }
+                      setSocialView('profile');
+                    }
+                  } catch (e) {
+                    setSocialView('profile');
+                  }
+                }
+              }}
             >
-              <Ionicons 
-                name={currentTab === 'home' ? 'home' : 'home-outline'} 
-                size={23} 
-                color={currentTab === 'home' ? colors.primary : colors.textMuted} 
-              />
-              <Text style={[styles.tabText, { color: currentTab === 'home' ? colors.primary : colors.textMuted }]}>
-                {t('home')}
+              <View style={[
+                styles.tabRaisedCircle,
+                {
+                  backgroundColor: currentTab === 'social' ? colors.primary : colors.cardBackground,
+                  borderColor: currentTab === 'social' ? colors.cardBackground : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'),
+                  shadowColor: colors.primary,
+                }
+              ]}>
+                <Ionicons
+                  name={currentTab === 'social' ? 'globe' : 'globe-outline'}
+                  size={25}
+                  color={currentTab === 'social' ? '#ffffff' : colors.primary}
+                />
+              </View>
+              <Text style={[
+                styles.tabText,
+                {
+                  color: currentTab === 'social' ? colors.primary : colors.textMuted,
+                  fontWeight: currentTab === 'social' ? '900' : '800',
+                  marginTop: 1,
+                }
+              ]}>
+                {t('networkTab') || 'Rede'}
               </Text>
             </Pressable>
 
-            <Pressable
-              style={styles.tabItem}
-              onPress={() => setCurrentTab('songs')}
-            >
-              <Ionicons 
-                name={currentTab === 'songs' ? 'musical-notes' : 'musical-notes-outline'} 
-                size={23} 
-                color={currentTab === 'songs' ? colors.primary : colors.textMuted} 
-              />
-              <Text style={[styles.tabText, { color: currentTab === 'songs' ? colors.primary : colors.textMuted }]}>
-                {t('songs')}
-              </Text>
+            <Pressable style={styles.tabItem} onPress={() => setCurrentTab('songs')}>
+              <Ionicons name={currentTab === 'songs' ? 'musical-notes' : 'musical-notes-outline'} size={23} color={currentTab === 'songs' ? colors.primary : colors.textMuted} />
+              <Text style={[styles.tabText, { color: currentTab === 'songs' ? colors.primary : colors.textMuted }]}>{t('songs')}</Text>
             </Pressable>
 
-            <Pressable
-              style={styles.tabItem}
-              onPress={() => setCurrentTab('bands')}
-            >
-              <Ionicons 
-                name={currentTab === 'bands' ? 'people' : 'people-outline'} 
-                size={23} 
-                color={currentTab === 'bands' ? colors.primary : colors.textMuted} 
-              />
-              <Text style={[styles.tabText, { color: currentTab === 'bands' ? colors.primary : colors.textMuted }]}>
-                Bandas
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.tabItem}
-              onPress={() => setCurrentTab('options')}
-            >
-              <Ionicons 
-                name={currentTab === 'options' ? 'settings' : 'settings-outline'} 
-                size={23} 
-                color={currentTab === 'options' ? colors.primary : colors.textMuted} 
-              />
-              <Text style={[styles.tabText, { color: currentTab === 'options' ? colors.primary : colors.textMuted }]}>
-                {t('options') || 'Opções'}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.tabItem}
-              onPress={() => setCurrentTab('about')}
-            >
-              <Ionicons 
-                name={currentTab === 'about' ? 'information-circle' : 'information-circle-outline'} 
-                size={23} 
-                color={currentTab === 'about' ? colors.primary : colors.textMuted} 
-              />
-              <Text style={[styles.tabText, { color: currentTab === 'about' ? colors.primary : colors.textMuted }]}>
-                {t('about')}
-              </Text>
+            <Pressable style={styles.tabItem} onPress={() => setCurrentTab('options')}>
+              <Ionicons name={currentTab === 'options' ? 'settings' : 'settings-outline'} size={23} color={currentTab === 'options' ? colors.primary : colors.textMuted} />
+              <Text style={[styles.tabText, { color: currentTab === 'options' ? colors.primary : colors.textMuted }]}>{t('options') || 'Opções'}</Text>
             </Pressable>
           </View>
         </View>
@@ -4020,6 +5340,58 @@ function MainApp() {
         onToggleRehearsalStatus={handleToggleRehearsalStatus}
         onUpdateSongRehearsalNotes={handleUpdateSongRehearsalNotes}
         onReloadAll={reloadAllData}
+        onOpenPublicProfile={handleOpenBandPublicProfile}
+      />
+
+      {/* PÁGINA PÚBLICA DO MÚSICO */}
+      <MusicianProfileModal
+        visible={showMusicianProfileModal}
+        musician={selectedMusicianProfile}
+        onClose={() => {
+          setShowMusicianProfileModal(false);
+          setSelectedMusicianProfile(null);
+        }}
+        onOpenBandProfile={handleOpenBandPublicProfile}
+      />
+
+      {/* PÁGINA PÚBLICA DA BANDA */}
+      <BandProfileModal
+        visible={showBandProfileModal}
+        band={selectedBandProfile}
+        onClose={() => {
+          setShowBandProfileModal(false);
+          setSelectedBandProfile(null);
+        }}
+        onAcceptInvite={handleAcceptInvite}
+        onRejectInvite={handleRejectInvite}
+        onOpenBandProfile={handleOpenBandPublicProfile}
+      />
+
+      {/* MODAL COMPARTILHAR AGENDA NA HOME */}
+      <ShareAgendaModal
+        visible={showShareHomeAgendaModal}
+        onClose={() => setShowShareHomeAgendaModal(false)}
+        events={(setlists || [])
+          .filter(s => (s.type === 'show' || !s.type) && s.date)
+          .sort((a, b) => {
+            const da = a.date ? new Date(a.date) : new Date(0);
+            const db = b.date ? new Date(b.date) : new Date(0);
+            return da - db;
+          })
+          .map(s => {
+            const b = (bands || []).find(band => band.id === (s.myBandId || s.bandId));
+            return {
+              id: s.id,
+              name: s.name || b?.name || 'Show',
+              local: s.local || '',
+              date: s.date || '',
+              band: b?.name || s.name || '',
+              logo: s.bandImageUri || b?.imageUri || null,
+            };
+          })}
+        displayName={userProfile?.displayName || userProfile?.name || 'Agenda de Shows'}
+        headerLogo={userProfile?.imageUri || null}
+        qrValue={userProfile?.username ? `https://setlistbandmanager.com/u/${userProfile.username}` : 'https://setlistbandmanager.com'}
       />
 
       <SetlistDetailScreen
@@ -4267,6 +5639,144 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontWeight: '700',
+  },
+
+  // Convites de Projetos e Bandas
+  invitesSectionContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 2,
+  },
+  invitesSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  invitesSectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  inviteCountBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+    marginLeft: 4,
+  },
+  inviteCountText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  inviteCard: {
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+  },
+  inviteCardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  inviteBandAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inviteBandName: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  inviteRoleText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  inviteStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  deleteInviteXBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inviteDescription: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  replyInputLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  replyTextInput: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 12.5,
+    minHeight: 44,
+  },
+  inviteActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 10,
+  },
+  rejectInviteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  rejectInviteText: {
+    color: '#ef4444',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  acceptInviteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  acceptInviteText: {
+    color: '#ffffff',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  sentReplyBox: {
+    marginTop: 8,
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  sentReplyLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  sentReplyText: {
+    fontSize: 12,
+    fontStyle: 'italic',
   },
   container: {
     flex: 1,
@@ -4605,6 +6115,24 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     paddingBottom: 2,
   },
+  tabItemRaised: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    marginTop: -16,
+  },
+  tabRaisedCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 8,
+  },
   tabIcon: {
     fontSize: 22,
   },
@@ -4761,5 +6289,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: 0.5,
+  },
+  agendaSummaryCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+  },
+  agendaSummaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  summaryCircleCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryCircle: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  summaryOverlapWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 54,
+    height: 54,
+  },
+  summaryOverlapIconCircle: {
+    position: 'absolute',
+    left: -10,
+    top: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 2,
+  },
+  summaryCircleValue: {
+    fontWeight: '900',
+  },
+  summaryCircleLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    marginTop: 6,
+    letterSpacing: 0.2,
   },
 });

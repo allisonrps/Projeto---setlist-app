@@ -8,11 +8,14 @@ import {
   Dimensions,
   Easing,
   StatusBar,
+  Modal,
 } from 'react-native';
+import { useLanguage } from '../hooks/useLanguage';
 
 const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen({ isReady, onFinish }) {
+  const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const logoScale = useRef(new Animated.Value(0.85)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -135,6 +138,7 @@ export default function SplashScreen({ isReady, onFinish }) {
   }, [isReady, isFadingOut, fadeAnim, onFinish]);
 
   return (
+    <Modal visible={true} transparent={true} animationType="none">
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <StatusBar barStyle="light-content" backgroundColor="#09090b" />
       
@@ -166,8 +170,8 @@ export default function SplashScreen({ isReady, onFinish }) {
             style={styles.logoImage}
             resizeMode="contain"
           />
-        </Animated.View>
-      </View>
+          </Animated.View>
+        </View>
 
       {/* App Name and Tagline */}
       <Animated.View
@@ -180,15 +184,15 @@ export default function SplashScreen({ isReady, onFinish }) {
         ]}
       >
         <Text style={styles.brandTitleText}>
-          SETLIST <Text style={styles.brandTitleHighlight}>BAND MANAGER</Text>
+          BAND<Text style={styles.brandTitleHighlight}>LINK</Text>
         </Text>
-        <Text style={styles.taglineText}>Gestão inteligente para bandas e shows</Text>
+        <Text style={styles.taglineText}>{t('splashTagline') || 'Repertório, Palco & Rede Musical'}</Text>
 
         {/* Dynamic Animated Equalizer Indicator */}
         <View style={styles.equalizerRow}>
           <Animated.View style={[styles.eqBar, { height: bar1Height }]} />
           <Animated.View style={[styles.eqBar, { height: bar2Height, backgroundColor: '#38bdf8' }]} />
-          <Animated.View style={[styles.eqBar, { height: bar3Height, backgroundColor: '#818cf8' }]} />
+          <Animated.View style={[styles.eqBar, { height: bar3Height, backgroundColor: '#8b5cf6' }]} />
           <Animated.View style={[styles.eqBar, { height: bar4Height, backgroundColor: '#38bdf8' }]} />
           <Animated.View style={[styles.eqBar, { height: bar5Height }]} />
         </View>
@@ -197,17 +201,20 @@ export default function SplashScreen({ isReady, onFinish }) {
       {/* Footer Version Info */}
       <View style={styles.footerContainer}>
         <View style={styles.proBadge}>
-          <Text style={styles.proBadgeText}>PRO EDITION</Text>
+          <Text style={styles.proBadgeText}>{t('proEdition') || 'PRO'}</Text>
         </View>
-        <Text style={styles.versionText}>v1.2.0 • Setlist App</Text>
+        <Text style={styles.versionText}>v1.3.3 • BandLink</Text>
       </View>
     </Animated.View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
+    width: '100%',
+    height: '100%',
     zIndex: 99999,
     backgroundColor: '#09090b',
     justifyContent: 'center',

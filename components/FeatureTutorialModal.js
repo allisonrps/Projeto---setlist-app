@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Modal,
   Pressable,
@@ -37,7 +37,7 @@ export default function FeatureTutorialModal({ visible, onClose, feature }) {
               <View style={{ flex: 1 }}>
                 <View style={[styles.badgeContainer, { backgroundColor: colors.primary + '15' }]}>
                   <Text style={[styles.badgeText, { color: colors.primary }]}>
-                    {t('tutorialGuide') || 'TUTORIAL PRÁTICO'}
+                    {t('tutorialGuide')}
                   </Text>
                 </View>
                 <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={1}>
@@ -73,7 +73,7 @@ export default function FeatureTutorialModal({ visible, onClose, feature }) {
 
             {/* Passo a Passo */}
             <Text style={[styles.sectionHeading, { color: colors.text }]}>
-              {t('stepByStep') || 'COMO USAR PASSO A PASSO:'}
+              {t('stepByStep')}
             </Text>
 
             <View style={styles.stepsList}>
@@ -97,7 +97,7 @@ export default function FeatureTutorialModal({ visible, onClose, feature }) {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <Ionicons name="bulb-outline" size={16} color="#eab308" />
                   <Text style={[styles.proTipHeading, { color: '#eab308' }]}>
-                    {t('proTip') || 'DICA DE OURO:'}
+                    {t('proTip')}
                   </Text>
                 </View>
                 <Text style={[styles.proTipText, { color: isDark ? '#fef08a' : '#854d0e' }]}>
@@ -117,7 +117,7 @@ export default function FeatureTutorialModal({ visible, onClose, feature }) {
               onPress={onClose}
             >
               <Text style={styles.actionBtnText}>
-                {t('understood') || 'ENTENDIDO'}
+                {t('understood')}
               </Text>
             </Pressable>
           </View>

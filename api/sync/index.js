@@ -1,6 +1,17 @@
+const crypto = require('crypto');
+
 // In-memory session store (with automatic expiration)
 const sessions = new Map();
 const TTL_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_SESSIONS = 5000;
+const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB
+
+const ALLOWED_ORIGINS = [
+  'https://www.setlistbandmanager.com',
+  'http://localhost:3000',
+  'http://localhost:8081',
+  'http://localhost:19006'
+];
 
 function cleanExpiredSessions() {
   const now = Date.now();
@@ -12,23 +23,44 @@ function cleanExpiredSessions() {
 }
 
 function generatePin() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 }
 
 function generateSessionId() {
-  return 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+  return crypto.randomUUID();
+}
+
+function isValidPin(pin) {
+  return typeof pin === 'string' && /^\d{6}$/.test(pin);
+}
+
+function isValidSessionId(sessionId) {
+  return typeof sessionId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId);
 }
 
 module.exports = async function (context, req) {
   cleanExpiredSessions();
 
+  const origin = req.headers.origin || req.headers.Origin || '';
+  let allowedOrigin = '';
+  if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.azurestaticapps.net') || origin.endsWith('.setlistbandmanager.com')) {
+    allowedOrigin = origin;
+  } else if (!origin) {
+    allowedOrigin = '*';
+  }
+
   // CORS Headers
   const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY'
   };
+
+  if (allowedOrigin) {
+    headers['Access-Control-Allow-Origin'] = allowedOrigin;
+  }
 
   if (req.method === 'OPTIONS') {
     context.res = { status: 204, headers };
@@ -39,10 +71,30 @@ module.exports = async function (context, req) {
 
   // 1. CREATE NEW SESSION (Called by Web Editor or Mobile App)
   if (action === 'create_session') {
+    if (sessions.size >= MAX_SESSIONS) {
+      context.res = {
+        status: 503,
+        headers,
+        body: { success: false, error: 'Maximum session limit reached. Please try again later.' }
+      };
+      return;
+    }
+
     const sessionId = generateSessionId();
     let pin = generatePin();
-    // Ensure unique PIN
+    let attempts = 0;
+    
+    // Ensure unique PIN with max 10 attempts
     while (Array.from(sessions.values()).some(s => s.pin === pin)) {
+      attempts++;
+      if (attempts >= 10) {
+        context.res = {
+          status: 503,
+          headers,
+          body: { success: false, error: 'Failed to generate a unique PIN. Please try again.' }
+        };
+        return;
+      }
       pin = generatePin();
     }
 
@@ -52,7 +104,8 @@ module.exports = async function (context, req) {
       createdAt: Date.now(),
       status: 'waiting', // 'waiting' | 'ready'
       dataForWeb: null,
-      dataForApp: null
+      dataForApp: null,
+      failedAttempts: 0
     };
 
     sessions.set(sessionId, session);
@@ -70,26 +123,61 @@ module.exports = async function (context, req) {
     return;
   }
 
+  // Helper to find and validate session
+  function getSession(reqSessionId, reqPin) {
+    let session = null;
+    let authFailed = false;
+
+    if (reqSessionId) {
+      if (!isValidSessionId(reqSessionId)) return { session: null, authFailed: false };
+      session = sessions.get(reqSessionId);
+      if (session && reqPin) {
+        if (!isValidPin(reqPin) || session.pin !== String(reqPin).trim()) {
+           authFailed = true;
+        }
+        
+        if (authFailed) {
+          session.failedAttempts = (session.failedAttempts || 0) + 1;
+          if (session.failedAttempts >= 5) {
+            sessions.delete(reqSessionId);
+          }
+          return { session: null, authFailed: true };
+        }
+      }
+    } else if (reqPin) {
+      if (!isValidPin(reqPin)) return { session: null, authFailed: false };
+      session = Array.from(sessions.values()).find(s => s.pin === String(reqPin).trim());
+    }
+
+    return { session, authFailed };
+  }
+
   // 2. SEND DATA TO SESSION (App -> Web OR Web -> App)
   if (action === 'send_data') {
     const body = req.body || {};
     const sessionId = body.sessionId || req.query.sessionId;
-    const pin = body.pin || req.query.pin;
+    let pin = body.pin || req.query.pin;
+    if (pin !== undefined) pin = String(pin).trim();
     const target = body.target || 'web'; // 'web' or 'app'
     const payload = body.data;
 
-    let session = null;
-    if (sessionId && sessions.has(sessionId)) {
-      session = sessions.get(sessionId);
-    } else if (pin) {
-      session = Array.from(sessions.values()).find(s => s.pin === String(pin).trim());
+    if (target !== 'web' && target !== 'app') {
+      context.res = { status: 400, headers, body: { success: false, error: 'Invalid target.' } };
+      return;
     }
+
+    if (payload && JSON.stringify(payload).length > MAX_PAYLOAD_SIZE) {
+      context.res = { status: 413, headers, body: { success: false, error: 'Payload too large.' } };
+      return;
+    }
+
+    const { session, authFailed } = getSession(sessionId, pin);
 
     if (!session) {
       context.res = {
-        status: 404,
+        status: authFailed ? 403 : 404,
         headers,
-        body: { success: false, error: 'Sessão ou PIN não encontrado ou expirado.' }
+        body: { success: false, error: authFailed ? 'Invalid PIN.' : 'Sessão ou PIN não encontrado ou expirado.' }
       };
       return;
     }
@@ -120,45 +208,38 @@ module.exports = async function (context, req) {
   // 3. POLL / GET DATA FROM SESSION
   if (action === 'poll_data' || action === 'get_data') {
     const sessionId = req.query.sessionId || (req.body && req.body.sessionId);
-    const pin = req.query.pin || (req.body && req.body.pin);
+    let pin = req.query.pin || (req.body && req.body.pin);
+    if (pin !== undefined) pin = String(pin).trim();
     const receiver = req.query.receiver || (req.body && req.body.receiver) || 'web'; // 'web' or 'app'
 
-    let session = null;
-    if (sessionId && sessions.has(sessionId)) {
-      session = sessions.get(sessionId);
-    } else if (pin) {
-      session = Array.from(sessions.values()).find(s => s.pin === String(pin).trim());
+    if (receiver !== 'web' && receiver !== 'app') {
+      context.res = { status: 400, headers, body: { success: false, error: 'Invalid receiver.' } };
+      return;
     }
+
+    const { session, authFailed } = getSession(sessionId, pin);
 
     if (!session) {
       context.res = {
-        status: 404,
+        status: authFailed ? 403 : 404,
         headers,
-        body: { success: false, error: 'Sessão não encontrada.' }
+        body: { success: false, error: authFailed ? 'Invalid PIN.' : 'Sessão não encontrada.' }
       };
       return;
     }
 
-    if (receiver === 'web' && session.dataForWeb) {
-      const data = session.dataForWeb;
-      session.dataForWeb = null; // Consume once
-      session.status = 'consumed';
-      context.res = {
-        status: 200,
-        headers,
-        body: { success: true, status: 'received', data }
-      };
-      return;
-    }
+    const payload = (receiver === 'web')
+      ? (session.dataForWeb || session.dataForApp)
+      : (session.dataForApp || session.dataForWeb);
 
-    if (receiver === 'app' && session.dataForApp) {
-      const data = session.dataForApp;
-      session.dataForApp = null; // Consume once
+    if (payload) {
+      session.dataForWeb = null;
+      session.dataForApp = null;
       session.status = 'consumed';
       context.res = {
         status: 200,
         headers,
-        body: { success: true, status: 'received', data }
+        body: { success: true, status: 'received', data: payload }
       };
       return;
     }
@@ -178,7 +259,6 @@ module.exports = async function (context, req) {
     body: {
       success: true,
       service: 'Setlist Band Manager Sync Relay API',
-      activeSessions: sessions.size,
       time: new Date().toISOString()
     }
   };

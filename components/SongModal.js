@@ -160,6 +160,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
           >
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('songNameLabel')}</Text>
             <TextInput
+              maxLength={200}
               style={[styles.input, { 
                 backgroundColor: colors.inputBackground, 
                 color: colors.inputText,
@@ -167,7 +168,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               }]}
               value={name}
               onChangeText={setName}
-              placeholder={t('songNamePlaceholder') || 'Nome'}
+              placeholder={t('songNamePlaceholder')}
               placeholderTextColor={colors.textMuted}
               autoComplete="off"
               importantForAutofill="no"
@@ -176,6 +177,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
             {/* Banda Original */}
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('originalBandLabel')}</Text>
             <TextInput
+              maxLength={200}
               style={[styles.input, { 
                 backgroundColor: colors.inputBackground, 
                 color: colors.inputText,
@@ -183,7 +185,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               }]}
               value={originalBand}
               onChangeText={setOriginalBand}
-              placeholder={t('originalBandPlaceholder') || 'Banda'}
+              placeholder={t('originalBandPlaceholder')}
               placeholderTextColor={colors.textMuted}
               autoComplete="off"
               importantForAutofill="no"
@@ -222,6 +224,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                   <View style={{ flex: 1.1 }}>
                     <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('tagsLabel')}</Text>
                     <TextInput
+                      maxLength={300}
                       style={[styles.input, { 
                         backgroundColor: colors.inputBackground, 
                         color: colors.inputText,
@@ -229,7 +232,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                       }]}
                       value={style}
                       onChangeText={setStyle}
-                      placeholder={t('tagsPlaceholder') || 'Ex: Rock, Pop, Anos 80'}
+                      placeholder={t('tagsPlaceholder')}
                       placeholderTextColor={colors.textMuted}
                       autoComplete="off"
                       importantForAutofill="no"
@@ -239,6 +242,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                   <View style={{ flex: 0.9 }}>
                     <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('durationLabel')}</Text>
                     <TextInput
+                      maxLength={10}
                       style={[styles.input, { 
                         backgroundColor: colors.inputBackground, 
                         color: colors.inputText,
@@ -246,7 +250,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                       }]}
                       value={duration}
                       onChangeText={setDuration}
-                      placeholder={t('durationPlaceholder') || 'Ex: 03:45'}
+                      placeholder={t('durationPlaceholder')}
                       placeholderTextColor={colors.textMuted}
                       keyboardType="numbers-and-punctuation"
                       autoComplete="off"
@@ -298,6 +302,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                         </View>
 
                         <TextInput
+                          maxLength={500}
                           style={[styles.input, { 
                             backgroundColor: colors.inputBackground, 
                             color: colors.inputText,
@@ -383,7 +388,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                   contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
                 >
                   {[
-                    { key: 'none', label: 'OFF', isOff: true },
+                    { key: 'none', label: t('offLabel') || 'OFF', isOff: true },
                     { key: '0.5', label: '0.5x' },
                     { key: '1.0', label: '1.0x' },
                     { key: '1.25', label: '1.25x' },
@@ -412,7 +417,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
                             styles.tabSelectText,
                             { color: scrollSpeed === item.key ? '#fff' : colors.textMuted, fontWeight: scrollSpeed === item.key ? '900' : '650' }
                           ]}>
-                            OFF
+                            {t('offLabel') || 'OFF'}
                           </Text>
                         </View>
                       ) : (
@@ -465,6 +470,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
 
             {activeEditorTab === 'lyrics' && (
               <TextInput
+                maxLength={10000}
                 style={[styles.input, styles.textArea, { 
                   backgroundColor: colors.inputBackground, 
                   color: colors.inputText,
@@ -485,6 +491,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
 
             {activeEditorTab === 'chords' && (
               <TextInput
+                maxLength={10000}
                 style={[styles.input, styles.textArea, styles.monoTextArea, { 
                   backgroundColor: colors.inputBackground, 
                   color: colors.inputText,
@@ -505,6 +512,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
 
             {activeEditorTab === 'tabs' && (
               <TextInput
+                maxLength={20000}
                 style={[styles.input, styles.textArea, styles.monoTextArea, { 
                   backgroundColor: colors.inputBackground, 
                   color: colors.inputText,

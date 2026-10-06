@@ -263,7 +263,7 @@ export function DraggableSortableList({
       <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 24, paddingHorizontal: 20 }}>
         <Ionicons name="musical-notes-outline" size={36} color={colors.textMuted} style={{ opacity: 0.4, marginBottom: 8 }} />
         <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, lineHeight: 18 }}>
-          {t('noSongsInDetail') || 'Nenhuma música no roteiro ainda.\nClique em "ADICIONAR MÚSICAS" para começar!'}
+          {t('noSongsInDetail')}
         </Text>
       </View>
     );
@@ -335,7 +335,7 @@ export function DraggableSortableList({
                     }}>
                       <Ionicons name="trash-outline" size={13} color={colors.danger} />
                     </View>
-                    <Text style={[styles.swipeDeleteText, { color: colors.danger }]}>{t('delete') || 'Excluir'}</Text>
+                    <Text style={[styles.swipeDeleteText, { color: colors.danger }]}>{t('delete')}</Text>
                   </View>
                 </View>
               )}
@@ -390,7 +390,7 @@ export function DraggableSortableList({
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                         <Ionicons name="pause-circle-outline" size={12} color={colors.secondary} />
                         <Text style={{ color: colors.secondary, fontWeight: '950', fontSize: 12 }}>
-                          {t('pause') || 'PAUSE'}
+                          {t('pause')}
                         </Text>
                         <Ionicons name="create-outline" size={11} color={colors.secondary} style={{ opacity: 0.8 }} />
                       </View>
@@ -403,12 +403,12 @@ export function DraggableSortableList({
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                         <Ionicons name="document-text-outline" size={12} color={colors.warning} />
                         <Text style={{ color: colors.warning, fontWeight: '950', fontSize: 12, fontStyle: 'italic', flex: 1 }} numberOfLines={1}>
-                          {song.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}
+                          {song.customNotes || t('noteTitle')}
                         </Text>
                         <Ionicons name="create-outline" size={11} color={colors.warning} style={{ opacity: 0.8 }} />
                       </View>
                       <Text style={{ color: colors.textMuted, fontSize: 9.5 }}>
-                        {t('tapToEditSongTip') || 'Toque para editar o texto'}
+                        {t('tapToEditSongTip')}
                       </Text>
                     </View>
                   ) : (
@@ -431,33 +431,7 @@ export function DraggableSortableList({
                   </View>
                 )}
 
-                {/* Botões de Mover para Cima / Baixo para precisão rápida */}
-                {activeIdx === null && !isDragging && (
-                  <View style={{ flexDirection: 'column', gap: 2, marginRight: 2 }}>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.compactArrowBtn,
-                        index === 0 && { opacity: 0.2 },
-                        pressed && { opacity: 0.6 }
-                      ]}
-                      onPress={() => handleMoveUp(index)}
-                      disabled={index === 0}
-                    >
-                      <Ionicons name="chevron-up" size={12} color={colors.textMuted} />
-                    </Pressable>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.compactArrowBtn,
-                        index === songs.length - 1 && { opacity: 0.2 },
-                        pressed && { opacity: 0.6 }
-                      ]}
-                      onPress={() => handleMoveDown(index)}
-                      disabled={index === songs.length - 1}
-                    >
-                      <Ionicons name="chevron-down" size={12} color={colors.textMuted} />
-                    </Pressable>
-                  </View>
-                )}
+
 
                 {/* Botão de lixeira visível somente quando NÃO está arrastando */}
                 {activeIdx === null && !isDragging && (
@@ -508,6 +482,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const [type, setType] = useState('repertório');
   const [bandId, setBandId] = useState(null);
   const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [local, setLocal] = useState('');
   const [cachê, setCachê] = useState('');
   const [notes, setNotes] = useState('');
@@ -522,6 +497,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const [tempCustomDuration, setTempCustomDuration] = useState('');
   const [isDraggingActive, setIsDraggingActive] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -530,6 +506,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
         setType(setlist.type || 'show');
         setBandId(setlist.myBandId || (bands.length > 0 ? bands[0].id : null));
         setDate(setlist.date || '');
+        setTime(setlist.time || '');
         setLocal(setlist.local || '');
         setCachê(setlist.cachê || '');
         setNotes(setlist.notes || '');
@@ -539,17 +516,18 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
           customDuration: s.customDuration || ''
         })) : [];
         setSelectedSongs(items);
-        setShowEventDetails(false);
+        setShowEventDetails(true);
       } else {
         setName('');
         setType('show');
         setBandId(bands.length > 0 ? bands[0].id : null);
         setDate('');
+        setTime('');
         setLocal('');
         setCachê('');
         setNotes('');
         setSelectedSongs([]);
-        setShowEventDetails(false);
+        setShowEventDetails(true);
       }
       setShowSongSelectorModal(false);
       setSelectedPickerSongIds(new Set());
@@ -670,12 +648,15 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
     }
 
     onSave({
+      ...(setlist || {}),
+      id: setlist?.id,
       name: name.trim(),
       type,
       myBandId: bandId,
       date: date.trim(),
+      time: time.trim(),
       local: local.trim(),
-      cachê: type === 'show' ? cachê.trim() : null,
+      cachê: type === 'show' ? (cachê ? cachê.trim() : null) : null,
       notes: notes.trim(),
       songIds: selectedSongs,
     });
@@ -684,9 +665,9 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const orderedSongs = selectedSongs
     .map((item) => {
       const songInfo = item.id === -1 
-        ? { id: -1, name: t('pauseItem') || 'PAUSA', originalBand: '', style: t('pauseItem') || 'PAUSA' } 
+        ? { id: -1, name: t('pauseItem'), originalBand: '', style: t('pauseItem') } 
         : item.id === -2
-        ? { id: -2, name: t('noteItem') || 'ANOTAÇÃO', originalBand: '', style: t('noteItem') || 'ANOTAÇÃO' }
+        ? { id: -2, name: t('noteItem'), originalBand: '', style: t('noteItem') }
         : songs.find((s) => s.id === item.id);
       
       if (!songInfo) return null;
@@ -747,11 +728,11 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
               <View style={[styles.eventDetailsHeaderRow, { borderBottomColor: colors.border }]}>
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={[styles.sectionHeaderTitle, { color: colors.text, marginBottom: 0 }]}>
-                    {t('setlistTabDetails') || 'DADOS DO EVENTO'}
+                    {t('setlistTabDetails')}
                   </Text>
                   {!showEventDetails && (
                     <Text style={[styles.collapsedSummaryText, { color: colors.primary }]} numberOfLines={1}>
-                      • {name || (language === 'en' ? 'No name' : 'Sem nome')} ({date || '--'})
+                      • {name || t('noName')} ({date || '--'}{time ? ` ${time}` : ''})
                     </Text>
                   )}
                 </View>
@@ -845,14 +826,15 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     }]}
                     value={name}
                     onChangeText={setName}
-                    placeholder={t('setlistNamePlaceholder') || 'Nome do Evento'}
+                    placeholder={t('setlistNamePlaceholder')}
                     placeholderTextColor={colors.textMuted}
+                    maxLength={200}
                     autoComplete="off"
                     importantForAutofill="no"
                   />
 
                   <View style={styles.rowInputs}>
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1.1 }}>
                       <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('dateLabel').toUpperCase()} *</Text>
                       <Pressable 
                         onPress={() => setShowDatePicker(true)}
@@ -897,22 +879,81 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         />
                       )}
                     </View>
-                    <View style={{ flex: 1.2 }}>
-                      <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('localLabel').toUpperCase()}</Text>
-                      <TextInput
-                        style={[styles.input, { 
-                          backgroundColor: colors.inputBackground, 
-                          color: colors.inputText,
-                          borderColor: colors.border
-                        }]}
-                        value={local}
-                        onChangeText={setLocal}
-                        placeholder=""
-                        placeholderTextColor={colors.textMuted}
-                        autoComplete="off"
-                        importantForAutofill="no"
-                      />
+
+                    <View style={{ flex: 0.9 }}>
+                      <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{(t('timeLabel') || 'HORÁRIO').toUpperCase()}</Text>
+                      <Pressable 
+                        onPress={() => setShowTimePicker(true)}
+                        style={({ pressed }) => [
+                          styles.input, 
+                          { 
+                            backgroundColor: colors.inputBackground, 
+                            borderColor: colors.border,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            opacity: pressed ? 0.7 : 1
+                          }
+                        ]}
+                      >
+                        <Text style={{ color: time ? colors.inputText : colors.textMuted, fontSize: 13, fontWeight: time ? '600' : '400' }}>
+                          {time || (t('timePlaceholder') || '--:--')}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          {time ? (
+                            <Pressable hitSlop={6} onPress={(e) => { e.stopPropagation(); setTime(''); }}>
+                              <Ionicons name="close-circle" size={15} color={colors.textMuted} />
+                            </Pressable>
+                          ) : null}
+                          <Ionicons name="time-outline" size={18} color={colors.primary} />
+                        </View>
+                      </Pressable>
+
+                      {showTimePicker && (
+                        <DateTimePicker
+                          value={(() => {
+                            if (time && time.includes(':')) {
+                              const [h, m] = time.split(':').map(n => parseInt(n, 10));
+                              const d = new Date();
+                              d.setHours(h || 0, m || 0, 0, 0);
+                              return d;
+                            }
+                            const d = new Date();
+                            d.setHours(20, 0, 0, 0);
+                            return d;
+                          })()}
+                          mode="time"
+                          is24Hour={true}
+                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                          onChange={(event, selectedDate) => {
+                            setShowTimePicker(Platform.OS === 'ios');
+                            if (selectedDate && event.type !== 'dismissed') {
+                              const hh = String(selectedDate.getHours()).padStart(2, '0');
+                              const mm = String(selectedDate.getMinutes()).padStart(2, '0');
+                              setTime(`${hh}:${mm}`);
+                            }
+                          }}
+                        />
+                      )}
                     </View>
+                  </View>
+
+                  <View style={{ marginTop: 12 }}>
+                    <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('localLabel').toUpperCase()}</Text>
+                    <TextInput
+                      style={[styles.input, { 
+                        backgroundColor: colors.inputBackground, 
+                        color: colors.inputText,
+                        borderColor: colors.border
+                      }]}
+                      value={local}
+                      onChangeText={setLocal}
+                      placeholder=""
+                      placeholderTextColor={colors.textMuted}
+                      maxLength={200}
+                      autoComplete="off"
+                      importantForAutofill="no"
+                    />
                   </View>
 
                   {type === 'show' && (
@@ -929,6 +970,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                         placeholder=""
                         placeholderTextColor={colors.textMuted}
                         keyboardType="numeric"
+                        maxLength={20}
                         autoComplete="off"
                         importantForAutofill="no"
                       />
@@ -948,6 +990,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                     placeholderTextColor={colors.textMuted}
                     multiline
                     numberOfLines={2}
+                    maxLength={1000}
                     autoComplete="off"
                     importantForAutofill="no"
                   />
@@ -956,7 +999,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
 
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, marginBottom: 10 }}>
                 <Text style={[styles.sectionHeaderTitle, { color: colors.text, marginBottom: 0 }]}>
-                  {t('setlistTabRepertoire') || 'ROTEIRO'} ({selectedSongs.length})
+                  {t('setlistTabRepertoire')} ({selectedSongs.length})
                 </Text>
               </View>
 
@@ -1009,13 +1052,13 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', marginBottom: 2 }}>
                     <Ionicons name="reorder-three" size={13} color={colors.primary} />
                     <Text style={[styles.swipeTipText, { color: colors.textMuted }]}>
-                      {t('dragToReorderTip') || 'Arraste por ☰ para reordenar'}
+                      {t('dragToReorderTip')}
                     </Text>
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
                     <Ionicons name="arrow-back-outline" size={11} color={colors.textMuted} />
                     <Text style={[styles.swipeTipText, { color: colors.textMuted }]}>
-                      {t('swipeToDeleteTip') || 'Deslize para a esquerda para excluir'}
+                      {t('swipeToDeleteTip')}
                     </Text>
                   </View>
                 </View>
@@ -1062,10 +1105,10 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
             <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
               <View style={{ flex: 1, marginRight: 10 }}>
                 <Text style={[styles.modalTitle, { color: colors.text, fontSize: 15 }]}>
-                  {t('selectSongsModalTitle') || 'SELECIONAR MÚSICAS'}
+                  {t('selectSongsModalTitle')}
                 </Text>
                 <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800', marginTop: 2 }}>
-                  {selectedPickerSongIds.size} {t('selectedCount') || 'selecionada(s)'}
+                  {selectedPickerSongIds.size} {t('selectedCount')}
                 </Text>
               </View>
               <Pressable
@@ -1085,6 +1128,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                   placeholderTextColor={colors.textMuted}
                   value={pickerSearch}
                   onChangeText={setPickerSearch}
+                  maxLength={100}
                   autoComplete="off"
                   importantForAutofill="no"
                 />
@@ -1106,7 +1150,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 >
                   <Ionicons name={isAllFilteredSelected ? "close-circle-outline" : "checkbox-outline"} size={13} color={colors.primary} />
                   <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>
-                    {isAllFilteredSelected ? (t('deselectAll') || 'Desmarcar Todas') : (t('selectAll') || 'Marcar Todas')}
+                    {isAllFilteredSelected ? t('deselectAll') : t('selectAll')}
                   </Text>
                 </Pressable>
 
@@ -1121,7 +1165,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 <View style={{ paddingVertical: 40, alignItems: 'center' }}>
                   <Ionicons name="search-outline" size={36} color={colors.textMuted} style={{ opacity: 0.4, marginBottom: 8 }} />
                   <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-                    {t('noSongsFoundInPicker') || 'Nenhuma música encontrada.'}
+                    {t('noSongsFoundInPicker')}
                   </Text>
                 </View>
               ) : (
@@ -1180,7 +1224,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
               >
                 <Ionicons name="add-circle-outline" size={18} color="#fff" />
                 <Text style={[styles.saveButtonText, { color: selectedPickerSongIds.size > 0 ? '#fff' : colors.textMuted }]}>
-                  {`${t('addSelectedCount') || 'ADICIONAR SELECIONADAS'} (${selectedPickerSongIds.size})`}
+                  {`${t('addSelectedCount')} (${selectedPickerSongIds.size})`}
                 </Text>
               </Pressable>
             </View>
@@ -1198,8 +1242,8 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
           <View style={[styles.customEditCard, { backgroundColor: colors.background, borderColor: colors.primary }]}>
             <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 14 }]}>
               {editingCustomIndex !== null && selectedSongs[editingCustomIndex]?.id === -1 
-                ? (t('editPauseTitle') || 'EDITAR PAUSA')
-                : (t('editNoteTitle') || 'EDITAR ANOTAÇÃO')}
+                ? t('editPauseTitle')
+                : t('editNoteTitle')}
             </Text>
 
             {editingCustomIndex !== null && selectedSongs[editingCustomIndex]?.id === -1 && (
@@ -1211,6 +1255,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                   placeholderTextColor={colors.textMuted}
                   value={tempCustomDuration}
                   onChangeText={setTempCustomDuration}
+                  maxLength={10}
                   autoComplete="off"
                   importantForAutofill="no"
                 />
@@ -1225,6 +1270,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
               value={tempCustomNotes}
               onChangeText={setTempCustomNotes}
               multiline
+              maxLength={1000}
               autoComplete="off"
               importantForAutofill="no"
             />
@@ -1238,7 +1284,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 ]}
                 onPress={() => setEditingCustomIndex(null)}
               >
-                <Text style={{ color: colors.text, fontWeight: '800', fontSize: 12 }}>{t('cancel') || 'CANCELAR'}</Text>
+                <Text style={{ color: colors.text, fontWeight: '800', fontSize: 12 }}>{t('cancel')}</Text>
               </Pressable>
 
               <Pressable
@@ -1249,7 +1295,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 ]}
                 onPress={handleSaveCustomItem}
               >
-                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{t('done') || 'CONCLUÍDO'}</Text>
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{t('done')}</Text>
               </Pressable>
             </View>
           </View>

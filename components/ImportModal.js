@@ -21,7 +21,7 @@ export default function ImportModal({
   visible, 
   onClose, 
   onImport, 
-  title = 'IMPORTAR SETLIST', 
+  title = '', 
   description = '',
   fileTypeLabel = ''
 }) {
@@ -91,7 +91,7 @@ export default function ImportModal({
       >
         <View style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.primary }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>{title}</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{title || t('importTitleSetlist')}</Text>
             <Pressable 
               style={({ pressed }) => [styles.closePressable, pressed && { opacity: 0.7 }]}
               onPress={onClose}
@@ -129,6 +129,7 @@ export default function ImportModal({
             <Text style={[styles.orDivider, { color: colors.textMuted }]}>— {t('orPasteCode')} —</Text>
 
             <TextInput
+              maxLength={500000}
               style={[styles.textArea, { 
                 backgroundColor: colors.inputBackground, 
                 color: colors.inputText,

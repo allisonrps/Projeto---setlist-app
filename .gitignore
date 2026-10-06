@@ -31,8 +31,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# env files with secrets
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo
@@ -40,3 +42,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# API secrets
+appsettings.*.json
+# Android binaries
+*.aab
+*.apk

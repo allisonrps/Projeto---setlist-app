@@ -1,4 +1,5 @@
 import { db } from '../database/database';
+import { sanitizeText, sanitizeMultiline } from './sanitize';
 
 export const setlistService = {
   async getAll() {
@@ -16,11 +17,11 @@ export const setlistService = {
     }
   },
 
-  async insert(name, type, myBandId, date, local, cachê, notes, songIds = []) {
+  async insert(name, type, myBandId, date, local, cachê, notes, songIds = [], time = '') {
     try {
       const result = await db.runAsync(
-        'INSERT INTO setlists (name, type, myBandId, date, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, 0);',
-        [name, type, myBandId, date, local, cachê, notes]
+        'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);',
+        [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000)]
       );
       const setlistId = result.lastInsertRowId;
 
@@ -46,11 +47,11 @@ export const setlistService = {
     }
   },
 
-  async update(id, name, type, myBandId, date, local, cachê, notes, songIds = []) {
+  async update(id, name, type, myBandId, date, local, cachê, notes, songIds = [], time = '') {
     try {
       await db.runAsync(
-        'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, local = ?, cachê = ?, notes = ? WHERE id = ?;',
-        [name, type, myBandId, date, local, cachê, notes, id]
+        'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, time = ?, local = ?, cachê = ?, notes = ? WHERE id = ?;',
+        [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), id]
       );
 
       // Deletar associações antigas
@@ -124,8 +125,8 @@ export const setlistService = {
       const prefix = lang === 'en' ? 'Copy' : lang === 'es' ? 'Copia' : 'Cópia';
       const copyName = sl.name ? `${prefix} - ${sl.name}` : `${prefix} Setlist`;
       const result = await db.runAsync(
-        'INSERT INTO setlists (name, type, myBandId, date, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, 0);',
-        [copyName, sl.type, sl.myBandId, sl.date, sl.local, sl.cachê, sl.notes]
+        'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);',
+        [copyName, sl.type, sl.myBandId, sl.date, sl.time || '', sl.local, sl.cachê, sl.notes]
       );
       const newSetlistId = result.lastInsertRowId;
 

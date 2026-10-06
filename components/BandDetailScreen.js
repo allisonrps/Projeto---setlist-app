@@ -23,7 +23,12 @@ import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { bandService } from '../services/bandService';
+import { musiciansService } from '../services/musiciansService';
+import { api } from '../services/api';
+import MusicianProfileModal from './MusicianProfileModal';
 import SongListItem from './SongListItem';
+import ShareAgendaModal, { shareAgendaPillStyles } from './ShareAgendaModal';
+import YearPickerModal from './YearPickerModal';
 
 const { width } = Dimensions.get('window');
 
@@ -122,8 +127,46 @@ const getMonthYearHeader = (dateStr, lang = 'pt') => {
   return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
 };
 
+
+const getMonthInfo = (dateStr, lang = 'pt') => {
+  if (!dateStr || !dateStr.trim()) return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
+  const clean = dateStr.trim();
+  let year = 0;
+  let monthNum = -1;
+
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      year = parseInt(parts[0], 10);
+      monthNum = parseInt(parts[1], 10) - 1;
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        year = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        year = parts[2].length === 2 ? parseInt('20' + parts[2], 10) : parseInt(parts[2], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  }
+
+  const monthsPt = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const monthsEs = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+  const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
+
+  if (monthNum >= 0 && monthNum < 12 && year > 0) {
+    return { name: months[monthNum], year, index: monthNum };
+  }
+  return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
+};
+
 const STYLE_COLOR_PALETTE = [
-  '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
+  '#3b82f6', '#8b5cf6', '#ec4899', '#eab308', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
 ];
 
 export default function BandDetailScreen({
@@ -147,6 +190,7 @@ export default function BandDetailScreen({
   onUpdateSongRehearsalNotes,
   onCopy,
   onReloadAll,
+  onOpenPublicProfile,
 }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
@@ -154,6 +198,56 @@ export default function BandDetailScreen({
 
   // Dedicated Tab Pages: 'repertoire' | 'members' | 'stats' | 'financial' | 'setlists'
   const [activeTab, setActiveTab] = useState('repertoire');
+
+  // Compartilhar Agenda da banda (mesmo sistema da agenda do perfil)
+  const [showShareAgendaModal, setShowShareAgendaModal] = useState(false);
+
+  // Network Sync / Visibility State
+  const [isNetworkVisible, setIsNetworkVisible] = useState(band?.isNetworkVisible === 1 || band?.isNetworkVisible === true);
+
+  useEffect(() => {
+    setIsNetworkVisible(band?.isNetworkVisible === 1 || band?.isNetworkVisible === true);
+  }, [band?.id, band?.isNetworkVisible]);
+
+  const handleToggleNetworkVisibility = async () => {
+    const logged = await api.isLoggedIn();
+    if (!logged) {
+      Alert.alert(
+        t('networkProfileRequired') || 'Perfil na Rede Necessário',
+        t('networkProfileRequiredMsg') || 'Para sincronizar sua banda na rede BandLink e conectá-la a outros músicos, faça login ou complete seu perfil na aba Rede.',
+        [{ text: t('ok') || 'Entendi' }]
+      );
+      return;
+    }
+
+    try {
+      Vibration.vibrate(40);
+    } catch (e) {}
+
+    const nextState = !isNetworkVisible;
+    // Alternância instantânea de estado na tela
+    setIsNetworkVisible(nextState);
+    if (band) {
+      band.isNetworkVisible = nextState ? 1 : 0;
+    }
+
+    // Persistência imediata no SQLite local
+    if (band?.id) {
+      bandService.toggleNetworkVisibility(band.id, nextState).catch(err => {
+        console.error('Erro ao atualizar visibilidade da banda no banco:', err);
+      });
+      if (onReloadAll) onReloadAll();
+    }
+
+    // Sincronização em nuvem na Azure em background
+    if (nextState && band) {
+      api.syncBandToCloud(band).then(res => {
+        if (res) console.log('Banda sincronizada na nuvem com sucesso:', res);
+      }).catch(err => {
+        console.log('Erro de sincronização na nuvem:', err);
+      });
+    }
+  };
 
   // Band Repertoire Data
   const [bandSongs, setBandSongs] = useState([]);
@@ -168,13 +262,19 @@ export default function BandDetailScreen({
 
   // Member Modal State
   const [members, setMembers] = useState([]);
+  const [memberPhotos, setMemberPhotos] = useState({});
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
+  const [memberUsername, setMemberUsername] = useState('');
+  const [selectedMusicianProfile, setSelectedMusicianProfile] = useState(null);
+  const [showMusicianProfileModal, setShowMusicianProfileModal] = useState(false);
   const [memberStartDate, setMemberStartDate] = useState('');
   const [memberEndDate, setMemberEndDate] = useState('');
-  const [memberStatus, setMemberStatus] = useState('active'); // 'active' | 'inactive'
+  const [memberStatus, setMemberStatus] = useState('active'); // 'active' | 'inactive' | 'pending'
+  const [initialMemberStatus, setInitialMemberStatus] = useState('active');
+  const [memberCycles, setMemberCycles] = useState([]);
   const [editingMemberId, setEditingMemberId] = useState(null);
   const [showInactiveMembers, setShowInactiveMembers] = useState(false);
   const [expandedMemberIds, setExpandedMemberIds] = useState(new Set());
@@ -192,10 +292,29 @@ export default function BandDetailScreen({
   const [showFinDatePicker, setShowFinDatePicker] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [finShowMemberSplit, setFinShowMemberSplit] = useState(false);
+  const [finMemberSplits, setFinMemberSplits] = useState({});
 
   // Repertoire Sort State
   const [repertoireSort, setRepertoireSort] = useState('name_asc'); // 'name_asc' | 'name_desc' | 'band_asc' | 'band_desc'
   const [showSortModal, setShowSortModal] = useState(false);
+
+
+  // Year and Expansion state for Events and Finance
+  const currentYearNum = new Date().getFullYear();
+  const currentMonthNum = new Date().getMonth();
+  const [selectedEventYear, setSelectedEventYear] = useState(currentYearNum);
+  const [showEventYearPicker, setShowEventYearPicker] = useState(false);
+  const [expandedEventMonths, setExpandedEventMonths] = useState({});
+  const [selectedFinanceYear, setSelectedFinanceYear] = useState(currentYearNum);
+  const [expandedFinanceMonths, setExpandedFinanceMonths] = useState({});
+
+  const toggleEventMonth = (monthName) => {
+    setExpandedEventMonths(prev => ({ ...prev, [monthName]: !prev[monthName] }));
+  };
+  const toggleFinanceMonth = (monthName) => {
+    setExpandedFinanceMonths(prev => ({ ...prev, [monthName]: !prev[monthName] }));
+  };
 
   // My Member Profile State ("Quem é você nesta banda")
   const [myMemberId, setMyMemberId] = useState(band?.myMemberId || null);
@@ -206,6 +325,21 @@ export default function BandDetailScreen({
       setMyMemberId(band.myMemberId || null);
     }
   }, [band]);
+
+  const detailBandTags = (() => {
+    if (!band) return [];
+    if (band.genres) {
+      try {
+        const parsed = typeof band.genres === 'string' && band.genres.startsWith('[')
+          ? JSON.parse(band.genres)
+          : String(band.genres).split(',').map(s => s.trim()).filter(Boolean);
+        return parsed.slice(0, 4);
+      } catch (e) {
+        return String(band.genres).split(',').map(s => s.trim()).filter(Boolean).slice(0, 4);
+      }
+    }
+    return [];
+  })();
 
   const handleSelectMyMember = async (memberId) => {
     const newId = myMemberId === memberId ? null : memberId;
@@ -264,7 +398,9 @@ export default function BandDetailScreen({
   // Member Cachet Split Modal State
   const [showCacheSplitModal, setShowCacheSplitModal] = useState(false);
   const [selectedShowForSplit, setSelectedShowForSplit] = useState(null);
+  const [selectedShowCacheStatus, setSelectedShowCacheStatus] = useState('paid');
   const [memberSplits, setMemberSplits] = useState({});
+  const [substitutes, setSubstitutes] = useState([]);
 
   // Load Band Data when modal opens or updates
   const loadData = useCallback(async () => {
@@ -275,6 +411,20 @@ export default function BandDetailScreen({
 
         const bMem = await bandService.getBandMembers(band.id);
         setMembers(bMem || []);
+
+        // Carregar fotos dos membros vinculados com @username
+        const photosMap = {};
+        for (const m of (bMem || [])) {
+          if (m.username) {
+            try {
+              const prof = await musiciansService.getMusicianByUsername(m.username, m.name);
+              if (prof && prof.imageUri) {
+                photosMap[m.id] = prof.imageUri;
+              }
+            } catch (e) {}
+          }
+        }
+        setMemberPhotos(photosMap);
 
         const bFin = await bandService.getBandFinances(band.id);
         setFinances(bFin || []);
@@ -304,27 +454,110 @@ export default function BandDetailScreen({
     .filter(s => s && s.myBandId === band.id)
     .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
-  // Separate active and inactive members
-  const activeMembers = (members || []).filter(m => (m.status || 'active') === 'active');
+  // Eventos (shows) da banda no formato da arte de agenda do perfil
+  const bandLogoUri = band.imageUri || band.image || band.logo ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(band.name || 'Banda')}&background=random`;
+  const getShareDateInfo = (dateStr) => {
+    const ts = parseDateForSort(dateStr);
+    const badge = getFormattedDateBadge(dateStr, language);
+    const d = ts ? new Date(ts) : null;
+    const daysPt = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const daysEs = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const days = language === 'en' ? daysEn : language === 'es' ? daysEs : daysPt;
+    const weekDay = d ? days[d.getDay()] : '';
+    const month = badge.month ? (badge.month.length > 3 ? badge.month.slice(0, 3) : badge.month).toUpperCase() : '';
+    return {
+      day: badge.day,
+      month,
+      weekDay,
+      formattedFull: d ? `${weekDay}, ${badge.day} ${badge.month}` : (dateStr || '')
+    };
+  };
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const shareableAgendaEvents = bandSetlists
+    .filter(s => s.type === 'show')
+    .slice()
+    .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date))
+    .map(s => {
+      const dInfo = getShareDateInfo(s.date);
+      return {
+        id: s.id,
+        name: s.name || s.local || t('untitledShow') || 'Show',
+        local: s.local || '',
+        time: s.time || '',
+        date: dInfo.formattedFull,
+        day: dInfo.day,
+        month: dInfo.month,
+        weekDay: dInfo.weekDay,
+        band: band.name,
+        logo: bandLogoUri,
+        _ts: parseDateForSort(s.date)
+      };
+    });
+  const upcomingAgendaIds = shareableAgendaEvents.filter(e => e._ts >= todayStart.getTime()).map(e => e.id);
+  const bandQrSlug = String(band.name || 'banda').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+  const openShareBandAgenda = () => {
+    if (shareableAgendaEvents.length === 0) {
+      Alert.alert(
+        t('emptyAgendaShareTitle') || 'Agenda vazia',
+        t('emptyAgendaShareAlert') || 'Cadastre ao menos um show desta banda para compartilhar a agenda.'
+      );
+      return;
+    }
+    setShowShareAgendaModal(true);
+  };
+
+  // Separate pending, active and inactive members (rejected members are excluded so their card disappears)
+  const pendingMembers = (members || []).filter(m => m.status === 'pending');
+  const activeMembers = (members || []).filter(m => (m.status === 'active' || m.status === 'accepted' || (!m.status && m.status !== 'inactive' && m.status !== 'pending' && m.status !== 'rejected')) && m.status !== 'pending' && m.status !== 'rejected' && m.status !== 'inactive');
   const inactiveMembers = (members || []).filter(m => m.status === 'inactive');
+
+  const handleOpenMemberProfile = async (member) => {
+    const prof = await musiciansService.getMusicianByUsername(member?.username, member?.name);
+    if (prof) {
+      setSelectedMusicianProfile(prof);
+      setShowMusicianProfileModal(true);
+    }
+  };
 
   // Member Cachet Split Handlers
   const handleOpenCacheSplitModal = async (showSetlist) => {
     setSelectedShowForSplit(showSetlist);
+    setSelectedShowCacheStatus(showSetlist.cacheStatus || 'paid');
     const existing = await bandService.getShowCacheSplit(showSetlist.id);
     const rawCache = showSetlist.cachê || showSetlist.cache || showSetlist.valCache || showSetlist.value;
     const totalVal = parseCurrency(rawCache);
 
     if (existing && Object.keys(existing).length > 0) {
-      setMemberSplits(existing);
+      // Separate substitute entries from member entries
+      const subs = [];
+      const memberEntries = {};
+      Object.keys(existing).forEach(key => {
+        if (key.startsWith('sub_')) {
+          const idx = parseInt(key.split('_')[1], 10);
+          subs[idx] = existing[key];
+        } else {
+          memberEntries[key] = existing[key];
+        }
+      });
+      setMemberSplits(memberEntries);
+      // Parse substitutes: stored as { name, amount } objects
+      const parsedSubs = subs.filter(Boolean).map(s => {
+        if (typeof s === 'object') return s;
+        try { return JSON.parse(s); } catch(e) { return { name: '', amount: s }; }
+      });
+      setSubstitutes(parsedSubs.length > 0 ? parsedSubs : []);
     } else {
-      const activeM = (members || []).filter(m => (m.status || 'active') === 'active');
+      const activeM = activeMembers;
       const share = activeM.length > 0 ? (totalVal / activeM.length).toFixed(2) : '0';
       const initial = {};
       activeM.forEach(m => {
         initial[m.id] = share;
       });
       setMemberSplits(initial);
+      setSubstitutes([]);
     }
     setShowCacheSplitModal(true);
   };
@@ -333,7 +566,7 @@ export default function BandDetailScreen({
     if (!selectedShowForSplit) return;
     const rawCache = selectedShowForSplit.cachê || selectedShowForSplit.cache || selectedShowForSplit.valCache || selectedShowForSplit.value;
     const totalVal = parseCurrency(rawCache);
-    const activeM = (members || []).filter(m => (m.status || 'active') === 'active');
+    const activeM = activeMembers;
     if (activeM.length === 0) return;
     const share = (totalVal / activeM.length).toFixed(2);
     const updated = {};
@@ -346,13 +579,38 @@ export default function BandDetailScreen({
   const handleSaveCachetSplit = async () => {
     if (!selectedShowForSplit) return;
     try {
-      await bandService.saveShowCacheSplit(selectedShowForSplit.id, memberSplits);
+      // Merge member splits with substitute entries
+      const fullSplits = { ...memberSplits };
+      substitutes.forEach((sub, idx) => {
+        if (sub.name || sub.amount) {
+          fullSplits[`sub_${idx}`] = JSON.stringify({ name: sub.name, amount: sub.amount });
+        }
+      });
+      await bandService.saveShowCacheSplit(selectedShowForSplit.id, fullSplits, selectedShowCacheStatus);
+      await loadData();
+      if (onReloadAll) onReloadAll();
       setShowCacheSplitModal(false);
-      Alert.alert('Sucesso', 'Divisão de cachê por integrante salva com sucesso!');
+      Alert.alert(t('success') || 'Sucesso', t('cacheSplitSuccess') || 'Divisão de cachê por integrante salva com sucesso!');
     } catch (err) {
       console.error('Error saving cache split:', err);
-      Alert.alert('Erro', 'Não foi possível salvar a divisão do cachê.');
+      Alert.alert(t('error') || 'Erro', t('errorSavingCacheSplit') || 'Não foi possível salvar a divisão do cachê.');
     }
+  };
+
+  const handleAddSubstitute = () => {
+    setSubstitutes(prev => [...prev, { name: '', amount: '' }]);
+  };
+
+  const handleRemoveSubstitute = (idx) => {
+    setSubstitutes(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleUpdateSubstitute = (idx, field, value) => {
+    setSubstitutes(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      return updated;
+    });
   };
 
   // Toggle member card expansion
@@ -370,13 +628,20 @@ export default function BandDetailScreen({
   };
 
   // Financial Calculations including Show Caches
-  const parseCurrency = (valStr) => {
+    const parseCurrency = (valStr) => {
     if (!valStr) return 0;
-    const clean = String(valStr)
-      .replace(/[^\d.,]/g, '')
-      .replace(/\./g, '')
-      .replace(',', '.');
-    return parseFloat(clean) || 0;
+    if (typeof valStr === 'number') return valStr;
+    let s = String(valStr);
+    if (s.includes(',') && s.includes('.')) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+        s = s.replace(/\./g, '').replace(',', '.');
+      } else {
+        s = s.replace(/,/g, '');
+      }
+    } else if (s.includes(',')) {
+      s = s.replace(',', '.');
+    }
+    return parseFloat(s.replace(/[^\d.-]/g, '')) || 0;
   };
 
   const autoShowFinances = [];
@@ -391,7 +656,7 @@ export default function BandDetailScreen({
           amount: amt,
           type: 'income',
           date: sl.date || '',
-          status: 'paid',
+          status: sl.cacheStatus || 'paid',
           isAutoShow: true,
         });
       }
@@ -404,6 +669,8 @@ export default function BandDetailScreen({
   let totalExpense = 0;
 
   combinedFinances.forEach(f => {
+    const itemYear = getMonthInfo(f.date, language).year;
+    if (itemYear !== selectedFinanceYear) return;
     const amt = typeof f.amount === 'number' ? f.amount : (parseFloat(f.amount) || 0);
     if (f.type === 'income') {
       if (f.status === 'paid') totalIncome += amt;
@@ -427,19 +694,27 @@ export default function BandDetailScreen({
 
     return matchesSearch && matchesStyle;
   }).sort((a, b) => {
-    const favA = a.isFavorite ? 1 : 0;
-    const favB = b.isFavorite ? 1 : 0;
-    if (favA !== favB) return favB - favA;
+    // Favoritas no topo
+    if (a.isFavorite && !b.isFavorite) return -1;
+    if (!a.isFavorite && b.isFavorite) return 1;
+
+    const safeCompare = (str1, str2) => {
+      const s1 = (str1 || '').toLowerCase();
+      const s2 = (str2 || '').toLowerCase();
+      if (s1 < s2) return -1;
+      if (s1 > s2) return 1;
+      return 0;
+    };
 
     if (repertoireSort === 'name_desc') {
-      return (b.name || '').localeCompare(a.name || '');
+      return safeCompare(b.name, a.name);
     } else if (repertoireSort === 'band_asc') {
-      return (a.originalBand || '').localeCompare(b.originalBand || '') || (a.name || '').localeCompare(b.name || '');
+      return safeCompare(a.originalBand, b.originalBand) || safeCompare(a.name, b.name);
     } else if (repertoireSort === 'band_desc') {
-      return (b.originalBand || '').localeCompare(a.originalBand || '') || (a.name || '').localeCompare(b.name || '');
+      return safeCompare(b.originalBand, a.originalBand) || safeCompare(a.name, b.name);
     } else {
       // default: name_asc
-      return (a.name || '').localeCompare(b.name || '');
+      return safeCompare(a.name, b.name);
     }
   });
 
@@ -535,7 +810,7 @@ export default function BandDetailScreen({
       await loadData();
     } catch (err) {
       console.error('Error saving band repertoire songs:', err);
-      Alert.alert('Erro', 'Não foi possível atualizar as músicas da banda.');
+      Alert.alert(t('error') || 'Erro', t('errorUpdatingBandSongs') || 'Não foi possível atualizar as músicas da banda.');
     }
   };
 
@@ -560,20 +835,48 @@ export default function BandDetailScreen({
   // Band Member Handlers (Save / Edit / Delete)
   const handleSaveMember = async () => {
     if (!memberName.trim()) {
-      Alert.alert('Atenção', 'Por favor, informe o nome do integrante.');
+      Alert.alert(t('attention') || 'Atenção', t('enterMemberName') || 'Por favor, informe o nome do integrante.');
       return;
     }
-    const roleTag = memberRole.trim() || 'Integrante';
+    const roleTag = memberRole.trim() || (t('memberFallback') || 'Integrante');
+    
+    let updatedCycles = [...memberCycles];
+    let finalStartDate = memberStartDate.trim();
+    let finalEndDate = memberEndDate.trim();
+
+    if (initialMemberStatus === 'active' && memberStatus === 'inactive') {
+      if (!finalEndDate) {
+        const today = new Date();
+        finalEndDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+      }
+      updatedCycles.push({
+        startDate: finalStartDate,
+        endDate: finalEndDate
+      });
+      finalStartDate = '';
+      finalEndDate = '';
+    } else if (initialMemberStatus === 'inactive' && memberStatus === 'active') {
+      const today = new Date();
+      finalStartDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+      finalEndDate = '';
+    }
+
     try {
+      const cleanUsername = memberUsername.trim().replace(/^@+/, '');
       if (editingMemberId) {
+        const existingMember = members.find(m => m.id === editingMemberId);
         await bandService.updateBandMember(
           editingMemberId,
           memberName.trim(),
           roleTag,
           memberPhone.trim(),
-          memberStartDate.trim(),
-          memberEndDate.trim(),
-          memberStatus
+          finalStartDate,
+          finalEndDate,
+          memberStatus,
+          JSON.stringify(updatedCycles),
+          cleanUsername,
+          existingMember?.inviteMessage || '',
+          existingMember?.replyMessage || ''
         );
       } else {
         await bandService.addBandMember(
@@ -581,14 +884,17 @@ export default function BandDetailScreen({
           memberName.trim(),
           roleTag,
           memberPhone.trim(),
-          memberStartDate.trim(),
-          memberEndDate.trim(),
-          memberStatus
+          finalStartDate,
+          finalEndDate,
+          memberStatus,
+          JSON.stringify(updatedCycles),
+          cleanUsername
         );
       }
       setMemberName('');
       setMemberRole('');
       setMemberPhone('');
+      setMemberUsername('');
       setMemberStartDate('');
       setMemberEndDate('');
       setMemberStatus('active');
@@ -597,7 +903,7 @@ export default function BandDetailScreen({
       await loadData();
     } catch (e) {
       console.error('Error in handleSaveMember:', e);
-      Alert.alert('Erro', 'Não foi possível salvar o integrante.');
+      Alert.alert(t('error') || 'Erro', t('errorSavingMember') || 'Não foi possível salvar o integrante.');
     }
   };
 
@@ -606,9 +912,12 @@ export default function BandDetailScreen({
     setMemberName('');
     setMemberRole('');
     setMemberPhone('');
+    setMemberUsername('');
     setMemberStartDate('');
     setMemberEndDate('');
     setMemberStatus('active');
+    setInitialMemberStatus('active');
+    setMemberCycles([]);
     setShowMemberModal(true);
   };
 
@@ -617,9 +926,18 @@ export default function BandDetailScreen({
     setMemberName(member.name || '');
     setMemberRole(member.role || '');
     setMemberPhone(member.phone || '');
+    setMemberUsername(member.username ? `@${member.username.replace(/^@+/, '')}` : '');
     setMemberStartDate(member.startDate || '');
     setMemberEndDate(member.endDate || '');
     setMemberStatus(member.status || 'active');
+    setInitialMemberStatus(member.status || 'active');
+    let cycles = [];
+    if (member.cycles) {
+      try {
+        cycles = typeof member.cycles === 'string' ? JSON.parse(member.cycles) : member.cycles;
+      } catch (e) {}
+    }
+    setMemberCycles(cycles);
     setShowMemberModal(true);
   };
 
@@ -628,20 +946,23 @@ export default function BandDetailScreen({
     setMemberName('');
     setMemberRole('');
     setMemberPhone('');
+    setMemberUsername('');
     setMemberStartDate('');
     setMemberEndDate('');
     setMemberStatus('active');
+    setInitialMemberStatus('active');
+    setMemberCycles([]);
     setShowMemberModal(false);
   };
 
   const handleDeleteMember = (member) => {
     Alert.alert(
-      'Atenção',
-      `Remover ${member.name} (${member.role}) da banda?`,
+      t('attention') || 'Atenção',
+      `${t('removeMemberConfirmTitle')} ${member.name} (${member.role || (t('memberFallback') || 'Integrante')}) ${t('removeMemberConfirmMsg')}?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('cancel') || 'Cancelar', style: 'cancel' },
         {
-          text: 'Remover',
+          text: t('removeMemberConfirmTitle') || 'Remover',
           style: 'destructive',
           onPress: async () => {
             await bandService.deleteBandMember(member.id);
@@ -660,7 +981,7 @@ export default function BandDetailScreen({
     const fullNumber = cleanNumber.length <= 11 ? `55${cleanNumber}` : cleanNumber;
     const url = `https://wa.me/${fullNumber}`;
     Linking.openURL(url).catch(() => {
-      Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+      Alert.alert(t('error') || 'Erro', t('errorWhatsApp') || 'Não foi possível abrir o WhatsApp.');
     });
   };
 
@@ -674,6 +995,8 @@ export default function BandDetailScreen({
     setFinDate(today);
     setFinStatus('paid');
     setFinNotes('');
+    setFinShowMemberSplit(false);
+    setFinMemberSplits({});
     setShowAddFinanceModal(true);
   };
 
@@ -684,19 +1007,37 @@ export default function BandDetailScreen({
     setFinType(item.type);
     setFinDate(item.date || '');
     setFinStatus(item.status || 'paid');
-    setFinNotes(item.notes || '');
+    // Parse member splits from notes if they exist
+    let notes = item.notes || '';
+    let savedSplits = {};
+    try {
+      if (notes.startsWith('{"_memberSplits":')) {
+        const parsed = JSON.parse(notes);
+        savedSplits = parsed._memberSplits || {};
+        notes = parsed._notes || '';
+      }
+    } catch (e) {}
+    setFinNotes(notes);
+    setFinMemberSplits(savedSplits);
+    setFinShowMemberSplit(Object.keys(savedSplits).length > 0);
     setShowAddFinanceModal(true);
   };
 
   const handleSaveFinanceEntry = async () => {
     if (!finTitle.trim()) {
-      Alert.alert(t('attention') || 'Atenção', 'Por favor, informe a descrição do lançamento.');
+      Alert.alert(t('attention') || 'Atenção', t('enterFinanceDesc') || 'Por favor, informe a descrição do lançamento.');
       return;
     }
     const parsedAmt = parseCurrency(finAmount);
     if (parsedAmt <= 0) {
-      Alert.alert(t('attention') || 'Atenção', 'Por favor, informe um valor válido.');
+      Alert.alert(t('attention') || 'Atenção', t('enterValidAmount') || 'Por favor, informe um valor válido.');
       return;
+    }
+
+    // Encode member splits into notes JSON if enabled
+    let notesToSave = finNotes.trim();
+    if (finShowMemberSplit && Object.keys(finMemberSplits).length > 0) {
+      notesToSave = JSON.stringify({ _memberSplits: finMemberSplits, _notes: finNotes.trim() });
     }
 
     try {
@@ -708,7 +1049,7 @@ export default function BandDetailScreen({
           finType,
           finDate.trim(),
           finStatus,
-          finNotes.trim()
+          notesToSave
         );
       } else {
         await bandService.addFinancialEntry(
@@ -718,15 +1059,25 @@ export default function BandDetailScreen({
           finType,
           finDate.trim(),
           finStatus,
-          finNotes.trim()
+          notesToSave
         );
       }
       setShowAddFinanceModal(false);
       await loadData();
     } catch (e) {
       console.error('Error saving financial entry:', e);
-      Alert.alert('Erro', 'Não foi possível salvar o lançamento financeiro.');
+      Alert.alert(t('error') || 'Erro', t('errorSavingFinance') || 'Não foi possível salvar o lançamento financeiro.');
     }
+  };
+
+  const handleFinDivideEqually = () => {
+    const parsedAmt = parseCurrency(finAmount);
+    const activeM = activeMembers;
+    if (activeM.length === 0 || parsedAmt <= 0) return;
+    const share = (parsedAmt / activeM.length).toFixed(2);
+    const updated = {};
+    activeM.forEach(m => { updated[m.id] = share; });
+    setFinMemberSplits(updated);
   };
 
   const handleToggleFinanceStatus = async (item) => {
@@ -741,7 +1092,7 @@ export default function BandDetailScreen({
   const handleDeleteFinanceEntry = (item) => {
     Alert.alert(
       t('attention') || 'Atenção',
-      `Excluir o lançamento "${item.title}"?`,
+      `${t('deleteFinanceConfirmMsg') || 'Excluir o lançamento'} "${item.title}"?`,
       [
         { text: t('cancel') || 'Cancelar', style: 'cancel' },
         {
@@ -778,59 +1129,119 @@ export default function BandDetailScreen({
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled={true}
         >
-          {/* INDEX 0: HEADER HERO COM TEXTURAS, DESENHOS DE MÚSICA E LOGO AMPLIADO */}
-          <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#f8fafc' }]}>
-            {/* 1. Imagem de Marca d'Água no fundo (com opacidade suave) */}
-            {(band.imageUri || band.image || band.logo) && (
-              <Image
-                source={{ uri: band.imageUri || band.image || band.logo }}
-                style={[StyleSheet.absoluteFillObject, { opacity: 0.18 }]}
-                resizeMode="cover"
-                blurRadius={2}
-              />
+          {/* INDEX 0: HEADER HERO MODERNO COM IMAGEM TRANSLÚCIDA E DEGRADÊ */}
+          <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#1e293b' }]}>
+            {/* 1. Imagem da banda em full-width com opacidade */}
+            {(band.imageUri || band.image || band.logo) ? (
+              <View style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.65 : 0.75, overflow: 'hidden' }]} pointerEvents="none">
+                <Image
+                  source={{ uri: band.imageUri || band.image || band.logo }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              </View>
+            ) : (
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.primary, opacity: 0.15 }]}>
+                <Ionicons name="musical-notes" size={60} color={colors.primary} style={{position: 'absolute', top: 20, left: 30, opacity: 0.3, transform: [{rotate: '-15deg'}]}} />
+                <Ionicons name="mic-outline" size={80} color={colors.primary} style={{position: 'absolute', top: 60, right: 40, opacity: 0.2, transform: [{rotate: '25deg'}]}} />
+                <Ionicons name="headset-outline" size={50} color={colors.primary} style={{position: 'absolute', bottom: 40, left: '40%', opacity: 0.25}} />
+              </View>
             )}
 
-            {/* 2. Texturas e Desenhos Artísticos de Música no Fundo */}
+            {/* 2. Degradê escuro na parte inferior para legibilidade */}
             <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-              <View style={[styles.bgHeaderGlow, { backgroundColor: colors.primary + '22' }]} />
-              
-              <Ionicons name="musical-notes" size={54} color={colors.primary} style={styles.floatingIcon1} />
-              <Ionicons name="disc-outline" size={60} color={colors.secondary} style={styles.floatingIcon2} />
-              <Ionicons name="radio-outline" size={42} color={colors.textMuted} style={styles.floatingIcon3} />
-              <Ionicons name="sparkles" size={32} color={colors.primary} style={styles.floatingIcon4} />
-              <Ionicons name="headset-outline" size={48} color={colors.secondary} style={styles.floatingIcon5} />
+              <View style={{ flex: 1 }} />
+              <View style={{ height: '70%', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)' }} />
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.30)' }} />
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.50)' }} />
+                <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(9,9,11,0.80)' : 'rgba(0,0,0,0.60)' }} />
+              </View>
             </View>
 
-            {/* Barra de Navegação Superior */}
+            {/* Barra de Navegação Superior - Glassmorphism */}
             <View style={styles.topRowNav}>
-              <Pressable style={[styles.headerIconButton, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]} onPress={onBack}>
-                <Ionicons name="arrow-back" size={20} color={colors.text} />
+              <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]} onPress={onBack}>
+                <Ionicons name="arrow-back" size={20} color="#ffffff" />
               </Pressable>
 
               <View style={styles.topRowActions}>
-                <Pressable style={[styles.headerIconButton, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
-                  <Ionicons name="pencil" size={18} color={colors.primary} />
+                {/* Botão Instantâneo de Sincronização / Visibilidade na Rede */}
+                <Pressable
+                  style={[
+                    styles.headerIconButton,
+                    {
+                      backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.35)' : 'rgba(0,0,0,0.35)',
+                      borderColor: isNetworkVisible ? '#10b981' : 'rgba(255,255,255,0.15)',
+                      borderWidth: 1,
+                    }
+                  ]}
+                  onPress={handleToggleNetworkVisibility}
+                  accessibilityLabel={isNetworkVisible ? (t('bandSyncedActive') || 'Banda visível na Rede') : (t('bandSyncedOffline') || 'Banda fora da Rede')}
+                >
+                  <Ionicons
+                    name={isNetworkVisible ? 'cloud-done' : 'cloud-offline-outline'}
+                    size={18}
+                    color={isNetworkVisible ? '#10b981' : '#ffffff'}
+                  />
                 </Pressable>
-                <Pressable style={[styles.headerIconButton, { backgroundColor: colors.danger + '18', borderColor: colors.danger + '40', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+
+                {onOpenPublicProfile && (
+                  <Pressable
+                    style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]}
+                    onPress={() => onOpenPublicProfile(band)}
+                    accessibilityLabel="Página Pública da Banda"
+                  >
+                    <Ionicons name="globe-outline" size={18} color="#ffffff" />
+                  </Pressable>
+                )}
+                <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
+                  <Ionicons name="pencil" size={18} color="#ffffff" />
+                </Pressable>
+                <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(239,68,68,0.35)', borderColor: 'rgba(239,68,68,0.40)', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
+                  <Ionicons name="trash-outline" size={18} color="#fca5a5" />
                 </Pressable>
               </View>
             </View>
 
-            {/* LOGO CENTRALIZADO AMPLIADO */}
-            <View style={styles.logoCenterContainerTop}>
-              <View style={[styles.avatarGlowOuter, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '12' }]}>
-                <View style={[styles.avatarCircleCompact, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
-                  {band.imageUri ? (
-                    <Image source={{ uri: band.imageUri }} style={styles.avatarImageCompact} />
-                  ) : (
-                    <Text style={[styles.avatarInitialsCompact, { color: colors.primary }]}>
-                      {getBandInitials(band.name)}
-                    </Text>
-                  )}
+            {/* NOME DA BANDA SOBRE O DEGRADÊ (base do header) */}
+            <View style={styles.headerBandInfoBottom}>
+              {!(band.imageUri || band.image || band.logo) && (
+                <Text style={styles.headerInitialsBig}>{getBandInitials(band.name)}</Text>
+              )}
+              <Text style={styles.headerBandNameText}>{band.name}</Text>
+
+              {/* 2ª Linha: Cidade, Estado, País */}
+              {(band.city || band.state || band.country) && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                  <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.9)" />
+                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600' }}>
+                    {[band.city, band.state].filter(Boolean).join(', ')
+                      ? `${[band.city, band.state].filter(Boolean).join(', ')}${band.country ? ` • ${band.country}` : ''}`
+                      : band.country}
+                  </Text>
                 </View>
+              )}
+
+              {/* 3ª Linha: Pílulas Cover / Autoral + Tags de Estilo */}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                {(band.isCover === 1 || (band.bandType && band.bandType.includes('cover')) || (!band.bandType && band.isCover === undefined)) && (
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalCover') || 'Cover'}</Text>
+                  </View>
+                )}
+                {(band.isAutoral === 1 || (band.bandType && band.bandType.includes('autoral'))) && (
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalOriginal') || 'Autoral'}</Text>
+                  </View>
+                )}
+                {detailBandTags.map((tag, idx) => (
+                  <View key={idx} style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderColor: 'rgba(255,255,255,0.25)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>{tag}</Text>
+                  </View>
+                ))}
               </View>
-              <Text style={[styles.bandTitleText, { color: colors.text }]}>{band.name}</Text>
             </View>
           </View>
 
@@ -842,22 +1253,36 @@ export default function BandDetailScreen({
               style={[styles.tabItemIconOnly, activeTab === 'repertoire' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('repertoire')}
             >
-              <Ionicons
-                name={activeTab === 'repertoire' ? "musical-notes" : "musical-notes-outline"}
-                size={22}
-                color={activeTab === 'repertoire' ? colors.primary : colors.textMuted}
-              />
+              <View style={{position: 'relative', paddingHorizontal: 4}}>
+                <Ionicons
+                  name={activeTab === 'repertoire' ? "musical-notes" : "musical-notes-outline"}
+                  size={22}
+                  color={activeTab === 'repertoire' ? colors.primary : colors.textMuted}
+                />
+                {bandSongs.length > 0 && (
+                  <View style={{position: 'absolute', top: -4, right: -4, backgroundColor: colors.primary, borderRadius: 10, minWidth: 14, height: 14, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3}}>
+                    <Text style={{color: '#ffffff', fontSize: 9, fontWeight: 'bold'}}>{bandSongs.length}</Text>
+                  </View>
+                )}
+              </View>
             </Pressable>
 
             <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'members' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => setActiveTab('members')}
             >
-              <Ionicons
-                name={activeTab === 'members' ? "people" : "people-outline"}
-                size={22}
-                color={activeTab === 'members' ? colors.primary : colors.textMuted}
-              />
+              <View style={{position: 'relative', paddingHorizontal: 4}}>
+                <Ionicons
+                  name={activeTab === 'members' ? "people" : "people-outline"}
+                  size={22}
+                  color={activeTab === 'members' ? colors.primary : colors.textMuted}
+                />
+                {activeMembers.length > 0 && (
+                  <View style={{position: 'absolute', top: -4, right: -4, backgroundColor: colors.primary, borderRadius: 10, minWidth: 14, height: 14, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3}}>
+                    <Text style={{color: '#ffffff', fontSize: 9, fontWeight: 'bold'}}>{activeMembers.length}</Text>
+                  </View>
+                )}
+              </View>
             </Pressable>
 
             <Pressable
@@ -899,7 +1324,7 @@ export default function BandDetailScreen({
         {/* ABA 1: REPERTÓRIO */}
         {activeTab === 'repertoire' && (
           <View style={styles.tabContentFlex}>
-            <View style={[styles.searchToolbar, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
+            <View style={[styles.searchToolbar, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border, paddingHorizontal: 20, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
               <View style={[styles.searchInputWrapper, { flex: 1, backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 44, flexDirection: 'row', alignItems: 'center' }]}>
                 <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 6 }} />
                 <TextInput
@@ -908,6 +1333,7 @@ export default function BandDetailScreen({
                   placeholderTextColor={colors.textMuted}
                   value={repertoireSearch}
                   onChangeText={setRepertoireSearch}
+                  maxLength={100}
                 />
                 {repertoireSearch.length > 0 && (
                   <Pressable onPress={() => setRepertoireSearch('')}>
@@ -978,7 +1404,7 @@ export default function BandDetailScreen({
                   onPress={() => setSelectedStyleFilters([])}
                 >
                   <Text style={[styles.stylePillTextCompact, { color: selectedStyleFilters.length === 0 ? colors.primary : colors.text }]}>
-                    Todas ({bandSongs.length})
+                    {t('allPlural') || 'Todas'} ({bandSongs.length})
                   </Text>
                 </Pressable>
 
@@ -1003,7 +1429,7 @@ export default function BandDetailScreen({
                           if (selectedStyleFilters.length < 4) {
                             setSelectedStyleFilters([...selectedStyleFilters, st]);
                           } else {
-                            Alert.alert(t('attention') || 'Atenção', 'Você pode selecionar no máximo 4 tags ao mesmo tempo.');
+                            Alert.alert(t('attention') || 'Atenção', t('maxTagsSelected') || 'Você pode selecionar no máximo 4 tags ao mesmo tempo.');
                           }
                         }
                       }}
@@ -1068,7 +1494,7 @@ export default function BandDetailScreen({
                 onPress={handleOpenSongPicker}
                 hitSlop={8}
               >
-                <Ionicons name="add" size={22} color="#ffffff" />
+                <Ionicons name="add" size={24} color="#ffffff" />
               </Pressable>
             </Animated.View>
           </View>
@@ -1093,21 +1519,22 @@ export default function BandDetailScreen({
                         borderColor: meMember ? colors.primary + '60' : colors.border,
                         borderWidth: 1.5,
                         opacity: pressed ? 0.85 : 1,
-                        transform: [{ scale: pressed ? 0.99 : 1 }]
+                        transform: [{ scale: pressed ? 0.99 : 1 }],
+                        paddingVertical: 12,
+                        paddingHorizontal: 14,
+                        borderRadius: 12,
                       }
                     ]}
                     onPress={() => setShowWhoAreYouModal(true)}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                      <Ionicons name="star" size={16} color={colors.primary} />
-                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
-                        Você:
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>
+                        {t('you') || 'Você:'}
                       </Text>
-                      <Text style={{ fontSize: 13, fontWeight: '900', color: meMember ? colors.primary : colors.textMuted }} numberOfLines={1}>
-                        {meMember ? meMember.name : 'Selecionar...'}
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: meMember ? colors.primary : colors.textMuted }} numberOfLines={1}>
+                        {meMember ? meMember.name : '+'}
                       </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={15} color={meMember ? colors.primary : colors.textMuted} />
                   </Pressable>
                 );
               })()}
@@ -1137,6 +1564,135 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
 
+            {/* SEÇÃO 0: CONVITES PENDENTES / AGUARDANDO CONFIRMAÇÃO */}
+            {pendingMembers.length > 0 && (
+              <View style={{ marginBottom: 18 }}>
+                <View style={styles.memberSectionHeader}>
+                  <View style={styles.sectionHeaderTitleGroup}>
+                    <Ionicons name="time" size={17} color="#f59e0b" style={{ marginRight: 6 }} />
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                      Aguardando Confirmação ({pendingMembers.length})
+                    </Text>
+                  </View>
+                </View>
+
+                {pendingMembers.map(item => {
+                  const photoUri = memberPhotos[item.id] || item.photoUri || item.imageUri;
+                  return (
+                    <View
+                      key={item.id}
+                      style={[
+                        styles.memberCardNoBorder,
+                        {
+                          backgroundColor: colors.card,
+                        }
+                      ]}
+                    >
+                      <View style={styles.memberCardTopRow}>
+                        <View style={styles.memberCardLeft}>
+                          {/* Avatar do membro: carrega a foto ao vincular com @, clicável para página dele */}
+                          <Pressable
+                            style={[
+                              styles.memberAvatarCircle,
+                              { backgroundColor: colors.primary + '20' }
+                            ]}
+                            onPress={() => handleOpenMemberProfile(item)}
+                          >
+                            {photoUri ? (
+                              <Image source={{ uri: photoUri }} style={styles.memberAvatarImg} />
+                            ) : (
+                              <Text style={[styles.memberAvatarInitial, { color: colors.primary }]}>
+                                {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                              </Text>
+                            )}
+                          </Pressable>
+
+                          <View style={{ flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                              <Pressable onPress={() => handleOpenMemberProfile(item)}>
+                                <Text style={[styles.memberNameText, { color: colors.text }]}>
+                                  {item.name}
+                                </Text>
+                              </Pressable>
+
+                              {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
+                                <View key={idx} style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
+                                  <Text style={styles.roleBadgeText}>{roleTag}</Text>
+                                </View>
+                              ))}
+                            </View>
+
+                            {/* Nome de usuário na rede com link direto para a página pública */}
+                            {item.username ? (
+                              <Pressable
+                                style={styles.memberUsernameLinkRow}
+                                onPress={() => handleOpenMemberProfile(item)}
+                              >
+                                <Ionicons name="at" size={13} color={colors.primary} />
+                                <Text style={[styles.memberUsernameLinkText, { color: colors.primary }]}>
+                                  {item.username.replace(/^@+/, '')}
+                                </Text>
+                              </Pressable>
+                            ) : null}
+                          </View>
+                        </View>
+
+                        {/* Ações da direita: cancelar convite pendente */}
+                        <View style={styles.memberCardRightActions}>
+                          <Pressable
+                            style={styles.iconActionBtn}
+                            onPress={() => {
+                              Alert.alert(
+                                'Cancelar Convite',
+                                `Deseja cancelar o convite enviado para ${item.name}? O card será removido da banda.`,
+                                [
+                                  { text: 'Voltar', style: 'cancel' },
+                                  {
+                                    text: 'Cancelar Convite',
+                                    style: 'destructive',
+                                    onPress: async () => {
+                                      await bandService.deleteBandMember(item.id);
+                                      await loadData();
+                                    }
+                                  }
+                                ]
+                              );
+                            }}
+                            hitSlop={8}
+                          >
+                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                          </Pressable>
+                        </View>
+                      </View>
+
+                      {/* Mensagem de Retorno do Músico (se houver) */}
+                      {item.replyMessage ? (
+                        <View
+                          style={[
+                            styles.memberReplyMessageBox,
+                            {
+                              backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                              borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                            }
+                          ]}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 3 }}>
+                            <Ionicons name="chatbubble-ellipses-outline" size={12} color={colors.primary} />
+                            <Text style={[styles.memberReplyHeader, { color: colors.primary }]}>
+                              Mensagem de retorno do músico:
+                            </Text>
+                          </View>
+                          <Text style={[styles.memberReplyText, { color: colors.text }]}>
+                            "{item.replyMessage}"
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
             {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
             <View style={styles.memberSectionHeader}>
               <View style={styles.sectionHeaderTitleGroup}>
@@ -1151,30 +1707,65 @@ export default function BandDetailScreen({
               </View>
             ) : (
               activeMembers.map(item => {
+                const photoUri = memberPhotos[item.id] || item.photoUri || item.imageUri;
                 const periodText = getMemberPeriodText(item);
                 const isExpanded = expandedMemberIds.has(item.id);
-                const hasExtraDetails = periodText || item.phone;
+                const hasExtraDetails = periodText || item.phone || (item.cycles && item.cycles !== '[]' && item.cycles !== 'null');
                 const isMe = item.id === myMemberId;
 
                 return (
                   <View key={item.id} style={[styles.memberCardNoBorder, { backgroundColor: colors.card, borderColor: isMe ? colors.primary + '50' : 'transparent', borderWidth: isMe ? 1.5 : 0 }]}>
                     <View style={styles.memberCardTopRow}>
                       <View style={styles.memberCardLeft}>
-                        <View style={[styles.memberAvatarCircle, { backgroundColor: isMe ? colors.primary : colors.primary + '20' }]}>
-                          <Ionicons name={isMe ? "star" : "person"} size={18} color={isMe ? "#ffffff" : colors.primary} />
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, gap: 4 }}>
-                          <Text style={[styles.memberNameText, { color: colors.text }]}>{item.name}</Text>
-                          {isMe && (
-                            <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 6 }}>
-                              <Text style={{ fontSize: 9.5, fontWeight: '900', color: '#ffffff' }}>VOCÊ</Text>
-                            </View>
+                        {/* Avatar do membro com tamanho aumentado em 50% (54x54) */}
+                        <Pressable
+                          style={[styles.memberAvatarCircle, { backgroundColor: isMe ? colors.primary : colors.primary + '20' }]}
+                          onPress={() => handleOpenMemberProfile(item)}
+                        >
+                          {photoUri ? (
+                            <Image source={{ uri: photoUri }} style={styles.memberAvatarImg} />
+                          ) : isMe ? (
+                            <Ionicons name="star" size={24} color="#ffffff" />
+                          ) : (
+                            <Text style={[styles.memberAvatarInitial, { color: colors.primary }]}>
+                              {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                            </Text>
                           )}
-                          {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
-                            <View key={idx} style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
-                              <Text style={styles.roleBadgeText}>{roleTag}</Text>
+                        </Pressable>
+                        <View style={{ flex: 1 }}>
+                          {/* LINHA 1: NOME E USERNAME */}
+                          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                            <Pressable onPress={() => handleOpenMemberProfile(item)}>
+                              <Text style={[styles.memberNameText, { color: colors.text }]}>{item.name}</Text>
+                            </Pressable>
+                            {item.username ? (
+                              <Pressable
+                                style={styles.memberUsernameLinkRow}
+                                onPress={() => handleOpenMemberProfile(item)}
+                              >
+                                <Ionicons name="at" size={13} color={colors.primary} />
+                                <Text style={[styles.memberUsernameLinkText, { color: colors.primary }]}>
+                                  {item.username.replace(/^@+/, '')}
+                                </Text>
+                              </Pressable>
+                            ) : null}
+                            {isMe && (
+                              <View style={[styles.youBadge, { backgroundColor: colors.primary + '20' }]}>
+                                <Text style={[styles.youBadgeText, { color: colors.primary }]}>{t('you') || 'Você'}</Text>
+                              </View>
+                            )}
+                          </View>
+
+                          {/* LINHA 2: FUNÇÕES (PÍLULAS COMPACTAS) */}
+                          {item.role && item.role.trim() ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                              {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
+                                <View key={idx} style={[styles.roleBadgeCompact, { backgroundColor: colors.primary + '18' }]}>
+                                  <Text style={[styles.roleBadgeTextCompact, { color: colors.primary }]}>{roleTag}</Text>
+                                </View>
+                              ))}
                             </View>
-                          ))}
+                          ) : null}
                         </View>
                       </View>
 
@@ -1182,32 +1773,43 @@ export default function BandDetailScreen({
                         <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
                           <Ionicons name="pencil" size={18} color={colors.primary} />
                         </Pressable>
-                        <Pressable style={styles.iconActionBtn} onPress={() => handleDeleteMember(item)}>
-                          <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                        </Pressable>
-                        {hasExtraDetails && (
-                          <Pressable style={styles.expandToggleBtn} onPress={() => handleToggleExpandMember(item.id)}>
-                            <Ionicons name={isExpanded ? "remove" : "add"} size={20} color={colors.primary} />
-                          </Pressable>
-                        )}
                       </View>
                     </View>
 
-                    {/* REVELAR CONTATO E PERÍODO APENAS AO APERTAR O '+' */}
-                    {isExpanded && hasExtraDetails && (
-                      <View style={[styles.memberCardExpandedRow, { borderTopColor: isDark ? '#3f3f46' : '#e4e4e7' }]}>
-                        {periodText ? (
-                          <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
-                            <Ionicons name="calendar-outline" size={13} color={colors.textMuted} /> {periodText}
-                          </Text>
-                        ) : null}
+                    {/* INFORMAÇÕES EXIBIDAS DIRETAMENTE SEM PRECISAR EXPANDIR */}
+                    {hasExtraDetails && (
+                      <View style={{ width: '100%' }}>
+                        <View style={[styles.memberCardExpandedRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }]}>
+                          {periodText ? (
+                            <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
+                              <Ionicons name="calendar-outline" size={12} color={colors.textMuted} /> {periodText}
+                            </Text>
+                          ) : null}
 
-                        {item.phone ? (
-                          <Pressable style={styles.whatsAppBadge} onPress={() => handleOpenWhatsApp(item.phone)}>
-                            <Ionicons name="logo-whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                            <Text style={styles.whatsAppBadgeText}>{item.phone}</Text>
-                          </Pressable>
-                        ) : null}
+                          {item.phone ? (
+                            <Pressable style={styles.whatsAppBadge} onPress={() => handleOpenWhatsApp(item.phone)}>
+                              <Ionicons name="logo-whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
+                              <Text style={styles.whatsAppBadgeText}>{item.phone}</Text>
+                            </Pressable>
+                          ) : null}
+                        </View>
+                        {(() => {
+                           let cycles = [];
+                           try { cycles = typeof item.cycles === 'string' ? JSON.parse(item.cycles) : item.cycles; } catch(e) {}
+                           if (cycles && cycles.length > 0) {
+                             return (
+                               <View style={{ marginTop: 6, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', paddingTop: 6 }}>
+                                 <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 3 }}>Histórico de Ciclos:</Text>
+                                 {cycles.map((c, idx) => (
+                                   <Text key={idx} style={{ fontSize: 11, color: colors.text, marginLeft: 8 }}>
+                                     • {c.startDate || '?'} {c.endDate ? `até ${c.endDate}` : ''}
+                                   </Text>
+                                 ))}
+                               </View>
+                             );
+                           }
+                           return null;
+                        })()}
                       </View>
                     )}
                   </View>
@@ -1238,27 +1840,58 @@ export default function BandDetailScreen({
                 {showInactiveMembers && (
                   <View style={{ marginTop: 12 }}>
                     {inactiveMembers.map(item => {
+                      const photoUri = memberPhotos[item.id] || item.photoUri || item.imageUri;
                       const periodText = getMemberPeriodText(item);
                       const isExpanded = expandedMemberIds.has(item.id);
-                      const hasExtraDetails = periodText || item.phone;
+                      const hasExtraDetails = periodText || item.phone || (item.cycles && item.cycles !== '[]' && item.cycles !== 'null');
 
                       return (
                         <View key={item.id} style={[styles.memberCardNoBorderInactive, { backgroundColor: colors.cardBackground }]}>
                           <View style={styles.memberCardTopRow}>
                             <View style={styles.memberCardLeft}>
-                              <View style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}>
-                                <Ionicons name="person-outline" size={18} color="#6b7280" />
-                              </View>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, gap: 4 }}>
-                                <Text style={[styles.memberNameText, { color: colors.textMuted }]}>{item.name}</Text>
-                                {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
-                                  <View key={idx} style={[styles.roleBadge, { backgroundColor: '#6b7280' }]}>
-                                    <Text style={styles.roleBadgeText}>{roleTag}</Text>
+                              {/* Avatar do membro inativo aumentado em 50% (54x54) */}
+                              <Pressable
+                                style={[styles.memberAvatarCircle, { backgroundColor: '#6b728020' }]}
+                                onPress={() => handleOpenMemberProfile(item)}
+                              >
+                                {photoUri ? (
+                                  <Image source={{ uri: photoUri }} style={styles.memberAvatarImg} />
+                                ) : (
+                                  <Ionicons name="person-outline" size={24} color="#6b7280" />
+                                )}
+                              </Pressable>
+                              <View style={{ flex: 1 }}>
+                                {/* LINHA 1: NOME, USERNAME E STATUS INATIVO */}
+                                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                                  <Pressable onPress={() => handleOpenMemberProfile(item)}>
+                                    <Text style={[styles.memberNameText, { color: colors.textMuted }]}>{item.name}</Text>
+                                  </Pressable>
+                                  {item.username ? (
+                                    <Pressable
+                                      style={styles.memberUsernameLinkRow}
+                                      onPress={() => handleOpenMemberProfile(item)}
+                                    >
+                                      <Ionicons name="at" size={13} color={colors.textMuted} />
+                                      <Text style={[styles.memberUsernameLinkText, { color: colors.textMuted }]}>
+                                        {item.username.replace(/^@+/, '')}
+                                      </Text>
+                                    </Pressable>
+                                  ) : null}
+                                  <View style={styles.inactivePill}>
+                                    <Text style={styles.inactivePillText}>{t('inactive')}</Text>
                                   </View>
-                                ))}
-                                <View style={styles.inactivePill}>
-                                  <Text style={styles.inactivePillText}>{t('inactive')}</Text>
                                 </View>
+
+                                {/* LINHA 2: FUNÇÕES (PÍLULAS COMPACTAS) */}
+                                {item.role && item.role.trim() ? (
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                                    {(item.role || '').split(',').map(r => r.trim()).filter(Boolean).map((roleTag, idx) => (
+                                      <View key={idx} style={[styles.roleBadgeCompact, { backgroundColor: '#6b728025' }]}>
+                                        <Text style={[styles.roleBadgeTextCompact, { color: '#6b7280' }]}>{roleTag}</Text>
+                                      </View>
+                                    ))}
+                                  </View>
+                                ) : null}
                               </View>
                             </View>
 
@@ -1266,31 +1899,43 @@ export default function BandDetailScreen({
                               <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
                                 <Ionicons name="pencil" size={18} color={colors.primary} />
                               </Pressable>
-                              <Pressable style={styles.iconActionBtn} onPress={() => handleDeleteMember(item)}>
-                                <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                              </Pressable>
-                              {hasExtraDetails && (
-                                <Pressable style={styles.expandToggleBtn} onPress={() => handleToggleExpandMember(item.id)}>
-                                  <Ionicons name={isExpanded ? "remove" : "add"} size={20} color={colors.primary} />
-                                </Pressable>
-                              )}
                             </View>
                           </View>
 
-                          {isExpanded && hasExtraDetails && (
-                            <View style={[styles.memberCardExpandedRow, { borderTopColor: isDark ? '#3f3f46' : '#e4e4e7' }]}>
-                              {periodText ? (
-                                <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
-                                  <Ionicons name="calendar-outline" size={13} color={colors.textMuted} /> {periodText}
-                                </Text>
-                              ) : null}
+                          {/* INFORMAÇÕES EXIBIDAS DIRETAMENTE SEM PRECISAR EXPANDIR */}
+                          {hasExtraDetails && (
+                            <View style={{ width: '100%' }}>
+                              <View style={[styles.memberCardExpandedRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }]}>
+                                {periodText ? (
+                                  <Text style={[styles.memberPeriodText, { color: colors.textMuted }]}>
+                                    <Ionicons name="calendar-outline" size={12} color={colors.textMuted} /> {periodText}
+                                  </Text>
+                                ) : null}
 
-                              {item.phone ? (
-                                <Pressable style={styles.whatsAppBadge} onPress={() => handleOpenWhatsApp(item.phone)}>
-                                  <Ionicons name="logo-whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                                  <Text style={styles.whatsAppBadgeText}>{item.phone}</Text>
-                                </Pressable>
-                              ) : null}
+                                {item.phone ? (
+                                  <Pressable style={styles.whatsAppBadge} onPress={() => handleOpenWhatsApp(item.phone)}>
+                                    <Ionicons name="logo-whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
+                                    <Text style={styles.whatsAppBadgeText}>{item.phone}</Text>
+                                  </Pressable>
+                                ) : null}
+                              </View>
+                              {(() => {
+                                 let cycles = [];
+                                 try { cycles = typeof item.cycles === 'string' ? JSON.parse(item.cycles) : item.cycles; } catch(e) {}
+                                 if (cycles && cycles.length > 0) {
+                                   return (
+                                     <View style={{ marginTop: 6, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', paddingTop: 6 }}>
+                                       <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 3 }}>Histórico de Ciclos:</Text>
+                                       {cycles.map((c, idx) => (
+                                         <Text key={idx} style={{ fontSize: 11, color: colors.textMuted, marginLeft: 8 }}>
+                                           • {c.startDate || '?'} {c.endDate ? `até ${c.endDate}` : ''}
+                                         </Text>
+                                       ))}
+                                     </View>
+                                   );
+                                 }
+                                 return null;
+                              })()}
                             </View>
                           )}
                         </View>
@@ -1357,9 +2002,20 @@ export default function BandDetailScreen({
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             {/* CARD 1: RESUMO FINANCEIRO */}
             <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-              <View style={styles.cardPanelHeaderRow}>
-                <Ionicons name="wallet-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-                <Text style={[styles.cardPanelTitle, { color: colors.text }]}>{t('financialSummary')}</Text>
+              <View style={[styles.cardPanelHeaderRow, { justifyContent: 'space-between' }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="wallet-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+                  <Text style={[styles.cardPanelTitle, { color: colors.text }]}>{t('financialSummary')}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 8, height: 36 }}>
+                  <Pressable onPress={() => setSelectedFinanceYear(y => y - 1)} style={{ padding: 4 }}>
+                    <Ionicons name="chevron-back" size={16} color={colors.primary} />
+                  </Pressable>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, marginHorizontal: 8 }}>{selectedFinanceYear}</Text>
+                  <Pressable onPress={() => setSelectedFinanceYear(y => y + 1)} style={{ padding: 4 }}>
+                    <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+                  </Pressable>
+                </View>
               </View>
 
               <View style={styles.financeSummaryGrid}>
@@ -1377,9 +2033,9 @@ export default function BandDetailScreen({
                   </Text>
                 </View>
 
-                <View style={[styles.financeSummaryCard, { backgroundColor: netBalance >= 0 ? '#3b82f615' : '#f59e0b15' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>{t('balance')}</Text>
-                  <Text style={[styles.financeSummaryValue, { color: netBalance >= 0 ? '#3b82f6' : '#f59e0b' }]}>
+                <View style={[styles.financeSummaryCard, { backgroundColor: netBalance >= 0 ? '#3b82f615' : '#eab30815' }]}>
+                  <Text style={[styles.financeSummaryLabel, { color: netBalance >= 0 ? '#3b82f6' : '#eab308' }]}>{t('balance')}</Text>
+                  <Text style={[styles.financeSummaryValue, { color: netBalance >= 0 ? '#3b82f6' : '#eab308' }]}>
                     $ {netBalance.toFixed(2)}
                   </Text>
                 </View>
@@ -1399,7 +2055,7 @@ export default function BandDetailScreen({
               <View style={styles.cardPanelHeaderRow}>
                 <Ionicons name="cash-outline" size={20} color="#10b981" style={{ marginRight: 8 }} />
                 <Text style={[styles.cardPanelTitle, { color: colors.text }]}>
-                  {t('showsAndCaches') || 'Lançamentos Financeiros'}
+                  {t('showsAndCaches')}
                 </Text>
               </View>
 
@@ -1416,6 +2072,7 @@ export default function BandDetailScreen({
                       type: 'income',
                       isShow: true,
                       rawSetlist: sl,
+                      status: sl.cacheStatus || 'paid',
                     };
                   }),
                   ...(finances || []).map(item => ({
@@ -1427,8 +2084,11 @@ export default function BandDetailScreen({
                     type: item.type || 'expense',
                     isShow: false,
                     rawFinance: item,
+                    status: item.status || 'paid',
                   }))
-                ].sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+                ]
+                .filter(i => getMonthInfo(i.date, language).year === selectedFinanceYear)
+                .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
                 if (combinedItems.length === 0) {
                   return (
@@ -1442,17 +2102,22 @@ export default function BandDetailScreen({
 
                 let lastFinMonthHeader = '';
                 return combinedItems.map(item => {
-                  const header = getMonthYearHeader(item.date, language);
+                  const monthInfo = getMonthInfo(item.date, language);
+                  const header = monthInfo.name;
                   const showHeader = header !== lastFinMonthHeader;
                   if (showHeader) lastFinMonthHeader = header;
+                  
+                  const isPastMonth = selectedFinanceYear < currentYearNum || (selectedFinanceYear === currentYearNum && monthInfo.index < currentMonthNum);
+                  const isExpanded = expandedFinanceMonths[header] !== undefined ? expandedFinanceMonths[header] : !isPastMonth;
 
                   const badgeDate = getFormattedDateBadge(item.date, language);
                   const isIncome = item.type === 'income';
+                  const valueColor = item.status === 'pending' ? '#eab308' : (isIncome ? '#10b981' : '#ef4444');
 
                   return (
                     <View key={item.id}>
                       {showHeader && (() => {
-                        const monthGroup = combinedItems.filter(i => getMonthYearHeader(i.date, language) === header);
+                        const monthGroup = combinedItems.filter(i => getMonthInfo(i.date, language).name === header);
                         const monthIncomeTotal = monthGroup
                           .filter(i => i.type === 'income')
                           .reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -1460,12 +2125,12 @@ export default function BandDetailScreen({
                           .filter(i => i.type === 'expense')
                           .reduce((acc, curr) => acc + (curr.amount || 0), 0);
                         const monthNetProfit = monthIncomeTotal - monthExpenseTotal;
-                        const activeMembersCount = members.filter(m => m.status === 'active').length || members.length || 1;
+                        const activeMembersCount = activeMembers.length || members.length || 1;
                         const myShare = monthNetProfit > 0 ? (monthNetProfit / activeMembersCount) : 0;
                         const meMember = members.find(m => m.id === myMemberId);
 
                         return (
-                          <View style={{ marginTop: 14, marginBottom: 8 }}>
+                          <Pressable onPress={() => toggleFinanceMonth(header)} style={{ marginTop: 14, marginBottom: 8 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                               <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
                                 {header}
@@ -1508,10 +2173,13 @@ export default function BandDetailScreen({
                               </View>
 
                               <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                              <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
                             </View>
-                          </View>
+                          </Pressable>
                         );
                       })()}
+                      
+                      {isExpanded && (
 
                       <Pressable
                         style={({ pressed }) => [
@@ -1561,17 +2229,17 @@ export default function BandDetailScreen({
                         {/* Valor e Badge / Lixeira */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={{ fontSize: 14, fontWeight: '900', color: isIncome ? '#10b981' : '#ef4444' }}>
+                            <Text style={{ fontSize: 14, fontWeight: '900', color: valueColor }}>
                               {isIncome ? '+' : '-'} $ {item.amount.toFixed(2)}
                             </Text>
                             <View style={{
-                              backgroundColor: (isIncome ? '#10b981' : '#ef4444') + '20',
+                              backgroundColor: valueColor + '20',
                               paddingHorizontal: 6,
                               paddingVertical: 1.5,
                               borderRadius: 4,
                               marginTop: 2
                             }}>
-                              <Text style={{ color: isIncome ? '#10b981' : '#ef4444', fontSize: 9, fontWeight: '900' }}>
+                              <Text style={{ color: valueColor, fontSize: 9, fontWeight: '900' }}>
                                 {item.isShow
                                   ? (item.amount > 0 ? t('showCachet') : t('toBeDefined'))
                                   : (isIncome ? t('income') : t('expense'))}
@@ -1593,6 +2261,7 @@ export default function BandDetailScreen({
                           )}
                         </View>
                       </Pressable>
+                      )}
                     </View>
                   );
                 });
@@ -1604,13 +2273,131 @@ export default function BandDetailScreen({
         {/* ABA 5: EVENTOS DESTA BANDA */}
         {activeTab === 'setlists' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
-            <Pressable
-              style={[styles.createEventBtn, { backgroundColor: colors.primary }]}
-              onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
-            >
-              <Ionicons name="add" size={20} color="#ffffff" style={{ marginRight: 6 }} />
-              <Text style={styles.createEventBtnText}>{t('newEvent')}</Text>
-            </Pressable>
+            {/* NOVO: CARD 1: RESUMO DE EVENTOS - 3 CÍRCULOS (ANO, SHOWS, ENSAIOS) */}
+            {(() => {
+              const yearEvents = bandSetlists.filter(s => getMonthInfo(s.date, language).year === selectedEventYear);
+              const showCount = yearEvents.filter(s => s.type === 'show').length;
+              const rehearsalCount = yearEvents.filter(s => s.type !== 'show').length;
+
+              return (
+                <View style={[styles.agendaSummaryCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
+                  <View style={styles.agendaSummaryRow}>
+                    
+                    {/* CÍRCULO 1: ANO (SEM ÍCONE E SEM FLECHAS, CLICÁVEL PARA ABRIR CALENDÁRIO NATIVO) */}
+                    <View style={styles.summaryCircleCol}>
+                      <Pressable
+                        onPress={() => setShowEventYearPicker(true)}
+                        hitSlop={6}
+                        style={({ pressed }) => [
+                          styles.summaryCircle,
+                          {
+                            backgroundColor: colors.primary + '15',
+                            borderColor: colors.primary + '35',
+                            opacity: pressed ? 0.7 : 1,
+                          }
+                        ]}
+                        accessibilityLabel="Selecionar ano no calendário"
+                      >
+                        <Text style={[styles.summaryCircleValue, { color: colors.primary, fontSize: 16 }]}>
+                          {selectedEventYear}
+                        </Text>
+                      </Pressable>
+                      <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                        {t('year') || 'Ano'}
+                      </Text>
+                    </View>
+
+                    {/* CÍRCULO 2: SHOWS (ÍCONE EM CÍRCULO MENOR SOBREPONDO À ESQUERDA) */}
+                    <View style={styles.summaryCircleCol}>
+                      <View style={styles.summaryOverlapWrapper}>
+                        <View style={[styles.summaryCircle, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                          <Text style={[styles.summaryCircleValue, { color: colors.text, fontSize: 17, paddingLeft: 4 }]}>
+                            {showCount}
+                          </Text>
+                        </View>
+                        <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                          <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                        </View>
+                      </View>
+                      <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                        {showCount === 1 ? (t('show') || 'Show') : (t('shows') || 'Shows')}
+                      </Text>
+                    </View>
+
+                    {/* CÍRCULO 3: ENSAIOS (ÍCONE EM CÍRCULO MENOR SOBREPONDO À ESQUERDA) */}
+                    <View style={styles.summaryCircleCol}>
+                      <View style={styles.summaryOverlapWrapper}>
+                        <View style={[styles.summaryCircle, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                          <Text style={[styles.summaryCircleValue, { color: colors.text, fontSize: 17, paddingLeft: 4 }]}>
+                            {rehearsalCount}
+                          </Text>
+                        </View>
+                        <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                          <Ionicons name="headset-outline" size={13} color={colors.primary} />
+                        </View>
+                      </View>
+                      <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                        {rehearsalCount === 1 ? (t('rehearsal') || 'Ensaio') : (t('rehearsals') || 'Ensaios')}
+                      </Text>
+                    </View>
+
+                  </View>
+
+                  {/* SELETOR EXCLUSIVO DE ANOS */}
+                  <YearPickerModal
+                    visible={showEventYearPicker}
+                    selectedYear={selectedEventYear}
+                    onSelectYear={(year) => setSelectedEventYear(year)}
+                    onClose={() => setShowEventYearPicker(false)}
+                  />
+                </View>
+              );
+            })()}
+
+            {/* Botões Novo Evento e Compartilhar Agenda na mesma linha */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.createEventBtn,
+                  {
+                    flex: 1,
+                    backgroundColor: colors.primary,
+                    marginBottom: 0,
+                    opacity: pressed ? 0.85 : 1,
+                    height: 42,
+                    borderRadius: 10,
+                    paddingHorizontal: 8,
+                  }
+                ]}
+                onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
+              >
+                <Ionicons name="add" size={19} color="#ffffff" style={{ marginRight: 4 }} />
+                <Text style={styles.createEventBtnText} numberOfLines={1}>{t('newEvent')}</Text>
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [
+                  shareAgendaPillStyles.btn,
+                  {
+                    flex: 1,
+                    backgroundColor: colors.primary + '18',
+                    borderColor: colors.primary,
+                    opacity: pressed ? 0.75 : 1,
+                    marginBottom: 0,
+                    height: 42,
+                    borderRadius: 10,
+                    paddingHorizontal: 8,
+                    paddingVertical: 0,
+                  }
+                ]}
+                onPress={openShareBandAgenda}
+              >
+                <Ionicons name='share-social' size={16} color={colors.primary} />
+                <Text style={[shareAgendaPillStyles.text, { color: colors.primary }]} numberOfLines={1}>
+                  {t('shareAgenda') || 'Compartilhar Agenda'}
+                </Text>
+              </Pressable>
+            </View>
 
             {bandSetlists.length === 0 ? (
               <View style={styles.emptyContainer}>
@@ -1622,21 +2409,36 @@ export default function BandDetailScreen({
               </View>
             ) : (
               (() => {
+                const filteredEvents = bandSetlists.filter(s => getMonthInfo(s.date, language).year === selectedEventYear);
+                if (filteredEvents.length === 0) {
+                  return (
+                    <View style={{ paddingVertical: 14, alignItems: 'center' }}>
+                      <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
+                        {t('noEventsScheduled')}
+                      </Text>
+                    </View>
+                  );
+                }
+                
                 let lastEventHeader = '';
-                return bandSetlists.map(setlist => {
-                  const header = getMonthYearHeader(setlist.date, language);
+                return filteredEvents.map(setlist => {
+                  const monthInfo = getMonthInfo(setlist.date, language);
+                  const header = monthInfo.name;
                   const showHeader = header !== lastEventHeader;
                   if (showHeader) lastEventHeader = header;
                   const dateBadge = getFormattedDateBadge(setlist.date, language);
+                  
+                  const isPastMonth = selectedEventYear < currentYearNum || (selectedEventYear === currentYearNum && monthInfo.index < currentMonthNum);
+                  const isExpanded = expandedEventMonths[header] !== undefined ? expandedEventMonths[header] : !isPastMonth;
 
                   return (
                     <View key={setlist.id}>
                       {showHeader && (() => {
-                        const mGroup = bandSetlists.filter(s => getMonthYearHeader(s.date, language) === header);
+                        const mGroup = filteredEvents.filter(s => getMonthInfo(s.date, language).name === header);
                         const mShows = mGroup.filter(s => s.type === 'show').length;
                         const mRehearsals = mGroup.filter(s => s.type !== 'show').length;
                         return (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
+                          <Pressable onPress={() => toggleEventMonth(header)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
                             <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
                               {header}
                             </Text>
@@ -1651,10 +2453,12 @@ export default function BandDetailScreen({
                               </View>
                             </View>
                             <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
-                          </View>
+                            <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
+                          </Pressable>
                         );
                       })()}
-
+                      
+                      {isExpanded && (
                       <Pressable
                         style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                         onPress={() => onSelectSetlist ? onSelectSetlist(setlist) : onExportDoc(setlist)}
@@ -1681,17 +2485,27 @@ export default function BandDetailScreen({
                             </View>
 
                             {setlist.local ? (
-                              <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
-                                📍 {setlist.local}
-                              </Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1, marginRight: setlist.time ? 8 : 0 }}>
+                                <Ionicons name="location-outline" size={13} color={colors.textMuted} />
+                                <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
+                                  {setlist.local}
+                                </Text>
+                              </View>
+                            ) : null}
+
+                            {setlist.time ? (
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
+                                <Ionicons name="time-outline" size={13} color={colors.primary} />
+                                <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
+                                  {setlist.time}
+                                </Text>
+                              </View>
                             ) : null}
                           </View>
                         </View>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                        </View>
                       </Pressable>
+                      )}
                     </View>
                   );
                 });
@@ -1725,6 +2539,7 @@ export default function BandDetailScreen({
                 placeholderTextColor={colors.textMuted}
                 value={pickerSearch}
                 onChangeText={setPickerSearch}
+                maxLength={100}
               />
             </View>
 
@@ -1794,18 +2609,24 @@ export default function BandDetailScreen({
 
       {/* MODAL ADICIONAR/EDITAR FINANCEIRO */}
       <Modal visible={showAddFinanceModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '80%' }]}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <View style={[styles.pickerModalContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '90%' }]}>
             <View style={styles.modalHeaderRow}>
-              <Text style={[styles.modalTitleText, { color: colors.text }]}>
-                {editingFinanceItem ? t('editEntry') : t('newEntry')}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary + '18', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="cash-outline" size={18} color={colors.primary} />
+                </View>
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>
+                  {editingFinanceItem ? t('editEntry') : t('newEntry')}
+                </Text>
+              </View>
               <Pressable onPress={() => setShowAddFinanceModal(false)}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
               </Pressable>
             </View>
 
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Descrição */}
               <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('descriptionLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
@@ -1813,69 +2634,68 @@ export default function BandDetailScreen({
                 placeholderTextColor={colors.textMuted}
                 value={finTitle}
                 onChangeText={setFinTitle}
+                maxLength={200}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('amountLabel')}</Text>
+              {/* Valor */}
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 14 }]}>{t('amountLabel')}</Text>
               <TextInput
-                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder=""
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border, fontSize: 18, fontWeight: '800' }]}
+                placeholder="0.00"
                 placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
                 value={finAmount}
                 onChangeText={setFinAmount}
+                maxLength={20}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('entryTypeLabel')}</Text>
-              <View style={{ flexDirection: 'row', marginTop: 6, marginBottom: 12 }}>
+              {/* Tipo: Entrada / Saída */}
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 14 }]}>{t('entryTypeLabel')}</Text>
+              <View style={{ flexDirection: 'row', marginTop: 6, marginBottom: 12, gap: 8 }}>
                 <Pressable
                   style={[
                     styles.typeSelectBtn,
-                    { backgroundColor: finType === 'income' ? '#10b981' : 'rgba(16, 185, 129, 0.25)', borderColor: '#10b981', borderWidth: 1 }
+                    { backgroundColor: finType === 'income' ? '#10b981' : (isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.15)'), borderColor: '#10b981', borderWidth: 1.5 }
                   ]}
                   onPress={() => setFinType('income')}
                 >
-                  <Text style={[styles.typeSelectText, { color: '#ffffff' }]}>Entrada (+)</Text>
+                  <Ionicons name="trending-up" size={16} color={finType === 'income' ? '#fff' : '#10b981'} style={{ marginRight: 4 }} />
+                  <Text style={[styles.typeSelectText, { color: finType === 'income' ? '#ffffff' : '#10b981' }]}>{t('incomeEntry')}</Text>
                 </Pressable>
                 <Pressable
                   style={[
                     styles.typeSelectBtn,
-                    { backgroundColor: finType === 'expense' ? '#ef4444' : 'rgba(239, 68, 68, 0.25)', borderColor: '#ef4444', borderWidth: 1 }
+                    { backgroundColor: finType === 'expense' ? '#ef4444' : (isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.15)'), borderColor: '#ef4444', borderWidth: 1.5 }
                   ]}
                   onPress={() => setFinType('expense')}
                 >
-                  <Text style={[styles.typeSelectText, { color: '#ffffff' }]}>Saída (-)</Text>
+                  <Ionicons name="trending-down" size={16} color={finType === 'expense' ? '#fff' : '#ef4444'} style={{ marginRight: 4 }} />
+                  <Text style={[styles.typeSelectText, { color: finType === 'expense' ? '#ffffff' : '#ef4444' }]}>{t('expenseEntry')}</Text>
                 </Pressable>
               </View>
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>Data (DD/MM/AAAA):</Text>
+              {/* Data */}
+              <Text style={[styles.cleanInputLabel, { color: colors.text }]}>{t('dateLabel') || 'Data'}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Pressable style={{ flex: 1 }} onPress={() => setShowFinDatePicker(true)}>
                   <View pointerEvents="none">
                     <TextInput
                       style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                      placeholder="DD/MM/AAAA"
+                      placeholder={t('datePlaceholder') || 'DD/MM/AAAA'}
                       placeholderTextColor={colors.textMuted}
                       value={finDate}
                       editable={false}
+                      maxLength={20}
                     />
                   </View>
                 </Pressable>
                 <Pressable
-                  style={({ pressed }) => [
-                    {
-                      height: 42,
-                      paddingHorizontal: 12,
-                      borderRadius: 8,
-                      backgroundColor: colors.primary + '18',
-                      borderColor: colors.primary + '40',
-                      borderWidth: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      gap: 4,
-                      opacity: pressed ? 0.7 : 1
-                    }
-                  ]}
+                  style={({ pressed }) => [{
+                    height: 42, paddingHorizontal: 12, borderRadius: 8,
+                    backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', borderWidth: 1,
+                    justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 4,
+                    opacity: pressed ? 0.7 : 1
+                  }]}
                   onPress={() => {
                     const now = new Date();
                     const day = String(now.getDate()).padStart(2, '0');
@@ -1911,6 +2731,96 @@ export default function BandDetailScreen({
                   }}
                 />
               )}
+
+              {/* Status: Pago / Pendente */}
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 14 }]}>{t('statusLabel')}</Text>
+              <View style={{ flexDirection: 'row', marginTop: 6, gap: 8 }}>
+                <Pressable
+                  style={[styles.statusPillBtn, {
+                    backgroundColor: finStatus === 'paid' ? '#10b981' : 'transparent',
+                    borderColor: '#10b981'
+                  }]}
+                  onPress={() => setFinStatus('paid')}
+                >
+                  <Ionicons name="checkmark-circle" size={16} color={finStatus === 'paid' ? '#fff' : '#10b981'} style={{ marginRight: 4 }} />
+                  <Text style={[styles.statusPillText, { color: finStatus === 'paid' ? '#ffffff' : '#10b981' }]}>{t('paidStatus')}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.statusPillBtn, {
+                    backgroundColor: finStatus === 'pending' ? '#eab308' : 'transparent',
+                    borderColor: '#eab308'
+                  }]}
+                  onPress={() => setFinStatus('pending')}
+                >
+                  <Ionicons name="time-outline" size={16} color={finStatus === 'pending' ? '#fff' : '#eab308'} style={{ marginRight: 4 }} />
+                  <Text style={[styles.statusPillText, { color: finStatus === 'pending' ? '#ffffff' : '#eab308' }]}>{t('pendingStatus')}</Text>
+                </Pressable>
+              </View>
+
+              {/* Observações */}
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 14 }]}>{t('notesLabel')}</Text>
+              <TextInput
+                style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border, height: 70, textAlignVertical: 'top', paddingTop: 10 }]}
+                placeholder={t('notesPlaceholder') || ''}
+                placeholderTextColor={colors.textMuted}
+                value={finNotes}
+                onChangeText={setFinNotes}
+                multiline
+                maxLength={500}
+              />
+
+              {/* Divisão entre Membros */}
+              <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 14 }}>
+                <Pressable
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                  onPress={() => setFinShowMemberSplit(!finShowMemberSplit)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="people-outline" size={18} color={colors.primary} />
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>{t('splitAmongMembers')}</Text>
+                  </View>
+                  <Ionicons name={finShowMemberSplit ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textMuted} />
+                </Pressable>
+
+                {finShowMemberSplit && (
+                  <View style={{ marginTop: 10 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 }}>
+                      <Pressable
+                        style={[styles.equalSplitBtn, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+                        onPress={handleFinDivideEqually}
+                      >
+                        <Ionicons name="calculator-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                        <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{t('divideEqually')}</Text>
+                      </Pressable>
+                    </View>
+                    {activeMembers.map(m => {
+                      const val = finMemberSplits[m.id] !== undefined ? finMemberSplits[m.id] : '';
+                      return (
+                        <View key={m.id} style={[styles.memberSplitRow, { borderBottomColor: colors.border }]}>
+                          <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center', marginRight: 8 }}>
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{getBandInitials(m.name)}</Text>
+                          </View>
+                          <View style={{ flex: 1, paddingRight: 6 }}>
+                            <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>{m.name}</Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ fontSize: 13, fontWeight: '900', color: colors.primary, marginRight: 4 }}>$</Text>
+                            <TextInput
+                              style={[styles.splitCurrencyInput, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? '#18181b' : '#f4f4f5', width: 80, height: 34, fontSize: 12 }]}
+                              keyboardType="numeric"
+                              value={String(val)}
+                              onChangeText={(txt) => setFinMemberSplits(prev => ({ ...prev, [m.id]: txt }))}
+                              placeholder="0.00"
+                              placeholderTextColor={colors.textMuted}
+                              maxLength={20}
+                            />
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
             </ScrollView>
 
             <View style={styles.modalFooterRow}>
@@ -1928,7 +2838,7 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* MODAL ADICIONAR/EDITAR INTEGRANTE (BOTTOM SHEET) */}
@@ -1955,25 +2865,28 @@ export default function BandDetailScreen({
                 placeholderTextColor={colors.textMuted}
                 value={memberName}
                 onChangeText={setMemberName}
+                maxLength={100}
               />
 
               <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberRoleLabel')}</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder="Ex: Vocal, Guitarra, Baixo"
+                placeholder={t('rolePlaceholder') || 'Ex: Vocal, Guitarra, Baixo'}
                 placeholderTextColor={colors.textMuted}
                 value={memberRole}
                 onChangeText={setMemberRole}
+                maxLength={100}
               />
 
-              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberPhoneLabel')}</Text>
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>Nome de Usuário (@rede / explorar)</Text>
               <TextInput
                 style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                placeholder="Ex: (11) 99999-9999"
+                placeholder="Ex: @lucas_bass"
                 placeholderTextColor={colors.textMuted}
-                keyboardType="phone-pad"
-                value={memberPhone}
-                onChangeText={setMemberPhone}
+                autoCapitalize="none"
+                value={memberUsername}
+                onChangeText={setMemberUsername}
+                maxLength={50}
               />
 
               <View style={[styles.periodRow, { marginTop: 12 }]}>
@@ -1983,10 +2896,11 @@ export default function BandDetailScreen({
                     <View pointerEvents="none">
                       <TextInput
                         style={[styles.cleanInput, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc', color: colors.text, borderColor: colors.border }]}
-                        placeholder="DD/MM/AAAA"
+                        placeholder={t('datePlaceholder') || 'DD/MM/AAAA'}
                         placeholderTextColor={colors.textMuted}
                         value={memberStartDate}
                         editable={false}
+                        maxLength={20}
                       />
                     </View>
                   </Pressable>
@@ -2002,6 +2916,7 @@ export default function BandDetailScreen({
                         placeholderTextColor={colors.textMuted}
                         value={memberEndDate}
                         editable={false}
+                        maxLength={20}
                       />
                     </View>
                   </Pressable>
@@ -2081,6 +2996,29 @@ export default function BandDetailScreen({
             </ScrollView>
 
             <View style={styles.modalFooterRow}>
+              {editingMemberId ? (
+                <Pressable
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: (colors.danger || '#ef4444') + '15',
+                    borderWidth: 1,
+                    borderColor: (colors.danger || '#ef4444') + '30',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 'auto',
+                  }}
+                  onPress={() => {
+                    const memberToDelete = members.find(m => m.id === editingMemberId);
+                    if (memberToDelete) handleDeleteMember(memberToDelete);
+                  }}
+                  hitSlop={8}
+                  accessibilityLabel={t('deleteMember') || "Excluir integrante"}
+                >
+                  <Ionicons name="trash-outline" size={20} color={colors.danger || '#ef4444'} />
+                </Pressable>
+              ) : null}
               <Pressable
                 style={[styles.modalCancelBtn, { borderColor: colors.border }]}
                 onPress={handleCancelEditMember}
@@ -2156,7 +3094,7 @@ export default function BandDetailScreen({
             <View style={styles.modalHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Ionicons name="star" size={20} color={colors.primary} />
-                <Text style={[styles.modalTitleText, { color: colors.text }]}>Quem é você nesta Banda?</Text>
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('whoAreYouInBand') || 'Quem é você nesta Banda?'}</Text>
               </View>
               <Pressable onPress={() => setShowWhoAreYouModal(false)}>
                 <Ionicons name="close-circle" size={24} color={colors.textMuted} />
@@ -2164,12 +3102,12 @@ export default function BandDetailScreen({
             </View>
 
             <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 14 }}>
-              Selecione seu perfil de integrante para vincular e calcular sua parte no financeiro da banda.
+              {t('selectYourProfile') || 'Selecione seu perfil de integrante para vincular e calcular sua parte no financeiro da banda.'}
             </Text>
 
             {members.length === 0 ? (
               <Text style={{ fontSize: 13, color: colors.textMuted, fontStyle: 'italic', textAlign: 'center', marginVertical: 20 }}>
-                Nenhum integrante cadastrado nesta banda ainda.
+                {t('noMembersRegistered') || 'Nenhum integrante cadastrado nesta banda ainda.'}
               </Text>
             ) : (
               <ScrollView style={{ maxHeight: 320 }}>
@@ -2214,7 +3152,7 @@ export default function BandDetailScreen({
                           <Text style={{ fontSize: 10, fontWeight: '900', color: '#ffffff' }}>VOCÊ</Text>
                         </View>
                       ) : (
-                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary }}>Selecionar</Text>
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary }}>{t('selectBtn') || 'Selecionar'}</Text>
                       )}
                     </Pressable>
                   );
@@ -2255,8 +3193,37 @@ export default function BandDetailScreen({
               </Pressable>
             </View>
 
+            
+            {/* Toggle Pago/Pendente */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 12 }}>
+              <Pressable 
+                style={{ 
+                  flexDirection: 'row', alignItems: 'center', 
+                  backgroundColor: selectedShowCacheStatus === 'paid' ? colors.primary + '30' : 'transparent',
+                  paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 8,
+                  borderWidth: 1, borderColor: selectedShowCacheStatus === 'paid' ? colors.primary : colors.border
+                }}
+                onPress={() => setSelectedShowCacheStatus('paid')}
+              >
+                <Ionicons name="checkmark-circle" size={16} color={selectedShowCacheStatus === 'paid' ? colors.primary : colors.textMuted} style={{marginRight: 4}} />
+                <Text style={{ color: selectedShowCacheStatus === 'paid' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>{t('paidStatus')}</Text>
+              </Pressable>
+              <Pressable 
+                style={{ 
+                  flexDirection: 'row', alignItems: 'center', 
+                  backgroundColor: selectedShowCacheStatus === 'pending' ? '#eab30830' : 'transparent',
+                  paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
+                  borderWidth: 1, borderColor: selectedShowCacheStatus === 'pending' ? '#eab308' : colors.border
+                }}
+                onPress={() => setSelectedShowCacheStatus('pending')}
+              >
+                <Ionicons name="time" size={16} color={selectedShowCacheStatus === 'pending' ? '#eab308' : colors.textMuted} style={{marginRight: 4}} />
+                <Text style={{ color: selectedShowCacheStatus === 'pending' ? '#eab308' : colors.textMuted, fontWeight: '600', fontSize: 13 }}>{t('pendingStatus')}</Text>
+              </Pressable>
+            </View>
+
             {/* Lista de Integrantes Ativos e Input de Cachê */}
-            <ScrollView style={{ maxHeight: 280, marginVertical: 8 }}>
+            <ScrollView style={{ maxHeight: 350, marginVertical: 8 }} showsVerticalScrollIndicator={false}>
               {activeMembers.length === 0 ? (
                 <Text style={{ textAlign: 'center', color: colors.textMuted, marginVertical: 20 }}>
                   {t('noActiveMembersBand')}
@@ -2271,7 +3238,7 @@ export default function BandDetailScreen({
                       </View>
                       <View style={{ flex: 1, paddingRight: 6 }}>
                         <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>{m.name}</Text>
-                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>{m.role || 'Integrante'}</Text>
+                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>{m.role || (t('memberFallback') || 'Integrante')}</Text>
                       </View>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary, marginRight: 4 }}>$</Text>
@@ -2284,12 +3251,70 @@ export default function BandDetailScreen({
                           }}
                           placeholder="0.00"
                           placeholderTextColor={colors.textMuted}
+                          maxLength={20}
                         />
                       </View>
                     </View>
                   );
                 })
               )}
+
+              {/* SEÇÃO DE SUBSTITUTOS */}
+              <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="swap-horizontal-outline" size={16} color="#eab308" />
+                    <Text style={{ fontSize: 13, fontWeight: '900', color: colors.text }}>{t('substitutesLabel')}</Text>
+                  </View>
+                  <Pressable
+                    style={[styles.equalSplitBtn, { backgroundColor: '#eab30818', borderColor: '#eab30840' }]}
+                    onPress={handleAddSubstitute}
+                  >
+                    <Ionicons name="add" size={14} color="#eab308" style={{ marginRight: 2 }} />
+                    <Text style={{ fontSize: 11, fontWeight: '900', color: '#eab308' }}>{t('addSubstitute')}</Text>
+                  </Pressable>
+                </View>
+
+                {substitutes.map((sub, idx) => (
+                  <View key={`sub_${idx}`} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 6 }}>
+                    <TextInput
+                      style={[styles.cleanInput, {
+                        flex: 1, height: 38, backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc',
+                        color: colors.text, borderColor: '#eab30840', fontSize: 12
+                      }]}
+                      placeholder={t('substituteName')}
+                      placeholderTextColor={colors.textMuted}
+                      value={sub.name}
+                      onChangeText={(txt) => handleUpdateSubstitute(idx, 'name', txt)}
+                      maxLength={100}
+                    />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 13, fontWeight: '900', color: '#eab308', marginRight: 3 }}>$</Text>
+                      <TextInput
+                        style={[styles.splitCurrencyInput, {
+                          color: colors.text, borderColor: '#eab30840',
+                          backgroundColor: isDark ? '#18181b' : '#f4f4f5', width: 80
+                        }]}
+                        keyboardType="numeric"
+                        value={sub.amount}
+                        onChangeText={(txt) => handleUpdateSubstitute(idx, 'amount', txt)}
+                        placeholder="0.00"
+                        placeholderTextColor={colors.textMuted}
+                        maxLength={20}
+                      />
+                    </View>
+                    <Pressable onPress={() => handleRemoveSubstitute(idx)} style={{ padding: 4 }}>
+                      <Ionicons name="close-circle" size={20} color={colors.danger || '#ef4444'} />
+                    </Pressable>
+                  </View>
+                ))}
+
+                {substitutes.length === 0 && (
+                  <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', marginVertical: 4, fontStyle: 'italic' }}>
+                    {t('noSubstitutes') || '—'}
+                  </Text>
+                )}
+              </View>
             </ScrollView>
 
             <View style={styles.modalFooterRow}>
@@ -2304,6 +3329,27 @@ export default function BandDetailScreen({
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* MODAL DE PERFIL DO MÚSICO */}
+      <MusicianProfileModal
+        visible={showMusicianProfileModal}
+        musician={selectedMusicianProfile}
+        onClose={() => {
+          setShowMusicianProfileModal(false);
+          setSelectedMusicianProfile(null);
+        }}
+      />
+
+      {/* MODAL COMPARTILHAR AGENDA DA BANDA (mesmo sistema da agenda do perfil) */}
+      <ShareAgendaModal
+        visible={showShareAgendaModal}
+        onClose={() => setShowShareAgendaModal(false)}
+        events={shareableAgendaEvents}
+        initialSelectedIds={upcomingAgendaIds}
+        displayName={band.name}
+        headerLogo={bandLogoUri}
+        qrValue={'https://setlistbandmanager.com/b/' + bandQrSlug}
+      />
+
     </Modal>
   );
 }
@@ -2316,43 +3362,52 @@ const styles = StyleSheet.create({
   },
   headerHeroContainer: {
     width: '100%',
-    paddingTop: Platform.OS === 'ios' ? 44 : 12,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    height: 220,
     position: 'relative',
     overflow: 'hidden',
   },
-  topRowNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  topRowNav: { position: 'absolute', top: 0, left: 0, right: 0, width: '100%', elevation: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 48 : 24, paddingHorizontal: 16, zIndex: 10 },
   topRowActions: { flexDirection: 'row' },
   headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
   },
-  logoCenterContainerTop: {
-    alignItems: 'center',
-    marginTop: -8,
-    marginBottom: 6,
+  headerBandInfoBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 40,
+    alignItems: 'flex-start',
   },
-  avatarCircleCompact: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+  headerInitialsBig: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#ffffff',
+    marginBottom: 4,
+    opacity: 0.9,
   },
-  avatarImageCompact: { width: 86, height: 86, borderRadius: 43 },
-  avatarInitialsCompact: { fontSize: 30, fontWeight: '900' },
-  bandTitleText: { fontSize: 24, fontWeight: '900', textAlign: 'center', marginTop: 8 },
+  headerBandNameText: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#ffffff',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  headerMemberCount: {
+    fontSize: 13,
+    color: '#ffffff',
+    fontWeight: '600',
+    marginTop: 4,
+    opacity: 0.9,
+  },
 
   tabBarContainer: { borderBottomWidth: 1, height: 48, zIndex: 10 },
   tabBarRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', height: 48 },
@@ -2407,8 +3462,8 @@ const styles = StyleSheet.create({
   },
   stylePillTextCompact: { fontSize: 10.5, fontWeight: '800' },
 
-  listPadding: { padding: 16, paddingBottom: 110 },
-  dedicatedTabPadding: { padding: 16, paddingBottom: 110 },
+  listPadding: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 110 },
+  dedicatedTabPadding: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 110 },
 
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
@@ -2484,11 +3539,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   memberCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  memberAvatarCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  memberNameText: { fontSize: 15, fontWeight: 'bold', marginRight: 8 },
+  memberAvatarCircle: { width: 54, height: 54, borderRadius: 27, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
+  memberAvatarImg: { width: 54, height: 54, borderRadius: 27 },
+  memberAvatarInitial: { fontSize: 22, fontWeight: 'bold' },
+  memberNameText: { fontSize: 15, fontWeight: '800', marginRight: 4 },
   roleBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginRight: 6 },
   roleBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: 'bold' },
-  inactivePill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, backgroundColor: '#6b7280' },
+  roleBadgeCompact: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  roleBadgeTextCompact: { fontSize: 10.5, fontWeight: '700' },
+  youBadge: { paddingHorizontal: 5, paddingVertical: 1.5, borderRadius: 5 },
+  youBadgeText: { fontSize: 9.5, fontWeight: '800' },
+  inactivePill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, backgroundColor: '#6b7280' },
   inactivePillText: { color: '#ffffff', fontSize: 10, fontWeight: 'bold' },
   memberCardRightActions: { flexDirection: 'row', alignItems: 'center' },
   iconActionBtn: { padding: 6, marginLeft: 2 },
@@ -2513,6 +3574,58 @@ const styles = StyleSheet.create({
   memberPeriodText: { fontSize: 12 },
   whatsAppBadge: { flexDirection: 'row', alignItems: 'center' },
   whatsAppBadgeText: { fontSize: 12, color: '#25D366', fontWeight: 'bold' },
+  memberUsernameLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3,
+    gap: 3,
+  },
+  memberUsernameLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  profileLinkBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  profileLinkBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  statusBadgeSmall: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  deleteRejectedCardBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  memberReplyMessageBox: {
+    marginTop: 8,
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  memberReplyHeader: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  memberReplyText: {
+    fontSize: 12.5,
+    fontStyle: 'italic',
+    lineHeight: 18,
+  },
 
   toggleInactiveBtn: {
     flexDirection: 'row',
@@ -2532,6 +3645,64 @@ const styles = StyleSheet.create({
   progressBarTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
   progressBarFill: { height: '100%', borderRadius: 4 },
 
+  agendaSummaryCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+  },
+  agendaSummaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  summaryCircleCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryCircle: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  summaryOverlapWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 54,
+    height: 54,
+  },
+  summaryOverlapIconCircle: {
+    position: 'absolute',
+    left: -10,
+    top: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 2,
+  },
+  summaryCircleValue: {
+    fontWeight: '900',
+  },
+  summaryCircleLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    marginTop: 6,
+    letterSpacing: 0.2,
+  },
+
   financeSummaryGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   financeSummaryCard: { flex: 1, padding: 10, borderRadius: 8, marginHorizontal: 3, alignItems: 'center' },
   financeSummaryLabel: { fontSize: 11, fontWeight: 'bold' },
@@ -2544,27 +3715,7 @@ const styles = StyleSheet.create({
   financeItemAmount: { fontSize: 14, fontWeight: 'bold', marginHorizontal: 8 },
   financeStatusBadge: { padding: 4 },
 
-  bgHeaderGlow: {
-    position: 'absolute',
-    top: -40,
-    alignSelf: 'center',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    opacity: 0.6,
-  },
-  floatingIcon1: { position: 'absolute', top: 20, left: 16, opacity: 0.12, transform: [{ rotate: '-15deg' }] },
-  floatingIcon2: { position: 'absolute', top: 75, right: 20, opacity: 0.10, transform: [{ rotate: '20deg' }] },
-  floatingIcon3: { position: 'absolute', bottom: 15, left: 35, opacity: 0.08 },
-  floatingIcon4: { position: 'absolute', top: 30, right: 75, opacity: 0.15 },
-  floatingIcon5: { position: 'absolute', bottom: 25, right: 45, opacity: 0.09, transform: [{ rotate: '-10deg' }] },
-
-  avatarGlowOuter: {
-    padding: 3,
-    borderRadius: 30,
-    borderWidth: 1.5,
-    marginBottom: 6,
-  },
+  // Old background glow and floating icons were removed
   bandMetaBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2656,9 +3807,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 80,
     right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
@@ -2672,7 +3823,7 @@ const styles = StyleSheet.create({
   draggableFabInnerPressable: {
     width: '100%',
     height: '100%',
-    borderRadius: 22,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -180,7 +180,7 @@ export default function SetlistCard({
               <Ionicons name="star" size={13} color="#eab308" style={{ marginRight: 4 }} />
             ) : null}
             <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
-              {setlist.name || 'Sem Nome'}
+              {setlist.name || t('unnamed')}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
@@ -259,12 +259,22 @@ export default function SetlistCard({
               </View>
             ) : null}
 
+            {/* Horário do Show/Evento */}
+            {setlist.time ? (
+              <View style={[styles.miniInfoBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
+                <Ionicons name="time-outline" size={9.5} color={colors.primary} style={{ marginRight: 3.5 }} />
+                <Text style={[styles.miniInfoText, { color: colors.primary, fontWeight: '700' }]}>
+                  {setlist.time}
+                </Text>
+              </View>
+            ) : null}
+
             
             {/* Observações */}
             {setlist.notes ? (
               <View style={[styles.detailRow, { alignItems: 'flex-start', marginBottom: 4, marginTop: 1 }]}>
                 <Text style={[styles.detailText, { color: colors.text, flex: 1, fontSize: 10.5 }]}>
-                  Obs: <Text style={{ fontWeight: '500', color: colors.textMuted }}>{setlist.notes}</Text>
+                  {t('obsLabel')} <Text style={{ fontWeight: '500', color: colors.textMuted }}>{setlist.notes}</Text>
                 </Text>
               </View>
             ) : null}
@@ -354,7 +364,7 @@ export default function SetlistCard({
                           </Text>
                           {song.customNotes ? (
                             <Text style={{ fontSize: 10, color: colors.textMuted, fontStyle: 'italic', marginTop: 1 }}>
-                              Obs: {song.customNotes}
+                              {t('obsLabel')} {song.customNotes}
                             </Text>
                           ) : null}
                         </View>
@@ -386,6 +396,7 @@ export default function SetlistCard({
 
                       {showRehearsalInput && (
                         <TextInput
+                          maxLength={200}
                           style={{ 
                             backgroundColor: isDark ? 'rgba(0,0,0,0.15)' : '#fff', 
                             color: colors.inputText, 

@@ -258,7 +258,7 @@ export default function PerformanceMode({
   const openLink = (url) => {
     if (url?.trim()) {
       Linking.openURL(url).catch(() =>
-        Alert.alert('Erro', 'Não foi possível abrir o link')
+        Alert.alert(t('errorTitle') || 'Erro', t('openLinkError') || 'Não foi possível abrir o link')
       );
     }
   };
@@ -350,7 +350,7 @@ export default function PerformanceMode({
                 styles.scrollCenterBtnText,
                 { color: currentScrollSpeed !== 'none' ? '#ffffff' : '#10b981' }
               ]}>
-                {currentScrollSpeed === 'none' ? 'SCROLL' : `SCROLL ${currentScrollSpeed}x`}
+                {currentScrollSpeed === 'none' ? (t('scrollBtn') || 'SCROLL') : `${t('scrollBtn') || 'SCROLL'} ${currentScrollSpeed}x`}
               </Text>
             </Pressable>
           )}
@@ -492,7 +492,7 @@ export default function PerformanceMode({
               >
                 <Ionicons name="checkmark-circle" size={13} color={currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success} />
                 <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'green' ? '#fff' : colors.success }]}>
-                  PRONTA
+                  {t('rehearsalReady') || 'PRONTA'}
                 </Text>
               </Pressable>
 
@@ -507,7 +507,7 @@ export default function PerformanceMode({
               >
                 <Ionicons name="alert-circle" size={13} color={currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308'} />
                 <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'yellow' ? '#000' : '#eab308' }]}>
-                  REVISAR
+                  {t('rehearsalReview') || 'REVISAR'}
                 </Text>
               </Pressable>
 
@@ -522,7 +522,7 @@ export default function PerformanceMode({
               >
                 <Ionicons name="close-circle" size={13} color={currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger} />
                 <Text style={[styles.rehearsalRatingText, { color: currentSong.rehearsalStatus === 'red' ? '#fff' : colors.danger }]}>
-                  AJUSTAR
+                  {t('rehearsalAdjust') || 'AJUSTAR'}
                 </Text>
               </Pressable>
             </View>
@@ -668,7 +668,7 @@ export default function PerformanceMode({
                             fontStyle: 'italic',
                             marginTop: 2
                           }} numberOfLines={1}>
-                            Obs: {song.rehearsalNotes}
+                            {t('obsPrefix') || 'Obs:'} {song.rehearsalNotes}
                           </Text>
                         ) : null}
                       </View>
@@ -779,7 +779,7 @@ export default function PerformanceMode({
                   </View>
                 ) : (
                   <Text style={[styles.noLyricsText, { color: colors.textMuted, marginTop: 24, fontStyle: 'italic' }]}>
-                    {t('notePlaceholder') || 'Sem anotações cadastradas.'}
+                    {t('noNotesRegistered') || 'Sem anotações cadastradas.'}
                   </Text>
                 )}
               </View>

@@ -18,17 +18,24 @@ const getBandInitials = (name) => {
   return initials.slice(0, 3);
 };
 
-export default function BandCarousel({ 
-  bands, 
-  selectedBandId,
-  onSelectBand, 
-  onAddBand,
-  onEditBand, 
-  onDeleteBand 
-}) {
+export default function BandCarousel({ bands, setlists = [], hideFinancialValues = false, onToggleHideFinancials = () => {}, selectedBandId, onSelectBand, onAddBand, onEditBand, onDeleteBand }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const isDark = colors.isDark;
+
+  const parseCurrency = (val) => {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    const s = String(val).replace(/[^0-9,.-]/g, '');
+    const parts = s.split(',');
+    if (parts.length > 1) {
+      const decimals = parts.pop();
+      const integer = parts.join('').replace(/\./g, '');
+      return parseFloat(integer + '.' + decimals) || 0;
+    }
+    return parseFloat(s.replace(/\./g, '')) || 0;
+  };
+
   
   // Controla qual banda está com os botões de ação ativos
   const [activeActionsBandId, setActiveActionsBandId] = useState(null);
@@ -83,7 +90,7 @@ export default function BandCarousel({
                     <Text style={{ fontSize: 24, fontWeight: '900', color: colors.primary }}>
                       {getBandInitials(band.name)}
                     </Text>
-                  </View>
+              </View>
                 )}
 
                 {/* Botões Flutuantes e Redondos (Editar e Excluir) */}
@@ -130,12 +137,7 @@ export default function BandCarousel({
                 )}
               </Pressable>
 
-              <Text 
-                style={[styles.bandCircleName, { color: colors.text }]}
-                numberOfLines={1}
-              >
-                {band.name}
-              </Text>
+              <Text style={[styles.bandCircleName, { color: colors.text }]} numberOfLines={1}>{band.name}</Text>
             </View>
           );
         })}
@@ -159,7 +161,7 @@ export default function BandCarousel({
             <Ionicons name="add" size={28} color={colors.primary} />
           </Pressable>
           <Text style={[styles.bandCircleName, { color: colors.primary, fontWeight: '900' }]} numberOfLines={1}>
-            {t('addBand') || '+ Banda'}
+            {t('addBand')}
           </Text>
         </View>
       </ScrollView>

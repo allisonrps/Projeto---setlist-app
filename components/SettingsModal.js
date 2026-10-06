@@ -216,7 +216,32 @@ export default function SettingsModal({ visible, onClose }) {
               ))}
             </ScrollView>
 
-            {/* Botão Salvar */}
+            
+            
+            {/* Forcar Musicas Mock */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.saveButton, 
+                { backgroundColor: colors.primary, marginBottom: 12 },
+                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
+              ]}
+              onPress={async () => {
+                try {
+                  const { forceInsertMockSongs } = require('../database/database');
+                  await forceInsertMockSongs();
+                  alert('Sucesso! Feche as opcoes e recarregue a aba Musicas.');
+                } catch(e) {
+                  alert('Erro: ' + e.message);
+                }
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                <Ionicons name="musical-notes-outline" size={18} color="#fff" />
+                <Text style={styles.saveButtonText}>Forcar Carga de Musicas Iniciais</Text>
+              </View>
+            </Pressable>
+
+            {/* Boto Salvar */}
             <Pressable
               style={({ pressed }) => [
                 styles.saveButton, 

@@ -1687,6 +1687,34 @@
           Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para o QR Code abaixo para transferir todo o seu repertório e setlists instantaneamente.
         </div>
 
+        <!-- Opção: Digitar PIN gerado no Celular -->
+        <div id="phonePinSection" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 440px; background: var(--bg-card); padding: 14px 18px; border-radius: var(--radius-md); border: 1.5px solid var(--primary); box-shadow: var(--shadow-sm);">
+          <label style="font-size: 11.5px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px;">
+            <ion-icon name="keypad-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
+            <span data-i18n="typePhonePinTitle">DIGITE O PIN GERADO NO CELULAR:</span>
+          </label>
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <input
+              type="text"
+              id="inputPhonePin"
+              placeholder="Ex: 849201"
+              maxlength="7"
+              onkeydown="if(event.key==='Enter') pullDataUsingPhonePin()"
+              style="flex: 1; font-family: 'Fira Code', monospace; font-size: 20px; font-weight: 800; text-align: center; letter-spacing: 4px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text);"
+            />
+            <button id="btnConnectPhonePin" class="btn btn-primary" onclick="pullDataUsingPhonePin()" style="font-weight: 800; padding: 0 16px; white-space: nowrap;">
+              <ion-icon name="cloud-download-outline"></ion-icon>
+              <span data-i18n="btnPullPin">BAIXAR DO CELULAR</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="syncDividerOr" style="display: flex; align-items: center; gap: 10px; width: 100%; max-width: 440px; margin: 2px 0;">
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-dim);" data-i18n="orScanQrCamera">OU LEIA O QR CODE COM O APP</span>
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        </div>
+
         <!-- QR Code Display Box -->
         <div style="position: relative; padding: 18px; background: #ffffff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); display: inline-flex; flex-direction: column; align-items: center; justify-content: center;">
           <div id="qrcodeContainer" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
@@ -2287,6 +2315,11 @@
     "syncTabSend": "ENVIAR AO CELULAR",
     "syncDescReceive": "Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para transferir todas as músicas do celular para o PC.",
     "syncDescSend": "Abra o app no celular, vá em <strong>Sincronizar com Web</strong> e aponte a câmera para este QR Code para baixar no celular tudo o que você editou no PC.",
+    "typePhonePinTitle": "DIGITE O PIN GERADO NO CELULAR:",
+    "btnPullPin": "BAIXAR DO CELULAR",
+    "orScanQrCamera": "OU LEIA O QR CODE COM O APP",
+    "invalidPinError": "Digite um código PIN válido com 6 números.",
+    "fetchingPhoneData": "Buscando dados do celular...",
     "syncPinLabel": "OU DIGITE O CÓDIGO PIN NO APP:",
     "syncConnecting": "Conectando ao servidor de sincronização...",
     "syncWaitingLocal": "Aguardando pareamento local...",
@@ -2815,8 +2848,18 @@
       document.getElementById('syncTabSend').innerHTML = '<ion-icon name="cloud-upload-outline"></ion-icon> ' + t('syncTabSend');
 
       const desc = document.getElementById('syncDescText');
+      const phonePinSec = document.getElementById('phonePinSection');
+      const syncDivider = document.getElementById('syncDividerOr');
+      if (phonePinSec) phonePinSec.style.display = (mode === 'receive') ? 'flex' : 'none';
+      if (syncDivider) syncDivider.style.display = (mode === 'receive') ? 'flex' : 'none';
+
       if (mode === 'receive') {
         desc.innerHTML = t('syncDescReceive');
+        const pinInp = document.getElementById('inputPhonePin');
+        if (pinInp) {
+          pinInp.value = '';
+          setTimeout(() => pinInp.focus(), 200);
+        }
       } else {
         desc.innerHTML = t('syncDescSend');
         // Upload PC state to session immediately
@@ -2975,6 +3018,37 @@
           // Keep polling silently
         }
       }, 1500);
+    }
+
+    async function pullDataUsingPhonePin() {
+      const pinInput = document.getElementById('inputPhonePin');
+      if (!pinInput) return;
+      const rawPin = pinInput.value.replace(/\s+/g, '').trim();
+      if (!rawPin || rawPin.length !== 6 || isNaN(rawPin)) {
+        showToast(t('invalidPinError') || 'Digite um código PIN válido com 6 números.', 'alert-circle-outline', true);
+        return;
+      }
+
+      const btn = document.getElementById('btnConnectPhonePin');
+      if (btn) btn.disabled = true;
+      document.getElementById('syncStatusText').innerText = (t('fetchingPhoneData') || 'Buscando dados do celular...') + ' (PIN: ' + rawPin + ')';
+
+      try {
+        const res = await fetch(getSyncApiBaseUrl() + '?action=poll_data&pin=' + rawPin + '&receiver=web');
+        const data = await res.json();
+
+        if (data && data.success && (data.status === 'received' || data.data)) {
+          handleReceivedSyncData(data.data);
+        } else {
+          showToast(data?.error || t('sessionNotFoundMsg') || 'Código PIN não encontrado ou expirado no celular.', 'alert-circle-outline', true);
+          document.getElementById('syncStatusText').innerText = t('syncWaitingPhone');
+        }
+      } catch (err) {
+        console.error('Erro ao buscar dados pelo PIN:', err);
+        showToast(t('toastSyncError') || 'Erro ao conectar ao servidor de sincronização.', 'alert-circle-outline', true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     }
 
     function handleReceivedSyncData(payload) {
@@ -4265,7 +4339,9 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast(t('toastDocDownloaded', { name: filename }), 'document-text-outline');
     }
@@ -4403,7 +4479,9 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = currentExportFilename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast(t('toastFileDownloaded', { name: currentExportFilename }), 'download-outline');
     }

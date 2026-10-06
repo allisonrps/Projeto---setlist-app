@@ -65,7 +65,7 @@ export default function ShareOptionsModal({
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={[styles.typeBadge, { color: colors.primary, backgroundColor: colors.primary + '18' }]}>
-                    {isSong ? (t('shareSongLabel') || 'MÚSICA').toUpperCase() : (t('shareSetlistLabel') || 'SETLIST').toUpperCase()}
+                    {isSong ? (t('shareSongLabel')).toUpperCase() : (t('shareSetlistLabel')).toUpperCase()}
                   </Text>
                 </View>
                 <Text
@@ -104,7 +104,7 @@ export default function ShareOptionsModal({
           {/* Body Options */}
           <View style={styles.body}>
             <Text style={[styles.promptText, { color: colors.textMuted }]}>
-              {t('shareOptionsSubtitle') || 'Escolha como deseja compartilhar:'}
+              {t('shareOptionsSubtitle')}
             </Text>
 
             {/* Option 1: QR CODE (Highlighted) */}
@@ -131,14 +131,14 @@ export default function ShareOptionsModal({
               <View style={styles.optionTextCol}>
                 <View style={styles.optionTitleRow}>
                   <Text style={[styles.optionTitle, { color: colors.text }]}>
-                    {t('shareQrTitle') || 'Compartilhar via QR Code'}
+                    {t('shareQrTitle')}
                   </Text>
                   <View style={[styles.badgeRecommend, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.badgeRecommendText}>INSTANTÂNEO</Text>
+                    <Text style={styles.badgeRecommendText}>{t('instant')}</Text>
                   </View>
                 </View>
                 <Text style={[styles.optionDesc, { color: colors.textMuted }]}>
-                  {t('shareQrDesc') || 'Transfira para outro celular instantaneamente pela câmera ou PIN.'}
+                  {t('shareQrDesc')}
                 </Text>
               </View>
               <Ionicons
@@ -171,10 +171,10 @@ export default function ShareOptionsModal({
               </View>
               <View style={styles.optionTextCol}>
                 <Text style={[styles.optionTitle, { color: colors.text }]}>
-                  {t('shareJsonTitle') || 'Arquivo Físico (.json)'}
+                  {t('shareJsonTitle')}
                 </Text>
                 <Text style={[styles.optionDesc, { color: colors.textMuted }]}>
-                  {t('shareJsonDesc') || 'Gere o arquivo para enviar no WhatsApp ou salvar de backup.'}
+                  {t('shareJsonDesc')}
                 </Text>
               </View>
               <Ionicons
@@ -207,10 +207,10 @@ export default function ShareOptionsModal({
               </View>
               <View style={styles.optionTextCol}>
                 <Text style={[styles.optionTitle, { color: colors.text }]}>
-                  {t('shareTextTitle') || 'Texto Formatado'}
+                  {t('shareTextTitle')}
                 </Text>
                 <Text style={[styles.optionDesc, { color: colors.textMuted }]}>
-                  {t('shareTextDesc') || 'Envie os dados organizados em formato de texto para ler.'}
+                  {t('shareTextDesc')}
                 </Text>
               </View>
               <Ionicons
@@ -227,7 +227,7 @@ export default function ShareOptionsModal({
               onPress={onClose}
             >
               <Text style={[styles.cancelBtnText, { color: colors.textMuted }]}>
-                {t('cancel') || 'Cancelar'}
+                {t('cancel')}
               </Text>
             </TouchableOpacity>
           </View>

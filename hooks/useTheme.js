@@ -5,8 +5,8 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [themeMode, setThemeMode] = useState('dark');
-  const [primaryColor, setPrimaryColor] = useState('#0ea5e9'); // Azul Claro default
-  const [secondaryColor, setSecondaryColor] = useState('#0ea5e9'); // Azul Claro default
+  const [primaryColor, setPrimaryColor] = useState('#0ea5e9'); // Ciano/Azul BandLink default
+  const [secondaryColor, setSecondaryColor] = useState('#8b5cf6'); // Violeta/Roxo BandLink default
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,6 +59,7 @@ export function ThemeProvider({ children }) {
     <ThemeContext.Provider
       value={{
         themeMode,
+        isDark: themeMode === 'dark',
         primaryColor,
         secondaryColor,
         colors,

@@ -4265,7 +4265,9 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast(t('toastDocDownloaded', { name: filename }), 'document-text-outline');
     }
@@ -4403,7 +4405,9 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = currentExportFilename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast(t('toastFileDownloaded', { name: currentExportFilename }), 'download-outline');
     }

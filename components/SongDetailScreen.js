@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Alert,
   LayoutAnimation,
@@ -42,6 +43,8 @@ export default function SongDetailScreen({
   // Form states
   const [name, setName] = useState('');
   const [originalBand, setOriginalBand] = useState('');
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
+  const [isBandFocused, setIsBandFocused] = useState(false);
   const [style, setStyle] = useState('');
   const [duration, setDuration] = useState('');
   const [lyrics, setLyrics] = useState('');
@@ -54,6 +57,61 @@ export default function SongDetailScreen({
   const [showLinksSection, setShowLinksSection] = useState(false);
   const [showDetailsLayer, setShowDetailsLayer] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  // Keyboard and Auto-lift Scroll refs and states
+  const scrollViewRef = useRef(null);
+  const isEditingRef = useRef(false);
+  const cursorSelectionRef = useRef({ start: 0, end: 0 });
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      const h = e.endCoordinates ? e.endCoordinates.height : 0;
+      setKeyboardHeight(h);
+      if (isEditingRef.current) {
+        const text = activeEditorTab === 'chords' ? chords : activeEditorTab === 'lyrics' ? lyrics : tabs;
+        const curEnd = cursorSelectionRef.current?.end || 0;
+        if (curEnd >= (text?.length || 0) - 25) {
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        }
+      }
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [activeEditorTab, chords, lyrics, tabs]);
+
+  const handleEditorFocus = () => {
+    isEditingRef.current = true;
+  };
+
+  const handleEditorBlur = () => {
+    isEditingRef.current = false;
+  };
+
+  const handleSelectionChange = (e) => {
+    cursorSelectionRef.current = e.nativeEvent.selection;
+  };
+
+  const handleTextChangeAutoLift = (newVal) => {
+    const curEnd = cursorSelectionRef.current?.end || 0;
+    if (curEnd >= (newVal?.length || 0) - 20) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 50);
+    }
+  };
 
   // Initial values snapshot to check dirty state
   const initialDataRef = useRef({});
@@ -151,23 +209,19 @@ export default function SongDetailScreen({
     if (hasUnsavedChanges()) {
       Alert.alert(
         t('attention') || 'Atenção',
-        language === 'en'
-          ? 'You have unsaved changes. Do you want to save before leaving?'
-          : language === 'es'
-          ? 'Tienes cambios sin guardar. ¿Deseas guardar antes de salir?'
-          : 'Você tem alterações não salvas. Deseja salvar antes de sair?',
+        t('unsavedChangesMsg') || 'Você tem alterações não salvas. Deseja salvar antes de sair?',
         [
           {
-            text: language === 'en' ? 'Discard' : language === 'es' ? 'Descartar' : 'Descartar',
+            text: t('discard') || 'Descartar',
             style: 'destructive',
             onPress: onBack,
           },
           {
-            text: language === 'en' ? 'Cancel' : language === 'es' ? 'Cancelar' : 'Cancelar',
+            text: t('cancel') || 'Cancelar',
             style: 'cancel',
           },
           {
-            text: language === 'en' ? 'Save' : language === 'es' ? 'Guardar' : 'Salvar',
+            text: t('saveAction') || 'Salvar',
             onPress: () => {
               handleSaveInternal();
             },
@@ -266,7 +320,7 @@ export default function SongDetailScreen({
   const handlePlayStage = () => {
     const songPayload = {
       ...(song || {}),
-      name: name.trim() || (song && song.name) || 'Música',
+      name: name.trim() || (song && song.name) || t('song') || 'Música',
       originalBand: originalBand.trim() || (song && song.originalBand) || '',
       lyrics,
       chords,
@@ -283,7 +337,7 @@ export default function SongDetailScreen({
   const handleShareClick = () => {
     const songPayload = {
       ...(song || {}),
-      name: name.trim() || (song && song.name) || 'Música',
+      name: name.trim() || (song && song.name) || t('song') || 'Música',
       originalBand: originalBand.trim() || (song && song.originalBand) || '',
       lyrics,
       chords,
@@ -325,118 +379,157 @@ export default function SongDetailScreen({
         style={[styles.container, { backgroundColor: colors.background }]}
       >
       {/* ========================================================
-          CAMADA 1: HEADER (COR MAIS ESCURA)
-          Nome da música, Banda, Tags menores, e Botões circulares sem contorno
+      {/* ========================================================
+          BARRA DE CONTROLES FIXA NO TOPO: Voltar, Salvar, Compartilhar, Lixeira, Palco
          ======================================================== */}
-      <View style={[styles.headerLayer, { backgroundColor: headerBg }]}>
+      <View style={[styles.fixedHeaderBar, { backgroundColor: headerBg }]}>
         {/* Top Controls Bar: Back & Action Buttons */}
-        <View style={styles.headerControlsRow}>
-          {/* Back Button */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.circleActionBtn,
+            { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+          ]}
+          onPress={handleBackWithCheck}
+          hitSlop={8}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
+        </Pressable>
+
+        {/* Right Action Buttons: Save, Share, Delete, PLAY (Play after Delete) */}
+        <View style={styles.headerActionsRight}>
+          {/* Save (Disquete) */}
           <Pressable
             style={({ pressed }) => [
               styles.circleActionBtn,
-              { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
+              { backgroundColor: colors.success + '25' },
               pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
             ]}
-            onPress={handleBackWithCheck}
-            hitSlop={8}
+            onPress={handleSaveInternal}
+            hitSlop={6}
           >
-            <Ionicons name="arrow-back" size={20} color={colors.text} />
+            <Ionicons name="save-outline" size={18} color={colors.success} />
           </Pressable>
 
-          {/* Right Action Buttons: Save, Share, Delete, PLAY (Play after Delete) */}
-          <View style={styles.headerActionsRight}>
-            {/* Save (Disquete) */}
+          {/* Share */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.circleActionBtn,
+              { backgroundColor: colors.secondary + '20' },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+            ]}
+            onPress={handleShareClick}
+            hitSlop={6}
+          >
+            <Ionicons name="share-social-outline" size={18} color={colors.secondary} />
+          </Pressable>
+
+          {/* Delete (Lixeira) */}
+          {song && song.id ? (
             <Pressable
               style={({ pressed }) => [
                 styles.circleActionBtn,
-                { backgroundColor: colors.success + '25' },
+                { backgroundColor: colors.danger + '20' },
                 pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
               ]}
-              onPress={handleSaveInternal}
+              onPress={handleDeleteWithConfirm}
               hitSlop={6}
             >
-              <Ionicons name="save-outline" size={18} color={colors.success} />
+              <Ionicons name="trash-outline" size={18} color={colors.danger} />
             </Pressable>
+          ) : null}
 
-            {/* Share */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.circleActionBtn,
-                { backgroundColor: colors.secondary + '20' },
-                pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
-              ]}
-              onPress={handleShareClick}
-              hitSlop={6}
-            >
-              <Ionicons name="share-social-outline" size={18} color={colors.secondary} />
-            </Pressable>
-
-            {/* Delete (Lixeira) */}
-            {song && song.id ? (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.circleActionBtn,
-                  { backgroundColor: colors.danger + '20' },
-                  pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
-                ]}
-                onPress={handleDeleteWithConfirm}
-                hitSlop={6}
-              >
-                <Ionicons name="trash-outline" size={18} color={colors.danger} />
-              </Pressable>
-            ) : null}
-
-            {/* PLAY (Modo Palco com efeito pulsante) */}
-            <PulsingStageButton variant="icon" onPress={handlePlayStage} color={colors.primary} iconName="mic" />
-          </View>
-        </View>
-
-        {/* Title and Artist Centered on Same Line with Parentheses */}
-        <View style={styles.headerTitleCenterContainer}>
-          <View style={styles.headerInlineRow}>
-            <TextInput
-              style={[
-                styles.headerTitleInlineInput,
-                { color: colors.text, fontSize: titleFontSize }
-              ]}
-              value={name}
-              onChangeText={setName}
-              placeholder={t('songNamePlaceholder') || 'Música'}
-              placeholderTextColor={colors.textMuted}
-              autoComplete="off"
-              importantForAutofill="no"
-              textAlign="center"
-            />
-            <Text style={[styles.headerParenthesesText, { color: colors.secondary, fontSize: bandFontSize }]}> (</Text>
-            <TextInput
-              style={[
-                styles.headerBandInlineInput,
-                { color: colors.secondary, fontSize: bandFontSize }
-              ]}
-              value={originalBand}
-              onChangeText={setOriginalBand}
-              placeholder={t('originalBandPlaceholder') || 'Banda'}
-              placeholderTextColor={colors.textMuted}
-              autoComplete="off"
-              importantForAutofill="no"
-              textAlign="center"
-            />
-            <Text style={[styles.headerParenthesesText, { color: colors.secondary, fontSize: bandFontSize }]}>)</Text>
-          </View>
-
-          {/* Tags preview row: background color from details layer, centered */}
-          {tagsList.length > 0 && (
-            <View style={styles.headerTagsRowCentered}>
-              {tagsList.map((tag, idx) => (
-                <View key={idx} style={[styles.headerTagChip, { backgroundColor: detailsBg }]}>
-                  <Text style={[styles.headerTagText, { color: colors.primary }]}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          {/* PLAY (Modo Palco com efeito pulsante) */}
+          <PulsingStageButton variant="icon" onPress={handlePlayStage} color={colors.primary} iconName="mic" />
         </View>
       </View>
+
+      {/* ========================================================
+          SCROLLVIEW PRINCIPAL: Cabeçalho retrátil e Abas fixas (STICKY)
+         ======================================================== */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={{ flex: 1 }}
+        stickyHeaderIndices={[1]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          paddingBottom: Platform.OS === 'ios' ? 80 : (keyboardHeight > 0 ? keyboardHeight + 140 : 60),
+        }}
+      >
+        {/* INDEX 0: TÍTULO, BANDA, TAGS E DETALHES RETRÁTEIS */}
+        <View>
+          <View style={[styles.headerTitleLayer, { backgroundColor: headerBg }]}>
+            <View style={styles.headerTitleCenterContainer}>
+              {/* Campos Lado a Lado: Nome da Música & Artista/Banda (Sem Ícones) */}
+              <View style={styles.headerInputsRow}>
+                {/* Nome da Música */}
+                <View style={[
+                  styles.headerInputBox,
+                  {
+                    flex: 1.15,
+                    backgroundColor: isTitleFocused ? (colors.primary + '18') : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.035)'),
+                    borderColor: isTitleFocused ? colors.primary : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'),
+                  }
+                ]}>
+                  <TextInput
+                    maxLength={200}
+                    style={[
+                      styles.headerTitleInlineInput,
+                      { color: colors.text }
+                    ]}
+                    value={name}
+                    onChangeText={setName}
+                    onFocus={() => setIsTitleFocused(true)}
+                    onBlur={() => setIsTitleFocused(false)}
+                    placeholder={t('songNamePlaceholder') || 'Nome da Música'}
+                    placeholderTextColor={colors.textMuted}
+                    autoComplete="off"
+                    importantForAutofill="no"
+                    textAlign="center"
+                  />
+                </View>
+
+                {/* Artista / Banda */}
+                <View style={[
+                  styles.headerInputBox,
+                  {
+                    flex: 0.95,
+                    backgroundColor: isBandFocused ? (colors.primary + '18') : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.025)'),
+                    borderColor: isBandFocused ? colors.primary : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)'),
+                  }
+                ]}>
+                  <TextInput
+                    maxLength={200}
+                    style={[
+                      styles.headerBandInlineInput,
+                      { color: colors.primary }
+                    ]}
+                    value={originalBand}
+                    onChangeText={setOriginalBand}
+                    onFocus={() => setIsBandFocused(true)}
+                    onBlur={() => setIsBandFocused(false)}
+                    placeholder={t('originalBandPlaceholder') || 'Artista / Banda'}
+                    placeholderTextColor={colors.textMuted}
+                    autoComplete="off"
+                    importantForAutofill="no"
+                    textAlign="center"
+                  />
+                </View>
+              </View>
+
+              {/* Tags preview row: background color from details layer, centered */}
+              {tagsList.length > 0 && (
+                <View style={styles.headerTagsRowCentered}>
+                  {tagsList.map((tag, idx) => (
+                    <View key={idx} style={[styles.headerTagChip, { backgroundColor: detailsBg }]}>
+                      <Text style={[styles.headerTagText, { color: colors.secondary }]}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
 
       {/* ========================================================
           CAMADA 2: DETALHES (ESCURO, PORÉM MAIS CLARO QUE O HEADER)
@@ -469,12 +562,7 @@ export default function SongDetailScreen({
 
         {/* Collapsible Content */}
         {showDetailsLayer && (
-          <ScrollView
-            style={styles.detailsScrollable}
-            showsVerticalScrollIndicator={false}
-            nestedScrollEnabled
-          >
-            <View style={styles.detailsBody}>
+          <View style={styles.detailsBody}>
               {/* Row 1: Tags & Duration */}
               <View style={styles.formRow}>
                 <View style={{ flex: 1.2 }}>
@@ -482,13 +570,14 @@ export default function SongDetailScreen({
                     {t('tagsLabel') || 'ESTILO / TAGS'}
                   </Text>
                   <TextInput
+                    maxLength={300}
                     style={[
                       styles.cleanInput,
                       { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
                     ]}
                     value={style}
                     onChangeText={setStyle}
-                    placeholder="rock, 80s, acustico"
+                    placeholder={t('tagsPlaceholder') || "rock, 80s, acustico"}
                     placeholderTextColor={colors.textMuted}
                     autoComplete="off"
                     importantForAutofill="no"
@@ -500,13 +589,14 @@ export default function SongDetailScreen({
                     {t('durationLabel') || 'DURAÇÃO'}
                   </Text>
                   <TextInput
+                    maxLength={10}
                     style={[
                       styles.cleanInput,
                       { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText, textAlign: 'center' }
                     ]}
                     value={duration}
                     onChangeText={setDuration}
-                    placeholder="04:30"
+                    placeholder={t('durationPlaceholder') || "04:30"}
                     placeholderTextColor={colors.textMuted}
                     keyboardType="numbers-and-punctuation"
                     autoComplete="off"
@@ -632,7 +722,7 @@ export default function SongDetailScreen({
                 {links.length === 0 ? (
                   <View style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
                     <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: 'italic' }}>
-                      {language === 'en' ? 'No support links added. Tap + Add above.' : language === 'es' ? 'Ningún enlace de apoyo añadido. Toca + Añadir arriba.' : 'Nenhum link de apoio adicionado. Toque em + Adicionar acima.'}
+                      {t('noSupportLinksMsg') || 'Nenhum link de apoio adicionado. Toque em + Adicionar acima.'}
                     </Text>
                   </View>
                 ) : (
@@ -665,6 +755,7 @@ export default function SongDetailScreen({
                       </View>
 
                       <TextInput
+                        maxLength={500}
                         style={[
                           styles.linkUrlInput,
                           { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', color: colors.inputText }
@@ -689,121 +780,140 @@ export default function SongDetailScreen({
                 )}
               </View>
             </View>
-          </ScrollView>
         )}
       </View>
+    </View>
 
-      {/* ========================================================
-          CAMADA 3: EDIÇÃO (MAIS CLARO QUE A CAMADA DE DETALHES)
-          Abas Letra, Cifra, Tablatura e Campos de Edição em tela cheia
-         ======================================================== */}
-      <View style={[styles.editorLayer, { backgroundColor: editorBg }]}>
-        {/* Editor Tab Switcher (Letra, Cifra, Tablatura) */}
-        <View style={styles.editorTabBar}>
-          {[
-            { key: 'chords', label: t('chordsFormLabel') || 'Cifra', icon: 'musical-notes-outline' },
-            { key: 'lyrics', label: t('lyricsFormLabel') || 'Letra', icon: 'document-text-outline' },
-            { key: 'tabs', label: t('tabsFormLabel') || 'Tablatura', icon: 'list-outline' }
-          ].map((tab) => {
-            const isActive = activeEditorTab === tab.key;
-            return (
-              <Pressable
-                key={tab.key}
-                style={({ pressed }) => [
-                  styles.editorTabButton,
-                  {
-                    backgroundColor: isActive
-                      ? colors.primary
-                      : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                  },
-                  pressed && { opacity: 0.85 },
+    {/* INDEX 1: STICKY HEADER - ABAS DE EDIÇÃO (CIFRA, LETRA, TABLATURA) */}
+    <View style={[styles.editorTabBarSticky, { backgroundColor: editorBg }]}>
+      <View style={styles.editorTabBar}>
+        {[
+          { key: 'chords', label: t('chordsFormLabel') || 'Cifra', icon: 'musical-notes-outline' },
+          { key: 'lyrics', label: t('lyricsFormLabel') || 'Letra', icon: 'document-text-outline' },
+          { key: 'tabs', label: t('tabsFormLabel') || 'Tablatura', icon: 'list-outline' }
+        ].map((tab) => {
+          const isActive = activeEditorTab === tab.key;
+          return (
+            <Pressable
+              key={tab.key}
+              style={({ pressed }) => [
+                styles.editorTabButton,
+                {
+                  backgroundColor: isActive
+                    ? colors.primary
+                    : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                },
+                pressed && { opacity: 0.85 },
+              ]}
+              onPress={() => setActiveEditorTab(tab.key)}
+            >
+              <Ionicons
+                name={tab.icon}
+                size={14}
+                color={isActive ? '#ffffff' : colors.textMuted}
+              />
+              <Text
+                style={[
+                  styles.editorTabButtonText,
+                  { color: isActive ? '#ffffff' : colors.textMuted, fontWeight: isActive ? '900' : '700' }
                 ]}
-                onPress={() => setActiveEditorTab(tab.key)}
               >
-                <Ionicons
-                  name={tab.icon}
-                  size={14}
-                  color={isActive ? '#ffffff' : colors.textMuted}
-                />
-                <Text
-                  style={[
-                    styles.editorTabButtonText,
-                    { color: isActive ? '#ffffff' : colors.textMuted, fontWeight: isActive ? '900' : '700' }
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Text Area for Active Tab */}
-        <ScrollView
-          style={styles.editorTextAreaContainer}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {activeEditorTab === 'chords' && (
-            <TextInput
-              style={[
-                styles.fullTextArea,
-                styles.monoFont,
-                { color: colors.inputText }
-              ]}
-              value={chords}
-              onChangeText={setChords}
-              multiline
-              placeholder={t('chordsPlaceholder')}
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoComplete="off"
-              spellCheck={false}
-              importantForAutofill="no"
-              textAlignVertical="top"
-            />
-          )}
-
-          {activeEditorTab === 'lyrics' && (
-            <TextInput
-              style={[
-                styles.fullTextArea,
-                { color: colors.inputText }
-              ]}
-              value={lyrics}
-              onChangeText={setLyrics}
-              multiline
-              placeholder={t('lyricsPlaceholder')}
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoComplete="off"
-              spellCheck={false}
-              importantForAutofill="no"
-              textAlignVertical="top"
-            />
-          )}
-
-          {activeEditorTab === 'tabs' && (
-            <TextInput
-              style={[
-                styles.fullTextArea,
-                styles.monoFont,
-                { color: colors.inputText }
-              ]}
-              value={tabs}
-              onChangeText={setTabs}
-              multiline
-              placeholder={t('tabsPlaceholder')}
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoComplete="off"
-              spellCheck={false}
-              importantForAutofill="no"
-              textAlignVertical="top"
-            />
-          )}
-        </ScrollView>
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
+    </View>
+
+    {/* INDEX 2: ÁREA DE TEXTO DO EDITOR ATIVO (EXPANDE NATURALMENTE) */}
+    <View style={[styles.editorContentWrapper, { backgroundColor: editorBg }]}>
+      {activeEditorTab === 'chords' && (
+        <TextInput
+          maxLength={50000}
+          style={[
+            styles.fullTextArea,
+            styles.monoFont,
+            { color: colors.inputText }
+          ]}
+          value={chords}
+          onChangeText={(val) => {
+            setChords(val);
+            handleTextChangeAutoLift(val);
+          }}
+          onFocus={handleEditorFocus}
+          onBlur={handleEditorBlur}
+          onSelectionChange={handleSelectionChange}
+          multiline
+          scrollEnabled={false}
+          placeholder={t('chordsPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          autoCapitalize="none"
+          autoComplete="off"
+          spellCheck={false}
+          importantForAutofill="no"
+          textAlignVertical="top"
+        />
+      )}
+
+      {activeEditorTab === 'lyrics' && (
+        <TextInput
+          maxLength={50000}
+          style={[
+            styles.fullTextArea,
+            { color: colors.inputText }
+          ]}
+          value={lyrics}
+          onChangeText={(val) => {
+            setLyrics(val);
+            handleTextChangeAutoLift(val);
+          }}
+          onFocus={handleEditorFocus}
+          onBlur={handleEditorBlur}
+          onSelectionChange={handleSelectionChange}
+          multiline
+          scrollEnabled={false}
+          placeholder={t('lyricsPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          autoCapitalize="none"
+          autoComplete="off"
+          spellCheck={false}
+          importantForAutofill="no"
+          textAlignVertical="top"
+        />
+      )}
+
+      {activeEditorTab === 'tabs' && (
+        <TextInput
+          maxLength={50000}
+          style={[
+            styles.fullTextArea,
+            styles.monoFont,
+            { color: colors.inputText }
+          ]}
+          value={tabs}
+          onChangeText={(val) => {
+            setTabs(val);
+            handleTextChangeAutoLift(val);
+          }}
+          onFocus={handleEditorFocus}
+          onBlur={handleEditorBlur}
+          onSelectionChange={handleSelectionChange}
+          multiline
+          scrollEnabled={false}
+          placeholder={t('tabsPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          autoCapitalize="none"
+          autoComplete="off"
+          spellCheck={false}
+          importantForAutofill="no"
+          textAlignVertical="top"
+        />
+      )}
+
+      {keyboardHeight > 0 && <View style={{ height: keyboardHeight + 40 }} />}
+    </View>
+  </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -815,18 +925,26 @@ const styles = StyleSheet.create({
   },
 
   // ===== LAYER 1: HEADER =====
-  headerLayer: {
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 12 : (Platform.OS === 'ios' ? 56 : 12),
+  fixedHeaderBar: {
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 8 : (Platform.OS === 'ios' ? 52 : 10),
     paddingHorizontal: 16,
     paddingBottom: 8,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    zIndex: 10,
-    elevation: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 20,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+  headerTitleLayer: {
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 10,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
   },
   headerControlsRow: {
     flexDirection: 'row',
@@ -851,32 +969,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerInlineRow: {
+  headerInputsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flexWrap: 'nowrap',
-    maxWidth: '100%',
+    gap: 8,
+    width: '100%',
+    paddingHorizontal: 8,
+  },
+  headerInputBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   headerTitleInlineInput: {
-    fontWeight: '900',
+    fontSize: 16,
+    fontWeight: '800',
     letterSpacing: -0.2,
     paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
     textAlign: 'center',
-    flexShrink: 1,
+    width: '100%',
   },
   headerBandInlineInput: {
-    fontWeight: '750',
+    fontSize: 14,
+    fontWeight: '700',
     paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
     textAlign: 'center',
-    flexShrink: 1,
-  },
-  headerParenthesesText: {
-    fontWeight: '800',
+    width: '100%',
   },
   headerTagsRowCentered: {
     flexDirection: 'row',
@@ -1032,17 +1158,20 @@ const styles = StyleSheet.create({
   },
 
   // ===== LAYER 3: EDITOR =====
-  editorLayer: {
-    flex: 1,
-    marginHorizontal: 10,
-    marginTop: 8,
-    marginBottom: Platform.OS === 'ios' ? 36 : 48,
-    borderRadius: 18,
-    overflow: 'hidden',
+  editorTabBarSticky: {
+    zIndex: 15,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(150, 150, 150, 0.25)',
   },
   editorTabBar: {
     flexDirection: 'row',
-    padding: 8,
     gap: 8,
   },
   editorTabButton: {
@@ -1057,22 +1186,22 @@ const styles = StyleSheet.create({
   editorTabButtonText: {
     fontSize: 12.5,
   },
-  editorTextAreaContainer: {
+  editorContentWrapper: {
     flex: 1,
-    paddingHorizontal: 14,
-    paddingTop: 8,
+    minHeight: 400,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   fullTextArea: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 14.5,
+    lineHeight: 23,
     fontWeight: '500',
-    flex: 1,
-    minHeight: 240,
+    minHeight: 350,
     padding: 0,
   },
   monoFont: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 13.5,
+    lineHeight: 21,
   },
 });

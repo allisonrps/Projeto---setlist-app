@@ -1,4 +1,5 @@
 import { db } from '../database/database';
+import { sanitizeText, sanitizeJson } from './sanitize';
 
 export const bandService = {
   async getAll() {
@@ -11,11 +12,11 @@ export const bandService = {
     }
   },
 
-  async insert(name, imageUri, startDate = '', endDate = '') {
+  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]') {
     try {
       const result = await db.runAsync(
-        'INSERT INTO my_bands (name, imageUri, startDate, endDate) VALUES (?, ?, ?, ?);',
-        [name, imageUri, startDate || '', endDate || '']
+        'INSERT INTO my_bands (name, imageUri, startDate, endDate, bandType, isCover, isAutoral, city, state, country, genres) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+        [sanitizeText(name, 100), imageUri, sanitizeText(startDate, 20) || '', sanitizeText(endDate, 20) || '', sanitizeText(bandType, 20) || 'cover', isCover !== undefined ? isCover : 1, isAutoral !== undefined ? isAutoral : 0, sanitizeText(city, 100) || '', sanitizeText(state, 100) || '', sanitizeText(country, 100) || '', sanitizeJson(genres) || '[]']
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -24,11 +25,11 @@ export const bandService = {
     }
   },
 
-  async update(id, name, imageUri, startDate = '', endDate = '') {
+  async update(id, name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]') {
     try {
       await db.runAsync(
-        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ? WHERE id = ?;',
-        [name, imageUri, startDate || '', endDate || '', id]
+        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ? WHERE id = ?;',
+        [sanitizeText(name, 100), imageUri, sanitizeText(startDate, 20) || '', sanitizeText(endDate, 20) || '', sanitizeText(bandType, 20) || 'cover', isCover !== undefined ? isCover : 1, isAutoral !== undefined ? isAutoral : 0, sanitizeText(city, 100) || '', sanitizeText(state, 100) || '', sanitizeText(country, 100) || '', sanitizeJson(genres) || '[]', id]
       );
     } catch (error) {
       console.error('Error in bandService.update:', error);
@@ -50,6 +51,15 @@ export const bandService = {
       await db.runAsync('UPDATE my_bands SET myMemberId = ? WHERE id = ?;', [memberId, bandId]);
     } catch (error) {
       console.error('Error in bandService.updateMyMemberId:', error);
+    }
+  },
+
+  async toggleNetworkVisibility(id, isVisible) {
+    try {
+      await db.runAsync('UPDATE my_bands SET isNetworkVisible = ? WHERE id = ?;', [isVisible ? 1 : 0, id]);
+    } catch (error) {
+      console.error('Error in bandService.toggleNetworkVisibility:', error);
+      throw error;
     }
   },
 
@@ -148,7 +158,7 @@ export const bandService = {
     try {
       const result = await db.runAsync(
         'INSERT INTO band_finances (bandId, title, amount, type, date, status, notes, setlistId) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
-        [bandId, title, parseFloat(amount) || 0, type, date || '', status, notes || '', setlistId]
+        [bandId, sanitizeText(title, 200), parseFloat(amount) || 0, sanitizeText(type, 20), sanitizeText(date, 20) || '', sanitizeText(status, 20), sanitizeText(notes, 500) || '', setlistId]
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -161,7 +171,7 @@ export const bandService = {
     try {
       await db.runAsync(
         'UPDATE band_finances SET title = ?, amount = ?, type = ?, date = ?, status = ?, notes = ? WHERE id = ?;',
-        [title, parseFloat(amount) || 0, type, date || '', status, notes || '', id]
+        [sanitizeText(title, 200), parseFloat(amount) || 0, sanitizeText(type, 20), sanitizeText(date, 20) || '', sanitizeText(status, 20), sanitizeText(notes, 500) || '', id]
       );
     } catch (error) {
       console.error('Error in bandService.updateFinancialEntry:', error);
@@ -206,11 +216,11 @@ export const bandService = {
     }
   },
 
-  async addBandMember(bandId, name, role, phone = '', startDate = '', endDate = '', status = 'active') {
+  async addBandMember(bandId, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '') {
     try {
       const result = await db.runAsync(
-        'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status) VALUES (?, ?, ?, ?, ?, ?, ?);',
-        [bandId, name, role, phone, startDate, endDate, status]
+        'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+        [bandId, sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '']
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -219,15 +229,33 @@ export const bandService = {
     }
   },
 
-  async updateBandMember(id, name, role, phone = '', startDate = '', endDate = '', status = 'active') {
+  async updateBandMember(id, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '') {
     try {
       await db.runAsync(
-        'UPDATE band_members SET name = ?, role = ?, phone = ?, startDate = ?, endDate = ?, status = ? WHERE id = ?;',
-        [name, role, phone, startDate, endDate, status, id]
+        'UPDATE band_members SET name = ?, role = ?, phone = ?, startDate = ?, endDate = ?, status = ?, cycles = ?, username = ?, inviteMessage = ?, replyMessage = ? WHERE id = ?;',
+        [sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '', id]
       );
     } catch (error) {
       console.error('Error in bandService.updateBandMember:', error);
       throw error;
+    }
+  },
+
+  async updateMemberStatusAndReply(id, status, replyMessage = '', startDate = '') {
+    try {
+      if (startDate) {
+        await db.runAsync(
+          'UPDATE band_members SET status = ?, replyMessage = ?, startDate = ? WHERE id = ?;',
+          [sanitizeText(status, 20), sanitizeText(replyMessage, 500) || '', sanitizeText(startDate, 20), id]
+        );
+      } else {
+        await db.runAsync(
+          'UPDATE band_members SET status = ?, replyMessage = ? WHERE id = ?;',
+          [sanitizeText(status, 20), sanitizeText(replyMessage, 500) || '', id]
+        );
+      }
+    } catch (error) {
+      console.error('Error in bandService.updateMemberStatusAndReply:', error);
     }
   },
 
@@ -241,12 +269,13 @@ export const bandService = {
   },
 
   // ===== GESTÃO DE DIVISÃO DE CACHÊ POR INTEGRANTE =====
-  async saveShowCacheSplit(setlistId, splitsMap) {
+  async saveShowCacheSplit(setlistId, splitsMap, cacheStatus = 'paid') {
     try {
       const key = `cache_split_${setlistId}`;
       const jsonVal = JSON.stringify(splitsMap || {});
       try {
         await db.runAsync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);', [key, jsonVal]);
+        await db.runAsync('UPDATE setlists SET cacheStatus = ? WHERE id = ?;', [cacheStatus, setlistId]);
       } catch (sqle) {
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem(key, jsonVal);
