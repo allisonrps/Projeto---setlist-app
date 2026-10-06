@@ -1947,18 +1947,18 @@ function MainApp() {
     }
   };
 
-  const handleRestoreBackup = async (backupJsonString) => {
+  const handleRestoreBackup = async (backupJsonString, autoConfirm = false) => {
     try {
-      if (!backupJsonString || !backupJsonString.trim()) {
+      if (!backupJsonString || !String(backupJsonString).trim()) {
         Alert.alert(t('error') || 'Erro', t('invalidImportCode') || 'Código de backup inválido ou vazio.');
         return false;
       }
 
       let backupData = null;
       try {
-        backupData = JSON.parse(backupJsonString.trim());
+        backupData = JSON.parse(String(backupJsonString).trim());
       } catch (e) {
-        const startIdx = backupJsonString.indexOf('{"app":"SetlistsAppBackup"');
+        const startIdx = backupJsonString.indexOf('{');
         if (startIdx !== -1) {
           const endIdx = backupJsonString.lastIndexOf('}');
           if (endIdx > startIdx) {
@@ -1969,7 +1969,35 @@ function MainApp() {
         }
       }
 
-      if (!backupData || backupData.app !== 'SetlistsAppBackup') {
+      // Desembrulhar caso tenha sido serializado mais de uma vez
+      if (typeof backupData === 'string') {
+        try {
+          backupData = JSON.parse(backupData);
+        } catch (e) {}
+      }
+
+      if (!backupData) {
+        Alert.alert(t('error') || 'Erro', t('invalidBackupData') || 'Os dados fornecidos não correspondem a um backup válido do Setlist Band Manager.');
+        return false;
+      }
+
+      // Suporte flexível: se for array direto de músicas [ { name: "...", ... } ]
+      if (Array.isArray(backupData)) {
+        backupData = {
+          app: 'SetlistsAppBackup',
+          version: 1,
+          bands: [],
+          songs: backupData,
+          setlists: []
+        };
+      }
+
+      // Suporte flexível: se contiver songs ou setlists mas app não for SetlistsAppBackup
+      if ((Array.isArray(backupData.songs) || Array.isArray(backupData.setlists)) && backupData.app !== 'SetlistsAppBackup') {
+        backupData.app = 'SetlistsAppBackup';
+      }
+
+      if (backupData.app !== 'SetlistsAppBackup') {
         Alert.alert(t('error') || 'Erro', t('invalidBackupData') || 'Os dados fornecidos não correspondem a um backup válido do Setlist Band Manager.');
         return false;
       }
@@ -1987,11 +2015,13 @@ function MainApp() {
 
           if (backupData.bands && Array.isArray(backupData.bands)) {
             for (const band of backupData.bands) {
-              const foundBand = existingBands.find(b => b.name.toLowerCase() === band.name.toLowerCase());
+              const bName = (band.name || '').trim();
+              if (!bName) continue;
+              const foundBand = existingBands.find(b => (b.name || '').trim().toLowerCase() === bName.toLowerCase());
               if (foundBand) {
                 bandIdMap[band.id] = foundBand.id;
               } else {
-                const newBandId = await bandService.insert(band.name, band.imageUri || null);
+                const newBandId = await bandService.insert(bName, band.imageUri || null);
                 bandIdMap[band.id] = newBandId;
               }
             }
@@ -2003,22 +2033,26 @@ function MainApp() {
 
           if (backupData.songs && Array.isArray(backupData.songs)) {
             for (const song of backupData.songs) {
+              const sName = (song.name || song.title || '').trim();
+              const sBand = (song.originalBand || song.band || '').trim();
+              if (!sName) continue;
+
               const foundSong = existingSongs.find(s => 
-                s.name.toLowerCase() === song.name.toLowerCase() && 
-                s.originalBand.toLowerCase() === song.originalBand.toLowerCase()
+                (s.name || '').trim().toLowerCase() === sName.toLowerCase() && 
+                (s.originalBand || '').trim().toLowerCase() === sBand.toLowerCase()
               );
 
               if (foundSong) {
                 songIdMap[song.id] = foundSong.id;
               } else {
                 const newSongId = await songService.insert(
-                  song.name,
-                  song.originalBand,
-                  song.style || '',
+                  sName,
+                  sBand,
+                  song.style || song.tags || '',
                   song.lyrics || '',
                   song.chords || '',
                   song.tabs || '',
-                  song.defaultView || 'lyrics',
+                  song.defaultView || 'chords',
                   song.duration || null,
                   song.scrollSpeed || 'none'
                 );
@@ -2036,8 +2070,8 @@ function MainApp() {
 
           if (backupData.setlists && Array.isArray(backupData.setlists)) {
             for (const sl of backupData.setlists) {
-              let finalName = sl.name;
-              const nameExists = existingSetlists.some(eSl => eSl.name.toLowerCase() === finalName.toLowerCase());
+              let finalName = (sl.name || 'Setlist').trim();
+              const nameExists = existingSetlists.some(eSl => (eSl.name || '').trim().toLowerCase() === finalName.toLowerCase());
               if (nameExists) {
                 finalName = `${finalName} - Restaurado`;
               }
@@ -2068,13 +2102,21 @@ function MainApp() {
             }
           }
 
-          Alert.alert(t('success') || 'Sucesso', t('backupImportSuccess') || 'Backup restaurado com sucesso!');
+          if (!autoConfirm) {
+            Alert.alert(t('success') || 'Sucesso', t('backupImportSuccess') || 'Backup restaurado com sucesso!');
+          }
           await reloadAllData();
+          return true;
         } catch (restoreErr) {
           console.error('Erro na gravação do backup:', restoreErr);
           Alert.alert(t('error') || 'Erro', t('errorSavingToDb') || 'Falha ao gravar os dados no banco.');
+          return false;
         }
       };
+
+      if (autoConfirm) {
+        return await performRestore();
+      }
 
       // Exibir alerta de confirmação detalhado com os contadores de metadados
       Alert.alert(
@@ -5260,6 +5302,8 @@ function MainApp() {
         onClose={() => setShowSyncModal(false)}
         getAllDataForBackup={getAllDataForBackup}
         onRestoreBackupData={handleRestoreBackup}
+        onImportSong={handleImportSong}
+        onImportSetlist={handleImportSetlist}
         onSyncSuccess={async () => {
           await reloadAllData();
         }}

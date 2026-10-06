@@ -1804,6 +1804,10 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeExportModal()" data-i18n="btnClose">Close</button>
+        <button class="btn btn-outline" onclick="generateQrForExportItem()" style="border-color: var(--primary); color: var(--primary);">
+          <ion-icon name="qr-code-outline"></ion-icon>
+          <span data-i18n="btnExportQr">Gerar QR Code para o Celular</span>
+        </button>
         <button class="btn btn-outline" onclick="copyExportCode()">
           <ion-icon name="copy-outline"></ion-icon>
           <span data-i18n="btnCopyCode">Copy Code</span>
@@ -2832,15 +2836,14 @@
     let qrcodeInstance = null;
 
     function getSyncApiBaseUrl() {
-      // In Azure or Web: use current origin + /api/sync
-      if (window.location.origin && window.location.origin.startsWith('http')) {
-        return window.location.origin + '/api/sync';
+      const origin = (window.location && window.location.origin) || '';
+      if (origin.includes('setlistbandmanager.com') || origin.includes('azurestaticapps.net')) {
+        return origin + '/api/sync';
       }
-      // Fallback for local testing or custom proxy
       return 'https://www.setlistbandmanager.com/api/sync';
     }
 
-    function switchSyncMode(mode) {
+    async function switchSyncMode(mode) {
       syncMode = mode;
       document.getElementById('syncTabReceive').className = `tab-btn ${mode === 'receive' ? 'active' : ''}`;
       document.getElementById('syncTabSend').className = `tab-btn ${mode === 'send' ? 'active' : ''}`;
@@ -2862,11 +2865,9 @@
         }
       } else {
         desc.innerHTML = t('syncDescSend');
-        // Upload PC state to session immediately
-        sendPcDataToSyncSession();
       }
 
-      refreshSyncSession();
+      await refreshSyncSession();
     }
 
     async function openSyncModal() {
@@ -2973,9 +2974,47 @@
         app: 'SetlistsAppBackup',
         version: 1,
         exportedAt: new Date().toISOString(),
+        summary: {
+          totalBands: 0,
+          totalSongs: songs.length,
+          totalSetlists: setlists.length
+        },
         bands: [],
-        songs: songs.map(s => ({ ...s })),
-        setlists: setlists.map(st => ({ ...st }))
+        songs: songs.map(s => ({
+          name: getSongTitle(s),
+          originalBand: getSongBand(s),
+          style: getSongStyle(s),
+          duration: getSongDuration(s),
+          defaultView: s.defaultView || 'chords',
+          scrollSpeed: s.scrollSpeed || 'none',
+          lyrics: s.lyrics || '',
+          chords: s.chords || '',
+          tabs: s.tabs || '',
+          links: Array.isArray(s.links) ? s.links.map(l => ({ type: l.type, url: l.url })) : []
+        })),
+        setlists: setlists.map(st => ({
+          name: st.name || 'Setlist',
+          bandName: st.bandName || '',
+          type: st.type || 'show',
+          date: st.date || '',
+          local: st.local || '',
+          cachê: st.cachê || '',
+          notes: st.notes || '',
+          songs: (st.songs || []).map(s => ({
+            name: getSongTitle(s),
+            originalBand: getSongBand(s),
+            style: getSongStyle(s),
+            duration: getSongDuration(s),
+            defaultView: s.defaultView || 'chords',
+            customNotes: s.customNotes || '',
+            customDuration: s.customDuration || s.duration || '',
+            scrollSpeed: s.scrollSpeed || 'none',
+            lyrics: s.lyrics || '',
+            chords: s.chords || '',
+            tabs: s.tabs || '',
+            links: Array.isArray(s.links) ? s.links.map(l => ({ type: l.type, url: l.url })) : []
+          }))
+        }))
       };
 
       try {

@@ -62,7 +62,7 @@ export default function SyncModal({
   const [qrTransferred, setQrTransferred] = useState(false);
   const pollIntervalRef = useRef(null);
 
-  // Helper to process imported payload (Song, Setlist, or Full Backup)
+  // Helper to process imported payload (Song, Setlist, Song Array, or Full Backup)
   const processImportedPayload = async (payload) => {
     if (!payload) return null;
     let dataObj = payload;
@@ -74,25 +74,98 @@ export default function SyncModal({
       }
     }
 
-    if (dataObj.app === 'SetlistsAppSong') {
-      setStatusMessage(t('savingSongsLocally'));
-      if (onImportSong) {
-        await onImportSong(JSON.stringify(dataObj));
-      }
-      return { type: 'song', name: dataObj.name };
-    } else if (dataObj.app === 'SetlistsApp') {
-      setStatusMessage(t('savingSongsLocally'));
-      if (onImportSetlist) {
-        await onImportSetlist(JSON.stringify(dataObj));
-      }
-      return { type: 'setlist', name: dataObj.name };
-    } else {
-      setStatusMessage(t('savingSongsLocally'));
-      if (onRestoreBackupData) {
-        await onRestoreBackupData(JSON.stringify(dataObj));
-      }
-      return { type: 'backup' };
+    // Desembrulhar caso tenha sido serializado duas vezes
+    if (typeof dataObj === 'string') {
+      try {
+        dataObj = JSON.parse(dataObj);
+      } catch (e) {}
     }
+
+    if (!dataObj) return null;
+
+    // 1. Música Única (formato app ou duck-typed)
+    const isSong = dataObj.app === 'SetlistsAppSong' || 
+      (Boolean(dataObj.name || dataObj.title) && Boolean(dataObj.chords || dataObj.lyrics || dataObj.tabs) && !dataObj.songs);
+    if (isSong) {
+      setStatusMessage(t('savingSongsLocally') || 'Salvando músicas localmente...');
+      if (onImportSong) {
+        const songPayload = {
+          app: 'SetlistsAppSong',
+          version: 1,
+          name: dataObj.name || dataObj.title || 'Música',
+          originalBand: dataObj.originalBand || dataObj.band || '',
+          style: dataObj.style || dataObj.tags || '',
+          duration: dataObj.duration || '',
+          defaultView: dataObj.defaultView || 'chords',
+          scrollSpeed: dataObj.scrollSpeed || 'none',
+          lyrics: dataObj.lyrics || '',
+          chords: dataObj.chords || '',
+          tabs: dataObj.tabs || '',
+          links: Array.isArray(dataObj.links) ? dataObj.links : []
+        };
+        const ok = await onImportSong(JSON.stringify(songPayload));
+        if (ok !== false) {
+          return { type: 'song', name: songPayload.name };
+        }
+      }
+      return null;
+    }
+
+    // 2. Setlist Único (formato app ou duck-typed)
+    const isSetlist = dataObj.app === 'SetlistsApp' || 
+      (Boolean(dataObj.name || dataObj.title) && Array.isArray(dataObj.songs) && dataObj.app !== 'SetlistsAppBackup' && !dataObj.bands);
+    if (isSetlist) {
+      setStatusMessage(t('savingSongsLocally') || 'Salvando setlist localmente...');
+      if (onImportSetlist) {
+        const slPayload = {
+          app: 'SetlistsApp',
+          version: 1,
+          name: dataObj.name || dataObj.title || 'Setlist',
+          bandName: dataObj.bandName || '',
+          type: dataObj.type || 'show',
+          date: dataObj.date || '',
+          local: dataObj.local || '',
+          cachê: dataObj.cachê || '',
+          notes: dataObj.notes || '',
+          songs: Array.isArray(dataObj.songs) ? dataObj.songs : []
+        };
+        const ok = await onImportSetlist(JSON.stringify(slPayload));
+        if (ok !== false) {
+          return { type: 'setlist', name: slPayload.name };
+        }
+      }
+      return null;
+    }
+
+    // 3. Array direto de Músicas: [ { name: "...", ... } ]
+    if (Array.isArray(dataObj)) {
+      dataObj = {
+        app: 'SetlistsAppBackup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        summary: { totalBands: 0, totalSongs: dataObj.length, totalSetlists: 0 },
+        bands: [],
+        songs: dataObj,
+        setlists: []
+      };
+    }
+
+    // 4. Backup Geral ou Coleção de Músicas ({ songs: [...] })
+    if (dataObj.app === 'SetlistsAppBackup' || Array.isArray(dataObj.songs) || Array.isArray(dataObj.setlists)) {
+      if (!dataObj.app) dataObj.app = 'SetlistsAppBackup';
+      setStatusMessage(t('savingSongsLocally') || 'Atualizando banco de dados local...');
+      if (onRestoreBackupData) {
+        const ok = await onRestoreBackupData(JSON.stringify(dataObj), true); // autoConfirm = true para sync direto
+        if (ok !== false) {
+          const sCount = Array.isArray(dataObj.songs) ? dataObj.songs.length : 0;
+          const stCount = Array.isArray(dataObj.setlists) ? dataObj.setlists.length : 0;
+          return { type: 'backup', songsCount: sCount, setlistsCount: stCount };
+        }
+      }
+      return null;
+    }
+
+    return null;
   };
 
   // Helper to show success alert based on imported item
@@ -111,9 +184,13 @@ export default function SyncModal({
         [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
       );
     } else {
+      let detailMsg = t('repertoireReceivedMsg') || 'Dados recebidos com sucesso!';
+      if (resInfo.songsCount || resInfo.setlistsCount) {
+        detailMsg = `Repertório recebido e salvo com sucesso!\n• ${resInfo.songsCount || 0} Música(s)\n• ${resInfo.setlistsCount || 0} Setlist(s)`;
+      }
       Alert.alert(
-        t('repertoireReceivedTitle'),
-        t('repertoireReceivedMsg'),
+        t('repertoireReceivedTitle') || 'Repertório Recebido! 🎉',
+        detailMsg,
         [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
       );
     }
@@ -554,14 +631,12 @@ export default function SyncModal({
       const result = await res.json();
 
       if (result && result.success && result.data) {
-        setStatusMessage(t('updatingDatabaseMsg'));
-        await onRestoreBackupData(JSON.stringify(result.data));
-        
-        Alert.alert(
-          t('syncCompletedTitle'),
-          t('syncCompletedMsg'),
-          [{ text: t('done') || 'OK', onPress: () => { onClose(); if (onSyncSuccess) onSyncSuccess(); } }]
-        );
+        const resInfo = await processImportedPayload(result.data);
+        if (resInfo) {
+          showImportSuccessAlert(resInfo);
+        } else {
+          Alert.alert(t('error') || 'Erro', t('processQrError') || 'Não foi possível processar os dados recebidos.');
+        }
       } else {
         Alert.alert(
           t('awaitingDataTitle'),
