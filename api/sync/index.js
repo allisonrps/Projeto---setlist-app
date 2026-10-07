@@ -41,7 +41,8 @@ function isValidSessionId(sessionId) {
 module.exports = async function (context, req) {
   cleanExpiredSessions();
 
-  const origin = req.headers.origin || req.headers.Origin || '';
+  const reqHeaders = (req && req.headers) || {};
+  const origin = reqHeaders.origin || reqHeaders.Origin || '';
   let allowedOrigin = '';
   if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.azurestaticapps.net') || origin.endsWith('.setlistbandmanager.com')) {
     allowedOrigin = origin;
@@ -67,7 +68,7 @@ module.exports = async function (context, req) {
     return;
   }
 
-  const action = req.query.action || (req.body && req.body.action) || 'status';
+  const action = (req.query && req.query.action) || (req.body && req.body.action) || 'status';
 
   // 1. CREATE NEW SESSION (Called by Web Editor or Mobile App)
   if (action === 'create_session') {
@@ -228,14 +229,19 @@ module.exports = async function (context, req) {
       return;
     }
 
-    const payload = (receiver === 'web')
-      ? (session.dataForWeb || session.dataForApp)
-      : (session.dataForApp || session.dataForWeb);
-
-    if (payload) {
+    let payload = null;
+    if (receiver === 'web' && session.dataForWeb) {
+      payload = session.dataForWeb;
       session.dataForWeb = null;
+      session.status = 'consumed';
+    } else if (receiver === 'app' && session.dataForApp) {
+      payload = session.dataForApp;
       session.dataForApp = null;
       session.status = 'consumed';
+    }
+
+    if (payload) {
+      session.updatedAt = Date.now();
       context.res = {
         status: 200,
         headers,
@@ -248,6 +254,40 @@ module.exports = async function (context, req) {
       status: 200,
       headers,
       body: { success: true, status: 'waiting', pin: session.pin }
+    };
+    return;
+  }
+
+  // 4. CHECK SESSION STATUS (e.g. sender checking if data was consumed by recipient)
+  if (action === 'status' && (req.query.sessionId || req.query.pin || (req.body && (req.body.sessionId || req.body.pin)))) {
+    const sessionId = req.query.sessionId || (req.body && req.body.sessionId);
+    let pin = req.query.pin || (req.body && req.body.pin);
+    if (pin !== undefined) pin = String(pin).trim();
+
+    const { session, authFailed } = getSession(sessionId, pin);
+
+    if (!session) {
+      context.res = {
+        status: authFailed ? 403 : 404,
+        headers,
+        body: { success: false, error: authFailed ? 'Invalid PIN.' : 'Sessão não encontrada.' }
+      };
+      return;
+    }
+
+    const isConsumed = session.status === 'consumed';
+    context.res = {
+      status: 200,
+      headers,
+      body: {
+        success: true,
+        sessionId: session.id,
+        pin: session.pin,
+        status: session.status,
+        consumed: isConsumed,
+        hasDataForApp: Boolean(session.dataForApp),
+        hasDataForWeb: Boolean(session.dataForWeb)
+      }
     };
     return;
   }

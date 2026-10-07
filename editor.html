@@ -3029,7 +3029,7 @@
             data: backupData
           })
         });
-        document.getElementById('syncStatusText').innerText = 'Dados prontos! Aponte a câmera do app para o QR Code.';
+        document.getElementById('syncStatusText').innerText = t('syncReadyScan') || 'Dados prontos! Aponte a câmera do app para o QR Code.';
       } catch (err) {
         console.warn('Could not post to sync API:', err);
       }
@@ -3038,20 +3038,49 @@
     function startSyncPolling() {
       if (syncPollInterval) clearInterval(syncPollInterval);
 
-      document.getElementById('syncStatusText').innerText = t('syncWaitingCamera');
+      if (syncMode === 'send') {
+        document.getElementById('syncStatusText').innerText = t('syncReadyScan') || 'Dados prontos! Aponte a câmera do app para o QR Code.';
+      } else {
+        document.getElementById('syncStatusText').innerText = t('syncWaitingCamera');
+      }
 
       syncPollInterval = setInterval(async () => {
         if (!syncSessionId) return;
 
         try {
-          const res = await fetch(`${getSyncApiBaseUrl()}?action=poll_data&sessionId=${syncSessionId}&receiver=web`);
-          const data = await res.json();
+          if (syncMode === 'send') {
+            // No modo 'send' (PC enviando para celular): verificar se o app no celular já baixou os dados
+            const res = await fetch(`${getSyncApiBaseUrl()}?action=status&sessionId=${syncSessionId}`);
+            const data = await res.json();
 
-          if (data && data.success && data.status === 'received' && data.data) {
-            clearInterval(syncPollInterval);
-            syncPollInterval = null;
+            if (data && data.success && (data.status === 'consumed' || data.consumed)) {
+              clearInterval(syncPollInterval);
+              syncPollInterval = null;
 
-            handleReceivedSyncData(data.data);
+              const statusBox = document.getElementById('syncStatusBox');
+              if (statusBox) {
+                statusBox.style.background = 'var(--success-subtle)';
+                statusBox.style.borderColor = 'var(--success)';
+                statusBox.style.color = 'var(--success)';
+              }
+              document.getElementById('syncStatusText').innerHTML = '<strong>' + (t('syncDataSent') || 'Dados enviados com sucesso para o celular!') + '</strong>';
+
+              setTimeout(() => {
+                closeSyncModal();
+                showToast(t('syncDataSent') || 'Dados enviados com sucesso para o celular!', 'checkmark-circle');
+              }, 2200);
+            }
+          } else {
+            // No modo 'receive' (PC recebendo dados do celular): aguardar dados enviados pelo celular
+            const res = await fetch(`${getSyncApiBaseUrl()}?action=poll_data&sessionId=${syncSessionId}&receiver=web`);
+            const data = await res.json();
+
+            if (data && data.success && data.status === 'received' && data.data) {
+              clearInterval(syncPollInterval);
+              syncPollInterval = null;
+
+              handleReceivedSyncData(data.data);
+            }
           }
         } catch (e) {
           // Keep polling silently
@@ -4468,9 +4497,26 @@
     async function generateQrForExportItem() {
       if (!currentExportData) return;
       closeExportModal();
-      openSyncModal();
-      
+
+      syncMode = 'send';
+      document.getElementById('syncModal').classList.add('open');
+      document.getElementById('syncTabReceive').className = 'tab-btn';
+      document.getElementById('syncTabSend').className = 'tab-btn active';
+
+      const phonePinSec = document.getElementById('phonePinSection');
+      const syncDivider = document.getElementById('syncDividerOr');
+      if (phonePinSec) phonePinSec.style.display = 'none';
+      if (syncDivider) syncDivider.style.display = 'none';
+
+      document.getElementById('syncDescText').innerHTML = t('syncDescSend');
       document.getElementById('syncStatusText').innerText = t('syncPreparingQr');
+      document.getElementById('syncPinDisplay').innerText = '...';
+
+      if (syncPollInterval) {
+        clearInterval(syncPollInterval);
+        syncPollInterval = null;
+      }
+
       try {
         const res = await fetch(getSyncApiBaseUrl() + '?action=create_session');
         const data = await res.json();
@@ -4502,11 +4548,13 @@
 
           renderQrCode(qrPayload);
           startSyncPolling();
-          showToast(t('toastQrGenerated'), 'qr-code-outline');
+          showToast(t('toastQrGenerated') || 'QR Code gerado com sucesso!', 'qr-code-outline');
+        } else {
+          document.getElementById('syncStatusText').innerText = t('syncWaitingLocal');
         }
       } catch (e) {
         console.error('Erro ao gerar QR Code para exportação:', e);
-        showToast(t('toastSyncError'), 'alert-circle-outline', true);
+        showToast(t('toastSyncError') || 'Erro ao conectar ao servidor de sincronização.', 'alert-circle-outline', true);
       }
     }
 
