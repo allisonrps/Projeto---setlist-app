@@ -327,12 +327,68 @@ export default function BandDetailScreen({
     }
   }, [band]);
 
+  // Band Header Action & Social Menus
+  const [showBandOptionsMenu, setShowBandOptionsMenu] = useState(false);
+  const [showBandSocialMenu, setShowBandSocialMenu] = useState(false);
+
+  const getBandSocialLinks = () => {
+    let parsed = {};
+    if (band?.links) {
+      try {
+        parsed = typeof band.links === 'string' ? JSON.parse(band.links) : band.links;
+      } catch (e) {}
+    }
+    return {
+      instagram: band?.instagram || parsed?.instagram || '',
+      youtube: band?.youtube || parsed?.youtube || '',
+      spotify: band?.spotify || parsed?.spotify || '',
+      tiktok: band?.tiktok || parsed?.tiktok || '',
+      facebook: band?.facebook || parsed?.facebook || '',
+    };
+  };
+
+  const handleOpenSocialLink = async (network, value) => {
+    if (!value) return;
+    const clean = value.trim();
+    let url = clean;
+    if (network === 'instagram') {
+      const u = clean.replace(/^@+/, '');
+      url = clean.startsWith('http') ? clean : `https://instagram.com/${u}`;
+    } else if (network === 'youtube') {
+      const u = clean.replace(/^@+/, '');
+      url = clean.startsWith('http') ? clean : `https://youtube.com/@${u}`;
+    } else if (network === 'spotify') {
+      url = clean.startsWith('http') ? clean : (clean.includes('spotify.com') ? clean : `https://open.spotify.com/artist/${clean}`);
+    } else if (network === 'tiktok') {
+      const u = clean.replace(/^@+/, '');
+      url = clean.startsWith('http') ? clean : `https://tiktok.com/@${u}`;
+    } else if (network === 'facebook') {
+      const u = clean.replace(/^@+/, '');
+      url = clean.startsWith('http') ? clean : (clean.includes('facebook.com') ? `https://${clean}` : `https://facebook.com/${u}`);
+    }
+
+    try {
+      await Linking.openURL(url);
+    } catch (e) {
+      Alert.alert(t('error') || 'Erro', (t('couldNotOpenLinkMsg') || 'Não foi possível abrir o link: ') + url);
+    }
+  };
+
   const meMember = members.find(m => m.id === myMemberId);
   const hasAnyExplicitLeader = members.some(m => Number(m.isLeader) === 1);
   // O usuário é Líder se for marcado como isLeader === 1, ou se nenhum líder foi definido ainda (criador)
   const isUserLeader = meMember 
     ? (Number(meMember.isLeader) === 1 || !hasAnyExplicitLeader)
     : true;
+
+  const bandSocialLinks = getBandSocialLinks();
+  const hasAnySocialLink = Boolean(
+    bandSocialLinks.instagram ||
+    bandSocialLinks.youtube ||
+    bandSocialLinks.spotify ||
+    bandSocialLinks.tiktok ||
+    bandSocialLinks.facebook
+  );
 
   const detailBandTags = (() => {
     if (!band) return [];
@@ -1237,46 +1293,197 @@ export default function BandDetailScreen({
               </Pressable>
 
               <View style={styles.topRowActions}>
-                {/* Botão Instantâneo de Sincronização / Visibilidade na Rede */}
-                {isUserLeader && (
-                  <Pressable
-                    style={[
-                      styles.headerIconButton,
-                      {
-                        backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.35)' : 'rgba(0,0,0,0.35)',
-                        borderColor: isNetworkVisible ? '#10b981' : 'rgba(255,255,255,0.15)',
-                        borderWidth: 1,
-                      }
-                    ]}
-                    onPress={handleToggleNetworkVisibility}
-                    accessibilityLabel={isNetworkVisible ? (t('bandSyncedActive') || 'Banda visível na Rede') : (t('bandSyncedOffline') || 'Banda fora da Rede')}
-                  >
-                    <Ionicons
-                      name={isNetworkVisible ? 'cloud-done' : 'cloud-offline-outline'}
-                      size={18}
-                      color={isNetworkVisible ? '#10b981' : '#ffffff'}
-                    />
-                  </Pressable>
-                )}
+                {/* MENU EXPANDIDO DE OPÇÕES DA BANDA (Delete, Nuvem, Página Pública, Editar) */}
+                {showBandOptionsMenu ? (
+                  <View style={styles.headerActionPillRow}>
+                    {/* Botão Sincronização / Visibilidade na Rede */}
+                    {isUserLeader && (
+                      <Pressable
+                        style={[
+                          styles.headerActionPillBtn,
+                          isNetworkVisible && { backgroundColor: 'rgba(16, 185, 129, 0.35)' }
+                        ]}
+                        onPress={handleToggleNetworkVisibility}
+                        accessibilityLabel={isNetworkVisible ? (t('bandSyncedActive') || 'Banda visível na Rede') : (t('bandSyncedOffline') || 'Banda fora da Rede')}
+                      >
+                        <Ionicons
+                          name={isNetworkVisible ? 'cloud-done' : 'cloud-offline-outline'}
+                          size={17}
+                          color={isNetworkVisible ? '#10b981' : '#ffffff'}
+                        />
+                      </Pressable>
+                    )}
 
-                {onOpenPublicProfile && (
-                  <Pressable
-                    style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]}
-                    onPress={() => onOpenPublicProfile(band)}
-                    accessibilityLabel="Página Pública da Banda"
-                  >
-                    <Ionicons name="globe-outline" size={18} color="#ffffff" />
-                  </Pressable>
-                )}
-                {isUserLeader && (
-                  <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
-                    <Ionicons name="pencil" size={18} color="#ffffff" />
-                  </Pressable>
-                )}
-                {isUserLeader && (
-                  <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(239,68,68,0.35)', borderColor: 'rgba(239,68,68,0.40)', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
-                    <Ionicons name="trash-outline" size={18} color="#fca5a5" />
-                  </Pressable>
+                    {/* Página Pública da Banda */}
+                    {onOpenPublicProfile && (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => {
+                          setShowBandOptionsMenu(false);
+                          onOpenPublicProfile(band);
+                        }}
+                        accessibilityLabel="Página Pública da Banda"
+                      >
+                        <Ionicons name="globe-outline" size={17} color="#38bdf8" />
+                      </Pressable>
+                    )}
+
+                    {/* Editar Banda */}
+                    {isUserLeader && (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => {
+                          setShowBandOptionsMenu(false);
+                          onEditBand(band);
+                        }}
+                        accessibilityLabel="Editar Banda"
+                      >
+                        <Ionicons name="pencil" size={16} color="#fbbf24" />
+                      </Pressable>
+                    )}
+
+                    {/* Excluir Banda */}
+                    {isUserLeader && (
+                      <Pressable
+                        style={[styles.headerActionPillBtn, { backgroundColor: 'rgba(239,68,68,0.25)' }]}
+                        onPress={() => {
+                          setShowBandOptionsMenu(false);
+                          onDeleteBand(band);
+                        }}
+                        accessibilityLabel="Excluir Banda"
+                      >
+                        <Ionicons name="trash-outline" size={16} color="#fca5a5" />
+                      </Pressable>
+                    )}
+
+                    {/* Fechar Opções */}
+                    <Pressable
+                      style={[styles.headerActionPillBtn, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+                      onPress={() => setShowBandOptionsMenu(false)}
+                      accessibilityLabel="Fechar Opções"
+                    >
+                      <Ionicons name="close" size={17} color="#ffffff" />
+                    </Pressable>
+                  </View>
+                ) : showBandSocialMenu ? (
+                  /* MENU EXPANDIDO DE REDES SOCIAIS / LINKS EXTERNOS */
+                  <View style={styles.headerActionPillRow}>
+                    {bandSocialLinks.instagram ? (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => handleOpenSocialLink('instagram', bandSocialLinks.instagram)}
+                        accessibilityLabel="Instagram"
+                      >
+                        <Ionicons name="logo-instagram" size={17} color="#E1306C" />
+                      </Pressable>
+                    ) : null}
+
+                    {bandSocialLinks.youtube ? (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => handleOpenSocialLink('youtube', bandSocialLinks.youtube)}
+                        accessibilityLabel="YouTube"
+                      >
+                        <Ionicons name="logo-youtube" size={17} color="#FF0000" />
+                      </Pressable>
+                    ) : null}
+
+                    {bandSocialLinks.spotify ? (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => handleOpenSocialLink('spotify', bandSocialLinks.spotify)}
+                        accessibilityLabel="Spotify"
+                      >
+                        <Ionicons name="logo-spotify" size={17} color="#1DB954" />
+                      </Pressable>
+                    ) : null}
+
+                    {bandSocialLinks.tiktok ? (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => handleOpenSocialLink('tiktok', bandSocialLinks.tiktok)}
+                        accessibilityLabel="TikTok"
+                      >
+                        <Ionicons name="logo-tiktok" size={16} color="#ffffff" />
+                      </Pressable>
+                    ) : null}
+
+                    {bandSocialLinks.facebook ? (
+                      <Pressable
+                        style={styles.headerActionPillBtn}
+                        onPress={() => handleOpenSocialLink('facebook', bandSocialLinks.facebook)}
+                        accessibilityLabel="Facebook"
+                      >
+                        <Ionicons name="logo-facebook" size={17} color="#1877F2" />
+                      </Pressable>
+                    ) : null}
+
+                    {!hasAnySocialLink && (
+                      <Pressable
+                        style={{ paddingHorizontal: 8, paddingVertical: 4 }}
+                        onPress={() => {
+                          setShowBandSocialMenu(false);
+                          if (isUserLeader && onEditBand) onEditBand(band);
+                        }}
+                      >
+                        <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '700' }}>
+                          {isUserLeader ? (t('addSocialLinksInEdit') || '+ Adicionar Links') : (t('noSocialLinksSet') || 'Sem redes')}
+                        </Text>
+                      </Pressable>
+                    )}
+
+                    {/* Fechar Redes */}
+                    <Pressable
+                      style={[styles.headerActionPillBtn, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+                      onPress={() => setShowBandSocialMenu(false)}
+                      accessibilityLabel="Fechar Redes Sociais"
+                    >
+                      <Ionicons name="close" size={17} color="#ffffff" />
+                    </Pressable>
+                  </View>
+                ) : (
+                  /* ESTADO PADRÃO: 2 BOTÕES COMPACTOS (REDES SOCIAIS + OPÇÕES DA BANDA) */
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {/* Botão Único de Redes Sociais */}
+                    {(hasAnySocialLink || isUserLeader) && (
+                      <Pressable
+                        style={[
+                          styles.headerIconButton,
+                          {
+                            backgroundColor: 'rgba(0,0,0,0.35)',
+                            borderColor: hasAnySocialLink ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.15)',
+                            borderWidth: 1,
+                          }
+                        ]}
+                        onPress={() => {
+                          setShowBandSocialMenu(true);
+                          setShowBandOptionsMenu(false);
+                        }}
+                        accessibilityLabel={t('socialNetworks') || 'Redes Sociais'}
+                      >
+                        <Ionicons name="share-social-outline" size={18} color="#ffffff" />
+                      </Pressable>
+                    )}
+
+                    {/* Botão Único de Opções da Banda */}
+                    <Pressable
+                      style={[
+                        styles.headerIconButton,
+                        {
+                          backgroundColor: 'rgba(0,0,0,0.35)',
+                          borderColor: 'rgba(255,255,255,0.15)',
+                          borderWidth: 1,
+                        }
+                      ]}
+                      onPress={() => {
+                        setShowBandOptionsMenu(true);
+                        setShowBandSocialMenu(false);
+                      }}
+                      accessibilityLabel={t('bandOptions') || 'Opções da Banda'}
+                    >
+                      <Ionicons name="ellipsis-vertical" size={18} color="#ffffff" />
+                    </Pressable>
+                  </View>
                 )}
               </View>
             </View>
@@ -3553,7 +3760,26 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   topRowNav: { position: 'absolute', top: 0, left: 0, right: 0, width: '100%', elevation: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 48 : 24, paddingHorizontal: 16, zIndex: 10 },
-  topRowActions: { flexDirection: 'row' },
+  topRowActions: { flexDirection: 'row', alignItems: 'center' },
+  headerActionPillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    gap: 6,
+  },
+  headerActionPillBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
   headerIconButton: {
     width: 38,
     height: 38,

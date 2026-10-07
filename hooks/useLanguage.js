@@ -1006,6 +1006,10 @@ const translations = {
     onlyLeadersCanDeleteBand: 'Apenas o criador ou líderes da banda podem excluir a banda.',
     leaderPrivilegesHint: 'Líder: Permissão total para editar banda, repertório, finanças e integrantes.',
     memberPrivilegesHint: 'Membro: Visualiza a banda e compartilha a agenda.',
+    bandOptions: 'Opções da banda',
+    socialNetworks: 'Redes sociais',
+    addSocialLinksInEdit: 'Adicionar redes no perfil',
+    noSocialLinksSet: 'Nenhuma rede configurada',
   },
 
   en: {
@@ -2012,6 +2016,10 @@ const translations = {
     onlyLeadersCanDeleteBand: 'Only the creator or band leaders can delete the band.',
     leaderPrivilegesHint: 'Leader: Full permissions to edit band, repertoire, finances, and members.',
     memberPrivilegesHint: 'Member: Can view the band and share the schedule.',
+    bandOptions: 'Band options',
+    socialNetworks: 'Social networks',
+    addSocialLinksInEdit: 'Add links in band edit',
+    noSocialLinksSet: 'No social links configured',
   },
 
   es: {
@@ -3017,6 +3025,10 @@ const translations = {
     onlyLeadersCanDeleteBand: 'Solo el creador o líderes de la banda pueden eliminar la banda.',
     leaderPrivilegesHint: 'Líder: Permiso total para editar la banda, repertorio, finanzas e integrantes.',
     memberPrivilegesHint: 'Miembro: Puede ver la banda y compartir la agenda.',
+    bandOptions: 'Opciones de la banda',
+    socialNetworks: 'Redes sociales',
+    addSocialLinksInEdit: 'Agregar redes en editar',
+    noSocialLinksSet: 'Ninguna red configurada',
   }
 };
 

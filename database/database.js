@@ -644,6 +644,12 @@ const createWebDB = () => {
           state: params[8] || '',
           country: params[9] || 'Brasil',
           genres: params[10] || '[]',
+          links: params[11] || '{}',
+          instagram: params[12] || '',
+          youtube: params[13] || '',
+          spotify: params[14] || '',
+          tiktok: params[15] || '',
+          facebook: params[16] || '',
         });
         saveToStorage();
         return { lastInsertRowId: id };
@@ -676,6 +682,14 @@ const createWebDB = () => {
             band.state = params[8] || '';
             band.country = params[9] || 'Brasil';
             band.genres = params[10] || '[]';
+          }
+          if (params.length >= 17) {
+            band.links = params[11] || '{}';
+            band.instagram = params[12] || '';
+            band.youtube = params[13] || '';
+            band.spotify = params[14] || '';
+            band.tiktok = params[15] || '';
+            band.facebook = params[16] || '';
           }
           saveToStorage();
         }
@@ -1253,6 +1267,24 @@ export const createTables = async () => {
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE my_bands ADD COLUMN isNetworkVisible INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN links TEXT DEFAULT '{}';");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN instagram TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN youtube TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN spotify TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN tiktok TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN facebook TEXT;");
     } catch (e) {}
 
     // Migração de chords em songs

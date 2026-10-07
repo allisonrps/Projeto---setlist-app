@@ -1229,7 +1229,13 @@ function MainApp() {
           bandData.city,
           bandData.state,
           bandData.country,
-          bandData.genres
+          bandData.genres,
+          bandData.links,
+          bandData.instagram,
+          bandData.youtube,
+          bandData.spotify,
+          bandData.tiktok,
+          bandData.facebook
         );
       } else {
         await bandService.insert(
@@ -1243,7 +1249,13 @@ function MainApp() {
           bandData.city,
           bandData.state,
           bandData.country,
-          bandData.genres
+          bandData.genres,
+          bandData.links,
+          bandData.instagram,
+          bandData.youtube,
+          bandData.spotify,
+          bandData.tiktok,
+          bandData.facebook
         );
       }
       await reloadAllData();

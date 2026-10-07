@@ -98,6 +98,13 @@ export default function BandModal({ visible, onClose, onSave, band }) {
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
 
+  // Links externos / Redes Sociais
+  const [instagram, setInstagram] = useState('');
+  const [youtube, setYoutube] = useState('');
+  const [spotify, setSpotify] = useState('');
+  const [tiktok, setTiktok] = useState('');
+  const [facebook, setFacebook] = useState('');
+
   // Modais de seleção
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -127,6 +134,19 @@ export default function BandModal({ visible, onClose, onSave, band }) {
         setTags(parsedTags.slice(0, 4));
         setTagInput('');
 
+        // Parse external social links
+        let parsedLinks = {};
+        if (band.links) {
+          try {
+            parsedLinks = typeof band.links === 'string' ? JSON.parse(band.links) : band.links;
+          } catch (e) {}
+        }
+        setInstagram(band.instagram || parsedLinks.instagram || '');
+        setYoutube(band.youtube || parsedLinks.youtube || '');
+        setSpotify(band.spotify || parsedLinks.spotify || '');
+        setTiktok(band.tiktok || parsedLinks.tiktok || '');
+        setFacebook(band.facebook || parsedLinks.facebook || '');
+
         const hasCover = band.isCover !== undefined ? Boolean(band.isCover) : (band.bandType ? band.bandType.includes('cover') : true);
         const hasAutoral = band.isAutoral !== undefined ? Boolean(band.isAutoral) : (band.bandType ? band.bandType.includes('autoral') : false);
         if (!hasCover && !hasAutoral) {
@@ -146,6 +166,11 @@ export default function BandModal({ visible, onClose, onSave, band }) {
         setCountry('');
         setTags([]);
         setTagInput('');
+        setInstagram('');
+        setYoutube('');
+        setSpotify('');
+        setTiktok('');
+        setFacebook('');
         setIsCover(true);
         setIsAutoral(false);
       }
@@ -213,6 +238,13 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       return;
     }
     const bandType = (isCover && isAutoral) ? 'both' : (isCover ? 'cover' : 'autoral');
+    const linksObj = {
+      instagram: instagram.trim(),
+      youtube: youtube.trim(),
+      spotify: spotify.trim(),
+      tiktok: tiktok.trim(),
+      facebook: facebook.trim(),
+    };
     onSave({ 
       name: name.trim(), 
       imageUri, 
@@ -224,7 +256,13 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       city: city.trim(),
       state: state.trim(),
       country: country.trim() || '',
-      genres: JSON.stringify(tags)
+      genres: JSON.stringify(tags),
+      links: JSON.stringify(linksObj),
+      instagram: instagram.trim(),
+      youtube: youtube.trim(),
+      spotify: spotify.trim(),
+      tiktok: tiktok.trim(),
+      facebook: facebook.trim()
     });
   };
 
@@ -591,6 +629,103 @@ export default function BandModal({ visible, onClose, onSave, band }) {
                 </Pressable>
               </View>
             )}
+
+            {/* LINKS EXTERNOS / REDES SOCIAIS DA BANDA */}
+            <View style={{ marginTop: 16, marginBottom: 18 }}>
+              <Text style={[styles.inputLabel, { color: colors.textMuted, marginBottom: 8 }]}>
+                {t('externalLinksSection') || 'LINKS EXTERNOS / REDES SOCIAIS'}
+              </Text>
+
+              {/* Instagram */}
+              <View style={{ marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons name="logo-instagram" size={16} color="#E1306C" />
+                  <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>Instagram</Text>
+                </View>
+                <TextInput
+                  maxLength={100}
+                  style={[styles.input, { color: colors.inputText, backgroundColor: colors.inputBackground, borderColor: colors.border, marginBottom: 0 }]}
+                  value={instagram}
+                  onChangeText={setInstagram}
+                  placeholder="@usuario ou link"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              {/* YouTube */}
+              <View style={{ marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons name="logo-youtube" size={16} color="#FF0000" />
+                  <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>YouTube</Text>
+                </View>
+                <TextInput
+                  maxLength={200}
+                  style={[styles.input, { color: colors.inputText, backgroundColor: colors.inputBackground, borderColor: colors.border, marginBottom: 0 }]}
+                  value={youtube}
+                  onChangeText={setYoutube}
+                  placeholder="@canal ou link"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              {/* Spotify */}
+              <View style={{ marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons name="logo-spotify" size={16} color="#1DB954" />
+                  <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>Spotify</Text>
+                </View>
+                <TextInput
+                  maxLength={200}
+                  style={[styles.input, { color: colors.inputText, backgroundColor: colors.inputBackground, borderColor: colors.border, marginBottom: 0 }]}
+                  value={spotify}
+                  onChangeText={setSpotify}
+                  placeholder="Link de artista ou álbum"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              {/* TikTok */}
+              <View style={{ marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons name="logo-tiktok" size={16} color={colors.text} />
+                  <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>TikTok</Text>
+                </View>
+                <TextInput
+                  maxLength={100}
+                  style={[styles.input, { color: colors.inputText, backgroundColor: colors.inputBackground, borderColor: colors.border, marginBottom: 0 }]}
+                  value={tiktok}
+                  onChangeText={setTiktok}
+                  placeholder="@usuario ou link"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              {/* Facebook */}
+              <View style={{ marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons name="logo-facebook" size={16} color="#1877F2" />
+                  <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>Facebook</Text>
+                </View>
+                <TextInput
+                  maxLength={200}
+                  style={[styles.input, { color: colors.inputText, backgroundColor: colors.inputBackground, borderColor: colors.border, marginBottom: 0 }]}
+                  value={facebook}
+                  onChangeText={setFacebook}
+                  placeholder="Perfil ou página"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
 
             {/* BOTÃO SALVAR */}
             <Pressable 

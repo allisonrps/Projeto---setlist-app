@@ -12,11 +12,29 @@ export const bandService = {
     }
   },
 
-  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]') {
+  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '') {
     try {
       const result = await db.runAsync(
-        'INSERT INTO my_bands (name, imageUri, startDate, endDate, bandType, isCover, isAutoral, city, state, country, genres) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
-        [sanitizeText(name, 100), imageUri, sanitizeText(startDate, 20) || '', sanitizeText(endDate, 20) || '', sanitizeText(bandType, 20) || 'cover', isCover !== undefined ? isCover : 1, isAutoral !== undefined ? isAutoral : 0, sanitizeText(city, 100) || '', sanitizeText(state, 100) || '', sanitizeText(country, 100) || '', sanitizeJson(genres) || '[]']
+        'INSERT INTO my_bands (name, imageUri, startDate, endDate, bandType, isCover, isAutoral, city, state, country, genres, links, instagram, youtube, spotify, tiktok, facebook) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+        [
+          sanitizeText(name, 100),
+          imageUri,
+          sanitizeText(startDate, 20) || '',
+          sanitizeText(endDate, 20) || '',
+          sanitizeText(bandType, 20) || 'cover',
+          isCover !== undefined ? isCover : 1,
+          isAutoral !== undefined ? isAutoral : 0,
+          sanitizeText(city, 100) || '',
+          sanitizeText(state, 100) || '',
+          sanitizeText(country, 100) || '',
+          sanitizeJson(genres) || '[]',
+          sanitizeJson(links) || '{}',
+          sanitizeText(instagram, 100) || '',
+          sanitizeText(youtube, 200) || '',
+          sanitizeText(spotify, 200) || '',
+          sanitizeText(tiktok, 100) || '',
+          sanitizeText(facebook, 200) || ''
+        ]
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -25,11 +43,30 @@ export const bandService = {
     }
   },
 
-  async update(id, name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]') {
+  async update(id, name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '') {
     try {
       await db.runAsync(
-        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ? WHERE id = ?;',
-        [sanitizeText(name, 100), imageUri, sanitizeText(startDate, 20) || '', sanitizeText(endDate, 20) || '', sanitizeText(bandType, 20) || 'cover', isCover !== undefined ? isCover : 1, isAutoral !== undefined ? isAutoral : 0, sanitizeText(city, 100) || '', sanitizeText(state, 100) || '', sanitizeText(country, 100) || '', sanitizeJson(genres) || '[]', id]
+        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ?, links = ?, instagram = ?, youtube = ?, spotify = ?, tiktok = ?, facebook = ? WHERE id = ?;',
+        [
+          sanitizeText(name, 100),
+          imageUri,
+          sanitizeText(startDate, 20) || '',
+          sanitizeText(endDate, 20) || '',
+          sanitizeText(bandType, 20) || 'cover',
+          isCover !== undefined ? isCover : 1,
+          isAutoral !== undefined ? isAutoral : 0,
+          sanitizeText(city, 100) || '',
+          sanitizeText(state, 100) || '',
+          sanitizeText(country, 100) || '',
+          sanitizeJson(genres) || '[]',
+          sanitizeJson(links) || '{}',
+          sanitizeText(instagram, 100) || '',
+          sanitizeText(youtube, 200) || '',
+          sanitizeText(spotify, 200) || '',
+          sanitizeText(tiktok, 100) || '',
+          sanitizeText(facebook, 200) || '',
+          id
+        ]
       );
     } catch (error) {
       console.error('Error in bandService.update:', error);
