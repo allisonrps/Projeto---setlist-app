@@ -7,14 +7,14 @@
   
   <meta id="pageMetaDesc" name="description" content="Organize o repertório da sua banda, encontre músicos na sua cidade, divulgue vagas e shows, edite cifras no PC e controle o autoscroll no palco. 100% offline e gratuito.">
   <meta name="theme-color" content="#06080d">
-  <link rel="icon" type="image/svg+xml" href="assets/bandlink_logo_symbol.svg">
+  <link rel="icon" type="image/jpeg" href="assets/bandlink_logo_black_symbol.jpg">
   <link rel="alternate icon" type="image/png" href="assets/logo.png">
 
   <!-- Open Graph / Meta -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="BandLink • O Ecossistema e Rede Social para Músicos e Bandas">
   <meta property="og:description" content="Repertório, cifras inteligentes, modo palco com autoscroll, editor no PC via QR Code e a nova Rede Social para conectar músicos da sua cidade.">
-  <meta property="og:image" content="assets/bandlink_logo_horizontal.jpg">
+  <meta property="og:image" content="assets/bandlink_logo_black_full.jpg">
 
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -373,16 +373,19 @@
     }
 
     .brand-logo-img {
-      height: 38px;
-      width: 38px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 12px rgba(14, 165, 233, 0.4));
+      height: 42px;
+      width: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 16px rgba(14, 165, 233, 0.25);
       transition: var(--transition-smooth);
     }
 
     .brand-link:hover .brand-logo-img {
-      transform: scale(1.08) rotate(-4deg);
-      filter: drop-shadow(0 0 18px rgba(14, 165, 233, 0.7));
+      transform: scale(1.08) rotate(-3deg);
+      border-color: var(--cyan);
+      box-shadow: 0 6px 22px rgba(14, 165, 233, 0.5);
     }
 
     .brand-text-wrap {
@@ -1616,130 +1619,6 @@
     }
 
     /* ==========================================================
-       SECTION: BRAND KIT & LOGOS GALLERY
-       ========================================================== */
-    .brand-kit-section {
-      padding: 120px 0;
-      position: relative;
-    }
-
-    .brand-kit-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 28px;
-    }
-
-    .brand-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      backdrop-filter: blur(16px);
-      transition: var(--transition-smooth);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .brand-card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(14, 165, 233, 0.4);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(14, 165, 233, 0.2);
-    }
-
-    .brand-preview-wrap {
-      height: 220px;
-      background: #000000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      position: relative;
-      border-bottom: 1px solid var(--border-subtle);
-      overflow: hidden;
-    }
-
-    .brand-preview-wrap img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      transition: var(--transition-smooth);
-    }
-
-    .brand-card:hover .brand-preview-wrap img {
-      transform: scale(1.05);
-    }
-
-    .brand-card-body {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      flex: 1;
-    }
-
-    .brand-card-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .brand-card-title {
-      font-size: 17px;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .brand-card-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .brand-card-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .brand-card-btn {
-      flex: 1;
-      padding: 9px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: var(--radius-md);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: var(--transition-smooth);
-    }
-
-    .btn-brand-primary {
-      background: linear-gradient(135deg, var(--cyan), #0284c7);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-brand-primary:hover {
-      background: linear-gradient(135deg, #38bdf8, var(--cyan));
-      transform: translateY(-2px);
-    }
-
-    .btn-brand-outline {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-medium);
-      color: var(--text-main);
-    }
-
-    .btn-brand-outline:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      transform: translateY(-2px);
-    }
-
-    /* ==========================================================
        SECTION: DOWNLOAD & PLAY STORE
        ========================================================== */
     .download-section {
@@ -1996,9 +1875,7 @@
       .showcase-grid { grid-template-columns: 1fr; }
       .showcase-pc { border-right: none; border-bottom: 1px solid var(--border-subtle); }
       .musicians-grid { grid-template-columns: repeat(2, 1fr); }
-      .features-grid { grid-template-columns: repeat(2, 1fr); }
-      .brand-kit-grid { grid-template-columns: repeat(2, 1fr); }
-      .stage-layout { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }.stage-layout { grid-template-columns: 1fr; }
       .agenda-cards-list { grid-template-columns: repeat(2, 1fr); }
       .download-card-banner { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -2013,9 +1890,7 @@
       .musicians-grid { grid-template-columns: 1fr; }
       .classifieds-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
-      .sync-steps-grid { grid-template-columns: 1fr; }
-      .brand-kit-grid { grid-template-columns: 1fr; }
-      .agenda-cards-list { grid-template-columns: 1fr; }
+      .sync-steps-grid { grid-template-columns: 1fr; }.agenda-cards-list { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr; }
       .hero-trust-bar { gap: 16px; }
       .band-profile-header { flex-direction: column; align-items: flex-start; }
@@ -2038,7 +1913,7 @@
   <header class="site-header" id="siteHeader">
     <div class="container nav-container">
       <a href="#inicio" class="brand-link">
-        <img src="assets/bandlink_logo_symbol.svg" alt="BandLink Logo" class="brand-logo-img">
+        <img src="assets/bandlink_logo_black_symbol.jpg" alt="BandLink Logo" class="brand-logo-img">
         <div class="brand-text-wrap">
           <span class="brand-name">BandLink</span>
           <span class="brand-tagline">Music Network &amp; Stage</span>
@@ -2053,7 +1928,6 @@
         </a>
         <a href="#modo-palco" class="nav-link" data-i18n="navStageMode">Modo Palco</a>
         <a href="#sincronizacao" class="nav-link" data-i18n="navSync">Sincronização QR</a>
-        <a href="#brand-kit" class="nav-link" data-i18n="navBrandKit">Logos &amp; Marca</a>
         <a href="#download" class="nav-link" data-i18n="navDownload">Baixar</a>
         <a href="#faq" class="nav-link" data-i18n="navFaq">FAQ</a>
       </nav>
@@ -2788,180 +2662,8 @@ O oposto do que disse antes!
     </div>
   </section>
 
-  <!-- ==========================================================
-       SECTION: BRAND KIT & LOGOS GALLERY
-       ========================================================== -->
-  <section class="brand-kit-section" id="brand-kit">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag" data-i18n="brandKitTag">Identidade Visual &amp; Mídia</span>
-        <h2 class="section-title" data-i18n="brandKitTitle">Versões Oficiais do Logo BandLink</h2>
-        <p class="section-desc" data-i18n="brandKitDesc">
-          Download de todos os assets oficiais em alta resolução, emblemas 3D, versões clean sobre fundo preto puro (#000000) e vetores SVG escaláveis.
-        </p>
-      </div>
+  
 
-      <div class="brand-kit-grid">
-
-        <!-- Logo 1: Clean Black Símbolo Puro -->
-        <div class="brand-card reveal">
-          <div class="brand-preview-wrap">
-            <img src="assets/bandlink_logo_black_symbol.jpg" alt="BandLink Símbolo Fundo Preto Puro" loading="lazy">
-          </div>
-          <div class="brand-card-body">
-            <div>
-              <div class="brand-card-meta">
-                <span class="brand-card-title">Símbolo Puro (Fundo Preto)</span>
-                <span class="mini-tag tag-cyan">Preto Puro 1:1</span>
-              </div>
-              <p class="brand-card-desc">
-                Palhetas neon interligadas sobre fundo preto sólido (#000000), sem texto ou escrita. Ideal para ícones e perfis.
-              </p>
-            </div>
-            <div class="brand-card-actions">
-              <a href="assets/bandlink_logo_black_symbol.jpg" download class="brand-card-btn btn-brand-primary">
-                <ion-icon name="download-outline"></ion-icon> Baixar JPG
-              </a>
-              <a href="assets/bandlink_logo_black_symbol.jpg" target="_blank" class="brand-card-btn btn-brand-outline">
-                <ion-icon name="open-outline"></ion-icon> Ver
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logo 2: Clean Black Logo Quadrado com Nome -->
-        <div class="brand-card reveal">
-          <div class="brand-preview-wrap">
-            <img src="assets/bandlink_logo_black_full.jpg" alt="BandLink Logo com Nome Fundo Preto Quadrado" loading="lazy">
-          </div>
-          <div class="brand-card-body">
-            <div>
-              <div class="brand-card-meta">
-                <span class="brand-card-title">Logo com Nome (Quadrado)</span>
-                <span class="mini-tag tag-violet">Preto Puro 1:1</span>
-              </div>
-              <p class="brand-card-desc">
-                Composição quadrada vertical com o símbolo neon no topo e a tipografia moderna 'BandLink' centralizada.
-              </p>
-            </div>
-            <div class="brand-card-actions">
-              <a href="assets/bandlink_logo_black_full.jpg" download class="brand-card-btn btn-brand-primary">
-                <ion-icon name="download-outline"></ion-icon> Baixar JPG
-              </a>
-              <a href="assets/bandlink_logo_black_full.jpg" target="_blank" class="brand-card-btn btn-brand-outline">
-                <ion-icon name="open-outline"></ion-icon> Ver
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logo 3: Clean Black Logo Horizontal Widescreen -->
-        <div class="brand-card reveal">
-          <div class="brand-preview-wrap">
-            <img src="assets/bandlink_logo_black_wide.jpg" alt="BandLink Logo com Nome Horizontal Widescreen" loading="lazy">
-          </div>
-          <div class="brand-card-body">
-            <div>
-              <div class="brand-card-meta">
-                <span class="brand-card-title">Logo Horizontal (Widescreen)</span>
-                <span class="mini-tag tag-emerald">Preto Puro 16:9</span>
-              </div>
-              <p class="brand-card-desc">
-                Formato horizontal widescreen sobre fundo preto puro, com o símbolo à esquerda e o nome 'BandLink' à direita.
-              </p>
-            </div>
-            <div class="brand-card-actions">
-              <a href="assets/bandlink_logo_black_wide.jpg" download class="brand-card-btn btn-brand-primary">
-                <ion-icon name="download-outline"></ion-icon> Baixar JPG
-              </a>
-              <a href="assets/bandlink_logo_black_wide.jpg" target="_blank" class="brand-card-btn btn-brand-outline">
-                <ion-icon name="open-outline"></ion-icon> Ver
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logo 4: 3D Glassmorphic Badge -->
-        <div class="brand-card reveal">
-          <div class="brand-preview-wrap">
-            <img src="assets/bandlink_logo_3d_badge.jpg" alt="BandLink 3D Glassmorphic Badge" loading="lazy">
-          </div>
-          <div class="brand-card-body">
-            <div>
-              <div class="brand-card-meta">
-                <span class="brand-card-title">3D Glassmorphic Badge</span>
-                <span class="mini-tag tag-cyan">Emblema 3D</span>
-              </div>
-              <p class="brand-card-desc">
-                Emblema 3D com palhetas neon biseladas, acabamento translúcido e iluminação de estúdio para apresentações premium.
-              </p>
-            </div>
-            <div class="brand-card-actions">
-              <a href="assets/bandlink_logo_3d_badge.jpg" download class="brand-card-btn btn-brand-primary">
-                <ion-icon name="download-outline"></ion-icon> Baixar JPG
-              </a>
-              <a href="assets/bandlink_logo_3d_badge.jpg" target="_blank" class="brand-card-btn btn-brand-outline">
-                <ion-icon name="open-outline"></ion-icon> Ver
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logo 5: Horizontal Banner Glow -->
-        <div class="brand-card reveal">
-          <div class="brand-preview-wrap">
-            <img src="assets/bandlink_logo_horizontal.jpg" alt="BandLink Horizontal Banner" loading="lazy">
-          </div>
-          <div class="brand-card-body">
-            <div>
-              <div class="brand-card-meta">
-                <span class="brand-card-title">Horizontal Banner Glow</span>
-                <span class="mini-tag tag-violet">Banner 16:9</span>
-              </div>
-              <p class="brand-card-desc">
-                Banner oficial com brilho atmosférico para cabeçalhos de sites, capas de redes sociais e materiais de imprensa.
-              </p>
-            </div>
-            <div class="brand-card-actions">
-              <a href="assets/bandlink_logo_horizontal.jpg" download class="brand-card-btn btn-brand-primary">
-                <ion-icon name="download-outline"></ion-icon> Baixar JPG
-              </a>
-              <a href="assets/bandlink_logo_horizontal.jpg" target="_blank" class="brand-card-btn btn-brand-outline">
-                <ion-icon name="open-outline"></ion-icon> Ver
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logo 6: Vetor SVG Escalável -->
-        <div class="brand-card reveal">
-          <div class="brand-preview-wrap" style="background: #06090e;">
-            <img src="assets/bandlink_logo_symbol.svg" alt="BandLink Vetor SVG Escalável" style="width: 110px; height: 110px;">
-          </div>
-          <div class="brand-card-body">
-            <div>
-              <div class="brand-card-meta">
-                <span class="brand-card-title">Vetor SVG Escalável</span>
-                <span class="mini-tag tag-emerald">Vetor SVG</span>
-              </div>
-              <p class="brand-card-desc">
-                Arquivo vetorial puro em código SVG com degradê gradiente neon, resolução infinita e peso super leve para web e apps.
-              </p>
-            </div>
-            <div class="brand-card-actions">
-              <a href="assets/bandlink_logo_symbol.svg" download class="brand-card-btn btn-brand-primary">
-                <ion-icon name="download-outline"></ion-icon> Baixar SVG
-              </a>
-              <a href="assets/bandlink_logo_symbol.svg" target="_blank" class="brand-card-btn btn-brand-outline">
-                <ion-icon name="open-outline"></ion-icon> Ver
-              </a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
 
   <!-- ==========================================================
        SECTION: DOWNLOAD & GOOGLE PLAY
@@ -3093,7 +2795,7 @@ O oposto do que disse antes!
         <!-- Col 1: Brand Info -->
         <div class="footer-brand-info">
           <div class="brand-link">
-            <img src="assets/bandlink_logo_symbol.svg" alt="BandLink Logo" class="brand-logo-img">
+            <img src="assets/bandlink_logo_black_symbol.jpg" alt="BandLink Logo" class="brand-logo-img">
             <span class="brand-name">BandLink</span>
           </div>
           <p data-i18n="footerBrandDesc">
@@ -3119,7 +2821,6 @@ O oposto do que disse antes!
             <li><a href="#rede-social" data-i18n="footerNetMusicians">Músicos da Sua Cidade</a></li>
             <li><a href="#rede-social" data-i18n="footerNetClassifieds">Mural de Vagas &amp; Gigs</a></li>
             <li><a href="#rede-social" data-i18n="footerNetAgenda">Agenda Pública de Bandas</a></li>
-            <li><a href="#brand-kit" data-i18n="footerNetBrandKit">Brand Kit &amp; Logos Oficiais</a></li>
           </ul>
         </div>
 
@@ -3163,7 +2864,6 @@ O oposto do que disse antes!
         navBadgeNew: 'NOVO',
         navStageMode: 'Modo Palco',
         navSync: 'Sincronização QR',
-        navBrandKit: 'Logos & Marca',
         navDownload: 'Baixar',
         navFaq: 'FAQ',
         navBtnEditor: 'Web Editor',
@@ -3220,9 +2920,6 @@ O oposto do que disse antes!
         step2Desc: 'No aplicativo móvel, toque em <strong>Sincronizar</strong> e leia o QR Code ou digite o PIN de 6 dígitos que aparece na tela do seu computador.',
         step3Title: 'Envie e Receba em 2 Segundos',
         step3Desc: 'Puxe todas as músicas para editar cifras com conforto no PC. Ao terminar, clique em enviar e o app atualiza instantaneamente.',
-        brandKitTag: 'Identidade Visual & Mídia',
-        brandKitTitle: 'Versões Oficiais do Logo BandLink',
-        brandKitDesc: 'Download de todos os assets oficiais em alta resolução, emblemas 3D, versões clean sobre fundo preto puro (#000000) e vetores SVG escaláveis.',
         downloadTag: 'Disponível no Google Play',
         downloadTitle: 'Leve o Seu Repertório e a Sua Rede para o Palco',
         downloadDesc: 'Elimine as pastas pesadas de papel, nunca mais erre o tom de uma música no show e conecte-se com músicos e bandas da sua cidade. Gratuito para sempre no Android.',
@@ -3250,7 +2947,6 @@ O oposto do que disse antes!
         footerNetMusicians: 'Músicos da Sua Cidade',
         footerNetClassifieds: 'Mural de Vagas & Gigs',
         footerNetAgenda: 'Agenda Pública de Bandas',
-        footerNetBrandKit: 'Brand Kit & Logos Oficiais',
         footerColAbout: 'Sobre o App'
       },
       en: {
@@ -3261,7 +2957,6 @@ O oposto do que disse antes!
         navBadgeNew: 'NEW',
         navStageMode: 'Stage Mode',
         navSync: 'QR Sync',
-        navBrandKit: 'Logos & Brand',
         navDownload: 'Download',
         navFaq: 'FAQ',
         navBtnEditor: 'Web Editor',
@@ -3318,9 +3013,6 @@ O oposto do que disse antes!
         step2Desc: 'In the mobile app, tap <strong>Sync</strong> and scan the QR code or enter the 6-digit PIN displayed on your PC screen.',
         step3Title: 'Transfer in 2 Seconds',
         step3Desc: 'Pull songs to PC for comfortable editing. When done, send everything back to your smartphone in one click.',
-        brandKitTag: 'Brand Assets & Media',
-        brandKitTitle: 'Official BandLink Logo Variations',
-        brandKitDesc: 'Download all official high-resolution assets, 3D emblems, pure black background variations (#000000), and scalable SVGs.',
         downloadTag: 'Available on Google Play',
         downloadTitle: 'Bring Your Repertoire & Network to the Stage',
         downloadDesc: 'Leave heavy binders behind, never miss a song key live, and discover talent in your local music scene. Free forever on Android.',
@@ -3348,7 +3040,6 @@ O oposto do que disse antes!
         footerNetMusicians: 'Musicians in Your City',
         footerNetClassifieds: 'Auditions & Gigs',
         footerNetAgenda: 'Band Public Agenda',
-        footerNetBrandKit: 'Brand Kit & Official Logos',
         footerColAbout: 'About App'
       },
       es: {
@@ -3359,7 +3050,6 @@ O oposto do que disse antes!
         navBadgeNew: 'NUEVO',
         navStageMode: 'Modo Escenario',
         navSync: 'Sincronización QR',
-        navBrandKit: 'Logos y Marca',
         navDownload: 'Descargar',
         navFaq: 'Preguntas',
         navBtnEditor: 'Web Editor',
@@ -3416,9 +3106,6 @@ O oposto do que disse antes!
         step2Desc: 'En la app móvil toque <strong>Sincronizar</strong> y lea el código QR o introduzca el PIN de 6 dígitos mostrado en el PC.',
         step3Title: 'Transfiera en 2 Segundos',
         step3Desc: 'Descargue todas las canciones para editar en PC y envíe de vuelta a su teléfono con 1 clic.',
-        brandKitTag: 'Identidad y Medios',
-        brandKitTitle: 'Versiones Oficiales del Logo BandLink',
-        brandKitDesc: 'Descarga de recursos oficiales en alta resolución, emblemas 3D, versiones en fondo negro (#000000) y vectores SVG.',
         downloadTag: 'Disponible en Google Play',
         downloadTitle: 'Lleve su Repertorio y su Red al Escenario',
         downloadDesc: 'Olvídese de carpetas de papel, mantenga los tonos correctos y conecte con músicos en su ciudad. Gratis en Android.',
@@ -3446,7 +3133,6 @@ O oposto do que disse antes!
         footerNetMusicians: 'Músicos en su Ciudad',
         footerNetClassifieds: 'Avisos y Conciertos',
         footerNetAgenda: 'Agenda Pública de Bandas',
-        footerNetBrandKit: 'Brand Kit y Logos Oficiales',
         footerColAbout: 'Acerca de'
       }
     };
