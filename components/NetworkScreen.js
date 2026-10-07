@@ -13,6 +13,7 @@ import {
   Platform,
   Animated,
   Easing,
+  RefreshControl,
   StatusBar as RNStatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -426,6 +427,15 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   // Projects data
   const [projects, setProjects] = useState([]);
   const [userBands, setUserBands] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([loadUserData(), loadProjects(), loadUserBands()]);
+    } catch (e) {}
+    setRefreshing(false);
+  };
 
   // Modals & Scanner state
   const [selectedMusicianProfile, setSelectedMusicianProfile] = useState(null);
@@ -485,6 +495,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     setProjectsPage(1);
     setMusiciansPage(1);
     setBandsPage(1);
+    if (subTab === 'musicians') {
+      loadUserData();
+    }
   }, [searchQuery, selectedCity, subTab]);
 
   // Candidate Scanner: looping magnifying glass animation
@@ -568,44 +581,67 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       const savedImage = await AsyncStorage.getItem('profileImage');
       if (savedImage) setUserProfileImage(savedImage);
 
+      const savedDisplayName = await AsyncStorage.getItem('user_display_name');
+
+      let parsedUser = null;
       const cachedProfile = await AsyncStorage.getItem('user_profile_cache');
       if (cachedProfile) {
-        const parsed = JSON.parse(cachedProfile);
-        setCurrentUser(parsed);
-        setFormCity(parsed.city || '');
-        setFormState(parsed.state || '');
-        setFormCountry(parsed.country || '');
-        if (parsed.city) {
-          setSelectedCity(prev => prev || parsed.city);
-        }
-
-        const isCompleted = await AsyncStorage.getItem('user_profile_completed');
-        if (isCompleted !== 'true') {
-          const hasInfo = (parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments;
-          if (!hasInfo) {
-            if (onOpenProfile) onOpenProfile();
-            return;
-          } else {
-            await AsyncStorage.setItem('user_profile_completed', 'true');
-          }
-        }
-        return;
+        try {
+          parsedUser = JSON.parse(cachedProfile);
+        } catch (e) {}
       }
 
-      const userInfo = await AsyncStorage.getItem('user_info');
-      if (userInfo) {
-        const parsed = JSON.parse(userInfo);
-        setCurrentUser(parsed);
-        setFormCity(parsed.city || '');
-        setFormState(parsed.state || '');
-        setFormCountry(parsed.country || '');
-        if (parsed.city) {
-          setSelectedCity(prev => prev || parsed.city);
+      if (!parsedUser) {
+        const userInfo = await AsyncStorage.getItem('user_info');
+        if (userInfo) {
+          try {
+            parsedUser = JSON.parse(userInfo);
+          } catch (e) {}
+        }
+      }
+
+      if (parsedUser) {
+        // Normalização garantida de habilidades / instrumentos
+        let resolvedSkills = parsedUser.skills;
+        if (!Array.isArray(resolvedSkills)) {
+          const rawInst = parsedUser.instruments || parsedUser.skillsJson;
+          if (rawInst) {
+            try {
+              resolvedSkills = typeof rawInst === 'string' ? JSON.parse(rawInst) : rawInst;
+            } catch (e) {}
+          }
+        }
+
+        // Normalização garantida de influências
+        let resolvedInfluences = parsedUser.influences;
+        if (!Array.isArray(resolvedInfluences) && typeof resolvedInfluences === 'string' && resolvedInfluences.trim()) {
+          try {
+            const p = JSON.parse(resolvedInfluences);
+            if (Array.isArray(p)) resolvedInfluences = p;
+          } catch (e) {
+            resolvedInfluences = resolvedInfluences.split(',').map(s => s.trim()).filter(Boolean);
+          }
+        }
+
+        const normalizedUser = {
+          ...parsedUser,
+          displayName: savedDisplayName || parsedUser.displayName || parsedUser.name || parsedUser.username || 'Músico',
+          imageUri: savedImage || parsedUser.imageUri || null,
+          skills: Array.isArray(resolvedSkills) ? resolvedSkills : (parsedUser.skills || []),
+          influences: Array.isArray(resolvedInfluences) ? resolvedInfluences : (parsedUser.influences || [])
+        };
+
+        setCurrentUser(normalizedUser);
+        setFormCity(normalizedUser.city || '');
+        setFormState(normalizedUser.state || '');
+        setFormCountry(normalizedUser.country || '');
+        if (normalizedUser.city) {
+          setSelectedCity(prev => prev || normalizedUser.city);
         }
 
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
         if (isCompleted !== 'true') {
-          const hasInfo = (parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments;
+          const hasInfo = (normalizedUser.city && normalizedUser.city.trim()) || (normalizedUser.skills && normalizedUser.skills.length > 0) || normalizedUser.instruments;
           if (!hasInfo) {
             if (onOpenProfile) onOpenProfile();
             return;
@@ -1183,16 +1219,16 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     if (!currentUser) return MOCK_MUSICIANS;
 
     let userPrimaryInsts = [];
-    if (currentUser.skills && Array.isArray(currentUser.skills)) {
+    if (currentUser.skills && Array.isArray(currentUser.skills) && currentUser.skills.length > 0) {
       const primaries = currentUser.skills.filter(s => s.isPrimary);
-      if (primaries.length > 0) {
-        userPrimaryInsts = primaries.slice(0, 2).map(s => ({ name: s.instrument, stars: s.stars || 5 }));
-      } else {
-        userPrimaryInsts = currentUser.skills.slice(0, 2).map(s => ({ name: s.instrument, stars: s.stars || 5 }));
-      }
-    } else if (currentUser.primaryInstruments && Array.isArray(currentUser.primaryInstruments)) {
+      const targetList = primaries.length > 0 ? primaries : currentUser.skills;
+      userPrimaryInsts = targetList.slice(0, 2).map(s => ({
+        name: s.instrument || s.name || 'Instrumento',
+        stars: s.stars || 5
+      }));
+    } else if (currentUser.primaryInstruments && Array.isArray(currentUser.primaryInstruments) && currentUser.primaryInstruments.length > 0) {
       userPrimaryInsts = currentUser.primaryInstruments.slice(0, 2).map(i =>
-        typeof i === 'object' ? i : { name: String(i), stars: 5 }
+        typeof i === 'object' ? { name: i.name || i.instrument || 'Instrumento', stars: i.stars || 5 } : { name: String(i), stars: 5 }
       );
     }
     if (userPrimaryInsts.length === 0) {
@@ -1202,15 +1238,28 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       ];
     }
 
-    const userInfluences = Array.isArray(currentUser.influences)
-      ? currentUser.influences.map(inf => typeof inf === 'string' ? inf : inf.name).slice(0, 5)
-      : ['Rock Clássico', 'Blues'];
+    let userInfluences = [];
+    if (Array.isArray(currentUser.influences) && currentUser.influences.length > 0) {
+      userInfluences = currentUser.influences.map(inf => typeof inf === 'string' ? inf : (inf.name || inf.influence)).filter(Boolean).slice(0, 5);
+    } else if (typeof currentUser.influences === 'string' && currentUser.influences.trim()) {
+      try {
+        const parsed = JSON.parse(currentUser.influences);
+        if (Array.isArray(parsed)) {
+          userInfluences = parsed.map(inf => typeof inf === 'string' ? inf : (inf.name || inf.influence)).filter(Boolean).slice(0, 5);
+        }
+      } catch (e) {
+        userInfluences = currentUser.influences.split(',').map(s => s.trim()).filter(Boolean).slice(0, 5);
+      }
+    }
+    if (userInfluences.length === 0) {
+      userInfluences = ['Rock Clássico', 'Blues'];
+    }
 
     const myProfileMusician = {
       id: 'mus-me',
       isMe: true,
-      name: currentUser.displayName || currentUser.username || 'Músico',
-      username: currentUser.username || 'voce',
+      name: currentUser.displayName || currentUser.name || currentUser.username || 'Músico',
+      username: (currentUser.username || 'voce').replace(/^@+/, ''),
       primaryInstruments: userPrimaryInsts,
       primaryInstrument: userPrimaryInsts[0]?.name || 'Guitarra',
       stars: 5,
@@ -1220,7 +1269,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       availability: currentUser.availability || 'Disponível',
       influences: userInfluences,
       bio: currentUser.bio || 'Músico cadastrado na plataforma.',
-      imageUri: userProfileImage
+      imageUri: userProfileImage || currentUser.imageUri || null
     };
 
     return [myProfileMusician, ...MOCK_MUSICIANS];
@@ -1751,7 +1800,19 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       </View>
 
       {/* ── CONTEÚDO PRINCIPAL (SCROLLVIEW) ── */}
-      <ScrollView ref={mainScrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        ref={mainScrollRef} 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[colors.primary]} 
+            tintColor={colors.primary} 
+          />
+        }
+      >
         {subTab === 'projects' ? (
           /* ── FEED DE ANÚNCIOS ── */
           <View>

@@ -329,34 +329,98 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
       ];
 
   // Bandas e Projetos
-  const rawProjects = Array.isArray(musician.projects) && musician.projects.length > 0
-    ? musician.projects
-    : (Array.isArray(musician.bands) && musician.bands.length > 0
-        ? musician.bands.map((b, idx) => ({
-            id: String(b.id || idx + 1),
-            name: b.name || 'Projeto Musical',
-            role: b.role || skills[0]?.instrument || 'Músico',
-            since: b.since || b.period || '2022',
-            memberType: b.memberType || 'Membro / Integrante',
-            city: b.city || musician.city || '',
-            state: b.state || musician.state || '',
-            country: b.country || musician.country || '',
-            genres: b.genres || (influences.length > 0 ? influences.slice(0, 3).map(i => i.name) : ['Rock', 'Pop'])
-          }))
-        : [
-            {
-              id: '1',
-              name: 'Projetos e Apresentações',
-              role: skills[0]?.instrument || 'Músico',
-              since: '2022',
-              memberType: 'Membro',
-              city: musician.city || '',
-              state: musician.state || '',
-              country: musician.country || '',
-              genres: ['Rock', 'Pop', 'Indie']
-            }
-          ]
-      );
+  const rawProjects = (() => {
+    const candidateList = (Array.isArray(musician.projects) && musician.projects.length > 0)
+      ? musician.projects
+      : (Array.isArray(musician.bands) && musician.bands.length > 0)
+        ? musician.bands
+        : [];
+
+    if (candidateList.length === 0) {
+      return [
+        {
+          id: '1',
+          name: 'Projetos e Apresentações',
+          role: skills[0]?.instrument || 'Músico',
+          since: '2022',
+          memberType: 'Membro',
+          city: musician.city || '',
+          state: musician.state || '',
+          country: musician.country || '',
+          genres: ['Rock', 'Pop', 'Indie']
+        }
+      ];
+    }
+
+    return candidateList.map((b, idx) => {
+      let parsedGenres = [];
+      if (b.genres) {
+        try {
+          parsedGenres = typeof b.genres === 'string' && b.genres.startsWith('[')
+            ? JSON.parse(b.genres)
+            : (Array.isArray(b.genres) ? b.genres : String(b.genres).split(',').map(s => s.trim()).filter(Boolean));
+        } catch (e) {
+          parsedGenres = Array.isArray(b.genres) ? b.genres : String(b.genres).split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      if (parsedGenres.length === 0) {
+        parsedGenres = (influences.length > 0 ? influences.slice(0, 3).map(i => i.name || i) : ['Rock', 'Pop']);
+      }
+
+      let startYear = '2022';
+      const rawSince = String(b.since || b.period || b.startDate || '').trim();
+      if (rawSince) {
+        if (rawSince.includes('/')) {
+          startYear = rawSince.split('/').pop().trim();
+        } else if (rawSince.includes('-') && /^\d{4}/.test(rawSince)) {
+          startYear = rawSince.split('-')[0].trim();
+        } else {
+          const match = rawSince.match(/\b(19\d{2}|20\d{2})\b/);
+          startYear = match ? match[0] : (rawSince.length === 4 ? rawSince : '2022');
+        }
+      }
+
+      // Procura banda correspondente nas bandas locais para resgatar logo ou localização se estiverem vazios
+      let resolvedImage = b.imageUri || b.logo || null;
+      let resolvedCity = b.city || '';
+      let resolvedState = b.state || '';
+      let resolvedCountry = b.country || '';
+      if (Array.isArray(myBands) && myBands.length > 0) {
+        const bName = (b.name || b.bandName || '').trim().toLowerCase();
+        const matchBand = myBands.find(mb =>
+          (mb.id && b.id && String(mb.id) === String(b.id)) ||
+          (mb.name && bName && mb.name.trim().toLowerCase() === bName)
+        );
+        if (matchBand) {
+          if (!resolvedImage) resolvedImage = matchBand.imageUri;
+          if (!resolvedCity) resolvedCity = matchBand.city || '';
+          if (!resolvedState) resolvedState = matchBand.state || '';
+          if (!resolvedCountry) resolvedCountry = matchBand.country || '';
+          if (parsedGenres.length === 0 && matchBand.genres) {
+            try {
+              parsedGenres = typeof matchBand.genres === 'string' ? JSON.parse(matchBand.genres) : matchBand.genres;
+            } catch (e) {}
+          }
+        }
+      }
+
+      return {
+        ...b,
+        id: String(b.id || idx + 1),
+        name: b.name || b.bandName || 'Projeto Musical',
+        bandName: b.name || b.bandName || 'Projeto Musical',
+        imageUri: resolvedImage,
+        logo: resolvedImage,
+        role: b.role || skills[0]?.instrument || 'Músico',
+        since: startYear,
+        memberType: b.memberType || 'Membro / Integrante',
+        city: resolvedCity || musician.city || '',
+        state: resolvedState || musician.state || '',
+        country: resolvedCountry || musician.country || '',
+        genres: parsedGenres
+      };
+    });
+  })();
 
   // Agenda (mostra os próximos shows do músico / bandas do músico)
   const agenda = (Array.isArray(musician.agenda) && musician.agenda.length > 0)

@@ -31,8 +31,34 @@ export const MOCK_MUSICIANS = [
       { id: 'g3', category: 'Pedal/Effect', name: 'Darkglass Vintage Microtubes', details: 'Analog preamp & overdrive' }
     ],
     bands: [
-      { id: 'b1', name: 'The Velvet Stones', role: 'Bassist', period: '2021 - Present' },
-      { id: 'b2', name: 'Night Echoes', role: 'Bassist & Backing Vocals', period: '2019 - 2021' }
+      { 
+        id: 'b1', 
+        name: 'The Velvet Stones', 
+        role: 'Bassist', 
+        since: '2021',
+        period: '2021 - Present',
+        memberType: 'Integrante',
+        city: 'São Paulo',
+        state: 'SP',
+        country: 'Brasil',
+        genres: ['Classic Rock', 'Indie Rock', 'Blues'],
+        imageUri: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=200&auto=format&fit=crop&q=80',
+        logo: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=200&auto=format&fit=crop&q=80'
+      },
+      { 
+        id: 'b2', 
+        name: 'Night Echoes', 
+        role: 'Bassist & Backing Vocals', 
+        since: '2019',
+        period: '2019 - 2021',
+        memberType: 'Fundador',
+        city: 'São Paulo',
+        state: 'SP',
+        country: 'Brasil',
+        genres: ['Post-Punk', 'Darkwave', 'Indie Rock'],
+        imageUri: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&auto=format&fit=crop&q=80',
+        logo: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&auto=format&fit=crop&q=80'
+      }
     ],
     agenda: [
       { id: 'mus-1-ag1', title: 'Summer Rock Festival', date: '2026-10-24', local: 'Audio Club', city: 'São Paulo', status: 'Confirmed' },
@@ -66,7 +92,20 @@ export const MOCK_MUSICIANS = [
       { id: 'g6', category: 'Microphone', name: 'Shure Drum Mic Kit PGA98', details: 'Complete drum microphone set' }
     ],
     bands: [
-      { id: 'b3', name: 'ElectroShock Band', role: 'Drummer', period: '2022 - Present' }
+      { 
+        id: 'b3', 
+        name: 'ElectroShock Band', 
+        role: 'Drummer', 
+        since: '2022',
+        period: '2022 - Present',
+        memberType: 'Líder / Proprietário',
+        city: 'São Paulo',
+        state: 'SP',
+        country: 'Brasil',
+        genres: ['Pop Rock', 'Hard Rock', 'Alternative'],
+        imageUri: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&auto=format&fit=crop&q=80',
+        logo: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&auto=format&fit=crop&q=80'
+      }
     ],
     agenda: [
       { id: 'mus-2-ag1', title: 'ElectroShock Arena Tour', date: '2026-10-30', local: 'Espaço Unimed', city: 'São Paulo', status: 'Confirmed' },
@@ -99,7 +138,20 @@ export const MOCK_MUSICIANS = [
       { id: 'g8', category: 'Pedal/Effect', name: 'Strymon BlueSky Reverb', details: 'Stereo ambient reverb pedal' }
     ],
     bands: [
-      { id: 'b4', name: 'Jazz & Soul Collective', role: 'Keyboardist', period: '2020 - Present' }
+      { 
+        id: 'b4', 
+        name: 'Jazz & Soul Collective', 
+        role: 'Keyboardist', 
+        since: '2020',
+        period: '2020 - Present',
+        memberType: 'Fundador',
+        city: 'Belo Horizonte',
+        state: 'MG',
+        country: 'Brasil',
+        genres: ['Jazz', 'Soul', 'Bossa Nova', 'MPB'],
+        imageUri: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=200&auto=format&fit=crop&q=80',
+        logo: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=200&auto=format&fit=crop&q=80'
+      }
     ],
     agenda: [
       { id: 'mus-3-ag1', title: 'Jazz & Wine Night', date: '2026-10-28', local: 'Clube Chalezinho', city: 'Belo Horizonte', status: 'Confirmed' },
@@ -132,7 +184,20 @@ export const MOCK_MUSICIANS = [
       { id: 'g10', category: 'Acoustic Guitar', name: 'Takamine GD30CE', details: 'Steel-string acoustic-electric' }
     ],
     bands: [
-      { id: 'b5', name: 'Iron Roses', role: 'Lead Vocalist', period: '2019 - Present' }
+      { 
+        id: 'b5', 
+        name: 'Iron Roses', 
+        role: 'Lead Vocalist', 
+        since: '2019',
+        period: '2019 - Present',
+        memberType: 'Fundadora',
+        city: 'Curitiba',
+        state: 'PR',
+        country: 'Brasil',
+        genres: ['Hard Rock', 'Classic Rock', 'Heavy Metal'],
+        imageUri: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=200&auto=format&fit=crop&q=80',
+        logo: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=200&auto=format&fit=crop&q=80'
+      }
     ],
     agenda: [
       { id: 'mus-4-ag1', title: 'Iron Roses Rock Night', date: '2026-10-25', local: 'Tork n Roll', city: 'Curitiba', status: 'Confirmed' },
@@ -166,7 +231,20 @@ export const MOCK_MUSICIANS = [
       { id: 'g13', category: 'Pedal/Effect', name: 'Ibanez Tube Screamer TS9', details: 'Classic overdrive pedal' }
     ],
     bands: [
-      { id: 'b6', name: 'Black Velvet', role: 'Lead Guitarist', period: '2022 - Present' }
+      { 
+        id: 'b6', 
+        name: 'Black Velvet', 
+        role: 'Lead Guitarist', 
+        since: '2022',
+        period: '2022 - Present',
+        memberType: 'Líder / Proprietário',
+        city: 'Rio de Janeiro',
+        state: 'RJ',
+        country: 'Brasil',
+        genres: ['Stoner Rock', 'Heavy Metal', 'Grunge'],
+        imageUri: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=200&auto=format&fit=crop&q=80',
+        logo: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=200&auto=format&fit=crop&q=80'
+      }
     ],
     agenda: [
       { id: 'mus-5-ag1', title: 'Black Velvet Album Release', date: '2026-10-27', local: 'Circo Voador', city: 'Rio de Janeiro', status: 'Confirmed' },
@@ -252,10 +330,62 @@ export const musiciansService = {
       const parsedGear = savedGearStr ? JSON.parse(savedGearStr) : [];
 
       const localBands = await bandService.getAll();
-      const myBandsFormatted = (localBands || []).map(b => ({
-        name: b.name,
-        role: 'Integrante / Líder',
-        period: `${b.startDate || '2023'} - Presente`
+      const myBandsFormatted = await Promise.all((localBands || []).map(async (b) => {
+        let role = 'Músico';
+        let memberType = 'Proprietário';
+        try {
+          const members = await bandService.getBandMembers(b.id);
+          if (b.myMemberId && members && members.length > 0) {
+            const found = members.find(m => m.id === b.myMemberId);
+            if (found) {
+              role = found.role || 'Músico';
+              memberType = found.isLeader ? 'Líder / Proprietário' : 'Integrante';
+            }
+          }
+        } catch (e) {}
+
+        let parsedGenres = [];
+        if (b.genres) {
+          try {
+            parsedGenres = typeof b.genres === 'string' && b.genres.startsWith('[')
+              ? JSON.parse(b.genres)
+              : String(b.genres).split(',').map(s => s.trim()).filter(Boolean);
+          } catch (e) {
+            parsedGenres = String(b.genres).split(',').map(s => s.trim()).filter(Boolean);
+          }
+        }
+
+        let sinceYear = '2023';
+        if (b.startDate) {
+          if (String(b.startDate).includes('/')) {
+            sinceYear = String(b.startDate).split('/').pop().trim();
+          } else if (String(b.startDate).includes('-')) {
+            sinceYear = String(b.startDate).split('-')[0].trim();
+          } else {
+            const match = String(b.startDate).match(/\b(19\d{2}|20\d{2})\b/);
+            sinceYear = match ? match[0] : String(b.startDate).substring(0, 4);
+          }
+        }
+
+        return {
+          id: String(b.id),
+          bandId: b.id,
+          name: b.name,
+          bandName: b.name,
+          imageUri: b.imageUri || null,
+          logo: b.imageUri || null,
+          role,
+          memberType,
+          since: sinceYear,
+          period: `${sinceYear} - Presente`,
+          city: b.city || '',
+          state: b.state || '',
+          country: b.country || '',
+          genres: parsedGenres.length > 0 ? parsedGenres : ['Rock', 'Pop'],
+          bandType: b.bandType,
+          isCover: b.isCover,
+          isAutoral: b.isAutoral
+        };
       }));
 
       let myBandAgenda = [];
@@ -344,14 +474,7 @@ export const musiciansService = {
               { id: '2', category: 'Amplificador', name: 'Marshall DSL40CR', details: 'Combo Valvulado 40W' }
             ],
             bands: myBandsFormatted,
-            projects: myBandsFormatted.map((b, idx) => ({
-              id: String(idx + 1),
-              name: b.name,
-              role: b.role,
-              since: '2023',
-              memberType: 'Membro / Líder',
-              genres: ['Rock', 'Pop']
-            }))
+            projects: myBandsFormatted
           };
         }
       }

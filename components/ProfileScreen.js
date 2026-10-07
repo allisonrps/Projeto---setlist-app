@@ -578,13 +578,26 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               memberType = 'Membro';
             }
 
+            let sinceYear = '2023';
+            if (b.startDate) {
+              if (String(b.startDate).includes('/')) {
+                sinceYear = String(b.startDate).split('/').pop().trim();
+              } else if (String(b.startDate).includes('-')) {
+                sinceYear = String(b.startDate).split('-')[0].trim();
+              } else {
+                const match = String(b.startDate).match(/\b(19\d{2}|20\d{2})\b/);
+                sinceYear = match ? match[0] : String(b.startDate).substring(0, 4);
+              }
+            }
+
             return {
               id: b.id,
               name: b.name,
               imageUri: b.imageUri,
+              logo: b.imageUri,
               role: role,
               memberType: memberType,
-              since: b.startDate ? String(b.startDate).substring(0, 4) : '2023',
+              since: sinceYear,
               needsSync: false,
               city: b.city || '',
               state: b.state || '',
@@ -626,7 +639,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         ];
       }
 
-      setUser({
+      const enrichedProfile = {
         ...data,
         imageUri: savedImage || data.imageUri || null,
         displayName: savedDisplayName || data.displayName || data.username || 'Músico',
@@ -647,6 +660,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         interestLevel: data.interestLevel ? (typeof data.interestLevel === 'string' && data.interestLevel.startsWith('[') ? JSON.parse(data.interestLevel) : (Array.isArray(data.interestLevel) ? data.interestLevel : [data.interestLevel])) : ['Hobbie'],
         influences: parsedInfluences,
         skills: parsedSkills,
+        instruments: JSON.stringify(parsedSkills),
         projects: projectsData,
         agenda: await (async () => {
           try {
@@ -674,7 +688,12 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
             return [];
           }
         })()
-      });
+      };
+
+      setUser(enrichedProfile);
+      try {
+        await AsyncStorage.setItem('user_profile_cache', JSON.stringify(enrichedProfile));
+      } catch (cacheErr) {}
     } catch (err) {
       console.log('Error in applyProfileData:', err);
     }
@@ -717,7 +736,6 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     try {
       const data = await api.getProfile();
       await applyProfileData(data);
-      await AsyncStorage.setItem('user_profile_cache', JSON.stringify(data));
       if ((data.city && data.city.trim()) || (data.skills && data.skills.length > 0) || data.instruments) {
         await AsyncStorage.setItem('user_profile_completed', 'true');
       }

@@ -1087,7 +1087,9 @@ export const createTables = async () => {
       CREATE TABLE IF NOT EXISTS my_bands (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
-        imageUri TEXT
+        imageUri TEXT,
+        startDate TEXT,
+        endDate TEXT
       );
       CREATE TABLE IF NOT EXISTS songs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1240,6 +1242,12 @@ export const createTables = async () => {
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE band_members ADD COLUMN isLeader INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN startDate TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN endDate TEXT;");
     } catch (e) {}
     try {
       await db.execAsync('ALTER TABLE my_bands ADD COLUMN myMemberId INTEGER;');
