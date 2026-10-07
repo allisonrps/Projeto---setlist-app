@@ -339,8 +339,8 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 82px;
-      background: rgba(6, 8, 13, 0.82);
+      height: 90px;
+      background: rgba(6, 8, 13, 0.90);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border-subtle);
@@ -351,33 +351,17 @@
     }
 
     header.site-header.scrolled {
-      background: rgba(6, 8, 13, 0.95);
+      background: rgba(6, 8, 13, 0.96);
       border-bottom-color: rgba(255, 255, 255, 0.12);
-      height: 72px;
+      height: 78px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .nav-container {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       width: 100%;
-    }
-
-    
-    .brand-logo-wide {
-      height: 52px;
-      width: auto;
-      max-width: 240px;
-      object-fit: contain;
-      border-radius: 8px;
-      transition: var(--transition-smooth);
-      display: block;
-    }
-
-    .brand-link:hover .brand-logo-wide {
-      transform: scale(1.04);
-      filter: drop-shadow(0 0 16px rgba(14, 165, 233, 0.45));
+      gap: 36px;
     }
 
     .brand-link {
@@ -386,6 +370,27 @@
       gap: 12px;
       text-decoration: none;
       cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-wide {
+      height: 70px;
+      width: auto;
+      max-width: 300px;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
+      transition: none;
+    }
+
+    header.site-header.scrolled .brand-logo-wide {
+      height: 60px;
+    }
+
+    /* Fixed Top Logo: completely static, no zoom or filter on hover */
+    .brand-link:hover .brand-logo-wide {
+      transform: none !important;
+      filter: none !important;
     }
 
     .brand-logo-img {
@@ -483,6 +488,7 @@
     }
 
     .nav-actions {
+      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 16px;
@@ -2170,54 +2176,54 @@
       z-index: 2;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      min-height: 580px;
+      justify-content: flex-start;
+      min-height: auto;
       text-align: left;
     }
 
     .feature-scrub-nav {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
 
     .scrub-pill {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-subtle);
       color: var(--text-muted);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      padding: 6px 14px;
+      padding: 8px 18px;
       border-radius: var(--radius-full);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: var(--transition-smooth);
     }
 
     .scrub-pill:hover {
-      background: rgba(255, 255, 255, 0.09);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
       color: #fff;
     }
 
     .scrub-pill.active {
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(139, 92, 246, 0.2));
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.25));
       border-color: var(--cyan);
       color: #fff;
-      box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+      box-shadow: 0 0 16px rgba(14, 165, 233, 0.35);
     }
 
     .scrub-pill ion-icon {
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .lateral-text-viewport {
       position: relative;
-      min-height: 440px;
+      min-height: 485px;
       overflow: hidden;
       width: 100%;
     }
@@ -2250,88 +2256,121 @@
     }
 
     .text-slide-badge {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       align-self: flex-start;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      padding: 6px 14px;
     }
 
     .text-slide-title {
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 900;
-      line-height: 1.2;
+      line-height: 1.25;
       color: #ffffff;
       margin-bottom: 14px;
       letter-spacing: -0.5px;
     }
 
     .text-slide-desc {
-      font-size: 16px;
-      color: var(--text-muted);
-      line-height: 1.65;
+      font-size: 16.5px;
+      color: #cbd5e1;
+      line-height: 1.7;
       margin-bottom: 24px;
+      max-width: 98%;
     }
 
     .text-slide-highlights {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
+      gap: 16px;
+      margin-bottom: 26px;
     }
 
     .slide-highlight-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 18px 18px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      transition: var(--transition-smooth);
+      gap: 12px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
 
     .slide-highlight-card:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+      border-color: rgba(14, 165, 233, 0.45);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(14, 165, 233, 0.18);
+    }
+
+    .slide-highlight-card .hl-icon {
+      font-size: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .hl-icon.cyan { color: var(--cyan); background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.25); }
+    .hl-icon.violet { color: var(--violet); background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.25); }
+    .hl-icon.emerald { color: #34d399; background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.25); }
+
+    .slide-highlight-card > div {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
 
     .slide-highlight-card strong {
-      font-size: 13px;
-      color: #fff;
+      display: block;
+      font-size: 15px;
       font-weight: 800;
+      color: #ffffff;
+      line-height: 1.3;
+      letter-spacing: -0.2px;
     }
 
     .slide-highlight-card span {
-      font-size: 11px;
-      color: var(--text-dim);
-      line-height: 1.4;
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.45;
+      font-weight: 400;
     }
-
-    .hl-icon {
-      font-size: 20px;
-    }
-
-    .hl-icon.cyan { color: var(--cyan-light); }
-    .hl-icon.violet { color: var(--violet-light); }
-    .hl-icon.emerald { color: #34d399; }
 
     .text-slide-actions {
       display: flex;
-      gap: 12px;
+      gap: 14px;
       align-items: center;
       flex-wrap: wrap;
     }
 
-    /* Carousel Footer with Step Counter & Progress Bar */
+    .text-slide-actions .btn {
+      padding: 13px 26px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 12px;
+    }
+
+    /* Carousel Footer with Progress Bar & Navigation */
     .lateral-carousel-footer {
       display: flex;
       align-items: center;
       gap: 18px;
       padding-top: 18px;
       border-top: 1px solid var(--border-subtle);
-      margin-top: 20px;
+      margin-top: 18px;
     }
-.carousel-progress-track {
+
+    .carousel-progress-track {
       flex: 1;
-      height: 4px;
+      height: 5px;
       background: rgba(255, 255, 255, 0.08);
       border-radius: 99px;
       overflow: hidden;
@@ -2346,12 +2385,12 @@
 
     .carousel-nav-arrows-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
 
     .btn-step-arrow {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: var(--radius-sm);
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-subtle);
@@ -2359,7 +2398,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
       transition: var(--transition-smooth);
     }
@@ -2367,10 +2406,24 @@
     .btn-step-arrow:hover {
       background: var(--cyan);
       border-color: var(--cyan);
-      box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.5);
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+      .phone-showcase-container {
+        padding: 40px 36px;
+        gap: 40px;
+      }
+      .text-slide-highlights {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+      }
+      .lateral-text-viewport {
+        min-height: 510px;
+      }
+    }
+
+    @media (max-width: 992px) {
       .phone-showcase-container {
         grid-template-columns: 1fr;
         padding: 36px 24px;
@@ -2381,19 +2434,50 @@
       }
       .text-slide-highlights {
         grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .slide-highlight-card {
+        flex-direction: row;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
       }
       .lateral-text-viewport {
-        min-height: 480px;
+        min-height: 540px;
       }
     }
 
     @media (max-width: 640px) {
+      .showcase-fullwidth-wrapper {
+        padding: 0 12px;
+      }
       .phone-device-chassis {
-        width: 290px;
-        height: 590px;
+        width: 285px;
+        height: 580px;
       }
       .text-slide-title {
-        font-size: 24px;
+        font-size: 26px;
+        line-height: 1.25;
+      }
+      .text-slide-desc {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .slide-highlight-card strong {
+        font-size: 14px;
+      }
+      .slide-highlight-card span {
+        font-size: 12px;
+      }
+      .lateral-text-viewport {
+        min-height: 580px;
+      }
+      .feature-scrub-nav {
+        gap: 6px;
+      }
+      .scrub-pill {
+        padding: 6px 12px;
+        font-size: 12px;
       }
     }
   
