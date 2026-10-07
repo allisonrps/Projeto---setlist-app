@@ -1461,7 +1461,7 @@ export default function BandDetailScreen({
                         }}
                         accessibilityLabel={t('socialNetworks') || 'Redes Sociais'}
                       >
-                        <Ionicons name="share-social-outline" size={18} color="#ffffff" />
+                        <Ionicons name="link-outline" size={18} color="#ffffff" />
                       </Pressable>
                     )}
 
@@ -1497,9 +1497,9 @@ export default function BandDetailScreen({
 
               {/* 2ª Linha: Cidade, Estado, País */}
               {(band.city || band.state || band.country) && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4 }}>
                   <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.9)" />
-                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600' }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600', textAlign: 'center' }}>
                     {[band.city, band.state].filter(Boolean).join(', ')
                       ? `${[band.city, band.state].filter(Boolean).join(', ')}${band.country ? ` • ${band.country}` : ''}`
                       : band.country}
@@ -1508,7 +1508,7 @@ export default function BandDetailScreen({
               )}
 
               {/* 3ª Linha: Pílulas Cover / Autoral + Tags de Estilo */}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 6 }}>
                 {(band.isCover === 1 || (band.bandType && band.bandType.includes('cover')) || (!band.bandType && band.isCover === undefined)) && (
                   <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
                     <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalCover') || 'Cover'}</Text>
@@ -3796,7 +3796,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     paddingTop: 40,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   headerInitialsBig: {
     fontSize: 28,
@@ -3804,6 +3804,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 4,
     opacity: 0.9,
+    textAlign: 'center',
   },
   headerBandNameText: {
     fontSize: 28,
@@ -3812,6 +3813,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+    textAlign: 'center',
   },
   headerMemberCount: {
     fontSize: 13,
