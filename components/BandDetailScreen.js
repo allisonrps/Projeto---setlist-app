@@ -21,6 +21,7 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { bandService } from '../services/bandService';
 import { musiciansService } from '../services/musiciansService';
@@ -1257,9 +1258,9 @@ export default function BandDetailScreen({
         >
           {/* INDEX 0: HEADER HERO MODERNO COM IMAGEM TRANSLÚCIDA E DEGRADÊ */}
           <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#1e293b' }]}>
-            {/* 1. Imagem da banda em full-width com opacidade */}
+            {/* 1. Imagem da banda em full-width */}
             {(band.imageUri || band.image || band.logo) ? (
-              <View style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.65 : 0.75, overflow: 'hidden' }]} pointerEvents="none">
+              <View style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.85 : 0.92, overflow: 'hidden' }]} pointerEvents="none">
                 <Image
                   source={{ uri: band.imageUri || band.image || band.logo }}
                   style={{ width: '100%', height: '100%' }}
@@ -1274,17 +1275,19 @@ export default function BandDetailScreen({
               </View>
             )}
 
-            {/* 2. Degradê escuro na parte inferior para legibilidade */}
-            <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-              <View style={{ flex: 1 }} />
-              <View style={{ height: '70%', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.30)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.50)' }} />
-                <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(9,9,11,0.80)' : 'rgba(0,0,0,0.60)' }} />
-              </View>
-            </View>
+            {/* 2. Degradê suave para contraste perfeito dos botões e textos, mantendo a foto visível */}
+            <LinearGradient
+              colors={[
+                'rgba(0, 0, 0, 0.45)',
+                'transparent',
+                'rgba(0, 0, 0, 0.15)',
+                'rgba(0, 0, 0, 0.55)',
+                isDark ? 'rgba(9, 9, 11, 0.92)' : 'rgba(0, 0, 0, 0.82)'
+              ]}
+              locations={[0, 0.25, 0.45, 0.75, 1]}
+              style={StyleSheet.absoluteFillObject}
+              pointerEvents="none"
+            />
 
             {/* Barra de Navegação Superior - Glassmorphism */}
             <View style={styles.topRowNav}>
@@ -1498,8 +1501,16 @@ export default function BandDetailScreen({
               {/* 2ª Linha: Cidade, Estado, País */}
               {(band.city || band.state || band.country) && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4 }}>
-                  <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.9)" />
-                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600', textAlign: 'center' }}>
+                  <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.95)" />
+                  <Text style={{
+                    color: '#ffffff',
+                    fontSize: 12,
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 4,
+                  }}>
                     {[band.city, band.state].filter(Boolean).join(', ')
                       ? `${[band.city, band.state].filter(Boolean).join(', ')}${band.country ? ` • ${band.country}` : ''}`
                       : band.country}
@@ -3810,9 +3821,9 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '900',
     color: '#ffffff',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowColor: 'rgba(0, 0, 0, 0.90)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowRadius: 6,
     textAlign: 'center',
   },
   headerMemberCount: {
