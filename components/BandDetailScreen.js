@@ -1823,11 +1823,40 @@ export default function BandDetailScreen({
                           )}
                         </Pressable>
                         <View style={{ flex: 1 }}>
-                          {/* LINHA 1: NOME E USERNAME */}
+                          {/* LINHA 1: BADGE DE NÍVEL (LÍDER/MEMBRO), NOME E USERNAME */}
                           <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                            {/* Botão / Badge de Cargo / Nível (Líder ou Membro) no lado esquerdo do nome */}
+                            <Pressable
+                              style={[
+                                styles.roleLevelBadgeBtn,
+                                Number(item.isLeader) === 1
+                                  ? { backgroundColor: '#f59e0b18', borderColor: '#f59e0b55' }
+                                  : { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.1)' }
+                              ]}
+                              onPress={() => handleToggleMemberRole(item)}
+                              hitSlop={6}
+                              accessibilityLabel={Number(item.isLeader) === 1 ? 'Líder da banda' : 'Membro da banda'}
+                            >
+                              <Ionicons
+                                name={Number(item.isLeader) === 1 ? "shield-checkmark" : "person-outline"}
+                                size={11}
+                                color={Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted}
+                                style={{ marginRight: 3 }}
+                              />
+                              <Text
+                                style={[
+                                  styles.roleLevelBadgeText,
+                                  { color: Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted }
+                                ]}
+                              >
+                                {Number(item.isLeader) === 1 ? (t('leader') || 'Líder') : (t('member') || 'Membro')}
+                              </Text>
+                            </Pressable>
+
                             <Pressable onPress={() => handleOpenMemberProfile(item)}>
                               <Text style={[styles.memberNameText, { color: colors.text }]}>{item.name}</Text>
                             </Pressable>
+
                             {item.username ? (
                               <Pressable
                                 style={styles.memberUsernameLinkRow}
@@ -1839,6 +1868,7 @@ export default function BandDetailScreen({
                                 </Text>
                               </Pressable>
                             ) : null}
+
                             {isMe && (
                               <View style={[styles.youBadge, { backgroundColor: colors.primary + '20' }]}>
                                 <Text style={[styles.youBadgeText, { color: colors.primary }]}>{t('you') || 'Você'}</Text>
@@ -1860,34 +1890,6 @@ export default function BandDetailScreen({
                       </View>
 
                       <View style={styles.memberCardRightActions}>
-                        {/* Botão de Cargo / Nível: Líder ou Membro */}
-                        <Pressable
-                          style={[
-                            styles.roleLevelBadgeBtn,
-                            Number(item.isLeader) === 1
-                              ? { backgroundColor: '#f59e0b18', borderColor: '#f59e0b60' }
-                              : { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }
-                          ]}
-                          onPress={() => handleToggleMemberRole(item)}
-                          hitSlop={6}
-                          accessibilityLabel={Number(item.isLeader) === 1 ? 'Líder da banda' : 'Membro da banda'}
-                        >
-                          <Ionicons
-                            name={Number(item.isLeader) === 1 ? "shield-checkmark" : "person-outline"}
-                            size={13}
-                            color={Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted}
-                            style={{ marginRight: 3 }}
-                          />
-                          <Text
-                            style={[
-                              styles.roleLevelBadgeText,
-                              { color: Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted }
-                            ]}
-                          >
-                            {Number(item.isLeader) === 1 ? (t('leader') || 'Líder') : (t('member') || 'Membro')}
-                          </Text>
-                        </Pressable>
-
                         {(isUserLeader || item.id === myMemberId) && (
                           <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
                             <Ionicons name="pencil" size={18} color={colors.primary} />
@@ -1984,8 +1986,36 @@ export default function BandDetailScreen({
                                 )}
                               </Pressable>
                               <View style={{ flex: 1 }}>
-                                {/* LINHA 1: NOME, USERNAME E STATUS INATIVO */}
+                                {/* LINHA 1: BADGE DE NÍVEL, NOME, USERNAME E STATUS INATIVO */}
                                 <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                                  {/* Botão / Badge de Cargo / Nível (Líder ou Membro) no lado esquerdo do nome */}
+                                  <Pressable
+                                    style={[
+                                      styles.roleLevelBadgeBtn,
+                                      Number(item.isLeader) === 1
+                                        ? { backgroundColor: '#f59e0b18', borderColor: '#f59e0b55' }
+                                        : { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.1)' }
+                                    ]}
+                                    onPress={() => handleToggleMemberRole(item)}
+                                    hitSlop={6}
+                                    accessibilityLabel={Number(item.isLeader) === 1 ? 'Líder da banda' : 'Membro da banda'}
+                                  >
+                                    <Ionicons
+                                      name={Number(item.isLeader) === 1 ? "shield-checkmark" : "person-outline"}
+                                      size={11}
+                                      color={Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted}
+                                      style={{ marginRight: 3 }}
+                                    />
+                                    <Text
+                                      style={[
+                                        styles.roleLevelBadgeText,
+                                        { color: Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted }
+                                      ]}
+                                    >
+                                      {Number(item.isLeader) === 1 ? (t('leader') || 'Líder') : (t('member') || 'Membro')}
+                                    </Text>
+                                  </Pressable>
+
                                   <Pressable onPress={() => handleOpenMemberProfile(item)}>
                                     <Text style={[styles.memberNameText, { color: colors.textMuted }]}>{item.name}</Text>
                                   </Pressable>
@@ -2019,34 +2049,6 @@ export default function BandDetailScreen({
                             </View>
 
                             <View style={styles.memberCardRightActions}>
-                              {/* Botão de Cargo / Nível: Líder ou Membro */}
-                              <Pressable
-                                style={[
-                                  styles.roleLevelBadgeBtn,
-                                  Number(item.isLeader) === 1
-                                    ? { backgroundColor: '#f59e0b18', borderColor: '#f59e0b60' }
-                                    : { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }
-                                ]}
-                                onPress={() => handleToggleMemberRole(item)}
-                                hitSlop={6}
-                                accessibilityLabel={Number(item.isLeader) === 1 ? 'Líder da banda' : 'Membro da banda'}
-                              >
-                                <Ionicons
-                                  name={Number(item.isLeader) === 1 ? "shield-checkmark" : "person-outline"}
-                                  size={13}
-                                  color={Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted}
-                                  style={{ marginRight: 3 }}
-                                />
-                                <Text
-                                  style={[
-                                    styles.roleLevelBadgeText,
-                                    { color: Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted }
-                                  ]}
-                                >
-                                  {Number(item.isLeader) === 1 ? (t('leader') || 'Líder') : (t('member') || 'Membro')}
-                                </Text>
-                              </Pressable>
-
                               {(isUserLeader || item.id === myMemberId) && (
                                 <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
                                   <Ionicons name="pencil" size={18} color={colors.primary} />
@@ -3742,15 +3744,15 @@ const styles = StyleSheet.create({
   roleLevelBadgeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 6.5,
+    paddingVertical: 2,
+    borderRadius: 7,
     borderWidth: 1,
-    marginRight: 6,
   },
   roleLevelBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.2,
   },
   activeDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 8 },
   sectionTitle: { fontSize: 14, fontWeight: 'bold' },
