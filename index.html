@@ -2329,13 +2329,7 @@
       border-top: 1px solid var(--border-subtle);
       margin-top: 20px;
     }
-
-    .carousel-step-counter {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-    }
-
-    .carousel-progress-track {
+.carousel-progress-track {
       flex: 1;
       height: 4px;
       background: rgba(255, 255, 255, 0.08);
@@ -2649,23 +2643,23 @@
             <div class="feature-scrub-nav">
               <button type="button" class="scrub-pill active" onclick="goToPhoneSlide(0)" data-pill="0">
                 <ion-icon name="globe-outline"></ion-icon>
-                <span>Rede Musical</span>
+                <span data-i18n="pillNetwork">Rede Musical</span>
               </button>
               <button type="button" class="scrub-pill" onclick="goToPhoneSlide(1)" data-pill="1">
                 <ion-icon name="bar-chart-outline"></ion-icon>
-                <span>Dashboard</span>
+                <span data-i18n="pillDashboard">Dashboard</span>
               </button>
               <button type="button" class="scrub-pill" onclick="goToPhoneSlide(2)" data-pill="2">
                 <ion-icon name="calendar-outline"></ion-icon>
-                <span>Agenda</span>
+                <span data-i18n="pillSchedule">Agenda</span>
               </button>
               <button type="button" class="scrub-pill" onclick="goToPhoneSlide(3)" data-pill="3">
                 <ion-icon name="wallet-outline"></ion-icon>
-                <span>Finanças</span>
+                <span data-i18n="pillFinances">Finanças</span>
               </button>
               <button type="button" class="scrub-pill" onclick="goToPhoneSlide(4)" data-pill="4">
                 <ion-icon name="musical-notes-outline"></ion-icon>
-                <span>Repertório</span>
+                <span data-i18n="pillRepertoire">Repertório</span>
               </button>
             </div>
 
@@ -2676,41 +2670,39 @@
               <div class="phone-text-slide active" data-text-slide="0">
                 <div class="text-slide-badge pill-badge">
                   <ion-icon name="globe"></ion-icon>
-                  <span>COMUNIDADE &amp; OPORTUNIDADES • 100% EXCLUSIVO</span>
+                  <span data-i18n="slide0Badge">COMUNIDADE &amp; OPORTUNIDADES • 100% EXCLUSIVO</span>
                 </div>
-                <h3 class="text-slide-title">Encontre Músicos e Forme Bandas na Sua Cidade</h3>
-                <p class="text-slide-desc">
-                  Conecte-se instantaneamente com baixistas, bateristas, vocalistas e instrumentistas de qualquer estilo. Filtre vagas por cidade ou região, visualize estilos musicais e candidate-se com apenas um toque no botão <strong>"Tenho Interesse"</strong>.
-                </p>
+                <h3 class="text-slide-title" data-i18n="slide0Title">Encontre Músicos e Forme Bandas na Sua Cidade</h3>
+                <p class="text-slide-desc" data-i18n="slide0Desc">Conecte-se instantaneamente com baixistas, bateristas, vocalistas e instrumentistas de qualquer estilo. Filtre vagas por cidade ou região, visualize estilos musicais e candidate-se com apenas um toque no botão "Tenho Interesse".</p>
                 <div class="text-slide-highlights">
                   <div class="slide-highlight-card">
                     <ion-icon name="location-outline" class="hl-icon cyan"></ion-icon>
                     <div>
-                      <strong>Filtro Regional</strong>
-                      <span>Músicos em Franca, SP ou qualquer cidade</span>
+                      <strong data-i18n="slide0Hl1Title">Filtro Regional</strong>
+                      <span data-i18n="slide0Hl1Desc">Músicos na sua cidade ou em todo o país</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="search-outline" class="hl-icon violet"></ion-icon>
                     <div>
-                      <strong>Mural de Vagas</strong>
-                      <span>Busca ativa de Baixista, Bateria e Vocal</span>
+                      <strong data-i18n="slide0Hl2Title">Mural de Vagas</strong>
+                      <span data-i18n="slide0Hl2Desc">Busca ativa de Baixista, Bateria e Vocal</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="flash-outline" class="hl-icon emerald"></ion-icon>
                     <div>
-                      <strong>Conexão Ágil</strong>
-                      <span>Avisos em tempo real e perfis detalhados</span>
+                      <strong data-i18n="slide0Hl3Title">Conexão Ágil</strong>
+                      <span data-i18n="slide0Hl3Desc">Avisos em tempo real e candidaturas diretas</span>
                     </div>
                   </div>
                 </div>
                 <div class="text-slide-actions">
                   <a href="#rede-social" class="btn btn-primary btn-sm">
-                    <ion-icon name="people-outline"></ion-icon> Explorar Rede Musical
+                    <ion-icon name="people-outline"></ion-icon> <span data-i18n="slide0Btn1">Explorar Rede Musical</span>
                   </a>
                   <a href="#download" class="btn btn-outline btn-sm">
-                    <ion-icon name="logo-google-playstore"></ion-icon> Baixar App Grátis
+                    <ion-icon name="logo-google-playstore"></ion-icon> <span data-i18n="slide0Btn2">Baixar App Grátis</span>
                   </a>
                 </div>
               </div>
@@ -2719,41 +2711,39 @@
               <div class="phone-text-slide" data-text-slide="1">
                 <div class="text-slide-badge pill-badge pill-badge-violet">
                   <ion-icon name="bar-chart"></ion-icon>
-                  <span>PAINEL DO MÚSICO • VISÃO ANUAL 2026</span>
+                  <span data-i18n="slide1Badge">PAINEL DO MÚSICO • VISÃO ANUAL 2026</span>
                 </div>
-                <h3 class="text-slide-title">Controle de Faturamento, Shows e Ensaios</h3>
-                <p class="text-slide-desc">
-                  Tenha a visão executiva completa da sua rotina artística. Acompanhe gráficos dinâmicos de faturamento mês a mês, saiba quantos shows e ensaios foram realizados no ano e gerencie todos os eventos futuros e passados em uma linha do tempo clara.
-                </p>
+                <h3 class="text-slide-title" data-i18n="slide1Title">Controle de Faturamento, Shows e Ensaios</h3>
+                <p class="text-slide-desc" data-i18n="slide1Desc">Tenha a visão executiva completa da sua rotina artística. Acompanhe gráficos dinâmicos de faturamento mês a mês, saiba quantos shows e ensaios foram realizados no ano e gerencie todos os eventos futuros e passados em uma linha do tempo clara.</p>
                 <div class="text-slide-highlights">
                   <div class="slide-highlight-card">
                     <ion-icon name="trending-up-outline" class="hl-icon violet"></ion-icon>
                     <div>
-                      <strong>Gráfico de Receita</strong>
-                      <span>Faturamento acumulado por mês</span>
+                      <strong data-i18n="slide1Hl1Title">Gráfico de Receita</strong>
+                      <span data-i18n="slide1Hl1Desc">Faturamento acumulado por mês</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="musical-note-outline" class="hl-icon cyan"></ion-icon>
                     <div>
-                      <strong>Próximos Shows</strong>
-                      <span>The Rock Pub com contagem regressiva</span>
+                      <strong data-i18n="slide1Hl2Title">Próximos Shows</strong>
+                      <span data-i18n="slide1Hl2Desc">Contagem regressiva e locais de show</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="headset-outline" class="hl-icon emerald"></ion-icon>
                     <div>
-                      <strong>Separação de Ensaios</strong>
-                      <span>Diferencie ensaios técnicos de shows ao vivo</span>
+                      <strong data-i18n="slide1Hl3Title">Separação de Ensaios</strong>
+                      <span data-i18n="slide1Hl3Desc">Diferencie ensaios técnicos de shows ao vivo</span>
                     </div>
                   </div>
                 </div>
                 <div class="text-slide-actions">
                   <a href="#download" class="btn btn-violet btn-sm">
-                    <ion-icon name="download-outline"></ion-icon> Instalar no Android
+                    <ion-icon name="download-outline"></ion-icon> <span data-i18n="slide1Btn1">Instalar no Android</span>
                   </a>
                   <a href="editor.html" class="btn btn-outline btn-sm">
-                    <ion-icon name="laptop-outline"></ion-icon> Acessar Web Editor
+                    <ion-icon name="laptop-outline"></ion-icon> <span data-i18n="slide1Btn2">Acessar Web Editor</span>
                   </a>
                 </div>
               </div>
@@ -2762,41 +2752,39 @@
               <div class="phone-text-slide" data-text-slide="2">
                 <div class="text-slide-badge pill-badge pill-badge-emerald">
                   <ion-icon name="calendar"></ion-icon>
-                  <span>GESTÃO DE PALCO • CRONOGRAMA INTEGRADO</span>
+                  <span data-i18n="slide2Badge">GESTÃO DE PALCO • CRONOGRAMA INTEGRADO</span>
                 </div>
-                <h3 class="text-slide-title">Cronograma de Shows com Compartilhamento Rápido</h3>
-                <p class="text-slide-desc">
-                  Elimine a desorganização nos ensaios e passagens de som! Cadastre o ano, local, data e horário do evento. Com um clique em <strong>"Share Schedule"</strong>, você envia o cronograma completo formatado diretamente para todos os integrantes no WhatsApp.
-                </p>
+                <h3 class="text-slide-title" data-i18n="slide2Title">Cronograma de Shows com Compartilhamento Rápido</h3>
+                <p class="text-slide-desc" data-i18n="slide2Desc">Elimine a desorganização nos ensaios e passagens de som! Cadastre o ano, local, data e horário do evento. Com um clique em "Share Schedule", você envia o cronograma completo formatado diretamente para todos os integrantes no WhatsApp.</p>
                 <div class="text-slide-highlights">
                   <div class="slide-highlight-card">
                     <ion-icon name="share-social-outline" class="hl-icon emerald"></ion-icon>
                     <div>
-                      <strong>Share Schedule</strong>
-                      <span>Envio com 1 clique para toda a equipe</span>
+                      <strong data-i18n="slide2Hl1Title">Share Schedule</strong>
+                      <span data-i18n="slide2Hl1Desc">Envio com 1 clique para toda a equipe</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="time-outline" class="hl-icon cyan"></ion-icon>
                     <div>
-                      <strong>Horários de Som</strong>
-                      <span>Check-in de passagem e início da apresentação</span>
+                      <strong data-i18n="slide2Hl2Title">Horários de Som</strong>
+                      <span data-i18n="slide2Hl2Desc">Passagem e início da apresentação</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="layers-outline" class="hl-icon violet"></ion-icon>
                     <div>
-                      <strong>Pastas por Mês</strong>
-                      <span>Separadores de Outubro, Setembro e próximos</span>
+                      <strong data-i18n="slide2Hl3Title">Pastas por Mês</strong>
+                      <span data-i18n="slide2Hl3Desc">Separadores de Outubro, Setembro e próximos</span>
                     </div>
                   </div>
                 </div>
                 <div class="text-slide-actions">
                   <a href="#modo-palco" class="btn btn-primary btn-sm">
-                    <ion-icon name="flashlight-outline"></ion-icon> Ver Modo Palco
+                    <ion-icon name="flashlight-outline"></ion-icon> <span data-i18n="slide2Btn1">Ver Modo Palco</span>
                   </a>
                   <a href="#download" class="btn btn-outline btn-sm">
-                    <ion-icon name="phone-portrait-outline"></ion-icon> Baixar Aplicativo
+                    <ion-icon name="phone-portrait-outline"></ion-icon> <span data-i18n="slide2Btn2">Baixar Aplicativo</span>
                   </a>
                 </div>
               </div>
@@ -2805,41 +2793,39 @@
               <div class="phone-text-slide" data-text-slide="3">
                 <div class="text-slide-badge pill-badge" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">
                   <ion-icon name="wallet"></ion-icon>
-                  <span>TRANSPARÊNCIA TOTAL • CACHÊ &amp; DESPESAS</span>
+                  <span data-i18n="slide3Badge">TRANSPARÊNCIA TOTAL • CACHÊ &amp; DESPESAS</span>
                 </div>
-                <h3 class="text-slide-title">Controle Financeiro e Divisão Justa por Integrante</h3>
-                <p class="text-slide-desc">
-                  Acabe com as dúvidas na hora de acertar o cachê do show. Cadastre o valor bruto recebido, abata despesas operacionais (transporte, alimentação, sonoplasta) e acompanhe a divisão transparente do valor individual para cada integrante e substituto.
-                </p>
+                <h3 class="text-slide-title" data-i18n="slide3Title">Controle Financeiro e Divisão Justa por Integrante</h3>
+                <p class="text-slide-desc" data-i18n="slide3Desc">Acabe com as dúvidas na hora de acertar o cachê do show. Cadastre o valor bruto recebido, abata despesas operacionais (transporte, alimentação, sonoplasta) e acompanhe a divisão transparente do valor individual para cada integrante e substituto.</p>
                 <div class="text-slide-highlights">
                   <div class="slide-highlight-card">
                     <ion-icon name="cash-outline" class="hl-icon" style="color: #fbbf24;"></ion-icon>
                     <div>
-                      <strong>Incomes &amp; Expenses</strong>
-                      <span>Entradas e despesas discriminadas</span>
+                      <strong data-i18n="slide3Hl1Title">Incomes &amp; Expenses</strong>
+                      <span data-i18n="slide3Hl1Desc">Entradas e despesas discriminadas</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="people-circle-outline" class="hl-icon cyan"></ion-icon>
                     <div>
-                      <strong>Cachê por Membro</strong>
-                      <span>Divisão exata ($ 340,00 por músico)</span>
+                      <strong data-i18n="slide3Hl2Title">Cachê por Membro</strong>
+                      <span data-i18n="slide3Hl2Desc">Divisão exata por músico</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="receipt-outline" class="hl-icon emerald"></ion-icon>
                     <div>
-                      <strong>Histórico por Evento</strong>
-                      <span>Status de cachê definido, pendente ou pago</span>
+                      <strong data-i18n="slide3Hl3Title">Histórico por Evento</strong>
+                      <span data-i18n="slide3Hl3Desc">Status definido, pendente ou pago</span>
                     </div>
                   </div>
                 </div>
                 <div class="text-slide-actions">
                   <a href="editor.html" class="btn btn-primary btn-sm">
-                    <ion-icon name="laptop-outline"></ion-icon> Testar no Web Editor
+                    <ion-icon name="laptop-outline"></ion-icon> <span data-i18n="slide3Btn1">Testar no Web Editor</span>
                   </a>
                   <a href="#download" class="btn btn-outline btn-sm">
-                    <ion-icon name="logo-google-playstore"></ion-icon> Baixar no Google Play
+                    <ion-icon name="logo-google-playstore"></ion-icon> <span data-i18n="slide3Btn2">Baixar no Google Play</span>
                   </a>
                 </div>
               </div>
@@ -2848,41 +2834,39 @@
               <div class="phone-text-slide" data-text-slide="4">
                 <div class="text-slide-badge pill-badge" style="background: rgba(244, 63, 94, 0.12); color: #fb7185; border-color: rgba(244, 63, 94, 0.3);">
                   <ion-icon name="musical-notes"></ion-icon>
-                  <span>INTELIGÊNCIA MUSICAL • REPERTOIRE STYLES</span>
+                  <span data-i18n="slide4Badge">INTELIGÊNCIA MUSICAL • REPERTOIRE STYLES</span>
                 </div>
-                <h3 class="text-slide-title">Métricas de Repertório: Balanceamento de Estilos</h3>
-                <p class="text-slide-desc">
-                  Descubra a identidade sonora e a proporção real das suas músicas com gráficos visuais automáticos. Saiba a distribuição de faixas dos anos 90 (17%), anos 80 (13%), Pop Rock (13%), Hard Rock (9%) e Grunge para montar setlists perfeitos e equilibrados.
-                </p>
+                <h3 class="text-slide-title" data-i18n="slide4Title">Métricas de Repertório: Balanceamento de Estilos</h3>
+                <p class="text-slide-desc" data-i18n="slide4Desc">Descubra a identidade sonora e a proporção real das suas músicas com gráficos visuais automáticos. Saiba a distribuição de faixas dos anos 90 (17%), anos 80 (13%), Pop Rock (13%), Hard Rock (9%) e Grunge para montar setlists perfeitos e equilibrados.</p>
                 <div class="text-slide-highlights">
                   <div class="slide-highlight-card">
                     <ion-icon name="pie-chart-outline" class="hl-icon" style="color: #fb7185;"></ion-icon>
                     <div>
-                      <strong>Percentuais Exatos</strong>
-                      <span>Contagem e proporção de cada estilo</span>
+                      <strong data-i18n="slide4Hl1Title">Percentuais Exatos</strong>
+                      <span data-i18n="slide4Hl1Desc">Contagem e proporção de cada estilo</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="disc-outline" class="hl-icon violet"></ion-icon>
                     <div>
-                      <strong>Mapeamento de Épocas</strong>
-                      <span>Clássicos das décadas de 80, 90 e atuais</span>
+                      <strong data-i18n="slide4Hl2Title">Mapeamento de Épocas</strong>
+                      <span data-i18n="slide4Hl2Desc">Clássicos das décadas de 80, 90 e atuais</span>
                     </div>
                   </div>
                   <div class="slide-highlight-card">
                     <ion-icon name="options-outline" class="hl-icon cyan"></ion-icon>
                     <div>
-                      <strong>Equilíbrio do Show</strong>
-                      <span>Evite cansaço do público sem repetir estilos</span>
+                      <strong data-i18n="slide4Hl3Title">Equilíbrio do Show</strong>
+                      <span data-i18n="slide4Hl3Desc">Evite cansaço do público sem repetir estilos</span>
                     </div>
                   </div>
                 </div>
                 <div class="text-slide-actions">
                   <a href="#modo-palco" class="btn btn-violet btn-sm">
-                    <ion-icon name="play-outline"></ion-icon> Simular Modo Palco
+                    <ion-icon name="play-outline"></ion-icon> <span data-i18n="slide4Btn1">Simular Modo Palco</span>
                   </a>
                   <a href="#download" class="btn btn-outline btn-sm">
-                    <ion-icon name="logo-google-playstore"></ion-icon> Obter Grátis
+                    <ion-icon name="logo-google-playstore"></ion-icon> <span data-i18n="slide4Btn2">Obter Grátis</span>
                   </a>
                 </div>
               </div>
@@ -2891,11 +2875,7 @@
 
             <!-- Carousel Progress Bar & Controls Footer -->
             <div class="lateral-carousel-footer">
-              <div class="carousel-step-counter">
-                <span id="currentSlideNumber" style="color: var(--cyan); font-weight: 800; font-size: 16px;">01</span>
-                <span style="color: var(--text-dim); margin: 0 4px;">/</span>
-                <span style="color: var(--text-dim); font-size: 14px;">05</span>
-              </div>
+              
               <div class="carousel-progress-track">
                 <div class="carousel-progress-fill" id="carouselProgressBar" style="width: 20%;"></div>
               </div>
@@ -3676,6 +3656,66 @@ O oposto do que disse antes!
     // Dicionário de Traduções
     const translations = {
       pt: {
+        pillNetwork: "Rede Musical",
+        pillDashboard: "Dashboard",
+        pillSchedule: "Agenda",
+        pillFinances: "Finanças",
+        pillRepertoire: "Repertório",
+        slide0Badge: "COMUNIDADE & OPORTUNIDADES • 100% EXCLUSIVO",
+        slide0Title: "Encontre Músicos e Forme Bandas na Sua Cidade",
+        slide0Desc: "Conecte-se instantaneamente com baixistas, bateristas, vocalistas e instrumentistas de qualquer estilo. Filtre vagas por cidade ou região, visualize estilos musicais e candidate-se com apenas um toque no botão \"Tenho Interesse\".",
+        slide0Hl1Title: "Filtro Regional",
+        slide0Hl1Desc: "Músicos na sua cidade ou em todo o país",
+        slide0Hl2Title: "Mural de Vagas",
+        slide0Hl2Desc: "Busca ativa de Baixista, Bateria e Vocal",
+        slide0Hl3Title: "Conexão Ágil",
+        slide0Hl3Desc: "Avisos em tempo real e candidaturas diretas",
+        slide0Btn1: "Explorar Rede Musical",
+        slide0Btn2: "Baixar App Grátis",
+        slide1Badge: "PAINEL DO MÚSICO • VISÃO ANUAL 2026",
+        slide1Title: "Controle de Faturamento, Shows e Ensaios",
+        slide1Desc: "Tenha a visão executiva completa da sua rotina artística. Acompanhe gráficos dinâmicos de faturamento mês a mês, saiba quantos shows e ensaios foram realizados no ano e gerencie todos os eventos futuros e passados em uma linha do tempo clara.",
+        slide1Hl1Title: "Gráfico de Receita",
+        slide1Hl1Desc: "Faturamento acumulado por mês",
+        slide1Hl2Title: "Próximos Shows",
+        slide1Hl2Desc: "Contagem regressiva e locais de show",
+        slide1Hl3Title: "Separação de Ensaios",
+        slide1Hl3Desc: "Diferencie ensaios técnicos de shows ao vivo",
+        slide1Btn1: "Instalar no Android",
+        slide1Btn2: "Acessar Web Editor",
+        slide2Badge: "GESTÃO DE PALCO • CRONOGRAMA INTEGRADO",
+        slide2Title: "Cronograma de Shows com Compartilhamento Rápido",
+        slide2Desc: "Elimine a desorganização nos ensaios e passagens de som! Cadastre o ano, local, data e horário do evento. Com um clique em \"Share Schedule\", você envia o cronograma completo formatado diretamente para todos os integrantes no WhatsApp.",
+        slide2Hl1Title: "Share Schedule",
+        slide2Hl1Desc: "Envio com 1 clique para toda a equipe",
+        slide2Hl2Title: "Horários de Som",
+        slide2Hl2Desc: "Passagem e início da apresentação",
+        slide2Hl3Title: "Pastas por Mês",
+        slide2Hl3Desc: "Separadores de Outubro, Setembro e próximos",
+        slide2Btn1: "Ver Modo Palco",
+        slide2Btn2: "Baixar Aplicativo",
+        slide3Badge: "TRANSPARÊNCIA TOTAL • CACHÊ & DESPESAS",
+        slide3Title: "Controle Financeiro e Divisão Justa por Integrante",
+        slide3Desc: "Acabe com as dúvidas na hora de acertar o cachê do show. Cadastre o valor bruto recebido, abata despesas operacionais (transporte, alimentação, sonoplasta) e acompanhe a divisão transparente do valor individual para cada integrante e substituto.",
+        slide3Hl1Title: "Incomes & Expenses",
+        slide3Hl1Desc: "Entradas e despesas discriminadas",
+        slide3Hl2Title: "Cachê por Membro",
+        slide3Hl2Desc: "Divisão exata por músico",
+        slide3Hl3Title: "Histórico por Evento",
+        slide3Hl3Desc: "Status definido, pendente ou pago",
+        slide3Btn1: "Testar no Web Editor",
+        slide3Btn2: "Baixar no Google Play",
+        slide4Badge: "INTELIGÊNCIA MUSICAL • REPERTOIRE STYLES",
+        slide4Title: "Métricas de Repertório: Balanceamento de Estilos",
+        slide4Desc: "Descubra a identidade sonora e a proporção real das suas músicas com gráficos visuais automáticos. Saiba a distribuição de faixas dos anos 90 (17%), anos 80 (13%), Pop Rock (13%), Hard Rock (9%) e Grunge para montar setlists perfeitos e equilibrados.",
+        slide4Hl1Title: "Percentuais Exatos",
+        slide4Hl1Desc: "Contagem e proporção de cada estilo",
+        slide4Hl2Title: "Mapeamento de Épocas",
+        slide4Hl2Desc: "Clássicos dos anos 80, 90 e atuais",
+        slide4Hl3Title: "Equilíbrio do Show",
+        slide4Hl3Desc: "Evite cansaço do público sem repetir estilos",
+        slide4Btn1: "Simular Modo Palco",
+        slide4Btn2: "Obter Grátis",
         pageTitle: 'BandLink • O App e Rede Social Definitiva para Músicos, Bandas e Palco',
         pageMetaDesc: 'Organize o repertório da sua banda, encontre músicos na sua cidade, divulgue vagas e shows, edite cifras no PC e controle o autoscroll no palco. 100% offline e gratuito.',
         navFeatures: 'Recursos',
@@ -3775,6 +3815,66 @@ O oposto do que disse antes!
         footerColAbout: 'Sobre o App'
       },
       en: {
+        pillNetwork: "Music Network",
+        pillDashboard: "Dashboard",
+        pillSchedule: "Schedule",
+        pillFinances: "Finances",
+        pillRepertoire: "Repertoire",
+        slide0Badge: "COMMUNITY & AUDITIONS • 100% EXCLUSIVE",
+        slide0Title: "Find Musicians & Form Bands in Your City",
+        slide0Desc: "Connect instantly with bassists, drummers, vocalists, and players of any genre. Filter openings by city or region, explore musical style tags, and apply with a single tap on the \"I'm Interested\" button.",
+        slide0Hl1Title: "Regional Filter",
+        slide0Hl1Desc: "Musicians in your city or nationwide",
+        slide0Hl2Title: "Auditions Board",
+        slide0Hl2Desc: "Active search for Bass, Drums & Vocals",
+        slide0Hl3Title: "Fast Matching",
+        slide0Hl3Desc: "Real-time alerts and direct applications",
+        slide0Btn1: "Explore Music Network",
+        slide0Btn2: "Download Free App",
+        slide1Badge: "MUSICIAN DASHBOARD • 2026 ANNUAL OVERVIEW",
+        slide1Title: "Track Total Revenue, Gigs & Rehearsals",
+        slide1Desc: "Get a full executive overview of your artistic career. Monitor monthly revenue bar charts, see total gig and rehearsal counts for the year, and manage upcoming and past events on a clean timeline.",
+        slide1Hl1Title: "Revenue Chart",
+        slide1Hl1Desc: "Consolidated revenue month by month",
+        slide1Hl2Title: "Upcoming Gigs",
+        slide1Hl2Desc: "Countdown and venue details",
+        slide1Hl3Title: "Rehearsal Logs",
+        slide1Hl3Desc: "Separate technical rehearsals from live gigs",
+        slide1Btn1: "Install on Android",
+        slide1Btn2: "Open Web Editor",
+        slide2Badge: "STAGE MANAGEMENT • INTEGRATED SCHEDULE",
+        slide2Title: "Band Gig Schedule with Instant Sharing",
+        slide2Desc: "Eliminate confusion before rehearsals and soundchecks. Register event date, venue, soundcheck time, and gig details. With one tap on \"Share Schedule\", send formatted call sheets straight to the band WhatsApp.",
+        slide2Hl1Title: "Share Schedule",
+        slide2Hl1Desc: "1-click sharing to all members",
+        slide2Hl2Title: "Soundcheck Times",
+        slide2Hl2Desc: "Soundcheck and showtime schedules",
+        slide2Hl3Title: "Monthly Folders",
+        slide2Hl3Desc: "Organized by month separators",
+        slide2Btn1: "View Stage Mode",
+        slide2Btn2: "Download App",
+        slide3Badge: "TOTAL TRANSPARENCY • CACHET & EXPENSES",
+        slide3Title: "Financial Control & Fair Member Split",
+        slide3Desc: "Ensure full financial trust after every gig. Log gross earnings, deduct production expenses (van, meals, sound tech), and track automated fair net split payouts for every bandmate and substitute player.",
+        slide3Hl1Title: "Incomes & Expenses",
+        slide3Hl1Desc: "Itemized revenues and expenses",
+        slide3Hl2Title: "Split Per Member",
+        slide3Hl2Desc: "Exact transparent payout per player",
+        slide3Hl3Title: "Event History",
+        slide3Hl3Desc: "Defined, pending, or paid status",
+        slide3Btn1: "Test in Web Editor",
+        slide3Btn2: "Get it on Google Play",
+        slide4Badge: "MUSICAL INTELLIGENCE • REPERTOIRE STYLES",
+        slide4Title: "Repertoire Metrics: Balance Music Styles",
+        slide4Desc: "Analyze your band setlist dynamics with automated visual charts. Discover your exact mix of 90s (17%), 80s (13%), Pop Rock (13%), Hard Rock (9%), and Grunge to craft captivating, high-energy live sets.",
+        slide4Hl1Title: "Exact Percentages",
+        slide4Hl1Desc: "Song counts and genre ratios",
+        slide4Hl2Title: "Decade Mapping",
+        slide4Hl2Desc: "80s, 90s, and contemporary hits",
+        slide4Hl3Title: "Live Flow Balance",
+        slide4Hl3Desc: "Keep crowds engaged without monotony",
+        slide4Btn1: "Simulate Stage Mode",
+        slide4Btn2: "Get it Free",
         pageTitle: 'BandLink • The Ultimate App & Music Social Network for Musicians, Bands & Stage',
         pageMetaDesc: 'Organize your band repertoire, discover musicians in your city, post auditions and gigs, edit chords on PC, and control stage autoscroll. 100% offline and free.',
         navFeatures: 'Features',
@@ -3871,6 +3971,66 @@ O oposto do que disse antes!
         footerColAbout: 'About App'
       },
       es: {
+        pillNetwork: "Red Musical",
+        pillDashboard: "Panel de Control",
+        pillSchedule: "Agenda",
+        pillFinances: "Finanzas",
+        pillRepertoire: "Repertorio",
+        slide0Badge: "COMUNIDAD Y OPORTUNIDADES • 100% EXCLUSIVO",
+        slide0Title: "Encuentre Músicos y Forme Bandas en su Ciudad",
+        slide0Desc: "Conéctese al instante con bajistas, bateristas, vocalistas e instrumentistas de cualquier género. Filtre ofertas por ciudad, explore estilos y postúlese con un toque en \"Me Interesa\".",
+        slide0Hl1Title: "Filtro Regional",
+        slide0Hl1Desc: "Músicos en su ciudad o en todo el país",
+        slide0Hl2Title: "Mural de Avisos",
+        slide0Hl2Desc: "Búsqueda de Bajo, Batería y Voz",
+        slide0Hl3Title: "Conexión Rápida",
+        slide0Hl3Desc: "Avisos en tiempo real y postulaciones directas",
+        slide0Btn1: "Explorar Red Musical",
+        slide0Btn2: "Descargar App Gratis",
+        slide1Badge: "PANEL DEL MÚSICO • VISIÓN ANUAL 2026",
+        slide1Title: "Control de Facturación, Conciertos y Ensayos",
+        slide1Desc: "Obtenga una visión completa de su carrera musical. Supervise gráficos mensuales de ingresos, recuento anual de shows y ensayos, y gestione eventos pasados y futuros en una línea de tiempo limpia.",
+        slide1Hl1Title: "Gráfico de Ingresos",
+        slide1Hl1Desc: "Facturación consolidada mes a mes",
+        slide1Hl2Title: "Próximos Shows",
+        slide1Hl2Desc: "Cuenta regresiva y locales de show",
+        slide1Hl3Title: "Control de Ensayos",
+        slide1Hl3Desc: "Diferencie ensayos de conciertos en vivo",
+        slide1Btn1: "Instalar en Android",
+        slide1Btn2: "Abrir Web Editor",
+        slide2Badge: "GESTIÓN DE ESCENARIO • CRONOGRAMA INTEGRADO",
+        slide2Title: "Cronograma de Conciertos con Compartido Rápido",
+        slide2Desc: "¡Elimine la confusión antes de ensayos y pruebas de sonido! Registre fecha, lugar, hora y detalles. Con un toque en \"Share Schedule\", envíe el cronograma formateado al WhatsApp de la banda.",
+        slide2Hl1Title: "Share Schedule",
+        slide2Hl1Desc: "Envío en 1 clic para todo el equipo",
+        slide2Hl2Title: "Horarios de Sonido",
+        slide2Hl2Desc: "Prueba de sonido e inicio del concierto",
+        slide2Hl3Title: "Carpetas por Mes",
+        slide2Hl3Desc: "Separadores organizados por mes",
+        slide2Btn1: "Ver Modo Escenario",
+        slide2Btn2: "Descargar App",
+        slide3Badge: "TRANSPARENCIA TOTAL • CACHÉ Y GASTOS",
+        slide3Title: "Control Financiero y División Justa por Músico",
+        slide3Desc: "Elimine dudas al liquidar el caché del show. Registre ingresos brutos, deduzca gastos operativos y supervise la división neta justa para cada integrante y sustituto.",
+        slide3Hl1Title: "Incomes & Expenses",
+        slide3Hl1Desc: "Ingresos y gastos detallados",
+        slide3Hl2Title: "Caché por Miembro",
+        slide3Hl2Desc: "División exacta por músico",
+        slide3Hl3Title: "Historial por Evento",
+        slide3Hl3Desc: "Estado definido, pendiente o pagado",
+        slide3Btn1: "Probar en Web Editor",
+        slide3Btn2: "Bajar en Google Play",
+        slide4Badge: "INTELIGENCIA MUSICAL • REPERTOIRE STYLES",
+        slide4Title: "Métricas de Repertorio: Balance de Estilos",
+        slide4Desc: "Descubra la identidad sonora de su banda con gráficos automáticos. Conozca su mezcla exacta de 90s (17%), 80s (13%), Pop Rock (13%), Hard Rock (9%) y Grunge para diseñar setlists cautivadores.",
+        slide4Hl1Title: "Porcentajes Exactos",
+        slide4Hl1Desc: "Conteo y proporción de cada estilo",
+        slide4Hl2Title: "Mapeo de Décadas",
+        slide4Hl2Desc: "Éxitos de los 80, 90 y contemporáneos",
+        slide4Hl3Title: "Equilibrio del Show",
+        slide4Hl3Desc: "Evite monotonía sin repetir estilos",
+        slide4Btn1: "Simular Modo Escenario",
+        slide4Btn2: "Obtener Gratis",
         pageTitle: 'BandLink • La App y Red Social Definitiva para Músicos, Bandas y Escenario',
         pageMetaDesc: 'Organice el repertorio de su banda, encuentre músicos en su ciudad, publique audiciones y conciertos, edite acordes en PC y controle el autoscroll en vivo. 100% offline y gratis.',
         navFeatures: 'Funciones',
@@ -4207,10 +4367,7 @@ O oposto do que disse antes!
       });
 
       // 5. Update numerical step counter and progress bar
-      const counterEl = document.getElementById('currentSlideNumber');
-      if (counterEl) {
-        counterEl.textContent = String(current + 1).padStart(2, '0');
-      }
+      
 
       const barEl = document.getElementById('carouselProgressBar');
       if (barEl) {
