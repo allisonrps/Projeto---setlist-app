@@ -11,7 +11,8 @@ import {
   Platform,
   Share,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
@@ -206,6 +207,7 @@ export default function BandProfileModal({
   // Musician Profile modal
   const [selectedMusicianProfile, setSelectedMusicianProfile] = useState(null);
   const [showMusicianProfileModal, setShowMusicianProfileModal] = useState(false);
+  const [showSocialMenu, setShowSocialMenu] = useState(false);
 
   // Year and month expansion for events
   const currentYearNum = new Date().getFullYear();
@@ -433,6 +435,31 @@ export default function BandProfileModal({
 
   const styleBreakdown = getStyleBreakdown();
 
+  // Redes Sociais e Links Externos da Banda
+  let parsedSocialLinks = {};
+  if (band.links) {
+    try {
+      parsedSocialLinks = typeof band.links === 'string' ? JSON.parse(band.links) : band.links;
+    } catch (e) {}
+  }
+  const bandInstagram = band.instagram || parsedSocialLinks.instagram || '';
+  const bandYoutube = band.youtube || parsedSocialLinks.youtube || '';
+  const bandSpotify = band.spotify || parsedSocialLinks.spotify || '';
+  const bandTiktok = band.tiktok || parsedSocialLinks.tiktok || '';
+  const bandFacebook = band.facebook || parsedSocialLinks.facebook || '';
+  const hasAnySocialLink = !!(bandInstagram || bandYoutube || bandSpotify || bandTiktok || bandFacebook);
+
+  const handleOpenExternalSocialLink = async (rawUrl, prefix = '') => {
+    if (!rawUrl) return;
+    let url = rawUrl.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = prefix ? `${prefix}${url}` : `https://${url}`;
+    }
+    try {
+      await Linking.openURL(url);
+    } catch (e) {}
+  };
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
@@ -489,18 +516,80 @@ export default function BandProfileModal({
               </Pressable>
 
               <View style={styles.topRowActions}>
-                <Pressable
-                  style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]}
-                  onPress={handleShare}
-                  hitSlop={8}
-                  accessibilityLabel="Compartilhar"
-                >
-                  <Ionicons name="share-social-outline" size={18} color="#ffffff" />
-                </Pressable>
+                {showSocialMenu ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {bandInstagram ? (
+                      <Pressable
+                        style={[styles.headerIconButton, { backgroundColor: '#E1306C', borderColor: '#ffffff', borderWidth: 1 }]}
+                        onPress={() => handleOpenExternalSocialLink(bandInstagram, 'https://instagram.com/')}
+                      >
+                        <Ionicons name="logo-instagram" size={17} color="#ffffff" />
+                      </Pressable>
+                    ) : null}
+                    {bandYoutube ? (
+                      <Pressable
+                        style={[styles.headerIconButton, { backgroundColor: '#FF0000', borderColor: '#ffffff', borderWidth: 1 }]}
+                        onPress={() => handleOpenExternalSocialLink(bandYoutube, 'https://youtube.com/')}
+                      >
+                        <Ionicons name="logo-youtube" size={17} color="#ffffff" />
+                      </Pressable>
+                    ) : null}
+                    {bandSpotify ? (
+                      <Pressable
+                        style={[styles.headerIconButton, { backgroundColor: '#1DB954', borderColor: '#ffffff', borderWidth: 1 }]}
+                        onPress={() => handleOpenExternalSocialLink(bandSpotify, 'https://open.spotify.com/artist/')}
+                      >
+                        <Ionicons name="musical-notes" size={17} color="#ffffff" />
+                      </Pressable>
+                    ) : null}
+                    {bandTiktok ? (
+                      <Pressable
+                        style={[styles.headerIconButton, { backgroundColor: '#000000', borderColor: '#ffffff', borderWidth: 1 }]}
+                        onPress={() => handleOpenExternalSocialLink(bandTiktok, 'https://tiktok.com/@')}
+                      >
+                        <Ionicons name="logo-tiktok" size={17} color="#ffffff" />
+                      </Pressable>
+                    ) : null}
+                    {bandFacebook ? (
+                      <Pressable
+                        style={[styles.headerIconButton, { backgroundColor: '#1877F2', borderColor: '#ffffff', borderWidth: 1 }]}
+                        onPress={() => handleOpenExternalSocialLink(bandFacebook, 'https://facebook.com/')}
+                      >
+                        <Ionicons name="logo-facebook" size={17} color="#ffffff" />
+                      </Pressable>
+                    ) : null}
+                    <Pressable
+                      style={[styles.headerIconButton, { backgroundColor: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.4)', borderWidth: 1 }]}
+                      onPress={() => setShowSocialMenu(false)}
+                    >
+                      <Ionicons name="close" size={17} color="#ffffff" />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {hasAnySocialLink && (
+                      <Pressable
+                        style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.25)', borderWidth: 1 }]}
+                        onPress={() => setShowSocialMenu(true)}
+                        accessibilityLabel={t('socialNetworks') || 'Redes Sociais'}
+                      >
+                        <Ionicons name="link-outline" size={18} color="#ffffff" />
+                      </Pressable>
+                    )}
+                    <Pressable
+                      style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]}
+                      onPress={handleShare}
+                      hitSlop={8}
+                      accessibilityLabel="Compartilhar"
+                    >
+                      <Ionicons name="share-social-outline" size={18} color="#ffffff" />
+                    </Pressable>
+                  </View>
+                )}
               </View>
             </View>
 
-            {/* NOME DA BANDA SOBRE O DEGRADÊ (base do header) */}
+            {/* NOME DA BANDA SOBRE O DEGRADÊ (base do header - centralizado) */}
             <View style={styles.headerBandInfoBottom}>
               {!bandImage && (
                 <Text style={styles.headerInitialsBig}>{getBandInitials(bandName)}</Text>
@@ -509,9 +598,9 @@ export default function BandProfileModal({
 
               {/* 2ª Linha: Cidade, Estado, País */}
               {(bandCity || bandState || bandCountry) && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4 }}>
                   <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.9)" />
-                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600' }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600', textAlign: 'center' }}>
                     {[bandCity, bandState].filter(Boolean).join(', ')
                       ? `${[bandCity, bandState].filter(Boolean).join(', ')}${bandCountry ? ` • ${bandCountry}` : ''}`
                       : bandCountry}
@@ -520,7 +609,7 @@ export default function BandProfileModal({
               )}
 
               {/* 3ª Linha: Pílulas Cover / Autoral + Tags de Estilo */}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 6 }}>
                 {isCover && (
                   <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
                     <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalCover') || 'Cover'}</Text>
@@ -1041,7 +1130,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     paddingTop: 40,
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerInitialsBig: {
     fontSize: 28,
@@ -1049,6 +1139,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 4,
     opacity: 0.9,
+    textAlign: 'center',
   },
   headerBandNameText: {
     fontSize: 28,
@@ -1057,6 +1148,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+    textAlign: 'center',
   },
   tabBarContainer: {
     borderBottomWidth: 1,

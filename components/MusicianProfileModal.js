@@ -233,6 +233,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
   const [selectedBandId, setSelectedBandId] = useState(null);
   const [inviteMessage, setInviteMessage] = useState('');
   const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [expandedPastMonths, setExpandedPastMonths] = useState([]);
 
   useEffect(() => {
     if (visible) {
@@ -430,8 +431,6 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
       : (Array.isArray(musician.shows) && musician.shows.length > 0)
         ? musician.shows
         : [];
-
-  const [expandedPastMonths, setExpandedPastMonths] = useState([]);
 
   const handleOpenLink = async (url) => {
     if (!url) return;

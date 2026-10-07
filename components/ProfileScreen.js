@@ -2894,6 +2894,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           setShowPublicPage(false);
           setMyPublicProfile(null);
         }}
+        onOpenBandProfile={onOpenBandProfile}
       />
     </View>
   );
