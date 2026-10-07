@@ -22,103 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Ionicons -->
-  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js">
-    
-    // Smartphone Real Screen Carousel with Lateral Text Transition
-    let currentPhoneSlideIndex = 0;
-    const totalPhoneSlides = 5;
-    let phoneAutoPlayTimer = null;
-
-    function goToPhoneSlide(index) {
-      const prevIndex = currentPhoneSlideIndex;
-      currentPhoneSlideIndex = (index + totalPhoneSlides) % totalPhoneSlides;
-      
-      // Update phone screen slides (left column)
-      document.querySelectorAll('.phone-slide').forEach(slide => {
-        const slideIdx = parseInt(slide.getAttribute('data-slide'), 10);
-        if (slideIdx === currentPhoneSlideIndex) {
-          slide.classList.add('active');
-        } else {
-          slide.classList.remove('active');
-        }
-      });
-
-      // Update phone indicator dots
-      document.querySelectorAll('.phone-dot').forEach((dot, idx) => {
-        if (idx === currentPhoneSlideIndex) {
-          dot.classList.add('active');
-        } else {
-          dot.classList.remove('active');
-        }
-      });
-
-      // Update lateral text slides (right column)
-      document.querySelectorAll('.phone-text-slide').forEach(textSlide => {
-        const textIdx = parseInt(textSlide.getAttribute('data-text-slide'), 10);
-        textSlide.classList.remove('active', 'exit-left');
-        
-        if (textIdx === currentPhoneSlideIndex) {
-          textSlide.classList.add('active');
-        } else if (textIdx === prevIndex) {
-          textSlide.classList.add('exit-left');
-        }
-      });
-
-      // Update scrub navigation pills
-      document.querySelectorAll('.scrub-pill').forEach(pill => {
-        const pillIdx = parseInt(pill.getAttribute('data-pill'), 10);
-        if (pillIdx === currentPhoneSlideIndex) {
-          pill.classList.add('active');
-        } else {
-          pill.classList.remove('active');
-        }
-      });
-
-      // Update step counter and progress track
-      const counterEl = document.getElementById('currentSlideNumber');
-      if (counterEl) {
-        counterEl.textContent = String(currentPhoneSlideIndex + 1).padStart(2, '0');
-      }
-
-      const barEl = document.getElementById('carouselProgressBar');
-      if (barEl) {
-        const pct = ((currentPhoneSlideIndex + 1) / totalPhoneSlides) * 100;
-        barEl.style.width = pct + '%';
-      }
-
-      restartPhoneTimer();
-    }
-
-    function movePhoneSlide(direction) {
-      goToPhoneSlide(currentPhoneSlideIndex + direction);
-    }
-
-    function startPhoneTimer() {
-      if (phoneAutoPlayTimer) clearInterval(phoneAutoPlayTimer);
-      phoneAutoPlayTimer = setInterval(() => {
-        goToPhoneSlide(currentPhoneSlideIndex + 1);
-      }, 5500);
-    }
-
-    function restartPhoneTimer() {
-      if (phoneAutoPlayTimer) clearInterval(phoneAutoPlayTimer);
-      startPhoneTimer();
-    }
-
-    // Pause on hover
-    const phoneShowcaseBox = document.querySelector('.phone-showcase-container');
-    if (phoneShowcaseBox) {
-      phoneShowcaseBox.addEventListener('mouseenter', () => {
-        if (phoneAutoPlayTimer) clearInterval(phoneAutoPlayTimer);
-      });
-      phoneShowcaseBox.addEventListener('mouseleave', () => {
-        startPhoneTimer();
-      });
-    }
-
-    startPhoneTimer();
-  
-  </script>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
   <style>
@@ -1971,330 +1875,37 @@
     /* ==========================================================
        REAL SMARTPHONE CAROUSEL WITH LATERAL TEXT TRANSITIONS
        ========================================================== */
-    .hero-phone-showcase {
-      margin-top: 40px;
+    /* ==========================================================
+       FULLWIDTH EXPANDED SHOWCASE (EDGES OF THE PAGE)
+       ========================================================== */
+    .showcase-fullwidth-wrapper {
+      width: 100%;
+      max-width: 1560px;
+      margin: 40px auto 0 auto;
+      padding: 0 32px;
       position: relative;
       z-index: 3;
+    }
+
+    .hero-phone-showcase {
+      margin-top: 0;
+      position: relative;
+      z-index: 3;
+      width: 100%;
     }
 
     .phone-showcase-container {
       display: grid;
       grid-template-columns: 360px 1fr;
-      gap: 50px;
+      gap: 65px;
       align-items: center;
-      background: rgba(10, 14, 22, 0.85);
+      background: rgba(10, 14, 22, 0.92);
       border: 1px solid var(--border-medium);
       border-radius: var(--radius-xl);
-      padding: 44px 48px;
-      backdrop-filter: blur(28px);
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), 0 0 50px rgba(14, 165, 233, 0.12);
+      padding: 50px 60px;
+      backdrop-filter: blur(32px);
+      box-shadow: 0 35px 100px rgba(0, 0, 0, 0.85), 0 0 70px rgba(14, 165, 233, 0.16);
       position: relative;
-      overflow: hidden;
-    }
-
-    /* Fixed Musical Backdrop Behind Container */
-    .musical-fixed-backdrop {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .musical-ambient-mesh {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 15% 40%, rgba(14, 165, 233, 0.12), transparent 55%),
-                  radial-gradient(circle at 85% 65%, rgba(139, 92, 246, 0.14), transparent 55%);
-    }
-
-    /* Stylized Fixed Wave Lines */
-    .music-wave-line {
-      position: absolute;
-      width: 140%;
-      height: 1px;
-      left: -20%;
-      background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3), transparent);
-    }
-
-    .wave-1 { top: 22%; transform: rotate(-2deg); }
-    .wave-2 { top: 50%; transform: rotate(1deg); opacity: 0.18; }
-    .wave-3 { top: 78%; transform: rotate(-1.5deg); opacity: 0.22; }
-
-    /* Equalizer Bars Glow */
-    .equalizer-bars-glow {
-      position: absolute;
-      right: 32px;
-      bottom: 24px;
-      display: flex;
-      align-items: flex-end;
-      gap: 4px;
-      height: 48px;
-      opacity: 0.22;
-    }
-
-    .eq-bar {
-      width: 3px;
-      background: linear-gradient(to top, var(--cyan), var(--violet));
-      border-radius: 2px;
-      animation: eqPulse 2s ease-in-out infinite alternate;
-    }
-
-    .bar-1 { height: 35%; animation-delay: 0.1s; }
-    .bar-2 { height: 75%; animation-delay: 0.4s; }
-    .bar-3 { height: 50%; animation-delay: 0.2s; }
-    .bar-4 { height: 95%; animation-delay: 0.6s; }
-    .bar-5 { height: 40%; animation-delay: 0.3s; }
-    .bar-6 { height: 85%; animation-delay: 0.5s; }
-    .bar-7 { height: 60%; animation-delay: 0.25s; }
-    .bar-8 { height: 90%; animation-delay: 0.7s; }
-    .bar-9 { height: 45%; animation-delay: 0.15s; }
-    .bar-10 { height: 70%; animation-delay: 0.45s; }
-
-    @keyframes eqPulse {
-      0% { transform: scaleY(0.4); }
-      100% { transform: scaleY(1.1); }
-    }
-
-    /* Left Col: Smartphone Mockup Frame */
-    .phone-mockup-col {
-      position: relative;
-      z-index: 2;
-    }
-
-    .phone-mockup-wrapper {
-      display: flex;
-      justify-content: center;
-      position: relative;
-    }
-
-    .phone-device-chassis {
-      width: 320px;
-      height: 650px;
-      background: #0b0f17;
-      border: 11px solid #1a2232;
-      border-radius: 48px;
-      position: relative;
-      box-shadow: 
-        0 25px 65px rgba(0, 0, 0, 0.9),
-        0 0 45px rgba(14, 165, 233, 0.25),
-        inset 0 0 10px rgba(0, 0, 0, 0.8);
-      outline: 2px solid rgba(255, 255, 255, 0.12);
-      outline-offset: -2px;
-    }
-
-    .phone-btn-power {
-      position: absolute;
-      right: -14px;
-      top: 140px;
-      width: 4px;
-      height: 55px;
-      background: #2d3748;
-      border-radius: 0 3px 3px 0;
-    }
-
-    .phone-btn-volume-up {
-      position: absolute;
-      left: -14px;
-      top: 110px;
-      width: 4px;
-      height: 48px;
-      background: #2d3748;
-      border-radius: 3px 0 0 3px;
-    }
-
-    .phone-btn-volume-down {
-      position: absolute;
-      left: -14px;
-      top: 170px;
-      width: 4px;
-      height: 48px;
-      background: #2d3748;
-      border-radius: 3px 0 0 3px;
-    }
-
-    .phone-device-screen {
-      width: 100%;
-      height: 100%;
-      border-radius: 37px;
-      overflow: hidden;
-      position: relative;
-      background: #000000;
-    }
-
-    .phone-dynamic-island {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 96px;
-      height: 22px;
-      background: #000000;
-      border-radius: 20px;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .island-camera {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      box-shadow: inset 0 0 4px #0284c7;
-    }
-
-    .phone-screens-slider {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-
-    .phone-slide {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transform: scale(0.96);
-      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: none;
-    }
-
-    .phone-slide.active {
-      opacity: 1;
-      transform: scale(1);
-      pointer-events: auto;
-      z-index: 5;
-    }
-
-    .phone-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top center;
-      display: block;
-    }
-
-    .phone-nav-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(6, 8, 13, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      z-index: 25;
-      backdrop-filter: blur(8px);
-      transition: var(--transition-smooth);
-    }
-
-    .phone-nav-arrow:hover {
-      background: var(--cyan);
-      border-color: var(--cyan);
-      box-shadow: 0 0 16px rgba(14, 165, 233, 0.6);
-    }
-
-    .arrow-prev { left: 8px; }
-    .arrow-next { right: 8px; }
-
-    .phone-screen-dots {
-      position: absolute;
-      bottom: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 7px;
-      z-index: 25;
-      background: rgba(0, 0, 0, 0.65);
-      padding: 5px 12px;
-      border-radius: var(--radius-full);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .phone-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      cursor: pointer;
-      transition: var(--transition-smooth);
-    }
-
-    .phone-dot.active {
-      width: 22px;
-      border-radius: 6px;
-      background: var(--cyan);
-      box-shadow: 0 0 10px var(--cyan);
-    }
-
-    /* RIGHT COL: Dynamic Lateral Text Viewport */
-    .phone-text-stage-col {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 580px;
-      text-align: left;
-    }
-
-    /* Scrub Navigation Pills */
-    .feature-scrub-nav {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .scrub-pill {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: var(--transition-smooth);
-    }
-
-    .scrub-pill:hover {
-      background: rgba(255, 255, 255, 0.09);
-      border-color: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    .scrub-pill.active {
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(139, 92, 246, 0.2));
-      border-color: var(--cyan);
-      color: #fff;
-      box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
-    }
-
-    .scrub-pill ion-icon {
-      font-size: 14px;
-    }
-
-    /* Lateral Transition Text Viewport Stage */
-    .lateral-text-viewport {
-      position: relative;
-      min-height: 440px;
       overflow: hidden;
       width: 100%;
     }
@@ -2629,8 +2240,10 @@
         <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> <span data-i18n="trustNetwork">Conexão Real entre Músicos</span></div>
         <div class="trust-item"><ion-icon name="checkmark-circle"></ion-icon> <span data-i18n="trustSync">Sincronização QR &amp; PIN</span></div>
       </div>
+    </div> <!-- Close 900px hero-content -->
 
-      
+    <!-- Expanded Full-Width Showcase Container (Edges of page) -->
+    <div class="showcase-fullwidth-wrapper">
       <!-- Real Smartphone App Features Showcase Carousel with Lateral Text Transition -->
       <div class="hero-phone-showcase reveal">
         
@@ -4223,6 +3836,115 @@ O oposto do que disse antes!
           .catch(() => {});
       })();
     });
+  
+
+    // ==========================================================
+    // SMARTPHONE APP REAL SCREEN CAROUSEL (GLOBAL & ROBUST)
+    // ==========================================================
+    window.currentPhoneSlideIndex = 0;
+    window.totalPhoneSlides = 5;
+    window.phoneAutoPlayTimer = null;
+
+    window.goToPhoneSlide = function(index) {
+      const prevIndex = window.currentPhoneSlideIndex;
+      window.currentPhoneSlideIndex = (index + window.totalPhoneSlides) % window.totalPhoneSlides;
+      const current = window.currentPhoneSlideIndex;
+
+      // 1. Update left phone screenshots
+      const phoneSlides = document.querySelectorAll('.phone-slide');
+      phoneSlides.forEach(slide => {
+        const slideIdx = parseInt(slide.getAttribute('data-slide'), 10);
+        if (slideIdx === current) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      // 2. Update indicator dots
+      const dots = document.querySelectorAll('.phone-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === current) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+
+      // 3. Update lateral text slides with smooth side slide-in
+      const textSlides = document.querySelectorAll('.phone-text-slide');
+      textSlides.forEach(textSlide => {
+        const textIdx = parseInt(textSlide.getAttribute('data-text-slide'), 10);
+        textSlide.classList.remove('active', 'exit-left');
+
+        if (textIdx === current) {
+          textSlide.classList.add('active');
+        } else if (textIdx === prevIndex) {
+          textSlide.classList.add('exit-left');
+        }
+      });
+
+      // 4. Update scrub pills
+      const pills = document.querySelectorAll('.scrub-pill');
+      pills.forEach(pill => {
+        const pillIdx = parseInt(pill.getAttribute('data-pill'), 10);
+        if (pillIdx === current) {
+          pill.classList.add('active');
+        } else {
+          pill.classList.remove('active');
+        }
+      });
+
+      // 5. Update numerical step counter and progress bar
+      const counterEl = document.getElementById('currentSlideNumber');
+      if (counterEl) {
+        counterEl.textContent = String(current + 1).padStart(2, '0');
+      }
+
+      const barEl = document.getElementById('carouselProgressBar');
+      if (barEl) {
+        const pct = ((current + 1) / window.totalPhoneSlides) * 100;
+        barEl.style.width = pct + '%';
+      }
+
+      window.restartPhoneTimer();
+    };
+
+    window.movePhoneSlide = function(direction) {
+      window.goToPhoneSlide(window.currentPhoneSlideIndex + direction);
+    };
+
+    window.startPhoneTimer = function() {
+      if (window.phoneAutoPlayTimer) clearInterval(window.phoneAutoPlayTimer);
+      window.phoneAutoPlayTimer = setInterval(function() {
+        window.goToPhoneSlide(window.currentPhoneSlideIndex + 1);
+      }, 4800);
+    };
+
+    window.restartPhoneTimer = function() {
+      if (window.phoneAutoPlayTimer) clearInterval(window.phoneAutoPlayTimer);
+      window.startPhoneTimer();
+    };
+
+    // Attach listeners on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize first slide state
+      window.goToPhoneSlide(0);
+
+      // Pause on hover
+      const container = document.querySelector('.phone-showcase-container');
+      if (container) {
+        container.addEventListener('mouseenter', function() {
+          if (window.phoneAutoPlayTimer) clearInterval(window.phoneAutoPlayTimer);
+        });
+        container.addEventListener('mouseleave', function() {
+          window.startPhoneTimer();
+        });
+      }
+
+      window.startPhoneTimer();
+    });
+  
   </script>
 
 </body>
