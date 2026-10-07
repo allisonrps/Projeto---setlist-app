@@ -70,27 +70,104 @@ const getMonthInfo = (dateStr, lang = 'pt') => {
   return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
 };
 
-const getFormattedDateBadge = (dateStr, lang = 'pt') => {
-  if (!dateStr || !dateStr.trim()) return { day: '--', month: '---' };
-  const clean = dateStr.trim();
-  let day = '';
-  let monthNum = 0;
-
+const parseDateForSort = (dateStr) => {
+  if (!dateStr) return 0;
+  const clean = String(dateStr).split(' • ')[0].trim();
   if (clean.includes('-')) {
     const parts = clean.split('-');
     if (parts.length === 3) {
-      day = parseInt(parts[2], 10);
-      monthNum = parseInt(parts[1], 10) - 1;
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      } else {
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
     }
   } else if (clean.includes('/')) {
     const parts = clean.split('/');
     if (parts.length === 3) {
-      day = parseInt(parts[0], 10);
-      monthNum = parseInt(parts[1], 10) - 1;
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      } else {
+        const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+        return new Date(parseInt(year, 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
+    }
+  }
+  const d = new Date(clean);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+};
+
+const isFutureDate = (dateStr) => {
+  if (!dateStr) return false;
+  const clean = String(dateStr).split(' • ')[0].trim();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dmyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
+  const matchDmy = clean.match(dmyRegex);
+  if (matchDmy) {
+    const day = parseInt(matchDmy[1], 10);
+    const month = parseInt(matchDmy[2], 10) - 1;
+    let year = parseInt(matchDmy[3], 10);
+    if (year < 100) year += 2000;
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    return parsedDate >= today;
+  }
+
+  const ymdRegex = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/;
+  const matchYmd = clean.match(ymdRegex);
+  if (matchYmd) {
+    const year = parseInt(matchYmd[1], 10);
+    const month = parseInt(matchYmd[2], 10) - 1;
+    const day = parseInt(matchYmd[3], 10);
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    return parsedDate >= today;
+  }
+
+  try {
+    const d = new Date(clean);
+    if (!isNaN(d.getTime())) {
+      d.setHours(23, 59, 59);
+      return d >= today;
+    }
+  } catch (e) {}
+
+  return false;
+};
+
+const getFormattedDateBadge = (dateStr, lang = 'pt') => {
+  if (!dateStr || !String(dateStr).trim()) return { day: '--', month: '---' };
+  const clean = String(dateStr).split(' • ')[0].trim();
+  let day = '';
+  let monthNum = -1;
+
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        day = parseInt(parts[2], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        day = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        day = parseInt(parts[2], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        day = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
     }
   }
 
-  if (!day) return { day: '--', month: '---' };
+  if (!day || isNaN(day) || monthNum < 0 || monthNum > 11) {
+    return { day: '--', month: '---' };
+  }
 
   const monthsPt = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
   const monthsEn = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -176,7 +253,9 @@ export default function BandProfileModal({
 
         try {
           const allSetlists = await setlistService.getAll();
-          loadedSetlists = (allSetlists || []).filter(s => s.myBandId === bandIdNum && s.date && (s.type === 'show' || !s.type));
+          loadedSetlists = (allSetlists || [])
+            .filter(s => s.myBandId === bandIdNum && s.date && (s.type === 'show' || !s.type))
+            .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
         } catch (e) {}
       } else {
         // Objeto de convite ou mock
@@ -746,7 +825,24 @@ export default function BandProfileModal({
                 </View>
               ) : (
                 (() => {
-                  const filteredEvents = bandSetlists.filter(s => getMonthInfo(s.date, language).year === selectedEventYear);
+                  const filteredEvents = bandSetlists
+                    .filter(s => getMonthInfo(s.date, language).year === selectedEventYear)
+                    .slice()
+                    .sort((a, b) => {
+                      const isCurrentYear = selectedEventYear === currentYearNum;
+                      if (isCurrentYear) {
+                        const aFuture = isFutureDate(a.date);
+                        const bFuture = isFutureDate(b.date);
+                        if (aFuture && !bFuture) return -1;
+                        if (!aFuture && bFuture) return 1;
+                        if (aFuture && bFuture) return parseDateForSort(a.date) - parseDateForSort(b.date);
+                        return parseDateForSort(b.date) - parseDateForSort(a.date);
+                      }
+                      if (selectedEventYear > currentYearNum) {
+                        return parseDateForSort(a.date) - parseDateForSort(b.date);
+                      }
+                      return parseDateForSort(b.date) - parseDateForSort(a.date);
+                    });
                   if (filteredEvents.length === 0) {
                     return (
                       <View style={{ paddingVertical: 14, alignItems: 'center' }}>
@@ -816,6 +912,12 @@ export default function BandProfileModal({
                                 {setlist.local ? (
                                   <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
                                     📍 {setlist.local}
+                                  </Text>
+                                ) : null}
+
+                                {setlist.time ? (
+                                  <Text style={[styles.eventLocalText, { color: colors.primary, fontWeight: '700' }]} numberOfLines={1}>
+                                    ⏰ {setlist.time}
                                   </Text>
                                 ) : null}
                               </View>

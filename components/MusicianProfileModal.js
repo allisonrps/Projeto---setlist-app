@@ -13,7 +13,8 @@ import {
   Share,
   Alert,
   TextInput,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  LayoutAnimation
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
@@ -26,6 +27,155 @@ const getBandInitials = (name) => {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
+const parseDateForSort = (dateStr) => {
+  if (!dateStr) return 0;
+  const clean = String(dateStr).split(' • ')[0].trim();
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      } else {
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      } else {
+        const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+        return new Date(parseInt(year, 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
+    }
+  }
+  const d = new Date(clean);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+};
+
+const isFutureDate = (dateStr) => {
+  if (!dateStr) return false;
+  const clean = String(dateStr).split(' • ')[0].trim();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dmyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
+  const matchDmy = clean.match(dmyRegex);
+  if (matchDmy) {
+    const day = parseInt(matchDmy[1], 10);
+    const month = parseInt(matchDmy[2], 10) - 1;
+    let year = parseInt(matchDmy[3], 10);
+    if (year < 100) year += 2000;
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    return parsedDate >= today;
+  }
+
+  const ymdRegex = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/;
+  const matchYmd = clean.match(ymdRegex);
+  if (matchYmd) {
+    const year = parseInt(matchYmd[1], 10);
+    const month = parseInt(matchYmd[2], 10) - 1;
+    const day = parseInt(matchYmd[3], 10);
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    return parsedDate >= today;
+  }
+
+  try {
+    const d = new Date(clean);
+    if (!isNaN(d.getTime())) {
+      d.setHours(23, 59, 59);
+      return d >= today;
+    }
+  } catch (e) {}
+
+  return false;
+};
+
+const getFormattedDateBadge = (dateStr, lang = 'pt') => {
+  if (!dateStr || !String(dateStr).trim()) return { day: '--', month: '---' };
+  const clean = String(dateStr).split(' • ')[0].trim();
+  let day = '';
+  let monthNum = -1;
+
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        day = parseInt(parts[2], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        day = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        day = parseInt(parts[2], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        day = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  }
+
+  if (!day || isNaN(day) || monthNum < 0 || monthNum > 11) {
+    return { day: '--', month: '---' };
+  }
+
+  const monthsPT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  const monthsEN = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const monthsES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
+  const months = lang === 'en' ? monthsEN : lang === 'es' ? monthsES : monthsPT;
+  return { day: String(day).padStart(2, '0'), month: months[monthNum] || '---' };
+};
+
+const getMonthYearHeader = (dateStr, lang = 'pt') => {
+  if (!dateStr || !String(dateStr).trim()) return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
+  const clean = String(dateStr).split(' • ')[0].trim();
+  let year = '';
+  let monthNum = -1;
+
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        year = parts[0];
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        year = parts[2];
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  } else if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        year = parts[0];
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    }
+  }
+
+  const monthsPt = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const monthsEs = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+  const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
+
+  if (monthNum >= 0 && monthNum < 12 && year) {
+    return `${months[monthNum]} ${year}`;
+  }
+  return lang === 'en' ? 'EVENTS' : lang === 'es' ? 'EVENTOS' : 'EVENTOS';
 };
 
 export default function MusicianProfileModal({ visible, musician, onClose, onInvite, onOpenBandProfile }) {
@@ -216,6 +366,8 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
       : (Array.isArray(musician.shows) && musician.shows.length > 0)
         ? musician.shows
         : [];
+
+  const [expandedPastMonths, setExpandedPastMonths] = useState([]);
 
   const handleOpenLink = async (url) => {
     if (!url) return;
@@ -930,79 +1082,207 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
     </View>
   );
 
-  // ── 5. AGENDA TAB (IDÊNTICO AO PROFILE SCREEN) ──
-  const renderAgendaTab = () => (
-    <View style={styles.tabContent}>
-      <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 14 }]}>{t('upcomingShowsTitle') || 'Próximos Shows'}</Text>
-      {agenda.length === 0 ? (
-        <View style={[styles.fullWidthCard, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border, alignItems: 'center', paddingVertical: 20 }]}>
-          <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
-            {t('noEventsScheduledShort') || 'Nenhum evento agendado.'}
-          </Text>
-        </View>
-      ) : (
-        agenda.map(event => {
-          const badge = (() => {
-            const raw = String(event.date || '').trim();
-            if (!raw) return { day: '15', month: 'OUT' };
-            if (raw.includes('-')) {
-              const p = raw.split('-');
-              if (p.length >= 3) {
-                const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-                const mIdx = parseInt(p[1], 10) - 1;
-                return { day: String(parseInt(p[2], 10)).padStart(2, '0'), month: months[mIdx] || 'SHOW' };
-              }
-            }
-            if (raw.includes('/')) {
-              const p = raw.split('/');
-              if (p.length === 3) {
-                const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-                const mIdx = parseInt(p[1], 10) - 1;
-                return { day: String(parseInt(p[0], 10)).padStart(2, '0'), month: months[mIdx] || 'SHOW' };
-              }
-            }
-            const parts = raw.split(' ');
-            return { day: parts[1] || '15', month: (parts[2] || 'OUT').toUpperCase() };
-          })();
+  // ── 5. AGENDA TAB (ORGANIZADA POR MÊS, EVENTO NO TOPO E PASSADAS EM SEPARADORES OCULTOS) ──
+  const renderAgendaTab = () => {
+    const rawAgenda = Array.isArray(agenda) ? agenda : [];
+    const upcomingEvents = rawAgenda
+      .filter(e => isFutureDate(e.rawDate || e.date))
+      .sort((a, b) => parseDateForSort(a.rawDate || a.date) - parseDateForSort(b.rawDate || b.date));
 
-          return (
-            <View 
-              key={event.id} 
-              style={[
-                styles.fullWidthCard, 
-                { 
-                  backgroundColor: colors.cardBackground, 
-                  borderTopColor: colors.border, 
-                  borderBottomColor: colors.border,
-                  padding: 0, 
-                  overflow: 'hidden', 
-                  flexDirection: 'row',
-                  marginBottom: 6,
-                }
-              ]}
-            >
-              <View style={{ width: 52, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.border, paddingVertical: 8 }}>
-                <Text style={{ color: colors.primary, fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase' }}>{badge.month}</Text>
-                <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '900', lineHeight: 20 }}>{badge.day}</Text>
-              </View>
-              <View style={{ flex: 1, paddingVertical: 7, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold' }} numberOfLines={1}>{event.local || event.venue || event.title || 'Local a definir'}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                    <Ionicons name="mic" size={12} color={colors.textMuted} />
-                    <Text style={{ color: colors.textMuted, fontSize: 12, marginLeft: 4 }}>{event.band || 'Banda'}</Text>
+    const pastEvents = rawAgenda
+      .filter(e => !isFutureDate(e.rawDate || e.date))
+      .sort((a, b) => parseDateForSort(b.rawDate || b.date) - parseDateForSort(a.rawDate || a.date));
+
+    const pastMonthsMap = pastEvents.reduce((acc, event) => {
+      const header = getMonthYearHeader(event.rawDate || event.date, language);
+      if (!acc[header]) acc[header] = [];
+      acc[header].push(event);
+      return acc;
+    }, {});
+
+    const renderEventCard = (event) => {
+      const badge = getFormattedDateBadge(event.rawDate || event.date, language);
+      const eventTime = event.time || (event.date && String(event.date).includes(' • ') ? String(event.date).split(' • ')[1] : '');
+      const eventTitle = event.name || event.title || event.local || 'Show';
+      const eventLocal = event.local || event.venue || '';
+      const eventBand = event.band && event.band !== eventTitle ? event.band : '';
+
+      return (
+        <View 
+          key={event.id} 
+          style={[
+            styles.fullWidthCard, 
+            { 
+              backgroundColor: colors.cardBackground, 
+              borderTopColor: colors.border, 
+              borderBottomColor: colors.border,
+              padding: 0, 
+              overflow: 'hidden', 
+              flexDirection: 'row',
+              marginBottom: 8,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }
+          ]}
+        >
+          {/* Badge de Data com Dia e Mês reais */}
+          <View style={{ width: 54, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.border, paddingVertical: 10 }}>
+            <Text style={{ color: colors.primary, fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase' }}>{badge.month}</Text>
+            <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '900', lineHeight: 20 }}>{badge.day}</Text>
+          </View>
+
+          {/* Dados: Nome do evento no topo, localização e horário abaixo */}
+          <View style={{ flex: 1, paddingVertical: 8, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold' }} numberOfLines={1}>
+                {eventTitle}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, flexWrap: 'wrap', gap: 8 }}>
+                {eventLocal ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
+                    <Ionicons name="location-outline" size={12} color={colors.textMuted} />
+                    <Text style={{ color: colors.textMuted, fontSize: 11 }} numberOfLines={1}>{eventLocal}</Text>
                   </View>
-                </View>
-                {event.logo ? (
-                  <Image source={{ uri: event.logo }} style={{ width: 34, height: 34, borderRadius: 17, marginLeft: 10 }} />
+                ) : null}
+                {eventTime ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                    <Ionicons name="time-outline" size={12} color={colors.primary} />
+                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>{eventTime}</Text>
+                  </View>
+                ) : null}
+                {eventBand ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                    <Ionicons name="mic-outline" size={12} color={colors.textMuted} />
+                    <Text style={{ color: colors.textMuted, fontSize: 11 }}>{eventBand}</Text>
+                  </View>
                 ) : null}
               </View>
             </View>
-          );
-        })
-      )}
-    </View>
-  );
+            {event.logo ? (
+              <Image source={{ uri: event.logo }} style={{ width: 34, height: 34, borderRadius: 17 }} />
+            ) : null}
+          </View>
+        </View>
+      );
+    };
+
+    let lastUpcomingHeader = null;
+
+    return (
+      <View style={styles.tabContent}>
+        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 14 }]}>
+          {t('upcomingShowsTitle') || 'Próximos Shows'}
+        </Text>
+
+        {rawAgenda.length === 0 ? (
+          <View style={[styles.fullWidthCard, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border, alignItems: 'center', paddingVertical: 20 }]}>
+            <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
+              {t('noEventsScheduledShort') || 'Nenhum evento agendado.'}
+            </Text>
+          </View>
+        ) : (
+          <>
+            {/* PRÓXIMOS EVENTOS (ORGANIZADOS COM SEPARADORES POR MÊS) */}
+            {upcomingEvents.length === 0 ? (
+              <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                <Text style={{ color: colors.textMuted, fontSize: 12, fontStyle: 'italic' }}>
+                  {t('noUpcomingEvents') || 'Nenhum evento próximo agendado.'}
+                </Text>
+              </View>
+            ) : (
+              upcomingEvents.map(event => {
+                const header = getMonthYearHeader(event.rawDate || event.date, language);
+                const showHeader = header !== lastUpcomingHeader;
+                if (showHeader) lastUpcomingHeader = header;
+
+                return (
+                  <View key={event.id}>
+                    {showHeader && (() => {
+                      const mCount = upcomingEvents.filter(e => getMonthYearHeader(e.rawDate || e.date, language) === header).length;
+                      return (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
+                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                            {header}
+                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 2 }}>
+                            <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mCount}</Text>
+                          </View>
+                          <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                        </View>
+                      );
+                    })()}
+                    {renderEventCard(event)}
+                  </View>
+                );
+              })
+            )}
+
+            {/* EVENTOS ANTERIORES (MAIS VELHAS TODAS OCULTAS NOS SEPARADORES) */}
+            {pastEvents.length > 0 && (
+              <View style={{ marginTop: 20 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <View style={{ backgroundColor: colors.primary + '15', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 1, borderWidth: 1, borderColor: colors.primary + '30' }}>
+                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: 'bold' }}>{pastEvents.length}</Text>
+                  </View>
+                  <Text style={{ fontSize: 12, fontWeight: '900', color: colors.textMuted, letterSpacing: 0.6 }}>
+                    {t('pastEvents') || 'EVENTOS ANTERIORES'}
+                  </Text>
+                </View>
+
+                {Object.keys(pastMonthsMap).map(header => {
+                  const monthEvents = pastMonthsMap[header];
+                  const isExpanded = expandedPastMonths.includes(header);
+
+                  return (
+                    <View key={header} style={{ marginBottom: 4 }}>
+                      <Pressable
+                        onPress={() => {
+                          if (Platform.OS !== 'web') {
+                            try { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); } catch (e) {}
+                          }
+                          setExpandedPastMonths(prev =>
+                            prev.includes(header) ? prev.filter(h => h !== header) : [...prev, header]
+                          );
+                        }}
+                        style={({ pressed }) => [
+                          {
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginTop: 10,
+                            marginBottom: 8,
+                            gap: 8,
+                            opacity: pressed ? 0.75 : 1,
+                          }
+                        ]}
+                      >
+                        <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                          {header}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 2 }}>
+                          <Ionicons name="calendar-outline" size={13} color={colors.primary} />
+                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{monthEvents.length}</Text>
+                        </View>
+                        <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                        <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={14} color={colors.primary} />
+                      </Pressable>
+
+                      {isExpanded && (
+                        <View style={{ marginTop: 2 }}>
+                          {monthEvents.map(event => renderEventCard(event))}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </>
+        )}
+      </View>
+    );
+  };
 
   return (
     <Modal
