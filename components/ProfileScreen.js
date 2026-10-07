@@ -250,7 +250,7 @@ const COUNTRIES = [
 
 export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const getInterestLevelLabel = (opt) => {
     switch (opt) {
       case 'Hobbie': return t('proposalHobby') || 'Hobbie';

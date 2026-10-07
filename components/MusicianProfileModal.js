@@ -181,7 +181,7 @@ const getMonthYearHeader = (dateStr, lang = 'pt') => {
 export default function MusicianProfileModal({ visible, musician, onClose, onInvite, onOpenBandProfile }) {
   const { colors } = useTheme();
   const isDark = colors.isDark;
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const getInterestLevelLabel = (opt) => {
     switch (opt) {
       case 'Hobbie': return t('proposalHobby') || 'Hobbie';
