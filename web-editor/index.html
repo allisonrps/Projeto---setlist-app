@@ -23,15 +23,17 @@
 
   <!-- Ionicons -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js">
-    // Smartphone Real Screen Carousel
+    
+    // Smartphone Real Screen Carousel with Lateral Text Transition
     let currentPhoneSlideIndex = 0;
     const totalPhoneSlides = 5;
     let phoneAutoPlayTimer = null;
 
     function goToPhoneSlide(index) {
+      const prevIndex = currentPhoneSlideIndex;
       currentPhoneSlideIndex = (index + totalPhoneSlides) % totalPhoneSlides;
       
-      // Update phone slides
+      // Update phone screen slides (left column)
       document.querySelectorAll('.phone-slide').forEach(slide => {
         const slideIdx = parseInt(slide.getAttribute('data-slide'), 10);
         if (slideIdx === currentPhoneSlideIndex) {
@@ -41,7 +43,7 @@
         }
       });
 
-      // Update dots
+      // Update phone indicator dots
       document.querySelectorAll('.phone-dot').forEach((dot, idx) => {
         if (idx === currentPhoneSlideIndex) {
           dot.classList.add('active');
@@ -50,15 +52,39 @@
         }
       });
 
-      // Update feature items
-      document.querySelectorAll('.feature-item-card').forEach(card => {
-        const cardIdx = parseInt(card.getAttribute('data-card'), 10);
-        if (cardIdx === currentPhoneSlideIndex) {
-          card.classList.add('active');
-        } else {
-          card.classList.remove('active');
+      // Update lateral text slides (right column)
+      document.querySelectorAll('.phone-text-slide').forEach(textSlide => {
+        const textIdx = parseInt(textSlide.getAttribute('data-text-slide'), 10);
+        textSlide.classList.remove('active', 'exit-left');
+        
+        if (textIdx === currentPhoneSlideIndex) {
+          textSlide.classList.add('active');
+        } else if (textIdx === prevIndex) {
+          textSlide.classList.add('exit-left');
         }
       });
+
+      // Update scrub navigation pills
+      document.querySelectorAll('.scrub-pill').forEach(pill => {
+        const pillIdx = parseInt(pill.getAttribute('data-pill'), 10);
+        if (pillIdx === currentPhoneSlideIndex) {
+          pill.classList.add('active');
+        } else {
+          pill.classList.remove('active');
+        }
+      });
+
+      // Update step counter and progress track
+      const counterEl = document.getElementById('currentSlideNumber');
+      if (counterEl) {
+        counterEl.textContent = String(currentPhoneSlideIndex + 1).padStart(2, '0');
+      }
+
+      const barEl = document.getElementById('carouselProgressBar');
+      if (barEl) {
+        const pct = ((currentPhoneSlideIndex + 1) / totalPhoneSlides) * 100;
+        barEl.style.width = pct + '%';
+      }
 
       restartPhoneTimer();
     }
@@ -80,19 +106,18 @@
     }
 
     // Pause on hover
-    const phoneContainer = document.querySelector('.phone-showcase-container');
-    if (phoneContainer) {
-      phoneContainer.addEventListener('mouseenter', () => {
+    const phoneShowcaseBox = document.querySelector('.phone-showcase-container');
+    if (phoneShowcaseBox) {
+      phoneShowcaseBox.addEventListener('mouseenter', () => {
         if (phoneAutoPlayTimer) clearInterval(phoneAutoPlayTimer);
       });
-      phoneContainer.addEventListener('mouseleave', () => {
+      phoneShowcaseBox.addEventListener('mouseleave', () => {
         startPhoneTimer();
       });
     }
 
-    // Start auto carousel on page load
     startPhoneTimer();
-
+  
   </script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
@@ -410,7 +435,7 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 72px;
+      height: 82px;
       background: rgba(6, 8, 13, 0.82);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -424,7 +449,7 @@
     header.site-header.scrolled {
       background: rgba(6, 8, 13, 0.95);
       border-bottom-color: rgba(255, 255, 255, 0.12);
-      height: 66px;
+      height: 72px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
@@ -437,9 +462,9 @@
 
     
     .brand-logo-wide {
-      height: 40px;
+      height: 52px;
       width: auto;
-      max-width: 180px;
+      max-width: 240px;
       object-fit: contain;
       border-radius: 8px;
       transition: var(--transition-smooth);
@@ -1942,8 +1967,9 @@
     }
 
     
+    
     /* ==========================================================
-       REAL SMARTPHONE CAROUSEL SHOWCASE
+       REAL SMARTPHONE CAROUSEL WITH LATERAL TEXT TRANSITIONS
        ========================================================== */
     .hero-phone-showcase {
       margin-top: 40px;
@@ -1953,19 +1979,89 @@
 
     .phone-showcase-container {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 50px;
       align-items: center;
-      background: rgba(12, 16, 26, 0.7);
+      background: rgba(10, 14, 22, 0.85);
       border: 1px solid var(--border-medium);
       border-radius: var(--radius-xl);
-      padding: 48px;
-      backdrop-filter: blur(24px);
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(14, 165, 233, 0.15);
+      padding: 44px 48px;
+      backdrop-filter: blur(28px);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), 0 0 50px rgba(14, 165, 233, 0.12);
       position: relative;
+      overflow: hidden;
     }
 
-    /* Smartphone Hardware Frame */
+    /* Fixed Musical Backdrop Behind Container */
+    .musical-fixed-backdrop {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .musical-ambient-mesh {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 15% 40%, rgba(14, 165, 233, 0.12), transparent 55%),
+                  radial-gradient(circle at 85% 65%, rgba(139, 92, 246, 0.14), transparent 55%);
+    }
+
+    /* Stylized Fixed Wave Lines */
+    .music-wave-line {
+      position: absolute;
+      width: 140%;
+      height: 1px;
+      left: -20%;
+      background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3), transparent);
+    }
+
+    .wave-1 { top: 22%; transform: rotate(-2deg); }
+    .wave-2 { top: 50%; transform: rotate(1deg); opacity: 0.18; }
+    .wave-3 { top: 78%; transform: rotate(-1.5deg); opacity: 0.22; }
+
+    /* Equalizer Bars Glow */
+    .equalizer-bars-glow {
+      position: absolute;
+      right: 32px;
+      bottom: 24px;
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 48px;
+      opacity: 0.22;
+    }
+
+    .eq-bar {
+      width: 3px;
+      background: linear-gradient(to top, var(--cyan), var(--violet));
+      border-radius: 2px;
+      animation: eqPulse 2s ease-in-out infinite alternate;
+    }
+
+    .bar-1 { height: 35%; animation-delay: 0.1s; }
+    .bar-2 { height: 75%; animation-delay: 0.4s; }
+    .bar-3 { height: 50%; animation-delay: 0.2s; }
+    .bar-4 { height: 95%; animation-delay: 0.6s; }
+    .bar-5 { height: 40%; animation-delay: 0.3s; }
+    .bar-6 { height: 85%; animation-delay: 0.5s; }
+    .bar-7 { height: 60%; animation-delay: 0.25s; }
+    .bar-8 { height: 90%; animation-delay: 0.7s; }
+    .bar-9 { height: 45%; animation-delay: 0.15s; }
+    .bar-10 { height: 70%; animation-delay: 0.45s; }
+
+    @keyframes eqPulse {
+      0% { transform: scaleY(0.4); }
+      100% { transform: scaleY(1.1); }
+    }
+
+    /* Left Col: Smartphone Mockup Frame */
+    .phone-mockup-col {
+      position: relative;
+      z-index: 2;
+    }
+
     .phone-mockup-wrapper {
       display: flex;
       justify-content: center;
@@ -1974,24 +2070,22 @@
 
     .phone-device-chassis {
       width: 320px;
-      height: 660px;
+      height: 650px;
       background: #0b0f17;
-      border: 10px solid #1a2232;
+      border: 11px solid #1a2232;
       border-radius: 48px;
       position: relative;
       box-shadow: 
-        0 25px 60px rgba(0, 0, 0, 0.9),
-        0 0 40px rgba(14, 165, 233, 0.2),
+        0 25px 65px rgba(0, 0, 0, 0.9),
+        0 0 45px rgba(14, 165, 233, 0.25),
         inset 0 0 10px rgba(0, 0, 0, 0.8);
       outline: 2px solid rgba(255, 255, 255, 0.12);
       outline-offset: -2px;
-      overflow: visible;
     }
 
-    /* Hardware Buttons */
     .phone-btn-power {
       position: absolute;
-      right: -13px;
+      right: -14px;
       top: 140px;
       width: 4px;
       height: 55px;
@@ -2001,7 +2095,7 @@
 
     .phone-btn-volume-up {
       position: absolute;
-      left: -13px;
+      left: -14px;
       top: 110px;
       width: 4px;
       height: 48px;
@@ -2011,7 +2105,7 @@
 
     .phone-btn-volume-down {
       position: absolute;
-      left: -13px;
+      left: -14px;
       top: 170px;
       width: 4px;
       height: 48px;
@@ -2019,17 +2113,15 @@
       border-radius: 3px 0 0 3px;
     }
 
-    /* Screen Viewport */
     .phone-device-screen {
       width: 100%;
       height: 100%;
-      border-radius: 38px;
+      border-radius: 37px;
       overflow: hidden;
       position: relative;
       background: #000000;
     }
 
-    /* Dynamic Island */
     .phone-dynamic-island {
       position: absolute;
       top: 10px;
@@ -2057,7 +2149,6 @@
       box-shadow: inset 0 0 4px #0284c7;
     }
 
-    /* Screen Slides */
     .phone-screens-slider {
       width: 100%;
       height: 100%;
@@ -2068,8 +2159,8 @@
       position: absolute;
       inset: 0;
       opacity: 0;
-      transform: scale(0.97);
-      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: scale(0.96);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       pointer-events: none;
     }
 
@@ -2088,7 +2179,6 @@
       display: block;
     }
 
-    /* Floating Phone Nav Arrows */
     .phone-nav-arrow {
       position: absolute;
       top: 50%;
@@ -2096,7 +2186,7 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: rgba(6, 8, 13, 0.75);
+      background: rgba(6, 8, 13, 0.78);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
       display: flex;
@@ -2112,13 +2202,12 @@
     .phone-nav-arrow:hover {
       background: var(--cyan);
       border-color: var(--cyan);
-      box-shadow: 0 0 15px rgba(14, 165, 233, 0.6);
+      box-shadow: 0 0 16px rgba(14, 165, 233, 0.6);
     }
 
     .arrow-prev { left: 8px; }
     .arrow-next { right: 8px; }
 
-    /* Indicator Dots */
     .phone-screen-dots {
       position: absolute;
       bottom: 14px;
@@ -2150,109 +2239,248 @@
       box-shadow: 0 0 10px var(--cyan);
     }
 
-    /* Feature Items List on Right */
-    .phone-features-panel {
+    /* RIGHT COL: Dynamic Lateral Text Viewport */
+    .phone-text-stage-col {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 580px;
       text-align: left;
     }
 
-    .phone-panel-title {
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-
-    .phone-panel-desc {
-      font-size: 15px;
-      color: var(--text-muted);
+    /* Scrub Navigation Pills */
+    .feature-scrub-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
       margin-bottom: 24px;
     }
 
-    .phone-feature-items {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .scrub-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-smooth);
     }
 
-    .feature-item-card {
+    .scrub-pill:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .scrub-pill.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(139, 92, 246, 0.2));
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+    }
+
+    .scrub-pill ion-icon {
+      font-size: 14px;
+    }
+
+    /* Lateral Transition Text Viewport Stage */
+    .lateral-text-viewport {
+      position: relative;
+      min-height: 440px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    /* Lateral Text Slide - Enters from edge and stops */
+    .phone-text-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: translateX(90px);
+      pointer-events: none;
+      transition: 
+        opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+        transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .phone-text-slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+      z-index: 5;
+    }
+
+    .phone-text-slide.exit-left {
+      opacity: 0;
+      transform: translateX(-70px);
+      pointer-events: none;
+    }
+
+    .text-slide-badge {
+      margin-bottom: 14px;
+      align-self: flex-start;
+    }
+
+    .text-slide-title {
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.2;
+      color: #ffffff;
+      margin-bottom: 14px;
+      letter-spacing: -0.5px;
+    }
+
+    .text-slide-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+
+    .text-slide-highlights {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .slide-highlight-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
       display: flex;
-      gap: 16px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 6px;
+      transition: var(--transition-smooth);
+    }
+
+    .slide-highlight-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .slide-highlight-card strong {
+      font-size: 13px;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .slide-highlight-card span {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .hl-icon {
+      font-size: 20px;
+    }
+
+    .hl-icon.cyan { color: var(--cyan-light); }
+    .hl-icon.violet { color: var(--violet-light); }
+    .hl-icon.emerald { color: #34d399; }
+
+    .text-slide-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Carousel Footer with Step Counter & Progress Bar */
+    .lateral-carousel-footer {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 20px;
+    }
+
+    .carousel-step-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .carousel-progress-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .carousel-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .carousel-nav-arrows-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-step-arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
       cursor: pointer;
       transition: var(--transition-smooth);
     }
 
-    .feature-item-card:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateX(4px);
-    }
-
-    .feature-item-card.active {
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(139, 92, 246, 0.12));
+    .btn-step-arrow:hover {
+      background: var(--cyan);
       border-color: var(--cyan);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 25px rgba(14, 165, 233, 0.15);
-      transform: translateX(6px);
-    }
-
-    .feature-item-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .feature-item-content {
-      flex: 1;
-    }
-
-    .feature-item-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .feature-item-top h4 {
-      font-size: 16px;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .feature-item-content p {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin: 0;
+      box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
     }
 
     @media (max-width: 1024px) {
       .phone-showcase-container {
         grid-template-columns: 1fr;
-        padding: 32px 20px;
+        padding: 36px 24px;
         gap: 36px;
       }
       .phone-mockup-wrapper {
         margin: 0 auto;
+      }
+      .text-slide-highlights {
+        grid-template-columns: 1fr;
+      }
+      .lateral-text-viewport {
+        min-height: 480px;
       }
     }
 
     @media (max-width: 640px) {
       .phone-device-chassis {
         width: 290px;
-        height: 600px;
+        height: 590px;
+      }
+      .text-slide-title {
+        font-size: 24px;
       }
     }
-
+  
     /* ==========================================================
        SCROLL REVEAL ANIMATIONS
        ========================================================== */
@@ -2403,152 +2631,358 @@
       </div>
 
       
-      <!-- Real Smartphone App Features Showcase Carousel -->
+      <!-- Real Smartphone App Features Showcase Carousel with Lateral Text Transition -->
       <div class="hero-phone-showcase reveal">
         
         <div class="phone-showcase-container">
           
-          <!-- Realistic Smartphone Device Frame -->
-          <div class="phone-mockup-wrapper">
-            <div class="phone-device-chassis">
-              <!-- Side buttons -->
-              <div class="phone-btn-power"></div>
-              <div class="phone-btn-volume-up"></div>
-              <div class="phone-btn-volume-down"></div>
-
-              <!-- Inner Bezel -->
-              <div class="phone-device-screen">
-                
-                <!-- Dynamic Island / Notch -->
-                <div class="phone-dynamic-island">
-                  <div class="island-camera"></div>
-                  <div class="island-sensor"></div>
-                </div>
-
-                <!-- Screen Slides Carousel -->
-                <div class="phone-screens-slider" id="phoneSlider">
-                  <div class="phone-slide active" data-slide="0">
-                    <img src="assets/screenshots/screen_network.jpg" alt="BandLink Rede Musical" loading="eager">
-                  </div>
-                  <div class="phone-slide" data-slide="1">
-                    <img src="assets/screenshots/screen_home.jpg" alt="BandLink Dashboard Home" loading="lazy">
-                  </div>
-                  <div class="phone-slide" data-slide="2">
-                    <img src="assets/screenshots/screen_schedule.jpg" alt="BandLink Agenda de Shows" loading="lazy">
-                  </div>
-                  <div class="phone-slide" data-slide="3">
-                    <img src="assets/screenshots/screen_finances.jpg" alt="BandLink Finanças e Cachê" loading="lazy">
-                  </div>
-                  <div class="phone-slide" data-slide="4">
-                    <img src="assets/screenshots/screen_repertoire.jpg" alt="BandLink Análise de Repertório" loading="lazy">
-                  </div>
-                </div>
-
-                <!-- Floating Screen Navigation Arrows -->
-                <button type="button" class="phone-nav-arrow arrow-prev" onclick="movePhoneSlide(-1)" aria-label="Tela Anterior">
-                  <ion-icon name="chevron-back-outline"></ion-icon>
-                </button>
-                <button type="button" class="phone-nav-arrow arrow-next" onclick="movePhoneSlide(1)" aria-label="Próxima Tela">
-                  <ion-icon name="chevron-forward-outline"></ion-icon>
-                </button>
-
-                <!-- Screen Indicator Dots -->
-                <div class="phone-screen-dots" id="phoneDots">
-                  <span class="phone-dot active" onclick="goToPhoneSlide(0)"></span>
-                  <span class="phone-dot" onclick="goToPhoneSlide(1)"></span>
-                  <span class="phone-dot" onclick="goToPhoneSlide(2)"></span>
-                  <span class="phone-dot" onclick="goToPhoneSlide(3)"></span>
-                  <span class="phone-dot" onclick="goToPhoneSlide(4)"></span>
-                </div>
-
-              </div>
+          <!-- Fixed Musical Background Atmosphere -->
+          <div class="musical-fixed-backdrop" aria-hidden="true">
+            <div class="music-wave-line wave-1"></div>
+            <div class="music-wave-line wave-2"></div>
+            <div class="music-wave-line wave-3"></div>
+            <div class="equalizer-bars-glow">
+              <span class="eq-bar bar-1"></span>
+              <span class="eq-bar bar-2"></span>
+              <span class="eq-bar bar-3"></span>
+              <span class="eq-bar bar-4"></span>
+              <span class="eq-bar bar-5"></span>
+              <span class="eq-bar bar-6"></span>
+              <span class="eq-bar bar-7"></span>
+              <span class="eq-bar bar-8"></span>
+              <span class="eq-bar bar-9"></span>
+              <span class="eq-bar bar-10"></span>
             </div>
-            
-            <!-- Atmospheric glow beneath phone -->
-            <div class="phone-shadow-glow"></div>
+            <div class="musical-ambient-mesh"></div>
           </div>
 
-          <!-- Feature Description Cards Interactive List -->
-          <div class="phone-features-panel">
+          <!-- LEFT COLUMN: Realistic Smartphone Device Frame -->
+          <div class="phone-mockup-col">
+            <div class="phone-mockup-wrapper">
+              <div class="phone-device-chassis">
+                <!-- Hardware buttons -->
+                <div class="phone-btn-power"></div>
+                <div class="phone-btn-volume-up"></div>
+                <div class="phone-btn-volume-down"></div>
+
+                <!-- Screen Viewport -->
+                <div class="phone-device-screen">
+                  
+                  <!-- Dynamic Island -->
+                  <div class="phone-dynamic-island">
+                    <div class="island-camera"></div>
+                    <div class="island-sensor"></div>
+                  </div>
+
+                  <!-- Phone Slides (Screenshots) -->
+                  <div class="phone-screens-slider" id="phoneSlider">
+                    <div class="phone-slide active" data-slide="0">
+                      <img src="assets/screenshots/screen_network.jpg" alt="BandLink Rede Musical" loading="eager">
+                    </div>
+                    <div class="phone-slide" data-slide="1">
+                      <img src="assets/screenshots/screen_home.jpg" alt="BandLink Dashboard Home" loading="lazy">
+                    </div>
+                    <div class="phone-slide" data-slide="2">
+                      <img src="assets/screenshots/screen_schedule.jpg" alt="BandLink Agenda de Shows" loading="lazy">
+                    </div>
+                    <div class="phone-slide" data-slide="3">
+                      <img src="assets/screenshots/screen_finances.jpg" alt="BandLink Finanças e Cachê" loading="lazy">
+                    </div>
+                    <div class="phone-slide" data-slide="4">
+                      <img src="assets/screenshots/screen_repertoire.jpg" alt="BandLink Análise de Repertório" loading="lazy">
+                    </div>
+                  </div>
+
+                  <!-- Floating Phone Navigation Arrows -->
+                  <button type="button" class="phone-nav-arrow arrow-prev" onclick="movePhoneSlide(-1)" aria-label="Tela Anterior">
+                    <ion-icon name="chevron-back-outline"></ion-icon>
+                  </button>
+                  <button type="button" class="phone-nav-arrow arrow-next" onclick="movePhoneSlide(1)" aria-label="Próxima Tela">
+                    <ion-icon name="chevron-forward-outline"></ion-icon>
+                  </button>
+
+                  <!-- Screen Indicator Dots -->
+                  <div class="phone-screen-dots" id="phoneDots">
+                    <span class="phone-dot active" onclick="goToPhoneSlide(0)"></span>
+                    <span class="phone-dot" onclick="goToPhoneSlide(1)"></span>
+                    <span class="phone-dot" onclick="goToPhoneSlide(2)"></span>
+                    <span class="phone-dot" onclick="goToPhoneSlide(3)"></span>
+                    <span class="phone-dot" onclick="goToPhoneSlide(4)"></span>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Atmospheric shadow/glow beneath phone -->
+              <div class="phone-shadow-glow"></div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Dynamic Lateral Text Transition Stage -->
+          <div class="phone-text-stage-col">
             
-            <div class="phone-panel-header">
-              <span class="section-tag" style="margin-bottom: 8px;" data-i18n="phoneShowcaseTag">Telas Reais do Aplicativo</span>
-              <h3 class="phone-panel-title" data-i18n="phoneShowcaseTitle">Tudo o que Você Precisa na Palma da Mão</h3>
-              <p class="phone-panel-desc" data-i18n="phoneShowcaseDesc">Navegue pelas funções reais do BandLink rodando no smartphone. Clique nos recursos para alternar a tela:</p>
+            <!-- Quick Feature Selector Nav Pills -->
+            <div class="feature-scrub-nav">
+              <button type="button" class="scrub-pill active" onclick="goToPhoneSlide(0)" data-pill="0">
+                <ion-icon name="globe-outline"></ion-icon>
+                <span>Rede Musical</span>
+              </button>
+              <button type="button" class="scrub-pill" onclick="goToPhoneSlide(1)" data-pill="1">
+                <ion-icon name="bar-chart-outline"></ion-icon>
+                <span>Dashboard</span>
+              </button>
+              <button type="button" class="scrub-pill" onclick="goToPhoneSlide(2)" data-pill="2">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>Agenda</span>
+              </button>
+              <button type="button" class="scrub-pill" onclick="goToPhoneSlide(3)" data-pill="3">
+                <ion-icon name="wallet-outline"></ion-icon>
+                <span>Finanças</span>
+              </button>
+              <button type="button" class="scrub-pill" onclick="goToPhoneSlide(4)" data-pill="4">
+                <ion-icon name="musical-notes-outline"></ion-icon>
+                <span>Repertório</span>
+              </button>
             </div>
 
-            <div class="phone-feature-items">
+            <!-- Dynamic Lateral Text Viewport -->
+            <div class="lateral-text-viewport" id="lateralTextViewport">
               
-              <!-- Item 0: Rede Musical -->
-              <div class="feature-item-card active" onclick="goToPhoneSlide(0)" data-card="0">
-                <div class="feature-item-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">
-                  <ion-icon name="globe-outline"></ion-icon>
+              <!-- Slide 0 Text: Rede Musical -->
+              <div class="phone-text-slide active" data-text-slide="0">
+                <div class="text-slide-badge pill-badge">
+                  <ion-icon name="globe"></ion-icon>
+                  <span>COMUNIDADE &amp; OPORTUNIDADES • 100% EXCLUSIVO</span>
                 </div>
-                <div class="feature-item-content">
-                  <div class="feature-item-top">
-                    <h4>Rede Musical &amp; Mural de Vagas</h4>
-                    <span class="mini-tag tag-cyan">NOVO</span>
+                <h3 class="text-slide-title">Encontre Músicos e Forme Bandas na Sua Cidade</h3>
+                <p class="text-slide-desc">
+                  Conecte-se instantaneamente com baixistas, bateristas, vocalistas e instrumentistas de qualquer estilo. Filtre vagas por cidade ou região, visualize estilos musicais e candidate-se com apenas um toque no botão <strong>"Tenho Interesse"</strong>.
+                </p>
+                <div class="text-slide-highlights">
+                  <div class="slide-highlight-card">
+                    <ion-icon name="location-outline" class="hl-icon cyan"></ion-icon>
+                    <div>
+                      <strong>Filtro Regional</strong>
+                      <span>Músicos em Franca, SP ou qualquer cidade</span>
+                    </div>
                   </div>
-                  <p>Encontre baixistas, bateristas e cantores na sua cidade. Publique audições da sua banda e receba candidaturas em segundos.</p>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="search-outline" class="hl-icon violet"></ion-icon>
+                    <div>
+                      <strong>Mural de Vagas</strong>
+                      <span>Busca ativa de Baixista, Bateria e Vocal</span>
+                    </div>
+                  </div>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="flash-outline" class="hl-icon emerald"></ion-icon>
+                    <div>
+                      <strong>Conexão Ágil</strong>
+                      <span>Avisos em tempo real e perfis detalhados</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-slide-actions">
+                  <a href="#rede-social" class="btn btn-primary btn-sm">
+                    <ion-icon name="people-outline"></ion-icon> Explorar Rede Musical
+                  </a>
+                  <a href="#download" class="btn btn-outline btn-sm">
+                    <ion-icon name="logo-google-playstore"></ion-icon> Baixar App Grátis
+                  </a>
                 </div>
               </div>
 
-              <!-- Item 1: Home Dashboard -->
-              <div class="feature-item-card" onclick="goToPhoneSlide(1)" data-card="1">
-                <div class="feature-item-icon" style="background: rgba(139, 92, 246, 0.15); color: #c084fc;">
-                  <ion-icon name="bar-chart-outline"></ion-icon>
+              <!-- Slide 1 Text: Dashboard Home -->
+              <div class="phone-text-slide" data-text-slide="1">
+                <div class="text-slide-badge pill-badge pill-badge-violet">
+                  <ion-icon name="bar-chart"></ion-icon>
+                  <span>PAINEL DO MÚSICO • VISÃO ANUAL 2026</span>
                 </div>
-                <div class="feature-item-content">
-                  <div class="feature-item-top">
-                    <h4>Dashboard Geral &amp; Faturamento</h4>
-                    <span class="mini-tag tag-violet">VISÃO ANUAL</span>
+                <h3 class="text-slide-title">Controle de Faturamento, Shows e Ensaios</h3>
+                <p class="text-slide-desc">
+                  Tenha a visão executiva completa da sua rotina artística. Acompanhe gráficos dinâmicos de faturamento mês a mês, saiba quantos shows e ensaios foram realizados no ano e gerencie todos os eventos futuros e passados em uma linha do tempo clara.
+                </p>
+                <div class="text-slide-highlights">
+                  <div class="slide-highlight-card">
+                    <ion-icon name="trending-up-outline" class="hl-icon violet"></ion-icon>
+                    <div>
+                      <strong>Gráfico de Receita</strong>
+                      <span>Faturamento acumulado por mês</span>
+                    </div>
                   </div>
-                  <p>Gráficos de receita de shows, contagem de ensaios e próximos eventos organizados com datas e locais destacados.</p>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="musical-note-outline" class="hl-icon cyan"></ion-icon>
+                    <div>
+                      <strong>Próximos Shows</strong>
+                      <span>The Rock Pub com contagem regressiva</span>
+                    </div>
+                  </div>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="headset-outline" class="hl-icon emerald"></ion-icon>
+                    <div>
+                      <strong>Separação de Ensaios</strong>
+                      <span>Diferencie ensaios técnicos de shows ao vivo</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-slide-actions">
+                  <a href="#download" class="btn btn-violet btn-sm">
+                    <ion-icon name="download-outline"></ion-icon> Instalar no Android
+                  </a>
+                  <a href="editor.html" class="btn btn-outline btn-sm">
+                    <ion-icon name="laptop-outline"></ion-icon> Acessar Web Editor
+                  </a>
                 </div>
               </div>
 
-              <!-- Item 2: Agenda de Shows -->
-              <div class="feature-item-card" onclick="goToPhoneSlide(2)" data-card="2">
-                <div class="feature-item-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
-                  <ion-icon name="calendar-outline"></ion-icon>
+              <!-- Slide 2 Text: Agenda de Shows -->
+              <div class="phone-text-slide" data-text-slide="2">
+                <div class="text-slide-badge pill-badge pill-badge-emerald">
+                  <ion-icon name="calendar"></ion-icon>
+                  <span>GESTÃO DE PALCO • CRONOGRAMA INTEGRADO</span>
                 </div>
-                <div class="feature-item-content">
-                  <div class="feature-item-top">
-                    <h4>Agenda &amp; Compartilhamento</h4>
-                    <span class="mini-tag tag-emerald">CRONOGRAMA</span>
+                <h3 class="text-slide-title">Cronograma de Shows com Compartilhamento Rápido</h3>
+                <p class="text-slide-desc">
+                  Elimine a desorganização nos ensaios e passagens de som! Cadastre o ano, local, data e horário do evento. Com um clique em <strong>"Share Schedule"</strong>, você envia o cronograma completo formatado diretamente para todos os integrantes no WhatsApp.
+                </p>
+                <div class="text-slide-highlights">
+                  <div class="slide-highlight-card">
+                    <ion-icon name="share-social-outline" class="hl-icon emerald"></ion-icon>
+                    <div>
+                      <strong>Share Schedule</strong>
+                      <span>Envio com 1 clique para toda a equipe</span>
+                    </div>
                   </div>
-                  <p>Crie shows e ensaios, cadastre locais, horários de passagem de som e compartilhe o cronograma com a banda toda.</p>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="time-outline" class="hl-icon cyan"></ion-icon>
+                    <div>
+                      <strong>Horários de Som</strong>
+                      <span>Check-in de passagem e início da apresentação</span>
+                    </div>
+                  </div>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="layers-outline" class="hl-icon violet"></ion-icon>
+                    <div>
+                      <strong>Pastas por Mês</strong>
+                      <span>Separadores de Outubro, Setembro e próximos</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-slide-actions">
+                  <a href="#modo-palco" class="btn btn-primary btn-sm">
+                    <ion-icon name="flashlight-outline"></ion-icon> Ver Modo Palco
+                  </a>
+                  <a href="#download" class="btn btn-outline btn-sm">
+                    <ion-icon name="phone-portrait-outline"></ion-icon> Baixar Aplicativo
+                  </a>
                 </div>
               </div>
 
-              <!-- Item 3: Finanças & Cachês -->
-              <div class="feature-item-card" onclick="goToPhoneSlide(3)" data-card="3">
-                <div class="feature-item-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
-                  <ion-icon name="wallet-outline"></ion-icon>
+              <!-- Slide 3 Text: Finanças & Divisão de Cachês -->
+              <div class="phone-text-slide" data-text-slide="3">
+                <div class="text-slide-badge pill-badge" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">
+                  <ion-icon name="wallet"></ion-icon>
+                  <span>TRANSPARÊNCIA TOTAL • CACHÊ &amp; DESPESAS</span>
                 </div>
-                <div class="feature-item-content">
-                  <div class="feature-item-top">
-                    <h4>Gestão Financeira &amp; Divisão de Cachê</h4>
-                    <span class="mini-tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">TRANSPARÊNCIA</span>
+                <h3 class="text-slide-title">Controle Financeiro e Divisão Justa por Integrante</h3>
+                <p class="text-slide-desc">
+                  Acabe com as dúvidas na hora de acertar o cachê do show. Cadastre o valor bruto recebido, abata despesas operacionais (transporte, alimentação, sonoplasta) e acompanhe a divisão transparente do valor individual para cada integrante e substituto.
+                </p>
+                <div class="text-slide-highlights">
+                  <div class="slide-highlight-card">
+                    <ion-icon name="cash-outline" class="hl-icon" style="color: #fbbf24;"></ion-icon>
+                    <div>
+                      <strong>Incomes &amp; Expenses</strong>
+                      <span>Entradas e despesas discriminadas</span>
+                    </div>
                   </div>
-                  <p>Controle entradas, despesas operacionais e acompanhe o valor exato a ser pago para cada membro ou substituto.</p>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="people-circle-outline" class="hl-icon cyan"></ion-icon>
+                    <div>
+                      <strong>Cachê por Membro</strong>
+                      <span>Divisão exata ($ 340,00 por músico)</span>
+                    </div>
+                  </div>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="receipt-outline" class="hl-icon emerald"></ion-icon>
+                    <div>
+                      <strong>Histórico por Evento</strong>
+                      <span>Status de cachê definido, pendente ou pago</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-slide-actions">
+                  <a href="editor.html" class="btn btn-primary btn-sm">
+                    <ion-icon name="laptop-outline"></ion-icon> Testar no Web Editor
+                  </a>
+                  <a href="#download" class="btn btn-outline btn-sm">
+                    <ion-icon name="logo-google-playstore"></ion-icon> Baixar no Google Play
+                  </a>
                 </div>
               </div>
 
-              <!-- Item 4: Análise de Repertório -->
-              <div class="feature-item-card" onclick="goToPhoneSlide(4)" data-card="4">
-                <div class="feature-item-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">
-                  <ion-icon name="musical-notes-outline"></ion-icon>
+              <!-- Slide 4 Text: Inteligência de Repertório -->
+              <div class="phone-text-slide" data-text-slide="4">
+                <div class="text-slide-badge pill-badge" style="background: rgba(244, 63, 94, 0.12); color: #fb7185; border-color: rgba(244, 63, 94, 0.3);">
+                  <ion-icon name="musical-notes"></ion-icon>
+                  <span>INTELIGÊNCIA MUSICAL • REPERTOIRE STYLES</span>
                 </div>
-                <div class="feature-item-content">
-                  <div class="feature-item-top">
-                    <h4>Métricas de Repertório &amp; Estilos</h4>
-                    <span class="mini-tag" style="background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3);">INTELIGÊNCIA</span>
+                <h3 class="text-slide-title">Métricas de Repertório: Balanceamento de Estilos</h3>
+                <p class="text-slide-desc">
+                  Descubra a identidade sonora e a proporção real das suas músicas com gráficos visuais automáticos. Saiba a distribuição de faixas dos anos 90 (17%), anos 80 (13%), Pop Rock (13%), Hard Rock (9%) e Grunge para montar setlists perfeitos e equilibrados.
+                </p>
+                <div class="text-slide-highlights">
+                  <div class="slide-highlight-card">
+                    <ion-icon name="pie-chart-outline" class="hl-icon" style="color: #fb7185;"></ion-icon>
+                    <div>
+                      <strong>Percentuais Exatos</strong>
+                      <span>Contagem e proporção de cada estilo</span>
+                    </div>
                   </div>
-                  <p>Estatísticas do repertório da banda: distribuição por décadas (80s, 90s), estilos (Rock, Pop, Indie) e balanceamento do show.</p>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="disc-outline" class="hl-icon violet"></ion-icon>
+                    <div>
+                      <strong>Mapeamento de Épocas</strong>
+                      <span>Clássicos das décadas de 80, 90 e atuais</span>
+                    </div>
+                  </div>
+                  <div class="slide-highlight-card">
+                    <ion-icon name="options-outline" class="hl-icon cyan"></ion-icon>
+                    <div>
+                      <strong>Equilíbrio do Show</strong>
+                      <span>Evite cansaço do público sem repetir estilos</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-slide-actions">
+                  <a href="#modo-palco" class="btn btn-violet btn-sm">
+                    <ion-icon name="play-outline"></ion-icon> Simular Modo Palco
+                  </a>
+                  <a href="#download" class="btn btn-outline btn-sm">
+                    <ion-icon name="logo-google-playstore"></ion-icon> Obter Grátis
+                  </a>
                 </div>
               </div>
 
+            </div>
+
+            <!-- Carousel Progress Bar & Controls Footer -->
+            <div class="lateral-carousel-footer">
+              <div class="carousel-step-counter">
+                <span id="currentSlideNumber" style="color: var(--cyan); font-weight: 800; font-size: 16px;">01</span>
+                <span style="color: var(--text-dim); margin: 0 4px;">/</span>
+                <span style="color: var(--text-dim); font-size: 14px;">05</span>
+              </div>
+              <div class="carousel-progress-track">
+                <div class="carousel-progress-fill" id="carouselProgressBar" style="width: 20%;"></div>
+              </div>
+              <div class="carousel-nav-arrows-group">
+                <button type="button" class="btn-step-arrow" onclick="movePhoneSlide(-1)" title="Anterior">
+                  <ion-icon name="arrow-back-outline"></ion-icon>
+                </button>
+                <button type="button" class="btn-step-arrow" onclick="movePhoneSlide(1)" title="Próximo">
+                  <ion-icon name="arrow-forward-outline"></ion-icon>
+                </button>
+              </div>
             </div>
 
           </div>
@@ -2556,7 +2990,6 @@
         </div>
 
       </div>
-
     </div>
   </section>
 
