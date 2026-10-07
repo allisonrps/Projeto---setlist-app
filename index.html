@@ -1097,6 +1097,157 @@
       padding-bottom: 20px;
     }
 
+    /* Brand Kit & Logos Showcase */
+    .brand-kit-section {
+      padding: 100px 0;
+      background: linear-gradient(180deg, rgba(8, 12, 20, 0.6) 0%, rgba(15, 23, 42, 0.8) 50%, rgba(8, 12, 20, 0.95) 100%);
+      position: relative;
+    }
+
+    .brand-kit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .brand-kit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .brand-kit-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(56, 189, 248, 0.2);
+    }
+
+    .brand-kit-preview {
+      width: 100%;
+      height: 200px;
+      background: #06090e;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-kit-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .brand-kit-preview.svg-preview {
+      padding: 24px;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9) 0%, #06090e 100%);
+    }
+
+    .brand-kit-preview.svg-preview.light-preview {
+      background: #f8fafc;
+    }
+
+    .brand-kit-preview.svg-preview img {
+      object-fit: contain;
+      width: 90%;
+      height: 90%;
+    }
+
+    .brand-kit-card:hover .brand-kit-preview img {
+      transform: scale(1.05);
+    }
+
+    .brand-kit-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+    }
+
+    .brand-kit-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .brand-kit-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .brand-kit-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-kit-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .brand-kit-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .brand-kit-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .brand-kit-btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--primary));
+      color: #ffffff;
+      border: none;
+    }
+
+    .brand-kit-btn-primary:hover {
+      box-shadow: 0 4px 14px var(--cyan-glow);
+      filter: brightness(1.1);
+    }
+
+    .brand-kit-btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .brand-kit-btn-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
     /* Final CTA */
     .final-cta {
       text-align: center;
@@ -1289,9 +1440,9 @@
   <header class="site-header">
     <div class="container nav-container">
       <a href="#" class="brand-link">
-        <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo" onerror="this.onerror=null; this.src='web-editor/assets/logo.png';">
+        <img src="assets/bandlink_logo_symbol.svg" alt="BandLink Logo" class="brand-logo" onerror="this.onerror=null; this.src='assets/logo.png';">
         <div class="brand-title">
-          Setlist Band Manager
+          Band<span style="color: var(--cyan);">Link</span>
           <span class="brand-badge">PRO</span>
         </div>
       </a>
@@ -1749,6 +1900,233 @@ E tão sério e selvagem...
     </div>
   </section>
 
+  <!-- Brand Kit & Logos Showcase Section -->
+  <section id="brand-kit" class="brand-kit-section">
+    <div class="container">
+      
+      <div class="section-header">
+        <span class="section-tag" data-i18n="brandKitTag">Identidade Visual &amp; Logos</span>
+        <h2 class="section-title" data-i18n="brandKitTitle">Versões Oficiais do Logo BandLink</h2>
+        <p class="section-desc" data-i18n="brandKitDesc">
+          Arquivos em alta definição, emblemas 3D, banners de palco e vetores SVG escaláveis prontos para apresentações, mídias e web.
+        </p>
+      </div>
+
+      <div class="brand-kit-grid">
+
+        <!-- 1. Emblema 3D Glassmorphic -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview">
+            <img src="assets/bandlink_logo_3d_badge.jpg" alt="BandLink 3D Glassmorphic Badge Logo" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">3D Glassmorphic Badge</span>
+                <span class="brand-kit-tag">3D Emblem</span>
+              </div>
+              <p class="brand-kit-desc">
+                Emblema tridimensional de alto impacto com palhetas neon ciano e violeta interligadas, acabamento biselado e fundo acústico.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_3d_badge.jpg" download="bandlink_logo_3d_badge.jpg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar JPG
+              </a>
+              <a href="assets/bandlink_logo_3d_badge.jpg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Horizontal Banner Glow -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview">
+            <img src="assets/bandlink_logo_horizontal.jpg" alt="BandLink Horizontal Banner Logo" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">Horizontal Banner</span>
+                <span class="brand-kit-tag">16:9 Banner</span>
+              </div>
+              <p class="brand-kit-desc">
+                Assinatura horizontal oficial para cabeçalhos de sites, apresentações corporativas, banners e capas com iluminação de estúdio.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_horizontal.jpg" download="bandlink_logo_horizontal.jpg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar JPG
+              </a>
+              <a href="assets/bandlink_logo_horizontal.jpg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. App Icon Squircle -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview">
+            <img src="assets/bandlink_logo_app_icon.jpg" alt="BandLink App Store Icon Logo" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">App Store Icon</span>
+                <span class="brand-kit-tag">Mobile 1:1</span>
+              </div>
+              <p class="brand-kit-desc">
+                Ícone padrão de loja de aplicativos móveis em formato squircle com textura dark obsidian e reflexos circulares modernos.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_app_icon.jpg" download="bandlink_logo_app_icon.jpg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar JPG
+              </a>
+              <a href="assets/bandlink_logo_app_icon.jpg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Stage Concert Hero -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview">
+            <img src="assets/bandlink_logo_stage_hero.jpg" alt="BandLink Stage Hero Concert Logo" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">Live Stage Showcase</span>
+                <span class="brand-kit-tag">Concert Hero</span>
+              </div>
+              <p class="brand-kit-desc">
+                Composição imersiva com o logo BandLink flutuando sobre palco com iluminação de show, moving lights e feixes de laser.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_stage_hero.jpg" download="bandlink_logo_stage_hero.jpg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar JPG
+              </a>
+              <a href="assets/bandlink_logo_stage_hero.jpg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Vetor SVG Horizontal -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview svg-preview">
+            <img src="assets/bandlink_logo_horizontal.svg" alt="BandLink Horizontal Vector SVG" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">SVG Horizontal</span>
+                <span class="brand-kit-tag">Vector Puro</span>
+              </div>
+              <p class="brand-kit-desc">
+                Vetor SVG oficial com símbolo e tipografia estilizada BandLink. Escala infinitamente com peso levíssimo (menos de 3KB).
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_horizontal.svg" download="bandlink_logo_horizontal.svg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar SVG
+              </a>
+              <a href="assets/bandlink_logo_horizontal.svg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Vetor SVG Símbolo -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview svg-preview">
+            <img src="assets/bandlink_logo_symbol.svg" alt="BandLink Vector Symbol SVG" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">SVG Símbolo Palhetas</span>
+                <span class="brand-kit-tag">Symbol Vector</span>
+              </div>
+              <p class="brand-kit-desc">
+                O símbolo puro de duas palhetas interligadas em gradiente neon com filtro de brilho. Ideal para avatares, favicon e badges.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_symbol.svg" download="bandlink_logo_symbol.svg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar SVG
+              </a>
+              <a href="assets/bandlink_logo_symbol.svg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Vetor SVG Branco (Dark Mode) -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview svg-preview">
+            <img src="assets/bandlink_logo_white.svg" alt="BandLink White Vector SVG" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">SVG Branco (Dark Mode)</span>
+                <span class="brand-kit-tag">Monochrome</span>
+              </div>
+              <p class="brand-kit-desc">
+                Traço branco de alta visibilidade ideal para aplicações sobre fundos fotográficos escuros, vídeos e camisetas.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_white.svg" download="bandlink_logo_white.svg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar SVG
+              </a>
+              <a href="assets/bandlink_logo_white.svg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Vetor SVG Dark (Light Mode / Print) -->
+        <div class="brand-kit-card">
+          <div class="brand-kit-preview svg-preview light-preview">
+            <img src="assets/bandlink_logo_dark.svg" alt="BandLink Dark Vector SVG" loading="lazy">
+          </div>
+          <div class="brand-kit-body">
+            <div>
+              <div class="brand-kit-header">
+                <span class="brand-kit-title">SVG Dark (Light Mode)</span>
+                <span class="brand-kit-tag">Print Ready</span>
+              </div>
+              <p class="brand-kit-desc">
+                Versão contrastante para fundos brancos ou claros, contratos de shows, faturas, documentos e material de papelaria impresso.
+              </p>
+            </div>
+            <div class="brand-kit-actions">
+              <a href="assets/bandlink_logo_dark.svg" download="bandlink_logo_dark.svg" class="brand-kit-btn brand-kit-btn-primary">
+                <ion-icon name="download-outline"></ion-icon> Baixar SVG
+              </a>
+              <a href="assets/bandlink_logo_dark.svg" target="_blank" class="brand-kit-btn brand-kit-btn-outline">
+                <ion-icon name="open-outline"></ion-icon> Ver
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
   <!-- FAQ Section -->
   <section id="faq">
     <div class="container">
@@ -1841,8 +2219,8 @@ E tão sério e selvagem...
         
         <div class="footer-col">
           <a href="#" class="brand-link" style="margin-bottom: 12px;">
-            <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo" style="width: 40px; height: 40px;" onerror="this.onerror=null; this.src='web-editor/assets/logo.png';">
-            <span class="brand-title" style="font-size: 17px;">Setlist Band Manager</span>
+            <img src="assets/bandlink_logo_symbol.svg" alt="BandLink Logo" class="brand-logo" style="width: 40px; height: 40px;" onerror="this.onerror=null; this.src='assets/logo.png';">
+            <span class="brand-title" style="font-size: 17px;">Band<span style="color: var(--cyan);">Link</span></span>
           </a>
           <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6; max-width: 320px;" data-i18n="footerBrandDesc">
             The definitive solution for repertoire management, smart chords, and live stage performance for musicians and bands.
@@ -1856,6 +2234,7 @@ E tão sério e selvagem...
             <li><a href="#modo-palco" data-i18n="navStageMode">Stage Mode</a></li>
             <li><a href="#sincronizacao" data-i18n="navSync">QR Sync</a></li>
             <li><a href="#download" data-i18n="navDownload">Google Play</a></li>
+            <li><a href="#brand-kit" data-i18n="navBrandKit">Brand &amp; Logos</a></li>
             <li><a href="#faq" data-i18n="navFaq">FAQ</a></li>
           </ul>
         </div>
@@ -1895,12 +2274,13 @@ E tão sério e selvagem...
   <script>
     const translations = {
       en: {
-        pageTitle: 'Setlist Band Manager • The Ultimate App for Musicians, Bands & Stage',
+        pageTitle: 'BandLink • The Ultimate App for Musicians, Bands & Stage',
         pageMetaDesc: 'Organize your band repertoire, edit smart chords on PC with Web Editor Pro, control hands-free autoscroll on stage, and sync everything via QR Code. 100% offline and free.',
         navFeatures: 'Features',
         navStageMode: 'Stage Mode',
         navSync: 'QR Sync',
         navDownload: 'Google Play',
+        navBrandKit: 'Brand & Logos',
         navFaq: 'FAQ',
         navBtnDownload: 'Download App',
         navBtnEditor: 'Open Web Editor',
@@ -1962,14 +2342,17 @@ E tão sério e selvagem...
         syncStep3Title: 'Done! Send and Receive',
         syncStep3Desc: 'Pull all songs to PC to edit chords and format setlists. When finished, send everything back in 1 click.',
         playstoreBadge: 'Available for Android on Google Play',
-        playstoreTitle: 'Download Setlist Band Manager Now',
+        playstoreTitle: 'Download BandLink Now',
         playstoreDesc: 'Take your full repertoire to the stage, save rehearsal time, and eliminate onstage surprises. Free forever.',
         playBadgeGet: 'GET IT ON',
         playstoreQrScan: 'Scan to Download',
+        brandKitTag: 'Official Brand Assets',
+        brandKitTitle: 'BandLink Official Logo Variations',
+        brandKitDesc: 'High-resolution assets, 3D emblems, stage mockups, and scalable vector SVGs ready for presentation, promotional media, and web.',
         faqSectionTag: 'Got Questions?',
         faqSectionTitle: 'Frequently Asked Questions',
         faqQ1: 'Does the app require internet during live gigs?',
-        faqA1: 'No! Setlist Band Manager is built with a local SQLite database. All your songs, chords, and setlists remain stored offline on your device.',
+        faqA1: 'No! BandLink is built with a local SQLite database. All your songs, chords, and setlists remain stored offline on your device.',
         faqQ2: 'Is the PC Web Editor free?',
         faqA2: 'Yes! The Pro Web Editor is 100% free and accessible from any modern desktop browser (Chrome, Edge, Firefox, Safari).',
         faqQ3: 'How does phone and PC synchronization work?',
@@ -1990,19 +2373,20 @@ E tão sério e selvagem...
         footerToolDoc: 'Export Word (.doc)',
         footerToolBackup: 'Backup & Restore',
         footerColAbout: 'About',
-        footerVerActive: '● Version 1.1.5 Active',
+        footerVerActive: '● Version 1.3.4 Active',
         footerOfflineBadge: '100% Offline (SQLite)',
         footerCrossBadge: 'Cross-Platform',
-        footerCopyright: '© 2026 Setlist Band Manager. All rights reserved.',
+        footerCopyright: '© 2026 BandLink. All rights reserved.',
         footerMadeBy: 'Built by musicians, for musicians. 🎸⚡'
       },
       pt: {
-        pageTitle: 'Setlist Band Manager • O App Definitivo para Músicos, Bandas e Palco',
+        pageTitle: 'BandLink • O App Definitivo para Músicos, Bandas e Palco',
         pageMetaDesc: 'Organize o repertório da sua banda, edite cifras no PC com o Web Editor Pro, controle o autoscroll no palco e sincronize tudo via QR Code instantaneamente. 100% offline e gratuito.',
         navFeatures: 'Recursos',
         navStageMode: 'Modo Palco',
         navSync: 'Sincronização QR',
         navDownload: 'Google Play',
+        navBrandKit: 'Logos & Marca',
         navFaq: 'FAQ',
         navBtnDownload: 'Baixar App',
         navBtnEditor: 'Abrir Web Editor',
@@ -2015,7 +2399,7 @@ E tão sério e selvagem...
         trustOffline: 'Funciona 100% Offline no Palco',
         trustSync: 'Sincronização em 2s por QR Code',
         trustDoc: 'Exportação Formatada em Word (.doc)',
-        mockupWindowTitle: 'Setlist Band Manager • Web Editor Pro & Modo Palco Sincronizados',
+        mockupWindowTitle: 'BandLink • Web Editor Pro & Modo Palco Sincronizados',
         mockupTryBtn: 'Experimentar Agora →',
         simMetaSong: 'Tom Original: B (Si Maior) • Duração: 04:29',
         simTagMain: 'SHOW PRINCIPAL',
@@ -2064,14 +2448,17 @@ E tão sério e selvagem...
         syncStep3Title: 'Pronto! Envie e Receba',
         syncStep3Desc: 'Puxe todas as músicas para o PC para editar e formate cifras à vontade. Ao terminar, envie tudo de volta com 1 clique.',
         playstoreBadge: 'Disponível para Android na Play Store',
-        playstoreTitle: 'Baixe Agora o Setlist Band Manager',
+        playstoreTitle: 'Baixe Agora o BandLink',
         playstoreDesc: 'Leve o seu repertório completo para o palco, economize tempo nos ensaios e garanta shows sem imprevistos. Gratuito para sempre.',
         playBadgeGet: 'Disponível no',
         playstoreQrScan: 'Escaneie para Baixar',
+        brandKitTag: 'Identidade Visual & Logos',
+        brandKitTitle: 'Versões Oficiais do Logo BandLink',
+        brandKitDesc: 'Arquivos em alta definição, emblemas 3D, banners de palco e vetores SVG escaláveis prontos para apresentações, mídias e web.',
         faqSectionTag: 'Tire suas Dúvidas',
         faqSectionTitle: 'Perguntas Frequentes',
         faqQ1: 'O aplicativo precisa de internet durante o show?',
-        faqA1: 'Não! O Setlist Band Manager foi desenvolvido com banco de dados local SQLite. Todas as músicas, cifras e setlists ficam armazenados offline no próprio dispositivo.',
+        faqA1: 'Não! O BandLink foi desenvolvido com banco de dados local SQLite. Todas as músicas, cifras e setlists ficam armazenados offline no próprio dispositivo.',
         faqQ2: 'O Web Editor no PC é gratuito?',
         faqA2: 'Sim! O Web Editor Pro é 100% gratuito e acessível por qualquer navegador moderno no computador (Chrome, Edge, Firefox, Safari).',
         faqQ3: 'Como funciona a sincronização entre o celular e o PC?',
@@ -2092,19 +2479,20 @@ E tão sério e selvagem...
         footerToolDoc: 'Exportar Word (.doc)',
         footerToolBackup: 'Backup & Restauração',
         footerColAbout: 'Sobre',
-        footerVerActive: '● Versão 1.1.5 Ativa',
+        footerVerActive: '● Versão 1.3.4 Ativa',
         footerOfflineBadge: '100% Offline (SQLite)',
         footerCrossBadge: 'Multiplataforma',
-        footerCopyright: '© 2026 Setlist Band Manager. Todos os direitos reservados.',
+        footerCopyright: '© 2026 BandLink. Todos os direitos reservados.',
         footerMadeBy: 'Feito por músicos, para músicos. 🎸⚡'
       },
       es: {
-        pageTitle: 'Setlist Band Manager • La App Definitiva para Músicos, Bandas y Escenario',
+        pageTitle: 'BandLink • La App Definitiva para Músicos, Bandas y Escenario',
         pageMetaDesc: 'Organice el repertorio de su banda, edite acordes en la PC con Web Editor Pro, controle el desplazamiento automático en el escenario y sincronice todo mediante código QR. 100% offline y gratis.',
         navFeatures: 'Funcionalidades',
         navStageMode: 'Modo Escenario',
         navSync: 'Sincronización QR',
         navDownload: 'Google Play',
+        navBrandKit: 'Logos y Marca',
         navFaq: 'Preguntas Frecuentes',
         navBtnDownload: 'Descargar App',
         navBtnEditor: 'Abrir Web Editor',
@@ -2166,14 +2554,17 @@ E tão sério e selvagem...
         syncStep3Title: '¡Listo! Envíe y Reciba',
         syncStep3Desc: 'Descargue todas las canciones a la PC para editar acordes a gusto. Al terminar, envíe todo de vuelta con 1 clic.',
         playstoreBadge: 'Disponible para Android en Google Play',
-        playstoreTitle: 'Descargue Ahora Setlist Band Manager',
+        playstoreTitle: 'Descargue BandLink Ahora',
         playstoreDesc: 'Lleve todo su repertorio al escenario, ahorre tiempo en ensayos y asegure shows impecables. Gratis para siempre.',
         playBadgeGet: 'DISPONIBLE EN',
         playstoreQrScan: 'Escanear para Descargar',
+        brandKitTag: 'Identidad Visual y Logos',
+        brandKitTitle: 'Versiones Oficiales del Logo BandLink',
+        brandKitDesc: 'Archivos en alta definición, emblemas 3D, banners de escenario y vectores SVG escalables listos para presentaciones, medios y web.',
         faqSectionTag: '¿Tiene Dudas?',
         faqSectionTitle: 'Preguntas Frecuentes',
         faqQ1: '¿La aplicación necesita internet durante el concierto?',
-        faqA1: '¡No! Setlist Band Manager fue desarrollado con base de datos local SQLite. Todas las canciones, acordes y setlists se guardan offline en el dispositivo.',
+        faqA1: '¡No! BandLink fue desarrollado con base de datos local SQLite. Todas las canciones, acordes y setlists se guardan offline en el dispositivo.',
         faqQ2: '¿El Web Editor en la PC es gratuito?',
         faqA2: '¡Sí! El Web Editor Pro es 100% gratuito y accesible desde cualquier navegador moderno de escritorio (Chrome, Edge, Firefox, Safari).',
         faqQ3: '¿Cómo funciona la sincronización entre el celular y la PC?',
@@ -2194,10 +2585,10 @@ E tão sério e selvagem...
         footerToolDoc: 'Exportar Word (.doc)',
         footerToolBackup: 'Respaldo y Restauración',
         footerColAbout: 'Acerca de',
-        footerVerActive: '● Versión 1.1.5 Activa',
+        footerVerActive: '● Versión 1.3.4 Activa',
         footerOfflineBadge: '100% Offline (SQLite)',
         footerCrossBadge: 'Multiplataforma',
-        footerCopyright: '© 2026 Setlist Band Manager. Todos os direitos reservados.',
+        footerCopyright: '© 2026 BandLink. Todos os direitos reservados.',
         footerMadeBy: 'Creado por músicos, para músicos. 🎸⚡'
       }
     };
