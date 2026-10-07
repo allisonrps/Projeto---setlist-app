@@ -216,11 +216,11 @@ export const bandService = {
     }
   },
 
-  async addBandMember(bandId, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '') {
+  async addBandMember(bandId, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '', isLeader = 0) {
     try {
       const result = await db.runAsync(
-        'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
-        [bandId, sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '']
+        'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage, isLeader) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+        [bandId, sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '', isLeader ? 1 : 0]
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -229,14 +229,26 @@ export const bandService = {
     }
   },
 
-  async updateBandMember(id, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '') {
+  async updateBandMember(id, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '', isLeader = 0) {
     try {
       await db.runAsync(
-        'UPDATE band_members SET name = ?, role = ?, phone = ?, startDate = ?, endDate = ?, status = ?, cycles = ?, username = ?, inviteMessage = ?, replyMessage = ? WHERE id = ?;',
-        [sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '', id]
+        'UPDATE band_members SET name = ?, role = ?, phone = ?, startDate = ?, endDate = ?, status = ?, cycles = ?, username = ?, inviteMessage = ?, replyMessage = ?, isLeader = ? WHERE id = ?;',
+        [sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '', isLeader ? 1 : 0, id]
       );
     } catch (error) {
       console.error('Error in bandService.updateBandMember:', error);
+      throw error;
+    }
+  },
+
+  async updateMemberLeaderStatus(id, isLeader) {
+    try {
+      await db.runAsync(
+        'UPDATE band_members SET isLeader = ? WHERE id = ?;',
+        [isLeader ? 1 : 0, id]
+      );
+    } catch (error) {
+      console.error('Error in bandService.updateMemberLeaderStatus:', error);
       throw error;
     }
   },

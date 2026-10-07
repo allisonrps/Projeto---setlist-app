@@ -273,6 +273,7 @@ export default function BandDetailScreen({
   const [memberStartDate, setMemberStartDate] = useState('');
   const [memberEndDate, setMemberEndDate] = useState('');
   const [memberStatus, setMemberStatus] = useState('active'); // 'active' | 'inactive' | 'pending'
+  const [memberIsLeader, setMemberIsLeader] = useState(false);
   const [initialMemberStatus, setInitialMemberStatus] = useState('active');
   const [memberCycles, setMemberCycles] = useState([]);
   const [editingMemberId, setEditingMemberId] = useState(null);
@@ -325,6 +326,13 @@ export default function BandDetailScreen({
       setMyMemberId(band.myMemberId || null);
     }
   }, [band]);
+
+  const meMember = members.find(m => m.id === myMemberId);
+  const hasAnyExplicitLeader = members.some(m => Number(m.isLeader) === 1);
+  // O usuário é Líder se for marcado como isLeader === 1, ou se nenhum líder foi definido ainda (criador)
+  const isUserLeader = meMember 
+    ? (Number(meMember.isLeader) === 1 || !hasAnyExplicitLeader)
+    : true;
 
   const detailBandTags = (() => {
     if (!band) return [];
@@ -876,7 +884,8 @@ export default function BandDetailScreen({
           JSON.stringify(updatedCycles),
           cleanUsername,
           existingMember?.inviteMessage || '',
-          existingMember?.replyMessage || ''
+          existingMember?.replyMessage || '',
+          memberIsLeader ? 1 : 0
         );
       } else {
         await bandService.addBandMember(
@@ -888,7 +897,10 @@ export default function BandDetailScreen({
           finalEndDate,
           memberStatus,
           JSON.stringify(updatedCycles),
-          cleanUsername
+          cleanUsername,
+          '',
+          '',
+          memberIsLeader ? 1 : 0
         );
       }
       setMemberName('');
@@ -898,6 +910,7 @@ export default function BandDetailScreen({
       setMemberStartDate('');
       setMemberEndDate('');
       setMemberStatus('active');
+      setMemberIsLeader(false);
       setEditingMemberId(null);
       setShowMemberModal(false);
       await loadData();
@@ -916,6 +929,7 @@ export default function BandDetailScreen({
     setMemberStartDate('');
     setMemberEndDate('');
     setMemberStatus('active');
+    setMemberIsLeader(false);
     setInitialMemberStatus('active');
     setMemberCycles([]);
     setShowMemberModal(true);
@@ -930,6 +944,7 @@ export default function BandDetailScreen({
     setMemberStartDate(member.startDate || '');
     setMemberEndDate(member.endDate || '');
     setMemberStatus(member.status || 'active');
+    setMemberIsLeader(Number(member.isLeader) === 1);
     setInitialMemberStatus(member.status || 'active');
     let cycles = [];
     if (member.cycles) {
@@ -950,9 +965,64 @@ export default function BandDetailScreen({
     setMemberStartDate('');
     setMemberEndDate('');
     setMemberStatus('active');
+    setMemberIsLeader(false);
     setInitialMemberStatus('active');
     setMemberCycles([]);
     setShowMemberModal(false);
+  };
+
+  const handleToggleMemberRole = (member) => {
+    if (!isUserLeader) {
+      Alert.alert(
+        t('attention') || 'Atenção',
+        t('onlyLeadersCanChangeRoles') || 'Apenas o criador ou líderes da banda podem alterar cargos e privilégios.'
+      );
+      return;
+    }
+
+    const currentlyLeader = Number(member.isLeader) === 1;
+    if (currentlyLeader) {
+      // Se for o único líder, avisar
+      const totalLeaders = members.filter(m => Number(m.isLeader) === 1).length;
+      if (member.id === myMemberId && totalLeaders <= 1) {
+        Alert.alert(
+          t('attention') || 'Atenção',
+          'A banda precisa ter ao menos um líder ativo para continuar sendo gerenciada.'
+        );
+        return;
+      }
+
+      Alert.alert(
+        t('changeMemberPositionTitle') || 'Nível de Acesso do Integrante',
+        (t('demoteMemberConfirm') || 'Deseja alterar o nível de "{name}" para Membro?\n\nEle não poderá mais editar a banda, apenas visualizar e compartilhar a agenda.').replace('{name}', member.name),
+        [
+          { text: t('cancel') || 'Cancelar', style: 'cancel' },
+          {
+            text: t('demoteToMember') || 'Alterar para Membro',
+            style: 'destructive',
+            onPress: async () => {
+              await bandService.updateMemberLeaderStatus(member.id, 0);
+              await loadData();
+            }
+          }
+        ]
+      );
+    } else {
+      Alert.alert(
+        t('changeMemberPositionTitle') || 'Nível de Acesso do Integrante',
+        (t('promoteMemberConfirm') || 'Deseja promover "{name}" a Líder da banda?\n\nEle terá privilégios para editar informações, gerenciar integrantes, repertório e finanças.').replace('{name}', member.name),
+        [
+          { text: t('cancel') || 'Cancelar', style: 'cancel' },
+          {
+            text: t('promoteToLeader') || 'Promover a Líder',
+            onPress: async () => {
+              await bandService.updateMemberLeaderStatus(member.id, 1);
+              await loadData();
+            }
+          }
+        ]
+      );
+    }
   };
 
   const handleDeleteMember = (member) => {
@@ -1168,24 +1238,26 @@ export default function BandDetailScreen({
 
               <View style={styles.topRowActions}>
                 {/* Botão Instantâneo de Sincronização / Visibilidade na Rede */}
-                <Pressable
-                  style={[
-                    styles.headerIconButton,
-                    {
-                      backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.35)' : 'rgba(0,0,0,0.35)',
-                      borderColor: isNetworkVisible ? '#10b981' : 'rgba(255,255,255,0.15)',
-                      borderWidth: 1,
-                    }
-                  ]}
-                  onPress={handleToggleNetworkVisibility}
-                  accessibilityLabel={isNetworkVisible ? (t('bandSyncedActive') || 'Banda visível na Rede') : (t('bandSyncedOffline') || 'Banda fora da Rede')}
-                >
-                  <Ionicons
-                    name={isNetworkVisible ? 'cloud-done' : 'cloud-offline-outline'}
-                    size={18}
-                    color={isNetworkVisible ? '#10b981' : '#ffffff'}
-                  />
-                </Pressable>
+                {isUserLeader && (
+                  <Pressable
+                    style={[
+                      styles.headerIconButton,
+                      {
+                        backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.35)' : 'rgba(0,0,0,0.35)',
+                        borderColor: isNetworkVisible ? '#10b981' : 'rgba(255,255,255,0.15)',
+                        borderWidth: 1,
+                      }
+                    ]}
+                    onPress={handleToggleNetworkVisibility}
+                    accessibilityLabel={isNetworkVisible ? (t('bandSyncedActive') || 'Banda visível na Rede') : (t('bandSyncedOffline') || 'Banda fora da Rede')}
+                  >
+                    <Ionicons
+                      name={isNetworkVisible ? 'cloud-done' : 'cloud-offline-outline'}
+                      size={18}
+                      color={isNetworkVisible ? '#10b981' : '#ffffff'}
+                    />
+                  </Pressable>
+                )}
 
                 {onOpenPublicProfile && (
                   <Pressable
@@ -1196,12 +1268,16 @@ export default function BandDetailScreen({
                     <Ionicons name="globe-outline" size={18} color="#ffffff" />
                   </Pressable>
                 )}
-                <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
-                  <Ionicons name="pencil" size={18} color="#ffffff" />
-                </Pressable>
-                <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(239,68,68,0.35)', borderColor: 'rgba(239,68,68,0.40)', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
-                  <Ionicons name="trash-outline" size={18} color="#fca5a5" />
-                </Pressable>
+                {isUserLeader && (
+                  <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1 }]} onPress={() => onEditBand(band)}>
+                    <Ionicons name="pencil" size={18} color="#ffffff" />
+                  </Pressable>
+                )}
+                {isUserLeader && (
+                  <Pressable style={[styles.headerIconButton, { backgroundColor: 'rgba(239,68,68,0.35)', borderColor: 'rgba(239,68,68,0.40)', borderWidth: 1 }]} onPress={() => onDeleteBand(band)}>
+                    <Ionicons name="trash-outline" size={18} color="#fca5a5" />
+                  </Pressable>
+                )}
               </View>
             </View>
 
@@ -1464,13 +1540,15 @@ export default function BandDetailScreen({
                     onToggleRehearsalStatus={() => onToggleRehearsalStatus && onToggleRehearsalStatus(song.id)}
                     onUpdateRehearsalNotes={(notes) => onUpdateSongRehearsalNotes && onUpdateSongRehearsalNotes(song.id, notes)}
                     extraRightComponent={
-                      <Pressable
-                        style={styles.unlinkSongBtn}
-                        onPress={() => handleUnlinkSongConfirm(song)}
-                        hitSlop={8}
-                      >
-                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                      </Pressable>
+                      isUserLeader ? (
+                        <Pressable
+                          style={styles.unlinkSongBtn}
+                          onPress={() => handleUnlinkSongConfirm(song)}
+                          hitSlop={8}
+                        >
+                          <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                        </Pressable>
+                      ) : null
                     }
                   />
                 ))
@@ -1478,25 +1556,27 @@ export default function BandDetailScreen({
             </ScrollView>
 
             {/* BOTÃO DE MAIS FLUTUANTE TRANSPARENTE E ARRASTÁVEL (DRAGGABLE FAB) */}
-            <Animated.View
-              {...fabPanResponder.panHandlers}
-              style={[
-                styles.draggableFabButton,
-                {
-                  backgroundColor: colors.primary + '85',
-                  borderColor: colors.primary,
-                  transform: [{ translateX: fabPan.x }, { translateY: fabPan.y }],
-                }
-              ]}
-            >
-              <Pressable
-                style={styles.draggableFabInnerPressable}
-                onPress={handleOpenSongPicker}
-                hitSlop={8}
+            {isUserLeader && (
+              <Animated.View
+                {...fabPanResponder.panHandlers}
+                style={[
+                  styles.draggableFabButton,
+                  {
+                    backgroundColor: colors.primary + '85',
+                    borderColor: colors.primary,
+                    transform: [{ translateX: fabPan.x }, { translateY: fabPan.y }],
+                  }
+                ]}
               >
-                <Ionicons name="add" size={24} color="#ffffff" />
-              </Pressable>
-            </Animated.View>
+                <Pressable
+                  style={styles.draggableFabInnerPressable}
+                  onPress={handleOpenSongPicker}
+                  hitSlop={8}
+                >
+                  <Ionicons name="add" size={24} color="#ffffff" />
+                </Pressable>
+              </Animated.View>
+            )}
           </View>
         )}
 
@@ -1540,28 +1620,30 @@ export default function BandDetailScreen({
               })()}
 
               {/* BOTÃO REDONDO DE ADICIONAR INTEGRANTE (SINAL DE + DO LADO DO CARD VOCÊ) */}
-              <Pressable
-                style={({ pressed }) => [
-                  {
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    backgroundColor: colors.primary,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    elevation: 3,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 3,
-                    transform: [{ scale: pressed ? 0.94 : 1 }]
-                  }
-                ]}
-                onPress={handleOpenAddMember}
-                hitSlop={6}
-              >
-                <Ionicons name="person-add" size={20} color="#ffffff" />
-              </Pressable>
+              {isUserLeader && (
+                <Pressable
+                  style={({ pressed }) => [
+                    {
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: colors.primary,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      elevation: 3,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 3,
+                      transform: [{ scale: pressed ? 0.94 : 1 }]
+                    }
+                  ]}
+                  onPress={handleOpenAddMember}
+                  hitSlop={6}
+                >
+                  <Ionicons name="person-add" size={20} color="#ffffff" />
+                </Pressable>
+              )}
             </View>
 
             {/* SEÇÃO 0: CONVITES PENDENTES / AGUARDANDO CONFIRMAÇÃO */}
@@ -1569,9 +1651,12 @@ export default function BandDetailScreen({
               <View style={{ marginBottom: 18 }}>
                 <View style={styles.memberSectionHeader}>
                   <View style={styles.sectionHeaderTitleGroup}>
-                    <Ionicons name="time" size={17} color="#f59e0b" style={{ marginRight: 6 }} />
+                    <View style={[styles.pillBadge, { backgroundColor: '#f59e0b1a', borderColor: '#f59e0b55' }]}>
+                      <Text style={[styles.pillBadgeText, { color: '#f59e0b' }]}>{pendingMembers.length}</Text>
+                    </View>
+                    <Ionicons name="time" size={16} color="#f59e0b" style={{ marginRight: 6 }} />
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                      Aguardando Confirmação ({pendingMembers.length})
+                      {pendingMembers.length === 1 ? (t('pendingInvite') || 'CONVITE PENDENTE') : (t('pendingInvites') || 'CONVITES PENDENTES')}
                     </Text>
                   </View>
                 </View>
@@ -1638,31 +1723,33 @@ export default function BandDetailScreen({
                         </View>
 
                         {/* Ações da direita: cancelar convite pendente */}
-                        <View style={styles.memberCardRightActions}>
-                          <Pressable
-                            style={styles.iconActionBtn}
-                            onPress={() => {
-                              Alert.alert(
-                                'Cancelar Convite',
-                                `Deseja cancelar o convite enviado para ${item.name}? O card será removido da banda.`,
-                                [
-                                  { text: 'Voltar', style: 'cancel' },
-                                  {
-                                    text: 'Cancelar Convite',
-                                    style: 'destructive',
-                                    onPress: async () => {
-                                      await bandService.deleteBandMember(item.id);
-                                      await loadData();
+                        {isUserLeader && (
+                          <View style={styles.memberCardRightActions}>
+                            <Pressable
+                              style={styles.iconActionBtn}
+                              onPress={() => {
+                                Alert.alert(
+                                  'Cancelar Convite',
+                                  `Deseja cancelar o convite enviado para ${item.name}? O card será removido da banda.`,
+                                  [
+                                    { text: 'Voltar', style: 'cancel' },
+                                    {
+                                      text: 'Cancelar Convite',
+                                      style: 'destructive',
+                                      onPress: async () => {
+                                        await bandService.deleteBandMember(item.id);
+                                        await loadData();
+                                      }
                                     }
-                                  }
-                                ]
-                              );
-                            }}
-                            hitSlop={8}
-                          >
-                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                          </Pressable>
-                        </View>
+                                  ]
+                                );
+                              }}
+                              hitSlop={8}
+                            >
+                              <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                            </Pressable>
+                          </View>
+                        )}
                       </View>
 
                       {/* Mensagem de Retorno do Músico (se houver) */}
@@ -1696,8 +1783,11 @@ export default function BandDetailScreen({
             {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
             <View style={styles.memberSectionHeader}>
               <View style={styles.sectionHeaderTitleGroup}>
+                <View style={[styles.pillBadge, { backgroundColor: '#10b9811a', borderColor: '#10b98155' }]}>
+                  <Text style={[styles.pillBadgeText, { color: '#10b981' }]}>{activeMembers.length}</Text>
+                </View>
                 <View style={styles.activeDot} />
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('activeMembers')} ({activeMembers.length})</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('activeMembers')}</Text>
               </View>
             </View>
 
@@ -1770,9 +1860,39 @@ export default function BandDetailScreen({
                       </View>
 
                       <View style={styles.memberCardRightActions}>
-                        <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
-                          <Ionicons name="pencil" size={18} color={colors.primary} />
+                        {/* Botão de Cargo / Nível: Líder ou Membro */}
+                        <Pressable
+                          style={[
+                            styles.roleLevelBadgeBtn,
+                            Number(item.isLeader) === 1
+                              ? { backgroundColor: '#f59e0b18', borderColor: '#f59e0b60' }
+                              : { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }
+                          ]}
+                          onPress={() => handleToggleMemberRole(item)}
+                          hitSlop={6}
+                          accessibilityLabel={Number(item.isLeader) === 1 ? 'Líder da banda' : 'Membro da banda'}
+                        >
+                          <Ionicons
+                            name={Number(item.isLeader) === 1 ? "shield-checkmark" : "person-outline"}
+                            size={13}
+                            color={Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted}
+                            style={{ marginRight: 3 }}
+                          />
+                          <Text
+                            style={[
+                              styles.roleLevelBadgeText,
+                              { color: Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted }
+                            ]}
+                          >
+                            {Number(item.isLeader) === 1 ? (t('leader') || 'Líder') : (t('member') || 'Membro')}
+                          </Text>
                         </Pressable>
+
+                        {(isUserLeader || item.id === myMemberId) && (
+                          <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
+                            <Ionicons name="pencil" size={18} color={colors.primary} />
+                          </Pressable>
+                        )}
                       </View>
                     </View>
 
@@ -1824,6 +1944,9 @@ export default function BandDetailScreen({
                   style={[styles.toggleInactiveBtn, { backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1 }]}
                   onPress={() => setShowInactiveMembers(!showInactiveMembers)}
                 >
+                  <View style={[styles.pillBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', borderColor: colors.border, marginRight: 8 }]}>
+                    <Text style={[styles.pillBadgeText, { color: colors.textMuted }]}>{inactiveMembers.length}</Text>
+                  </View>
                   <Ionicons
                     name={showInactiveMembers ? "eye-off-outline" : "eye-outline"}
                     size={18}
@@ -1832,8 +1955,8 @@ export default function BandDetailScreen({
                   />
                   <Text style={[styles.toggleInactiveBtnText, { color: colors.text }]}>
                     {showInactiveMembers
-                      ? `${t('hideInactiveMembers')} (${inactiveMembers.length})`
-                      : `${t('showInactiveMembers')} (${inactiveMembers.length})`}
+                      ? t('hideInactiveMembers')
+                      : t('showInactiveMembers')}
                   </Text>
                 </Pressable>
 
@@ -1896,9 +2019,39 @@ export default function BandDetailScreen({
                             </View>
 
                             <View style={styles.memberCardRightActions}>
-                              <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
-                                <Ionicons name="pencil" size={18} color={colors.primary} />
+                              {/* Botão de Cargo / Nível: Líder ou Membro */}
+                              <Pressable
+                                style={[
+                                  styles.roleLevelBadgeBtn,
+                                  Number(item.isLeader) === 1
+                                    ? { backgroundColor: '#f59e0b18', borderColor: '#f59e0b60' }
+                                    : { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }
+                                ]}
+                                onPress={() => handleToggleMemberRole(item)}
+                                hitSlop={6}
+                                accessibilityLabel={Number(item.isLeader) === 1 ? 'Líder da banda' : 'Membro da banda'}
+                              >
+                                <Ionicons
+                                  name={Number(item.isLeader) === 1 ? "shield-checkmark" : "person-outline"}
+                                  size={13}
+                                  color={Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted}
+                                  style={{ marginRight: 3 }}
+                                />
+                                <Text
+                                  style={[
+                                    styles.roleLevelBadgeText,
+                                    { color: Number(item.isLeader) === 1 ? "#f59e0b" : colors.textMuted }
+                                  ]}
+                                >
+                                  {Number(item.isLeader) === 1 ? (t('leader') || 'Líder') : (t('member') || 'Membro')}
+                                </Text>
                               </Pressable>
+
+                              {(isUserLeader || item.id === myMemberId) && (
+                                <Pressable style={styles.iconActionBtn} onPress={() => handleOpenEditMember(item)}>
+                                  <Ionicons name="pencil" size={18} color={colors.primary} />
+                                </Pressable>
+                              )}
                             </View>
                           </View>
 
@@ -2041,13 +2194,15 @@ export default function BandDetailScreen({
                 </View>
               </View>
 
-              <Pressable
-                style={[styles.addFinanceBtn, { backgroundColor: colors.primary }]}
-                onPress={handleOpenAddFinance}
-              >
-                <Ionicons name="add" size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                <Text style={styles.addFinanceBtnText}>{t('newEntry')}</Text>
-              </Pressable>
+              {isUserLeader && (
+                <Pressable
+                  style={[styles.addFinanceBtn, { backgroundColor: colors.primary }]}
+                  onPress={handleOpenAddFinance}
+                >
+                  <Ionicons name="add" size={18} color="#ffffff" style={{ marginRight: 4 }} />
+                  <Text style={styles.addFinanceBtnText}>{t('newEntry')}</Text>
+                </Pressable>
+              )}
             </View>
 
             {/* CARD 2: TIMELINE DE LANÇAMENTOS FINANCEIROS ORGANIZADA POR MÊS */}
@@ -2189,7 +2344,7 @@ export default function BandDetailScreen({
                         onPress={() => {
                           if (item.isShow) {
                             handleOpenCacheSplitModal(item.rawSetlist);
-                          } else {
+                          } else if (isUserLeader) {
                             handleOpenEditFinance(item.rawFinance);
                           }
                         }}
@@ -2247,7 +2402,7 @@ export default function BandDetailScreen({
                             </View>
                           </View>
 
-                          {!item.isShow && (
+                          {!item.isShow && isUserLeader && (
                             <Pressable 
                               style={{ padding: 4 }} 
                               onPress={(e) => {
@@ -2356,24 +2511,26 @@ export default function BandDetailScreen({
 
             {/* Botões Novo Evento e Compartilhar Agenda na mesma linha */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.createEventBtn,
-                  {
-                    flex: 1,
-                    backgroundColor: colors.primary,
-                    marginBottom: 0,
-                    opacity: pressed ? 0.85 : 1,
-                    height: 42,
-                    borderRadius: 10,
-                    paddingHorizontal: 8,
-                  }
-                ]}
-                onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
-              >
-                <Ionicons name="add" size={19} color="#ffffff" style={{ marginRight: 4 }} />
-                <Text style={styles.createEventBtnText} numberOfLines={1}>{t('newEvent')}</Text>
-              </Pressable>
+              {isUserLeader && (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.createEventBtn,
+                    {
+                      flex: 1,
+                      backgroundColor: colors.primary,
+                      marginBottom: 0,
+                      opacity: pressed ? 0.85 : 1,
+                      height: 42,
+                      borderRadius: 10,
+                      paddingHorizontal: 8,
+                    }
+                  ]}
+                  onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
+                >
+                  <Ionicons name="add" size={19} color="#ffffff" style={{ marginRight: 4 }} />
+                  <Text style={styles.createEventBtnText} numberOfLines={1}>{t('newEvent')}</Text>
+                </Pressable>
+              )}
 
               <Pressable
                 style={({ pressed }) => [
@@ -2969,6 +3126,57 @@ export default function BandDetailScreen({
                 />
               )}
 
+              {/* Seletor de Nível / Posição (Líder vs Membro) */}
+              <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 14 }]}>
+                {t('bandPosition') || 'POSIÇÃO / NÍVEL NA BANDA'}
+              </Text>
+              <View style={styles.statusPillGroup}>
+                <Pressable
+                  style={[
+                    styles.statusPillBtn,
+                    memberIsLeader && { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
+                    !isUserLeader && { opacity: 0.5 }
+                  ]}
+                  onPress={() => {
+                    if (!isUserLeader) {
+                      Alert.alert(t('error') || 'Aviso', t('onlyLeadersCanChangeRoles') || 'Apenas líderes podem alterar cargos e privilégios.');
+                      return;
+                    }
+                    setMemberIsLeader(true);
+                  }}
+                >
+                  <Ionicons name="shield-checkmark" size={16} color={memberIsLeader ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
+                  <Text style={[styles.statusPillText, { color: memberIsLeader ? '#ffffff' : colors.text }]}>
+                    {t('leader') || 'Líder'}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={[
+                    styles.statusPillBtn,
+                    !memberIsLeader && { backgroundColor: '#6b7280', borderColor: '#6b7280' },
+                    !isUserLeader && { opacity: 0.5 }
+                  ]}
+                  onPress={() => {
+                    if (!isUserLeader) {
+                      Alert.alert(t('error') || 'Aviso', t('onlyLeadersCanChangeRoles') || 'Apenas líderes podem alterar cargos e privilégios.');
+                      return;
+                    }
+                    setMemberIsLeader(false);
+                  }}
+                >
+                  <Ionicons name="person" size={16} color={!memberIsLeader ? '#ffffff' : colors.textMuted} style={{ marginRight: 4 }} />
+                  <Text style={[styles.statusPillText, { color: !memberIsLeader ? '#ffffff' : colors.text }]}>
+                    {t('member') || 'Membro'}
+                  </Text>
+                </Pressable>
+              </View>
+              <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4, fontStyle: 'italic', marginBottom: 2 }}>
+                {memberIsLeader 
+                  ? (t('leaderPrivilegesHint') || 'Líderes podem gerenciar repertório, integrantes, finanças e dados da banda.')
+                  : (t('memberPrivilegesHint') || 'Membros comuns têm acesso à agenda e repertório sem permissão de edição.')}
+              </Text>
+
               <Text style={[styles.cleanInputLabel, { color: colors.text, marginTop: 12 }]}>{t('memberStatusLabel')}</Text>
               <View style={styles.statusPillGroup}>
                 <Pressable
@@ -2996,7 +3204,7 @@ export default function BandDetailScreen({
             </ScrollView>
 
             <View style={styles.modalFooterRow}>
-              {editingMemberId ? (
+              {editingMemberId && isUserLeader ? (
                 <Pressable
                   style={{
                     width: 40,
@@ -3518,6 +3726,32 @@ const styles = StyleSheet.create({
 
   memberSectionHeader: { marginTop: 16, marginBottom: 12 },
   sectionHeaderTitleGroup: { flexDirection: 'row', alignItems: 'center' },
+  pillBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pillBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  roleLevelBadgeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginRight: 6,
+  },
+  roleLevelBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
   activeDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 8 },
   sectionTitle: { fontSize: 14, fontWeight: 'bold' },
 

@@ -880,6 +880,18 @@ const createWebDB = () => {
         return {};
       }
 
+      if (sql.includes('UPDATE band_members SET isLeader = ?')) {
+        data.band_members = data.band_members || [];
+        const isLeader = params[0];
+        const id = params[1];
+        const item = data.band_members.find(m => m.id === id);
+        if (item) {
+          item.isLeader = isLeader;
+          saveToStorage();
+        }
+        return { changes: 1 };
+      }
+
       // INSERT / UPDATE / DELETE / TOGGLE de band_finances
       if (sql.includes('INSERT INTO band_members')) {
         data.band_members = data.band_members || [];
@@ -894,8 +906,9 @@ const createWebDB = () => {
         const username = params[8] || '';
         const inviteMessage = params[9] || '';
         const replyMessage = params[10] || '';
+        const isLeader = params[11] !== undefined ? params[11] : 0;
         const newId = Date.now() + Math.floor(Math.random() * 1000);
-        data.band_members.push({ id: newId, bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage });
+        data.band_members.push({ id: newId, bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage, isLeader });
         saveToStorage();
         return { lastInsertRowId: newId };
       }
@@ -912,7 +925,8 @@ const createWebDB = () => {
         const username = params[7] || '';
         const inviteMessage = params[8] || '';
         const replyMessage = params[9] || '';
-        const id = params[10] !== undefined ? params[10] : params[params.length - 1];
+        const isLeader = params[10] !== undefined ? params[10] : 0;
+        const id = params[11] !== undefined ? params[11] : params[params.length - 1];
         const item = data.band_members.find(m => m.id === id);
         if (item) {
           item.name = name;
@@ -925,6 +939,7 @@ const createWebDB = () => {
           if (username !== undefined) item.username = username;
           if (inviteMessage !== undefined) item.inviteMessage = inviteMessage;
           if (replyMessage !== undefined) item.replyMessage = replyMessage;
+          if (isLeader !== undefined) item.isLeader = isLeader;
           saveToStorage();
         }
         return { changes: 1 };
@@ -1208,6 +1223,9 @@ export const createTables = async () => {
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE band_members ADD COLUMN replyMessage TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE band_members ADD COLUMN isLeader INTEGER DEFAULT 0;");
     } catch (e) {}
     try {
       await db.execAsync('ALTER TABLE my_bands ADD COLUMN myMemberId INTEGER;');
