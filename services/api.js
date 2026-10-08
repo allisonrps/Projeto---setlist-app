@@ -238,5 +238,62 @@ export const api = {
       console.log('Background cloud sync error:', err);
     }
     return null;
+  },
+
+  getAnnouncements: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.instrument) params.append('instrument', filters.instrument);
+      if (filters.city) params.append('city', filters.city);
+
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetchWithTimeout(`${API_URL}/Announcements${qs}`, {}, 8000);
+      if (response.ok) {
+        const res = await response.json();
+        return res.data || [];
+      }
+    } catch (err) {
+      console.log('Error fetching cloud announcements:', err);
+    }
+    return [];
+  },
+
+  createAnnouncement: async (announcementData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Announcements`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        title: announcementData.title || announcementData.bandName,
+        description: announcementData.description || '',
+        instrument: announcementData.instrument || announcementData.soughtRole || '',
+        city: announcementData.city || '',
+        state: announcementData.state || ''
+      })
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao publicar anúncio no servidor.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  deleteAnnouncement: async (id) => {
+    try {
+      const headers = await getHeaders();
+      const response = await fetchWithTimeout(`${API_URL}/Announcements/${id}`, {
+        method: "DELETE",
+        headers
+      });
+      return response.ok;
+    } catch (err) {
+      console.log('Error deleting cloud announcement:', err);
+      return false;
+    }
   }
 };

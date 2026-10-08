@@ -24,6 +24,7 @@ import { musiciansService, MOCK_MUSICIANS } from '../services/musiciansService';
 import MusicianProfileModal from './MusicianProfileModal';
 import BandProfileModal from './BandProfileModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../services/api';
 
 const BRAZIL_STATES = [
   { uf: 'AC', name: 'Acre' },
@@ -671,7 +672,43 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         setProjects(JSON.parse(stored));
       } else {
         setProjects(DEFAULT_PROJECTS);
-        await AsyncStorage.setItem('network_projects', JSON.stringify(DEFAULT_PROJECTS));
+      }
+
+      // Fetch active announcements from cloud API
+      try {
+        const cloudList = await api.getAnnouncements();
+        if (Array.isArray(cloudList) && cloudList.length > 0) {
+          const cloudFormatted = cloudList.map(ca => ({
+            id: 'cloud-' + ca.id,
+            cloudId: ca.id,
+            creatorId: ca.creator?.id || 'me',
+            creatorName: ca.creator?.username || 'Músico',
+            creatorUsername: ca.creator?.username || 'musico',
+            bandName: ca.title,
+            imageUri: '',
+            soughtRole: ca.instrument || 'Músico',
+            options: ['Cover', 'Profissional'],
+            isCover: 1,
+            isAutoral: 0,
+            genres: ['Rock'],
+            city: ca.city || '',
+            state: ca.state || '',
+            country: 'Brasil',
+            description: ca.description || '',
+            createdAt: ca.createdAt ? new Date(ca.createdAt).toLocaleDateString() : 'Recente',
+            applicants: []
+          }));
+
+          setProjects(prev => {
+            const cloudIds = new Set(cloudFormatted.map(c => c.cloudId));
+            const localOnly = (prev || []).filter(p => !p.cloudId || !cloudIds.has(p.cloudId));
+            const merged = [...cloudFormatted, ...localOnly];
+            AsyncStorage.setItem('network_projects', JSON.stringify(merged));
+            return merged;
+          });
+        }
+      } catch (cloudErr) {
+        console.log('Error fetching cloud announcements:', cloudErr);
       }
     } catch (e) {
       console.log('Error loading projects:', e);
@@ -881,8 +918,28 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       }
     }
 
+    let cloudId = null;
+    try {
+      const logged = await api.isLoggedIn();
+      if (logged) {
+        const cloudRes = await api.createAnnouncement({
+          title: formBandName.trim(),
+          description: formDescription.trim(),
+          instrument: formSoughtRole.trim(),
+          city: formCity.trim(),
+          state: formState || ''
+        });
+        if (cloudRes?.data?.id) {
+          cloudId = cloudRes.data.id;
+        }
+      }
+    } catch (apiErr) {
+      console.log('Error publishing announcement to cloud API:', apiErr);
+    }
+
     const newProject = {
-      id: 'proj-' + Date.now(),
+      id: cloudId ? ('cloud-' + cloudId) : ('proj-' + Date.now()),
+      cloudId: cloudId,
       creatorId: currentUserId,
       creatorName: currentUserName,
       creatorUsername: currentUser?.username || 'me',
@@ -918,6 +975,12 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           text: t('remove') || 'Remover',
           style: 'destructive',
           onPress: async () => {
+            const toDel = projects.find(p => p.id === projId);
+            if (toDel?.cloudId) {
+              try {
+                await api.deleteAnnouncement(toDel.cloudId);
+              } catch (e) {}
+            }
             const updated = projects.filter(p => p.id !== projId);
             await saveProjects(updated);
           }
