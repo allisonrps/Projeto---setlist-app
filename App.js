@@ -16,6 +16,7 @@ import {
   Linking,
   Modal,
   LayoutAnimation,
+  RefreshControl,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -673,6 +674,7 @@ function MainApp() {
   const [songStyles, setSongStyles] = useState([]); // Lista de gêneros/estilos existentes para filtros
   const [dbReady, setDbReady] = useState(false);
   const [splashFinished, setSplashFinished] = useState(false);
+  const [refreshingBands, setRefreshingBands] = useState(false);
 
   // Convites Recebidos de Bandas / Projetos
   const [receivedInvites, setReceivedInvites] = useState([]);
@@ -772,6 +774,12 @@ function MainApp() {
             const payload = JSON.parse(atob(token.split('.')[1]));
             if (payload.exp && payload.exp * 1000 > Date.now()) {
               setIsLoggedIn(true);
+              // Auto-sync cloud bands in background if logged in
+              bandService.syncAllUserBandsFromCloud().then(res => {
+                if (res && res.count > 0) {
+                  reloadAllData();
+                }
+              }).catch(e => console.log('Error auto-syncing bands on startup:', e));
               try {
                 const isComp = await AsyncStorage.getItem('user_profile_completed');
                 if (isComp !== 'true') {
@@ -931,6 +939,21 @@ function MainApp() {
       await loadReceivedInvites();
     } catch (error) {
       console.error('Erro ao recarregar dados:', error);
+    }
+  };
+
+  const handleRefreshBands = async () => {
+    setRefreshingBands(true);
+    try {
+      const syncRes = await bandService.syncAllUserBandsFromCloud(true);
+      await reloadAllData();
+      if (syncRes && syncRes.count > 0) {
+        Alert.alert(t('syncedTitle') || 'Sincronizado', `${syncRes.count} ${t('bands') || 'bandas'} sincronizadas com a nuvem!`);
+      }
+    } catch (e) {
+      console.log('Error refreshing bands:', e);
+    } finally {
+      setRefreshingBands(false);
     }
   };
 
@@ -3539,24 +3562,50 @@ function MainApp() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('bands')}</Text>
           </View>
 
-          <Pressable 
-            style={({ pressed }) => [
-              styles.quickAddButton,
-              { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
-            ]}
-            onPress={() => {
-              setEditingBand(null);
-              setShowBandModal(true);
-            }}
-          >
-            <Text style={styles.quickAddText}>{t('createBandBtn')}</Text>
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.quickAddButton,
+                { 
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', 
+                  borderWidth: 1, 
+                  borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', 
+                  paddingHorizontal: 10,
+                  transform: [{ scale: pressed ? 0.95 : 1 }] 
+                }
+              ]}
+              onPress={handleRefreshBands}
+            >
+              <Ionicons name="cloud-download-outline" size={16} color={colors.primary} />
+            </Pressable>
+
+            <Pressable 
+              style={({ pressed }) => [
+                styles.quickAddButton,
+                { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
+              ]}
+              onPress={() => {
+                setEditingBand(null);
+                setShowBandModal(true);
+              }}
+            >
+              <Text style={styles.quickAddText}>{t('createBandBtn')}</Text>
+            </Pressable>
+          </View>
         </View>
 
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingTop: 10, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingBands}
+              onRefresh={handleRefreshBands}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
         >
           {/* CARROSSEL DE BANDAS NA ABA DE BANDAS */}
           <BandCarousel
@@ -3607,6 +3656,26 @@ function MainApp() {
                   <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
                     {t('clickToAddBand') || 'Clique em "+ Criar Banda" para adicionar seu projeto musical.'}
                   </Text>
+                  {isLoggedIn && (
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.quickAddButton,
+                        {
+                          backgroundColor: colors.primary,
+                          marginTop: 16,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          paddingHorizontal: 16,
+                          transform: [{ scale: pressed ? 0.95 : 1 }]
+                        }
+                      ]}
+                      onPress={handleRefreshBands}
+                    >
+                      <Ionicons name="cloud-download-outline" size={16} color="#FFF" />
+                      <Text style={[styles.quickAddText, { color: '#FFF' }]}>{t('syncBtn') || 'Sincronizar da Nuvem'}</Text>
+                    </Pressable>
+                  )}
                 </View>
               );
             }
@@ -5154,6 +5223,14 @@ function MainApp() {
 
     const handleUserLogin = async () => {
       setIsLoggedIn(true);
+      try {
+        const syncRes = await bandService.syncAllUserBandsFromCloud();
+        if (syncRes && syncRes.count > 0) {
+          await reloadAllData();
+        }
+      } catch (syncErr) {
+        console.log('Error syncing user cloud bands on login:', syncErr);
+      }
       try {
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
         if (isCompleted === 'true') {

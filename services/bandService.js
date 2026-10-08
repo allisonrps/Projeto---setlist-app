@@ -678,16 +678,17 @@ export const bandService = {
 
           if (!localSetlistId) {
             const insSl = await db.runAsync(
-              `INSERT INTO setlists (name, date, time, local, notes, cache, myBandId, isFavorite)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+              `INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
               [
                 sl.name,
+                sl.type || 'show',
+                bandId,
                 sl.date || '',
                 sl.time || '',
                 sl.local || '',
+                sl.cache || sl.cachê || '',
                 sl.notes || '',
-                sl.cache || '',
-                bandId,
                 sl.isFavorite ? 1 : 0
               ]
             );
@@ -705,7 +706,7 @@ export const bandService = {
               if (matchSong && matchSong.length > 0) {
                 const sId = matchSong[0].id;
                 await db.runAsync(
-                  'INSERT OR IGNORE INTO setlist_songs (setlistId, songId, position, customDuration, customNotes) VALUES (?, ?, ?, ?, ?);',
+                  'INSERT OR IGNORE INTO setlist_songs (setlistId, songId, order_num, customDuration, customNotes) VALUES (?, ?, ?, ?, ?);',
                   [localSetlistId, sId, i, slSong.customDuration || '', slSong.customNotes || '']
                 );
               }
@@ -722,6 +723,102 @@ export const bandService = {
     } catch (error) {
       console.error('Error in bandService.pullBandFromCloud:', error);
       throw error;
+    }
+  },
+
+  async syncAllUserBandsFromCloud(force = false) {
+    try {
+      const loggedIn = await api.isLoggedIn();
+      if (!loggedIn) return { success: false, reason: 'not_logged_in' };
+
+      const myCloudBands = await api.getMyCloudBands();
+      if (!Array.isArray(myCloudBands) || myCloudBands.length === 0) {
+        return { success: true, count: 0 };
+      }
+
+      const localBands = await this.getAll();
+      let importedOrUpdatedCount = 0;
+
+      for (const cb of myCloudBands) {
+        if (!cb || !cb.id) continue;
+
+        // Check if band already exists locally by cloudId or by name
+        let local = (localBands || []).find(b => 
+          (b.cloudId && Number(b.cloudId) === Number(cb.id)) ||
+          (b.name && cb.name && b.name.trim().toLowerCase() === cb.name.trim().toLowerCase())
+        );
+
+        let localBandId = local ? local.id : null;
+
+        if (!localBandId) {
+          // Band exists in cloud but not locally -> create it in local SQLite!
+          localBandId = await this.insert(
+            cb.name || 'Minha Banda',
+            cb.imageUri || null,
+            '',
+            '',
+            cb.bandType || 'cover',
+            cb.bandType === 'autoral' ? 0 : 1,
+            cb.bandType === 'autoral' ? 1 : 0,
+            cb.city || '',
+            cb.state || '',
+            cb.country || 'Brasil',
+            cb.genresJson || cb.genre || '[]',
+            '{}',
+            cb.instagram || '',
+            cb.youtube || '',
+            cb.spotify || '',
+            '',
+            ''
+          );
+
+          // Update cloud info on the new band
+          await this.updateCloudInfo(
+            localBandId,
+            cb.id,
+            0,
+            cb.lastSyncedAt || new Date().toISOString(),
+            cb.isNetworkVisible ? 1 : 0
+          );
+
+          // Pull all songs, setlists, and details from cloud for this band
+          try {
+            await this.pullBandFromCloud(localBandId);
+          } catch (pullErr) {
+            console.log('Error pulling band data for new band:', cb.name, pullErr);
+          }
+
+          importedOrUpdatedCount++;
+        } else {
+          // Band already exists locally
+          if (!local.cloudId || Number(local.cloudId) !== Number(cb.id)) {
+            await this.updateCloudInfo(
+              localBandId,
+              cb.id,
+              local.cloudVersion || 0,
+              local.lastSyncedAt || new Date().toISOString(),
+              cb.isNetworkVisible ? 1 : (local.isNetworkVisible ? 1 : 0)
+            );
+          }
+
+          // If remote version is newer, or forced, or never synced, pull updates
+          const remoteVer = cb.version || 0;
+          const localVer = local.cloudVersion || 0;
+          if (force || remoteVer > localVer || !local.lastSyncedAt) {
+            try {
+              await this.pullBandFromCloud(localBandId);
+              importedOrUpdatedCount++;
+            } catch (pullErr) {
+              console.log('Error pulling band update for:', cb.name, pullErr);
+            }
+          }
+        }
+      }
+
+      return { success: true, count: importedOrUpdatedCount };
+    } catch (err) {
+      console.log('Error in syncAllUserBandsFromCloud:', err);
+      return { success: false, error: err.message };
     }
   }
 };
