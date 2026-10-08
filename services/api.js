@@ -155,6 +155,76 @@ export const api = {
     return response.json();
   },
 
+  forgotPassword: async (email) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const response = await fetchWithTimeout(`${API_URL}/Auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail })
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Não foi possível solicitar a recuperação de senha.";
+      try {
+        const text = await response.text();
+        if (text && text.trim() && !text.includes("<") && text.length < 200) {
+          errorMsg = text.trim();
+        }
+      } catch {}
+      throw new Error(errorMsg);
+    }
+    return response.json();
+  },
+
+  resetPassword: async (email, code, newPassword) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const response = await fetchWithTimeout(`${API_URL}/Auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: cleanEmail,
+        code: (code || '').trim(),
+        newPassword
+      })
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Código de recuperação incorreto ou expirado.";
+      try {
+        const text = await response.text();
+        if (text && text.trim() && !text.includes("<") && text.length < 200) {
+          errorMsg = text.trim();
+        }
+      } catch {}
+      throw new Error(errorMsg);
+    }
+    return response.json();
+  },
+
+  googleLogin: async (idToken) => {
+    const response = await fetchWithTimeout(`${API_URL}/Auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken })
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Falha ao autenticar com Google.";
+      try {
+        const text = await response.text();
+        if (text && text.trim() && !text.includes("<") && text.length < 200) {
+          errorMsg = text.trim();
+        }
+      } catch {}
+      throw new Error(errorMsg);
+    }
+
+    const data = await response.json();
+    await AsyncStorage.setItem("jwt_token", data.token);
+    await AsyncStorage.setItem("user_info", JSON.stringify(data));
+    return data;
+  },
+
   logout: async () => {
     // Remove all auth-related data
     await AsyncStorage.removeItem("jwt_token");
