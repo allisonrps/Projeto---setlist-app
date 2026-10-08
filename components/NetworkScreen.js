@@ -677,7 +677,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       // Fetch active announcements from cloud API
       try {
         const cloudList = await api.getAnnouncements();
-        if (Array.isArray(cloudList) && cloudList.length > 0) {
+        if (Array.isArray(cloudList)) {
           const cloudFormatted = cloudList.map(ca => ({
             id: 'cloud-' + ca.id,
             cloudId: ca.id,
@@ -700,9 +700,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           }));
 
           setProjects(prev => {
-            const cloudIds = new Set(cloudFormatted.map(c => c.cloudId));
-            const localOnly = (prev || []).filter(p => !p.cloudId || !cloudIds.has(p.cloudId));
-            const merged = [...cloudFormatted, ...localOnly];
+            // Remove any item that was published to the cloud or tagged with cloudId that is no longer returned by the API
+            const pureLocal = (prev || []).filter(p => 
+              !p.cloudId && 
+              !p.id?.toString().startsWith('cloud-') &&
+              p.id === 'proj-1'
+            );
+            const merged = [...cloudFormatted, ...pureLocal];
             AsyncStorage.setItem('network_projects', JSON.stringify(merged));
             return merged;
           });
