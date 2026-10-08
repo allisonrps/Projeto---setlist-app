@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bandService } from './bandService';
 import { setlistService } from './setlistService';
+import { api } from './api';
 
 export const MOCK_MUSICIANS = [
   {
@@ -313,14 +314,130 @@ export const musiciansService = {
     const cleanUser = String(rawUsername || '').replace(/^@+/, '').trim().toLowerCase();
     const cleanName = String(fallbackName || '').trim().toLowerCase();
 
-    // 1. Check in MOCK_MUSICIANS
+    // 1. If searching for a specific registered user (not 'me' / 'você'), query Cloud API first
+    if (cleanUser && cleanUser !== 'me' && cleanUser !== 'voce' && cleanUser !== 'você') {
+      try {
+        const cloudUser = await api.getUserProfile(cleanUser);
+        if (cloudUser) {
+          let cloudSkills = [];
+          if (typeof cloudUser.instruments === 'string' && cloudUser.instruments.trim()) {
+            try {
+              const parsed = JSON.parse(cloudUser.instruments);
+              cloudSkills = Array.isArray(parsed) ? parsed : [{ name: cloudUser.instruments, stars: 5 }];
+            } catch {
+              cloudSkills = [{ name: cloudUser.instruments, stars: 5 }];
+            }
+          } else if (Array.isArray(cloudUser.instruments)) {
+            cloudSkills = cloudUser.instruments;
+          }
+
+          let cloudInfluences = [];
+          if (typeof cloudUser.influences === 'string' && cloudUser.influences.trim()) {
+            try {
+              const parsed = JSON.parse(cloudUser.influences);
+              cloudInfluences = Array.isArray(parsed) ? parsed : [parsed];
+            } catch {
+              cloudInfluences = cloudUser.influences.split(',').map(s => s.trim()).filter(Boolean);
+            }
+          } else if (Array.isArray(cloudUser.influences)) {
+            cloudInfluences = cloudUser.influences;
+          }
+
+          let cloudInterest = ['Profissional'];
+          if (cloudUser.interestLevel) {
+            if (Array.isArray(cloudUser.interestLevel)) {
+              cloudInterest = cloudUser.interestLevel;
+            } else if (typeof cloudUser.interestLevel === 'string') {
+              try {
+                const parsed = JSON.parse(cloudUser.interestLevel);
+                cloudInterest = Array.isArray(parsed) ? parsed : [cloudUser.interestLevel];
+              } catch {
+                cloudInterest = [cloudUser.interestLevel];
+              }
+            }
+          }
+
+          const cloudBands = (cloudUser.bands || []).map(b => {
+            let parsedGenres = [];
+            if (b.genresJson) {
+              try {
+                parsedGenres = typeof b.genresJson === 'string' && b.genresJson.startsWith('[')
+                  ? JSON.parse(b.genresJson)
+                  : [b.genresJson];
+              } catch {}
+            } else if (b.genre) {
+              parsedGenres = [b.genre];
+            }
+            return {
+              id: String(b.id || b.Id),
+              bandId: b.id || b.Id,
+              name: b.name || b.Name,
+              bandName: b.name || b.Name,
+              imageUri: b.imageUri || b.ImageUri || null,
+              logo: b.imageUri || b.ImageUri || null,
+              role: 'Integrante',
+              memberType: 'Integrante',
+              since: '2024',
+              period: 'Ativo',
+              city: b.city || b.City || '',
+              state: b.state || b.State || '',
+              country: b.country || b.Country || '',
+              genres: parsedGenres.length > 0 ? parsedGenres : ['Música'],
+              bandType: b.bandType || b.BandType
+            };
+          });
+
+          return {
+            id: 'mus-cloud-' + (cloudUser.id || cloudUser.Id),
+            cloudId: cloudUser.id || cloudUser.Id,
+            name: cloudUser.username,
+            displayName: cloudUser.username,
+            username: cloudUser.username,
+            imageUri: cloudUser.pictureUrl || cloudUser.PictureUrl || null,
+            pictureUrl: cloudUser.pictureUrl || cloudUser.PictureUrl || null,
+            skills: cloudSkills.map((s, idx) => ({
+              id: String(idx + 1),
+              instrument: typeof s === 'string' ? s : (s.name || s.instrument || 'Instrumento'),
+              stars: typeof s === 'object' && s.stars ? s.stars : 5,
+              isPrimary: idx === 0
+            })),
+            primaryInstruments: cloudSkills,
+            primaryInstrument: cloudSkills[0]?.name || cloudSkills[0]?.instrument || 'Instrumento',
+            stars: 5,
+            city: cloudUser.city || '',
+            state: cloudUser.state || '',
+            country: cloudUser.country || 'Brasil',
+            birthDate: cloudUser.birthDate || null,
+            age: cloudUser.age || null,
+            availability: cloudUser.availability || 'Disponível',
+            interestLevel: cloudInterest,
+            influences: cloudInfluences,
+            bio: cloudUser.bio || 'Músico na rede BandLink.',
+            instagram: cloudUser.instagram || '',
+            youtube: cloudUser.youtube || '',
+            twitter: cloudUser.twitter || '',
+            facebook: cloudUser.facebook || '',
+            spotify: cloudUser.spotify || '',
+            tiktok: cloudUser.tikTok || cloudUser.tiktok || '',
+            agenda: [],
+            gear: [],
+            bands: cloudBands,
+            projects: cloudBands
+          };
+        }
+      } catch (cloudErr) {
+        console.log('Error fetching user profile from cloud:', cloudErr);
+      }
+    }
+
+    // 2. Check in MOCK_MUSICIANS (if offline or sample user)
     const match = MOCK_MUSICIANS.find(m => 
       (cleanUser && m.username.toLowerCase() === cleanUser) ||
       (cleanName && m.name.toLowerCase() === cleanName)
     );
     if (match) return match;
 
-    // 2. Check current user cache
+    // 3. Check current user cache (for 'me' or matching local user)
     try {
       const cached = await AsyncStorage.getItem('user_profile_cache');
       const savedUserStr = await AsyncStorage.getItem('user_info');
@@ -351,7 +468,7 @@ export const musiciansService = {
               ? JSON.parse(b.genres)
               : String(b.genres).split(',').map(s => s.trim()).filter(Boolean);
           } catch (e) {
-            parsedGenres = String(b.genres).split(',').map(s => s.trim()).filter(Boolean);
+            parsedGenres = Array.isArray(b.genres) ? b.genres : String(b.genres).split(',').map(s => s.trim()).filter(Boolean);
           }
         }
 
@@ -432,10 +549,7 @@ export const musiciansService = {
             try { userInfluences = JSON.parse(userInfluences); } catch (e) { userInfluences = []; }
           }
           if (!Array.isArray(userInfluences) || userInfluences.length === 0) {
-            userInfluences = [
-              { id: '1', name: 'Rock Clássico', stars: 5 },
-              { id: '2', name: 'Blues', stars: 4 }
-            ];
+            userInfluences = [];
           }
 
           let userInterest = parsed.interestLevel || ['Profissional'];
@@ -469,10 +583,7 @@ export const musiciansService = {
             spotify: parsed.spotify || '',
             tiktok: parsed.tiktok || '',
             agenda: myBandAgenda.length > 0 ? myBandAgenda : (parsed.agenda || []),
-            gear: parsedGear.length > 0 ? parsedGear : [
-              { id: '1', category: 'Guitarra', name: 'Fender Stratocaster Player', details: 'Sunburst, Maple Neck', isPrimary: true },
-              { id: '2', category: 'Amplificador', name: 'Marshall DSL40CR', details: 'Combo Valvulado 40W' }
-            ],
+            gear: Array.isArray(parsedGear) ? parsedGear : [],
             bands: myBandsFormatted,
             projects: myBandsFormatted
           };
@@ -480,7 +591,7 @@ export const musiciansService = {
       }
     } catch (e) {}
 
-    // 3. Fallback dynamic musician profile
+    // 4. Fallback dynamic musician profile
     const displayName = fallbackName || (cleanUser ? (cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1).replace(/_/g, ' ')) : 'Guest Musician');
     return {
       id: 'mus-dyn-' + (cleanUser || 'user'),
@@ -494,16 +605,12 @@ export const musiciansService = {
       country: '',
       availability: 'Available',
       interestLevel: ['Professional', 'Hobby'],
-      influences: ['Rock', 'Pop', 'Indie'],
+      influences: [],
       bio: `Musician @${cleanUser || 'musician'} on the Setlist network.`,
       instagram: cleanUser ? `${cleanUser}` : '',
       youtube: '',
-      gear: [
-        { id: 'dyn-g1', category: 'Instrument', name: 'Main Rig', details: 'Professional instruments and stage equipment' }
-      ],
-      bands: [
-        { id: 'dyn-b1', name: 'Musical Project', role: 'Musician', period: '2023 - Present' }
-      ],
+      gear: [],
+      bands: [],
       agenda: []
     };
   },

@@ -259,7 +259,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
   // ── Normalização idêntica ao ProfileScreen ──
   const currentDisplayName = musician.displayName || musician.name || musician.username || 'Músico';
   const cleanUsername = (musician.username || 'musico').toLowerCase().replace(/^@+/, '');
-  const profileImage = musician.imageUri || musician.profileImage || null;
+  const profileImage = musician.imageUri || musician.profileImage || musician.pictureUrl || null;
 
   // Nível de interesse
   const interestLevel = Array.isArray(musician.interestLevel)
@@ -275,20 +275,30 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
   const bio = musician.bio || 'Músico ativo na cena musical e na comunidade Setlist.';
 
   // Influências (com estrelas)
-  const rawInfluences = Array.isArray(musician.influences)
-    ? musician.influences
-    : (typeof musician.influences === 'string' ? musician.influences.split(',').map(s => s.trim()).filter(Boolean) : []);
+  let rawInfluences = [];
+  if (Array.isArray(musician.influences)) {
+    rawInfluences = musician.influences;
+  } else if (typeof musician.influences === 'string' && musician.influences.trim()) {
+    try {
+      const parsedInf = JSON.parse(musician.influences);
+      rawInfluences = Array.isArray(parsedInf) ? parsedInf : [parsedInf];
+    } catch {
+      rawInfluences = musician.influences.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  }
 
   const influences = rawInfluences.map((inf, idx) => {
     if (typeof inf === 'string') {
-      return { id: String(idx + 1), name: inf.replace(/^#/, ''), stars: idx === 0 ? 5 : (5 - Math.min(2, idx)) };
+      const cleanName = inf.replace(/[{}\"]/g, '').replace(/^name:\s*/, '').replace(/^#+/, '').trim();
+      return { id: String(idx + 1), name: cleanName, stars: idx === 0 ? 5 : (5 - Math.min(2, idx)) };
     }
+    const cleanName = String(inf?.name || inf?.tag || '').replace(/[{}\"]/g, '').replace(/^name:\s*/, '').replace(/^#+/, '').trim();
     return {
-      id: String(inf.id || idx + 1),
-      name: String(inf.name || '').replace(/^#/, ''),
-      stars: typeof inf.stars === 'number' ? inf.stars : 5
+      id: String(inf?.id || idx + 1),
+      name: cleanName,
+      stars: typeof inf?.stars === 'number' ? inf.stars : 5
     };
-  });
+  }).filter(inf => Boolean(inf.name));
 
   // Habilidades (com indicação de principal e estrelas)
   const rawSkills = Array.isArray(musician.skills) && musician.skills.length > 0
@@ -300,7 +310,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
             stars: typeof pi === 'object' && pi.stars ? pi.stars : (musician.stars || 5),
             isPrimary: typeof pi === 'object' && pi.isPrimary !== undefined ? pi.isPrimary : (idx < 2)
           }))
-        : [{ id: '1', instrument: musician.primaryInstrument || 'Instrumento', stars: musician.stars || 5, isPrimary: true }]
+        : (musician.primaryInstrument ? [{ id: '1', instrument: musician.primaryInstrument, stars: musician.stars || 5, isPrimary: true }] : [])
       );
 
   const skills = rawSkills.map((s, idx) => ({
@@ -319,15 +329,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
         details: g.details || '',
         isPrimary: g.isPrimary !== undefined ? g.isPrimary : (idx === 0)
       }))
-    : [
-        {
-          id: '1',
-          category: skills[0]?.instrument || 'Instrumento',
-          name: 'Setup Profissional de Palco',
-          details: 'Equipamento regulado para gravações em estúdio e apresentações ao vivo.',
-          isPrimary: true
-        }
-      ];
+    : [];
 
   // Bandas e Projetos
   const rawProjects = (() => {
@@ -338,19 +340,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
         : [];
 
     if (candidateList.length === 0) {
-      return [
-        {
-          id: '1',
-          name: 'Projetos e Apresentações',
-          role: skills[0]?.instrument || 'Músico',
-          since: '2022',
-          memberType: 'Membro',
-          city: musician.city || '',
-          state: musician.state || '',
-          country: musician.country || '',
-          genres: ['Rock', 'Pop', 'Indie']
-        }
-      ];
+      return [];
     }
 
     return candidateList.map((b, idx) => {

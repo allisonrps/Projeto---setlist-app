@@ -469,7 +469,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     if (!data) return;
     try {
       const savedImage = await AsyncStorage.getItem('profileImage');
-      if (savedImage) setProfileImage(savedImage);
+      const cloudPic = data.pictureUrl || data.imageUri;
+      const initialPic = savedImage || cloudPic || null;
+      if (initialPic) setProfileImage(initialPic);
       const savedDisplayName = await AsyncStorage.getItem('user_display_name');
       const savedCustomBg = await AsyncStorage.getItem('agenda_custom_bg');
       if (savedCustomBg) setCustomBgUri(savedCustomBg);
@@ -480,13 +482,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       if (savedGear) {
         try { parsedGear = JSON.parse(savedGear); } catch (e) {}
       }
-      if (!parsedGear || parsedGear.length === 0) {
-        parsedGear = [
-          { id: '1', name: 'Fender Stratocaster Player', category: 'Guitarra', details: 'Sunburst, Braço Maple' },
-          { id: '2', name: 'Marshall DSL40CR', category: 'Amplificador', details: 'Combo Valvulado 40W' }
-        ];
-      }
-      setGear(parsedGear);
+      setGear(parsedGear || []);
 
       let parsedSkills = null;
       const rawInst = data.instruments || data.skillsJson || data.skills;
@@ -500,10 +496,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       }
 
       if (!parsedSkills) {
-        parsedSkills = [
-          { id: 1, instrument: 'Guitarra', stars: 5, isPrimary: true },
-          { id: 2, instrument: 'Violão', stars: 3, isPrimary: true }
-        ];
+        parsedSkills = [];
       }
 
       // Garante que até 2 habilidades venham marcadas como principais por padrão se nenhuma estiver
@@ -515,26 +508,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         }));
       }
 
-      let projectsData = [
-        { 
-          id: 1, 
-          name: 'The Rockers', 
-          role: 'Guitarrista', 
-          memberType: 'Membro / Proprietário',
-          since: '2023', 
-          needsSync: false, 
-          logo: 'https://ui-avatars.com/api/?name=The+Rockers&background=random' 
-        },
-        { 
-          id: 2, 
-          name: 'Acoustic Duo', 
-          role: 'Violonista / Vocal', 
-          memberType: 'Membro',
-          since: '2022', 
-          needsSync: true, 
-          logo: 'https://ui-avatars.com/api/?name=Acoustic+Duo&background=random' 
-        }
-      ];
+      let projectsData = [];
 
       try {
         const localBands = await bandService.getAll();
@@ -632,16 +606,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           console.log('Error parsing influences:', e);
         }
       }
-      if (parsedInfluences.length === 0) {
-        parsedInfluences = [
-          { id: '1', name: 'Rock Clássico', stars: 5 },
-          { id: '2', name: 'Blues', stars: 4 }
-        ];
-      }
-
       const enrichedProfile = {
         ...data,
-        imageUri: savedImage || data.imageUri || null,
+        imageUri: savedImage || data.pictureUrl || data.imageUri || null,
         displayName: savedDisplayName || data.displayName || data.username || 'Músico',
         bio: data.bio || 'Escreva algo sobre você...',
         city: data.city || '',
@@ -783,7 +750,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.7,
+        quality: 0.5,
+        base64: true,
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
@@ -829,10 +797,28 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         setProfileImage(finalUri);
         await AsyncStorage.setItem('profileImage', finalUri);
 
+        // Prepara Base64 portátil para sincronizar na nuvem
+        let base64Photo = asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : null;
+        if (!base64Photo && tempUri && Platform.OS !== 'web' && FileSystem) {
+          try {
+            const b64 = await FileSystem.readAsStringAsync(tempUri, { encoding: FileSystem.EncodingType.Base64 });
+            if (b64) base64Photo = `data:image/jpeg;base64,${b64}`;
+          } catch (e) {}
+        }
+
         // Atualiza o estado do usuário e o cache persistente do perfil
-        const updatedUser = { ...user, imageUri: finalUri };
+        const updatedUser = { ...user, imageUri: finalUri, pictureUrl: base64Photo || finalUri };
         setUser(updatedUser);
         await AsyncStorage.setItem('user_profile_cache', JSON.stringify(updatedUser));
+
+        // Sincroniza foto na nuvem para toda a rede
+        if (base64Photo) {
+          try {
+            await api.updateProfile({ pictureUrl: base64Photo });
+          } catch (upErr) {
+            console.log('Error syncing profile picture to cloud:', upErr);
+          }
+        }
       }
     } catch (err) {
       console.log('Erro ao selecionar foto de perfil:', err);

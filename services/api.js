@@ -255,6 +255,20 @@ export const api = {
     return response.json();
   },
 
+  getUserProfile: async (username) => {
+    try {
+      const headers = await getHeaders();
+      const clean = encodeURIComponent(String(username || '').replace(/^@+/, '').trim());
+      const response = await fetchWithTimeout(`${API_URL}/Users/${clean}`, { headers }, 8000);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.log('Error fetching user profile:', err);
+    }
+    return null;
+  },
+
   updateProfile: async (data) => {
     const headers = await getHeaders();
     let response;

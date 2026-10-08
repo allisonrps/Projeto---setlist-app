@@ -1038,14 +1038,44 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       if (typeof u.instruments === 'string' && u.instruments.trim()) {
         try {
           const parsed = JSON.parse(u.instruments);
-          instruments = Array.isArray(parsed) ? parsed : [{ name: u.instruments, stars: 5 }];
+          if (Array.isArray(parsed)) {
+            instruments = parsed.map(item => {
+              if (typeof item === 'object' && item !== null) {
+                return { name: item.name || item.instrument || 'Instrumento', stars: item.stars || 5 };
+              }
+              return { name: String(item), stars: 5 };
+            });
+          } else {
+            instruments = [{ name: String(parsed), stars: 5 }];
+          }
         } catch {
           instruments = [{ name: u.instruments, stars: 5 }];
         }
       } else if (Array.isArray(u.instruments)) {
-        instruments = u.instruments;
+        instruments = u.instruments.map(item => {
+          if (typeof item === 'object' && item !== null) {
+            return { name: item.name || item.instrument || 'Instrumento', stars: item.stars || 5 };
+          }
+          return { name: String(item), stars: 5 };
+        });
       } else {
         instruments = [{ name: 'Músico', stars: 5 }];
+      }
+
+      let parsedInfluences = [];
+      if (typeof u.influences === 'string' && u.influences.trim()) {
+        try {
+          const jsonInf = JSON.parse(u.influences);
+          if (Array.isArray(jsonInf)) {
+            parsedInfluences = jsonInf.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
+          } else {
+            parsedInfluences = [String(jsonInf)];
+          }
+        } catch {
+          parsedInfluences = u.influences.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      } else if (Array.isArray(u.influences)) {
+        parsedInfluences = u.influences.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
       }
 
       list.push({
@@ -1061,9 +1091,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         state: u.state || '',
         country: u.country || 'Brasil',
         availability: u.availability || 'Disponível',
-        influences: typeof u.influences === 'string' ? u.influences.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(u.influences) ? u.influences : []),
+        influences: parsedInfluences,
         bio: u.bio || 'Músico na rede BandLink.',
-        imageUri: null,
+        imageUri: u.pictureUrl || u.imageUri || null,
         instagram: u.instagram,
         youtube: u.youtube,
         spotify: u.spotify,
@@ -2423,7 +2453,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                         ]}
                       >
                         <Text style={[styles.genrePillSmallText, { color: colors.textMuted }]}>
-                          {String(typeof inf === 'string' ? inf : inf.name).replace(/^#+/, '')}
+                          {String(typeof inf === 'string' 
+                            ? inf.replace(/[{}\"]/g, '').replace(/^name:\s*/, '').replace(/^#+/, '').trim() 
+                            : (inf?.name || inf?.tag || '')).replace(/^#+/, '')}
                         </Text>
                       </View>
                     ))}
