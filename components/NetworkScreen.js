@@ -968,94 +968,6 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     Alert.alert(t('applicationSentTitle') || 'Candidatura Enviada!', t('applicationSentMsg') || 'A banda foi notificada sobre seu interesse. Boa sorte!');
   };
 
-  // Calculate Match Score for Candidate Scanner
-  const scannedCandidates = useMemo(() => {
-    if (!selectedScanProject) return [];
-
-    const sought = String(selectedScanProject.soughtRole || '').toLowerCase();
-    const projCity = String(selectedScanProject.city || '').toLowerCase();
-    const projState = String(selectedScanProject.state || '').toUpperCase();
-    const projGenres = (selectedScanProject.genres || []).map(g => String(g).toLowerCase().replace(/^#+/, ''));
-    const projOpts = selectedScanProject.options || [];
-
-    return MOCK_MUSICIANS.filter(m => !m.isMe).map(musician => {
-      let score = 30; // Base score
-      const musInsts = (musician.primaryInstruments || [musician.primaryInstrument]).map(i => {
-        if (typeof i === 'object' && i !== null) return String(i.name || i.instrument || '').toLowerCase();
-        return String(i || '').toLowerCase();
-      });
-
-      // Instrument match across both primary instruments
-      const hasInstMatch = musInsts.some(musInst => 
-        sought.includes(musInst) || 
-        musInst.includes(sought) || 
-        (sought.includes('guitar') && musInst.includes('guitar')) ||
-        (sought.includes('baix') && musInst.includes('baix')) ||
-        (sought.includes('bater') && musInst.includes('bater')) ||
-        (sought.includes('vocal') && (musInst.includes('voz') || musInst.includes('vocal') || musInst.includes('cant'))) ||
-        (sought.includes('voz') && (musInst.includes('voz') || musInst.includes('vocal') || musInst.includes('cant'))) ||
-        (sought.includes('cant') && (musInst.includes('voz') || musInst.includes('vocal') || musInst.includes('cant'))) ||
-        (sought.includes('tecl') && musInst.includes('tecl')) ||
-        (sought.includes('pian') && musInst.includes('pian')) ||
-        (sought.includes('viol') && musInst.includes('viol')) ||
-        (sought.includes('sax') && musInst.includes('sax')) ||
-        (sought.includes('perc') && musInst.includes('perc'))
-      );
-
-      if (hasInstMatch) {
-        score += 35;
-        score += Math.min(15, (musician.stars || 3) * 3);
-      }
-
-      // Proximity match
-      if (projCity && musician.city && String(musician.city).toLowerCase() === projCity) {
-        score += 15;
-      } else if (projState && musician.state && String(musician.state).toUpperCase() === projState) {
-        score += 8;
-      }
-
-      // Objective & proposal match
-      if (musician.interestLevel && musician.interestLevel.some(lvl => projOpts.includes(lvl))) {
-        score += 5;
-      }
-
-      // Genre overlap
-      const hasGenreOverlap = (musician.influences || []).some(inf => {
-        const infStr = String(typeof inf === 'string' ? inf : (inf?.name || '')).toLowerCase();
-        return projGenres.some(pg => infStr.includes(pg) || pg.includes(infStr));
-      });
-      if (hasGenreOverlap) score += 5;
-
-      const finalMatch = Math.min(99, Math.max(45, score));
-      return {
-        ...musician,
-        matchScore: finalMatch
-      };
-    }).sort((a, b) => b.matchScore - a.matchScore);
-  }, [selectedScanProject]);
-
-  // Filtered projects by search text
-  const currentUserId = currentUser?.id || currentUser?.username || 'me';
-  const filteredProjects = useMemo(() => {
-    return projects.filter(p => {
-      if (selectedCity.trim()) {
-        const c = selectedCity.trim().toLowerCase();
-        const inCity = (p.city || '').toLowerCase().includes(c);
-        if (!inCity) return false;
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const inBand = (p.bandName || '').toLowerCase().includes(q);
-        const inRole = (p.soughtRole || '').toLowerCase().includes(q);
-        const inCity = (p.city || '').toLowerCase().includes(q);
-        const inGenres = (p.genres || []).some(g => String(g).toLowerCase().includes(q));
-        const inOpts = (p.options || []).some(o => String(o).toLowerCase().includes(q));
-        if (!inBand && !inRole && !inCity && !inGenres && !inOpts) return false;
-      }
-      return true;
-    });
-  }, [projects, searchQuery, selectedCity]);
-
   // Assemble full musicians list including the logged-in user and cloud users
   const allMusicians = useMemo(() => {
     const list = [];
@@ -1140,7 +1052,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         id: 'mus-' + u.id,
         cloudId: u.id,
         isMe: false,
-        name: u.username,
+        name: u.displayName || u.username || 'Músico',
         username: (u.username || '').replace(/^@+/, ''),
         primaryInstruments: instruments,
         primaryInstrument: instruments[0]?.name || 'Músico',
@@ -1162,6 +1074,109 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
 
     return list;
   }, [currentUser, userProfileImage, cloudMusicians]);
+
+  // Calculate Match Score for Candidate Scanner
+  const scannedCandidates = useMemo(() => {
+    if (!selectedScanProject) return [];
+
+    const sought = String(selectedScanProject.soughtRole || '').toLowerCase();
+    const projCity = String(selectedScanProject.city || '').toLowerCase();
+    const projState = String(selectedScanProject.state || '').toUpperCase();
+    const projGenres = (selectedScanProject.genres || []).map(g => String(g).toLowerCase().replace(/^#+/, ''));
+    const projOpts = selectedScanProject.options || [];
+
+    // Filter out the logged-in user themselves
+    const pool = (allMusicians || []).filter(m => !m.isMe);
+    // If pool is empty (e.g. testing or only current user), fallback to sample musicians
+    const candidatePool = pool.length > 0 ? pool : (musiciansService.getMusicians() || []);
+
+    return candidatePool.map(musician => {
+      let score = 30; // Base score
+      const rawInsts = musician.primaryInstruments || (musician.primaryInstrument ? [musician.primaryInstrument] : []);
+      const musInsts = (Array.isArray(rawInsts) ? rawInsts : [rawInsts]).map(i => {
+        if (typeof i === 'object' && i !== null) return String(i.name || i.instrument || '').toLowerCase();
+        return String(i || '').toLowerCase();
+      });
+
+      // Instrument match across primary instruments
+      const hasInstMatch = musInsts.some(musInst => {
+        if (!musInst) return false;
+        return (
+          (sought && (sought.includes(musInst) || musInst.includes(sought))) ||
+          (sought.includes('guitar') && musInst.includes('guitar')) ||
+          (sought.includes('baix') && (musInst.includes('baix') || musInst.includes('bass'))) ||
+          (sought.includes('bass') && (musInst.includes('baix') || musInst.includes('bass'))) ||
+          (sought.includes('bater') && (musInst.includes('bater') || musInst.includes('drum'))) ||
+          (sought.includes('drum') && (musInst.includes('bater') || musInst.includes('drum'))) ||
+          (sought.includes('vocal') && (musInst.includes('voz') || musInst.includes('vocal') || musInst.includes('cant'))) ||
+          (sought.includes('voz') && (musInst.includes('voz') || musInst.includes('vocal') || musInst.includes('cant'))) ||
+          (sought.includes('cant') && (musInst.includes('voz') || musInst.includes('vocal') || musInst.includes('cant'))) ||
+          (sought.includes('tecl') && (musInst.includes('tecl') || musInst.includes('keyb') || musInst.includes('pian'))) ||
+          (sought.includes('pian') && (musInst.includes('tecl') || musInst.includes('keyb') || musInst.includes('pian'))) ||
+          (sought.includes('keyb') && (musInst.includes('tecl') || musInst.includes('keyb') || musInst.includes('pian'))) ||
+          (sought.includes('viol') && (musInst.includes('viol') || musInst.includes('acoust'))) ||
+          (sought.includes('sax') && musInst.includes('sax')) ||
+          (sought.includes('perc') && musInst.includes('perc'))
+        );
+      });
+
+      if (hasInstMatch) {
+        score += 35;
+        score += Math.min(15, (musician.stars || 5) * 3);
+      }
+
+      // Proximity match
+      if (projCity && musician.city && String(musician.city).toLowerCase() === projCity) {
+        score += 15;
+      } else if (projState && musician.state && String(musician.state).toUpperCase() === projState) {
+        score += 8;
+      }
+
+      // Objective & proposal match
+      if (musician.interestLevel) {
+        if (Array.isArray(musician.interestLevel)) {
+          if (musician.interestLevel.some(lvl => projOpts.includes(lvl))) score += 5;
+        } else if (typeof musician.interestLevel === 'string') {
+          if (projOpts.some(lvl => musician.interestLevel.toLowerCase().includes(String(lvl).toLowerCase()))) score += 5;
+        }
+      }
+
+      // Genre overlap
+      const hasGenreOverlap = (musician.influences || []).some(inf => {
+        const infStr = String(typeof inf === 'string' ? inf : (inf?.name || '')).toLowerCase();
+        return projGenres.some(pg => infStr.includes(pg) || pg.includes(infStr));
+      });
+      if (hasGenreOverlap) score += 5;
+
+      const finalMatch = Math.min(99, Math.max(45, score));
+      return {
+        ...musician,
+        matchScore: finalMatch
+      };
+    }).sort((a, b) => b.matchScore - a.matchScore);
+  }, [selectedScanProject, allMusicians]);
+
+  // Filtered projects by search text
+  const currentUserId = currentUser?.id || currentUser?.username || 'me';
+  const filteredProjects = useMemo(() => {
+    return projects.filter(p => {
+      if (selectedCity.trim()) {
+        const c = selectedCity.trim().toLowerCase();
+        const inCity = (p.city || '').toLowerCase().includes(c);
+        if (!inCity) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const inBand = (p.bandName || '').toLowerCase().includes(q);
+        const inRole = (p.soughtRole || '').toLowerCase().includes(q);
+        const inCity = (p.city || '').toLowerCase().includes(q);
+        const inGenres = (p.genres || []).some(g => String(g).toLowerCase().includes(q));
+        const inOpts = (p.options || []).some(o => String(o).toLowerCase().includes(q));
+        if (!inBand && !inRole && !inCity && !inGenres && !inOpts) return false;
+      }
+      return true;
+    });
+  }, [projects, searchQuery, selectedCity]);
 
   // Helper to extract instrument name and individual star rating
   const getInstInfo = (inst, defaultStars = 5) => {
@@ -2206,8 +2221,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
             <Text style={[styles.scanningSubtitle, { color: colors.textMuted }]}>
               {selectedScanProject
                 ? (t('scanningSubForBand') || 'Analisando músicos para {band} ({role})')
-                    .replace('{band}', selectedScanProject.bandName)
-                    .replace('{role}', selectedScanProject.soughtRole)
+                    .replace('{band}', selectedScanProject.bandName || selectedScanProject.name || 'Banda')
+                    .replace('{role}', selectedScanProject.soughtRole || 'Vaga')
                 : (t('scanningCompat') || 'Escaneando compatibilidade por instrumentos e estilos...')}
             </Text>
 
@@ -2234,10 +2249,10 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
               <View style={[styles.filterBanner, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border }]}>
                 <View style={{ flex: 1, marginRight: 10 }}>
                   <Text style={[styles.filterBannerTitle, { color: colors.text }]} numberOfLines={1}>
-                    {(t('candidatesOf') || 'Candidatos {band}').replace('{band}', selectedScanProject.bandName)}
+                    {(t('candidatesOf') || 'Candidatos {band}').replace('{band}', selectedScanProject.bandName || selectedScanProject.name || 'Banda')}
                   </Text>
                   <Text style={[styles.filterBannerSubtitle, { color: colors.primary }]} numberOfLines={1}>
-                    {selectedScanProject.soughtRole}
+                    {selectedScanProject.soughtRole || ''}
                   </Text>
                 </View>
 
@@ -2300,7 +2315,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                           <Image source={{ uri: m.imageUri }} style={styles.musicianAvatarImg} />
                         ) : (
                           <Text style={{ color: '#fff', fontSize: 25, fontWeight: 'bold' }}>
-                            {m.name.charAt(0).toUpperCase()}
+                            {(m.name || m.username || 'M').charAt(0).toUpperCase()}
                           </Text>
                         )}
                       </View>
@@ -2669,7 +2684,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                   {t('compatibleCandidatesTitle') || 'Candidatos Compatíveis'}
                 </Text>
                 <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>
-                  {selectedScanProject?.bandName} • {t('roleLabelColon') || 'Vaga:'} {selectedScanProject?.soughtRole}
+                  {(selectedScanProject?.bandName || selectedScanProject?.name || 'Banda')} • {t('roleLabelColon') || 'Vaga:'} {selectedScanProject?.soughtRole || ''}
                 </Text>
               </View>
             </View>
@@ -2693,7 +2708,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                     >
                       <View style={[styles.musicianAvatarSmall, { backgroundColor: colors.primary }]}>
                         <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>
-                          {cand.name.charAt(0)}
+                          {(cand.name || cand.username || 'M').charAt(0).toUpperCase()}
                         </Text>
                       </View>
                       <View style={{ flex: 1 }}>
