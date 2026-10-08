@@ -28,7 +28,6 @@ import MusicianProfileModal from './MusicianProfileModal';
 import ShareAgendaModal from './ShareAgendaModal';
 import { useLanguage } from '../hooks/useLanguage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -363,8 +362,6 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const gearRef = useRef(gear);
   gearRef.current = gear;
-
-  const viewShotRef = useRef();
 
   // Agenda Sharing State (com seleção de eventos e arte personalizada)
   const [selectedAgendaEventIds, setSelectedAgendaEventIds] = useState([]);
@@ -1306,17 +1303,6 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     }
   };
 
-  const captureAndShare = async () => {
-    try {
-      setTimeout(async () => {
-        const uri = await viewShotRef.current.capture();
-        await Sharing.shareAsync(uri, { dialogTitle: 'Compartilhar Agenda' });
-        setShowShareModal(false);
-      }, 500);
-    } catch (error) {
-      Alert.alert(t('errorTitle') || 'Erro', t('failedToGenerateImageMsg') || 'Falha ao gerar imagem.');
-    }
-  };
 
   // ── Helper de estrelas (suporta de 0 a 5 estrelas) ──
   const renderStars = (count, size = 16, interactive = false, onSelect = null) => (

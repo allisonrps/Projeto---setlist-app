@@ -42,7 +42,7 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableProguardInReleaseBuilds": true,
-            "extraProguardRules": "-keep class com.facebook.react.** { *; }\n-keep class expo.modules.** { *; }\n-keep class org.sqlite.** { *; }\n-dontwarn org.sqlite.**"
+            "extraProguardRules": "-keep class com.facebook.react.** { *; }\n-keep class expo.modules.** { *; }\n-keep class org.sqlite.** { *; }\n-dontwarn org.sqlite.**\n-keep class fr.greweb.reactnativeviewshot.** { *; }\n-dontwarn fr.greweb.reactnativeviewshot.**\n-keep class com.horcrux.svg.** { *; }\n-dontwarn com.horcrux.svg.**"
           }
         }
       ],

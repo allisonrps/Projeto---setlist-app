@@ -11,10 +11,11 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ViewShot from 'react-native-view-shot';
+import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import QRCode from 'react-native-qrcode-svg';
@@ -225,14 +226,31 @@ export default function ShareAgendaModal({
     if (isSharing) return;
     setIsSharing(true);
     try {
-      // Breve pausa para garantir renderização de fontes e layout nativo
-      await new Promise(resolve => setTimeout(resolve, 350));
+      // Pausa essencial de 600ms para garantir que o layout 1080x1920 seja montado,
+      // todas as fontes personalizadas e imagens sejam desenhadas pelo motor nativo
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      if (!viewShotRef.current || typeof viewShotRef.current.capture !== 'function') {
-        throw new Error('ViewShot capture method not available');
+      let uri = null;
+      try {
+        if (viewShotRef.current && typeof viewShotRef.current.capture === 'function') {
+          uri = await viewShotRef.current.capture();
+        }
+      } catch (directErr) {
+        console.log('Direct viewShotRef capture failed, trying captureRef fallback:', directErr);
       }
 
-      const uri = await viewShotRef.current.capture();
+      if (!uri && viewShotRef.current) {
+        try {
+          uri = await captureRef(viewShotRef, {
+            format: 'jpg',
+            quality: 0.95,
+            result: 'tmpfile',
+          });
+        } catch (refErr) {
+          console.log('captureRef fallback also failed:', refErr);
+        }
+      }
+
       if (!uri) {
         throw new Error('Capture returned empty URI');
       }
@@ -409,17 +427,18 @@ export default function ShareAgendaModal({
   const footerScanFontSize = isCompact ? 14 : 16;
 
   return (
-    <>
-      {/* ── OFF-SCREEN VIEWSHOT (Dimensões nativas 1080x1920 com collapsable={false}) ── */}
-      {visible && (
+    <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+        {/* ── HIGH-RES FLYER VIEWSHOT (DENTRO DO MODAL WINDOW, SEM RECORTE FORA DA TELA) ── */}
         <View
           style={{
             position: 'absolute',
-            left: -9999,
+            left: isSharing ? 0 : -9999,
             top: 0,
             width: 1080,
             height: 1920,
-            opacity: 0.01,
+            zIndex: -10,
+            opacity: isSharing ? 1 : 0.01,
           }}
           pointerEvents="none"
           collapsable={false}
@@ -641,12 +660,21 @@ export default function ShareAgendaModal({
             </ImageBackground>
           </ViewShot>
         </View>
-      )}
 
-      {/* ── SHARE MODAL (BOTTOM SHEET - ESCOLHER SHOWS E ESTILO/ARTE) ── */}
-      <Modal visible={!!visible} transparent animationType='slide' onRequestClose={onClose}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <Pressable style={styles.modalBackdrop} onPress={onClose} />
+        {/* ── LOADING OVERLAY QUANDO GERANDO A ARTE ── */}
+        {isSharing ? (
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.88)', justifyContent: 'center', alignItems: 'center', zIndex: 99999 }]}>
+            <ActivityIndicator size="large" color={colors.primary || '#eab308'} />
+            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold', marginTop: 16, textAlign: 'center' }}>
+              {t('generatingFlyer') || 'Gerando arte em alta definição...'}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 6 }}>
+              {t('pleaseWait') || 'Aguarde um momento'}
+            </Text>
+          </View>
+        ) : null}
+
+        <Pressable style={styles.modalBackdrop} onPress={onClose} />
           <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '90%' }]}>
             <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]} />
             <View style={styles.modalHeader}>
@@ -787,7 +815,6 @@ export default function ShareAgendaModal({
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </>
   );
 }
 
