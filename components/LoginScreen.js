@@ -10,7 +10,8 @@ import {
   Alert,
   Modal,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
@@ -784,6 +785,26 @@ export default function LoginScreen({ onLogin }) {
               </Text>
             </Text>
           </Pressable>
+
+          {/* Links para Termos de Serviço e Política de Privacidade */}
+          <View style={{ marginTop: 22, marginBottom: 8, paddingHorizontal: 16, alignItems: 'center' }}>
+            <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', lineHeight: 16 }}>
+              Ao continuar, você concorda com nossos{' '}
+              <Text 
+                style={{ color: colors.primary, fontWeight: '600', textDecorationLine: 'underline' }}
+                onPress={() => Linking.openURL('https://bandlink.pro/terms.html')}
+              >
+                Termos de Serviço
+              </Text>
+              {' '}e{' '}
+              <Text 
+                style={{ color: colors.primary, fontWeight: '600', textDecorationLine: 'underline' }}
+                onPress={() => Linking.openURL('https://bandlink.pro/privacy.html')}
+              >
+                Política de Privacidade
+              </Text>.
+            </Text>
+          </View>
         </View>
       </ScrollView>
 

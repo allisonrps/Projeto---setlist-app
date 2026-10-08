@@ -27,6 +27,30 @@
     {
       "route": "/band.html",
       "rewrite": "/band.html"
+    },
+    {
+      "route": "/privacidade",
+      "rewrite": "/privacy.html"
+    },
+    {
+      "route": "/privacy",
+      "rewrite": "/privacy.html"
+    },
+    {
+      "route": "/privacy.html",
+      "rewrite": "/privacy.html"
+    },
+    {
+      "route": "/termos",
+      "rewrite": "/terms.html"
+    },
+    {
+      "route": "/terms",
+      "rewrite": "/terms.html"
+    },
+    {
+      "route": "/terms.html",
+      "rewrite": "/terms.html"
     }
   ],
   "navigationFallback": {
@@ -37,6 +61,8 @@
       "/editor/*",
       "/admin.html",
       "/admin/*",
+      "/privacy.html",
+      "/terms.html",
       "/*.{png,jpg,jpeg,gif,svg,ico,css,js,json}"
     ]
   },
