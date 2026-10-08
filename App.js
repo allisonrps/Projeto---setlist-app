@@ -5043,13 +5043,13 @@ function MainApp() {
                   </View>
                   
                   <Pressable 
-                    onPress={() => Linking.openURL('https://www.setlistbandmanager.com').catch(err => console.error("Couldn't open URL", err))}
+                    onPress={() => Linking.openURL('https://www.bandlink.pro').catch(err => console.error("Couldn't open URL", err))}
                     style={({ pressed }) => [{ marginTop: 4, marginBottom: 2 }, pressed && { opacity: 0.7 }]}
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                       <Ionicons name="globe-outline" size={13} color={colors.primary} />
                       <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary, textDecorationLine: 'underline' }}>
-                        www.setlistbandmanager.com
+                        www.bandlink.pro
                       </Text>
                     </View>
                   </Pressable>
@@ -5447,7 +5447,7 @@ function MainApp() {
           })}
         displayName={userProfile?.displayName || userProfile?.name || 'Agenda de Shows'}
         headerLogo={userProfile?.imageUri || null}
-        qrValue={userProfile?.username ? `https://setlistbandmanager.com/u/${userProfile.username}` : 'https://setlistbandmanager.com'}
+        qrValue={userProfile?.username ? `https://bandlink.pro/u/${userProfile.username}` : 'https://bandlink.pro'}
       />
 
       <SetlistDetailScreen

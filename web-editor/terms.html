@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Termos de Serviço • BandLink</title>
-  <meta name="description" content="Termos de Serviço e Condições de Uso do BandLink / Setlist Band Manager. Conheça as diretrizes para uso da plataforma, comunidade e gerenciador musical.">
+  <title id="metaTitle">Terms of Service • BandLink</title>
+  <meta id="metaDesc" name="description" content="Terms of Service and Conditions of Use for BandLink / Setlist Band Manager. Guidelines for using the platform, community network, and repertoire manager.">
   <link rel="icon" type="image/png" href="assets/bandlink-logo-official.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +18,36 @@
       color: #f4f4f5;
     }
     .glass-card {
-      background: rgba(24, 24, 27, 0.7);
+      background: rgba(24, 24, 27, 0.75);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .lang-switcher {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 2px;
+    }
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: #a1a1aa;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .lang-btn.active {
+      background: #27272a;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .lang-btn:hover:not(.active) {
+      color: #fff;
     }
   </style>
 </head>
@@ -37,12 +64,19 @@
       </a>
 
       <div class="flex items-center gap-3">
-        <a href="privacy.html" class="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 transition-all">
-          Política de Privacidade
+        <!-- Language Switcher -->
+        <div class="lang-switcher">
+          <button type="button" class="lang-btn" id="lang-en" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" id="lang-pt" onclick="setLanguage('pt')">PT</button>
+          <button type="button" class="lang-btn" id="lang-es" onclick="setLanguage('es')">ES</button>
+        </div>
+
+        <a href="privacy.html" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 transition-all" data-i18n="navPrivacy">
+          Privacy Policy
         </a>
         <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-bold text-white flex items-center gap-2 shadow-lg shadow-sky-600/20 transition-all">
           <i class="fa-brands fa-google-play"></i>
-          <span>App Oficial</span>
+          <span data-i18n="navApp">Official App</span>
         </a>
       </div>
     </div>
@@ -55,13 +89,13 @@
     <div class="mb-10 text-center sm:text-left">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold tracking-wide uppercase mb-3">
         <i class="fa-solid fa-scale-balanced"></i>
-        <span>Condições de Uso & Comunidade</span>
+        <span data-i18n="badgeTitle">Terms of Use &amp; Community</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
-        Termos de Serviço
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3" data-i18n="pageTitle">
+        Terms of Service
       </h1>
-      <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
-        Última atualização: <strong>08 de outubro de 2026</strong> • Válido para o ecossistema <strong>BandLink (Setlist Band Manager)</strong>.
+      <p class="text-zinc-400 text-sm sm:text-base leading-relaxed" data-i18n="lastUpdated">
+        Last updated: <strong>October 08, 2026</strong> • Applicable to the <strong>BandLink (Setlist Band Manager)</strong> mobile app and website.
       </p>
     </div>
 
@@ -72,40 +106,42 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">1</span>
-          Aceitação dos Termos
+          <span data-i18n="sec1Title">Acceptance of Terms</span>
         </h2>
-        <p>
-          Ao baixar, instalar, acessar ou utilizar o aplicativo móvel <strong>BandLink</strong> (identificado na Google Play Store pelo pacote <em>com.setlistbandmanager.com</em>) ou acessar o site <a href="https://bandlink.pro" class="text-sky-400 hover:underline">bandlink.pro</a>, você declara que leu, compreendeu e concorda integralmente com estes Termos de Serviço e com a nossa <a href="privacy.html" class="text-sky-400 hover:underline">Política de Privacidade</a>.
-        </p>
-        <p class="mt-2 text-zinc-400 text-xs sm:text-sm">
-          Se você não concordar com qualquer disposição destes termos, não deve utilizar a plataforma.
-        </p>
+        <div data-i18n="sec1Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            By downloading, installing, accessing, or using the <strong>BandLink</strong> mobile application (Google Play package <em>com.setlistbandmanager.com</em>) or accessing <a href="https://www.bandlink.pro" class="text-sky-400 hover:underline">www.bandlink.pro</a>, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our <a href="privacy.html" class="text-sky-400 hover:underline">Privacy Policy</a>.
+          </p>
+          <p class="text-zinc-400">
+            If you do not agree to all provisions of these terms, please do not use the application or related web services.
+          </p>
+        </div>
       </section>
 
       <!-- 2 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">2</span>
-          Descrição dos Serviços
+          <span data-i18n="sec2Title">Description of Services</span>
         </h2>
-        <p>
-          O <strong>BandLink</strong> é um ecossistema completo desenvolvido especificamente para o universo musical, oferecendo:
+        <p data-i18n="sec2Subtitle" class="text-xs sm:text-sm">
+          <strong>BandLink</strong> provides specialized management and networking tools tailored for musicians, live bands, and stage performers:
         </p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
           <div class="p-3.5 rounded-xl bg-zinc-900/70 border border-zinc-800">
             <h3 class="font-bold text-white text-xs uppercase tracking-wider text-sky-400 mb-1">
-              <i class="fa-solid fa-guitar mr-1.5"></i> Gestão de Repertório & Shows
+              <i class="fa-solid fa-guitar mr-1.5"></i> <span data-i18n="sec2Card1Title">Live Repertoire &amp; Stage Tools</span>
             </h3>
-            <p class="text-xs text-zinc-400">
-              Criação de setlists, cifras com transposição de tom em tempo real, rolagem automática ajustada por BPM/tempo, metrônomo integrado e organização de eventos da banda com divisão de cachê.
+            <p class="text-xs text-zinc-400" data-i18n="sec2Card1Text">
+              Custom setlists, smart chord transposition in real-time, hands-free autoscroll by BPM/tempo, integrated metronome, and gig schedule management with cache division.
             </p>
           </div>
           <div class="p-3.5 rounded-xl bg-zinc-900/70 border border-zinc-800">
             <h3 class="font-bold text-white text-xs uppercase tracking-wider text-emerald-400 mb-1">
-              <i class="fa-solid fa-users mr-1.5"></i> Rede de Músicos & Comunidade
+              <i class="fa-solid fa-users mr-1.5"></i> <span data-i18n="sec2Card2Title">Musicians Network &amp; Community</span>
             </h3>
-            <p class="text-xs text-zinc-400">
-              Perfis de músicos com instrumentos e influências, busca geolocalizada por cidade, anúncios de vagas para bandas, agenda pública de shows e sincronização colaborativa entre líderes e integrantes.
+            <p class="text-xs text-zinc-400" data-i18n="sec2Card2Text">
+              Player profiles, instrument and influence search by city, audition postings for bands, candidate scanning, and real-time collaboration between band leaders and members.
             </p>
           </div>
         </div>
@@ -115,35 +151,39 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">3</span>
-          Cadastro, Contas e Segurança
+          <span data-i18n="sec3Title">Registration, Accounts &amp; Security</span>
         </h2>
-        <p>
-          Você pode usufruir de ferramentas offline do BandLink sem criar conta. No entanto, para publicar anúncios na rede, conectar-se a outros músicos, sincronizar bandas na nuvem ou acessar o Web Editor, é necessário cadastrar uma conta.
-        </p>
-        <ul class="list-disc list-inside space-y-1.5 text-xs sm:text-sm text-zinc-300 mt-2">
-          <li><strong>Veracidade:</strong> Você concorda em fornecer dados verdadeiros, atualizados e completos durante o cadastro (via e-mail/senha ou Conta Google).</li>
-          <li><strong>Confidencialidade:</strong> Você é o único responsável pela segurança da sua senha e por todas as atividades realizadas na sua conta.</li>
-          <li><strong>Recuperação de Acesso:</strong> O sistema disponibiliza redefinição de senha segura via código enviado ao seu e-mail cadastrado.</li>
-          <li><strong>Idade Mínima:</strong> A plataforma é recomendada para maiores de 13 anos. Menores de 18 anos devem utilizar a plataforma sob orientação e consentimento de responsáveis legais.</li>
-        </ul>
+        <div data-i18n="sec3Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            You can utilize primary offline features without an account. However, publishing announcements, connecting with musicians in your city, or synchronizing repertoire across devices requires registering an account.
+          </p>
+          <ul class="list-disc list-inside space-y-1 text-zinc-300">
+            <li><strong>Accuracy:</strong> You agree to provide true and accurate information when registering via email or Google Sign-In.</li>
+            <li><strong>Confidentiality:</strong> You are responsible for safeguarding your credentials and for all activities conducted under your account.</li>
+            <li><strong>Account Recovery:</strong> Account recovery is available through one-time verification codes sent to your registered email address.</li>
+            <li><strong>Minimum Age:</strong> The service is designed for users aged 13 and older. Minors must use the platform with parental consent.</li>
+          </ul>
+        </div>
       </section>
 
       <!-- 4 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">4</span>
-          Conteúdo do Usuário e Direitos Autorais
+          <span data-i18n="sec4Title">User Content &amp; Live Performance Rights</span>
         </h2>
-        <p>
-          O usuário é o único e exclusivo titular dos direitos sobre o conteúdo que insere no BandLink (como anotações musicais, arranjos próprios, comentários e descrições de perfil).
-        </p>
-        <div class="mt-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm space-y-2">
+        <div data-i18n="sec4Content" class="space-y-2 text-xs sm:text-sm">
           <p>
-            <strong class="text-white">Uso de Letras, Cifras e Músicas de Terceiros:</strong> O BandLink opera primariamente como um organizador pessoal de estudos e performances ao vivo. É responsabilidade exclusiva do usuário assegurar que sua utilização e execução pública de obras musicais protegidas por direitos autorais estejam em conformidade com as leis vigentes e entidades arrecadadoras locais (ex: ECAD no Brasil).
+            Users retain full ownership of their original content (such as personal annotations, private arrangements, band descriptions, and profile information).
           </p>
-          <p>
-            O BandLink não comercializa obras musicais, gravações fonográficas nem explora comercialmente os repertórios privados dos usuários.
-          </p>
+          <div class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5 text-zinc-400">
+            <p>
+              <strong class="text-white">Third-Party Songs &amp; Chords:</strong> BandLink serves strictly as a private rehearsal tool, personal digital binder, and stage viewer. It is the sole responsibility of the performer or venue to ensure compliance with copyright laws and local performance collection societies (such as ECAD, ASCAP, BMI, SGAE) regarding public performances.
+            </p>
+            <p>
+              BandLink does not sell musical recordings, publish sheet music catalogs, or monetize private user repertoires.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -151,45 +191,48 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">5</span>
-          Diretrizes de Conduta na Rede Comunitária
+          <span data-i18n="sec5Title">Community Code of Conduct</span>
         </h2>
-        <p>
-          A rede BandLink foi criada para fomentar a colaboração profissional e amigável entre músicos. São expressamente proibidas na plataforma as seguintes condutas:
-        </p>
-        <ul class="list-disc list-inside space-y-1.5 text-xs sm:text-sm text-zinc-300 mt-2">
-          <li>Publicar discursos de ódio, conteúdo discriminatório, abusivo, difamatório, pornográfico ou ilegal;</li>
-          <li>Veicular anúncios fraudulentos, falsas oportunidades de trabalho ou propostas enganosas;</li>
-          <li>Praticar assédio, spam, envio massivo de mensagens ou coação contra outros músicos cadastrados;</li>
-          <li>Tentar violar a segurança, praticar engenharia reversa nos servidores ou sobrecarregar a infraestrutura de rede (ataques DDoS, scraping indevido);</li>
-          <li>Utilizar identidades falsas ou se passar por terceiros sem a devida autorização.</li>
-        </ul>
-        <p class="mt-2 text-xs text-amber-400/90 font-medium">
-          <i class="fa-solid fa-triangle-exclamation mr-1"></i> Contas que violarem estas diretrizes poderão ser suspensas temporariamente ou banidas em definitivo sem aviso prévio.
-        </p>
+        <div data-i18n="sec5Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            The musicians network was built to promote respectful, professional artistic collaboration. The following behaviors are strictly prohibited:
+          </p>
+          <ul class="list-disc list-inside space-y-1 text-zinc-300">
+            <li>Publishing hate speech, discriminatory, harassing, defamatory, or unlawful content;</li>
+            <li>Posting fraudulent gig offers, deceptive audition postings, or spamming musicians;</li>
+            <li>Attempting to breach security, reverse engineer services, or overload platform infrastructure;</li>
+            <li>Impersonating other musicians, bands, or organizations without authorization.</li>
+          </ul>
+          <p class="text-amber-400/90 font-medium">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Violating accounts may be temporarily suspended or permanently terminated without prior notice.
+          </p>
+        </div>
       </section>
 
       <!-- 6 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">6</span>
-          Armazenamento Offline e Sincronização em Nuvem
+          <span data-i18n="sec6Title">Local Storage &amp; Cloud Synchronization</span>
         </h2>
-        <p>
-          O aplicativo BandLink adota a arquitetura <strong>Offline-First</strong> via banco de dados local SQLite, permitindo que seus setlists e cifras estejam disponíveis mesmo sem conexão com a internet durante shows e ensaios.
-        </p>
-        <p class="mt-2 text-xs sm:text-sm">
-          A sincronização com a nuvem ocorre mediante iniciativa do usuário (ou ao ingressar em uma banda colaborativa). Recomendamos realizar backups periódicos ou manter a sincronização ativa para resguardar seus dados em casos de troca ou perda de dispositivo.
-        </p>
+        <div data-i18n="sec6Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            BandLink features an <strong>offline-first architecture</strong>, keeping your active repertoire locally available on your device so that you can perform reliably without internet connection during rehearsals and live gigs.
+          </p>
+          <p>
+            Cloud synchronization occurs upon user command or when collaborating within an online band. Users are encouraged to maintain active backups to safeguard their musical catalog in case of device replacement or hardware failure.
+          </p>
+        </div>
       </section>
 
       <!-- 7 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">7</span>
-          Propriedade Intelectual da Plataforma
+          <span data-i18n="sec7Title">Platform Intellectual Property</span>
         </h2>
-        <p>
-          Todos os direitos de propriedade intelectual relativos ao aplicativo BandLink, incluindo marcas registradas, logotipos, layout visual, código-fonte, arquitetura de software, design e interfaces gráficas são de titularidade exclusiva dos seus desenvolvedores e protegidos pelas leis de propriedade intelectual.
+        <p data-i18n="sec7Content" class="text-xs sm:text-sm">
+          All proprietary rights relating to BandLink, including trademarks, logos, visual layouts, user interface designs, software architecture, and source code, are the exclusive property of its creators and protected by international intellectual property laws.
         </p>
       </section>
 
@@ -197,26 +240,28 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">8</span>
-          Limitação de Responsabilidade
+          <span data-i18n="sec8Title">Limitation of Liability</span>
         </h2>
-        <p>
-          O aplicativo e seus serviços são fornecidos no estado em que se encontram ("como estão" e "conforme disponíveis"). Embora envidemos os maiores esforços para manter o serviço contínuo, seguro e livre de falhas:
-        </p>
-        <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-zinc-300 mt-2">
-          <li>Não garantimos que o serviço será 100% ininterrupto, livre de instabilidades de rede móvel durante apresentações ao vivo ou isento de bugs pontuais;</li>
-          <li>Não nos responsabilizamos por acertos financeiros particulares, contratos verbais de cachê ou acordos de apresentações fechados entre músicos através do mural da rede;</li>
-          <li>Não nos responsabilizamos pela perda de dados decorrente de falhas no dispositivo do usuário, desinstalação acidental do app sem backup prévio ou uso indevido de credenciais.</li>
-        </ul>
+        <div data-i18n="sec8Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            The service is provided on an "as is" and "as available" basis. While we strive to maintain high service availability and uninterrupted performance:
+          </p>
+          <ul class="list-disc list-inside space-y-1 text-zinc-300">
+            <li>We do not warrant that service operations will be entirely error-free or uninterrupted during unforeseen network outages;</li>
+            <li>We are not responsible for private financial arrangements, verbal gig agreements, or cache splits made between musicians through community classifieds;</li>
+            <li>We are not liable for data loss caused by device malfunction, hardware failure, or unintended app removal without prior backups.</li>
+          </ul>
+        </div>
       </section>
 
       <!-- 9 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">9</span>
-          Encerramento e Exclusão de Conta
+          <span data-i18n="sec9Title">Account Termination &amp; Deletion</span>
         </h2>
-        <p>
-          Você pode cancelar sua conta a qualquer momento por meio das configurações do aplicativo ou enviando uma solicitação para <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>. Conforme detalhado em nossa Política de Privacidade, todos os seus dados pessoais e registros na rede pública serão expurgados de forma definitiva dos nossos servidores.
+        <p data-i18n="sec9Content" class="text-xs sm:text-sm">
+          You may close your account at any time through the in-app settings or by contacting <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>. Upon account closure, all associated cloud records and public network postings will be permanently expunged in accordance with our Privacy Policy.
         </p>
       </section>
 
@@ -224,10 +269,10 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">10</span>
-          Legislação Aplicável e Foro
+          <span data-i18n="sec10Title">Governing Law</span>
         </h2>
-        <p>
-          Estes Termos de Serviço são regidos e interpretados segundo a legislação da República Federativa do Brasil, em particular o Marco Civil da Internet (Lei nº 12.965/2014) e o Código de Defesa do Consumidor (Lei nº 8.078/1990), quando aplicável.
+        <p data-i18n="sec10Content" class="text-xs sm:text-sm">
+          These Terms of Service are governed by and construed in accordance with applicable consumer protection and digital framework legislation, without regard to conflict of law principles.
         </p>
       </section>
 
@@ -235,16 +280,16 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">11</span>
-          Contato e Suporte
+          <span data-i18n="sec11Title">Contact &amp; Support</span>
         </h2>
-        <p>
-          Em caso de dúvidas, relatos de problemas técnicos ou denúncias de infrações a estes Termos, entre em contato através dos canais oficiais:
+        <p data-i18n="sec11Subtitle" class="text-xs sm:text-sm">
+          If you have questions, feedback, or require technical support regarding these Terms:
         </p>
-        <div class="mt-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm">
-          <p class="text-white font-semibold">BandLink • Suporte e Atendimento ao Músico</p>
-          <p class="text-zinc-400 mt-1">Desenvolvedor Responsável: <strong>Allison Rosa</strong></p>
-          <p class="text-zinc-400">E-mail: <a href="mailto:allisonrps@gmail.com" class="text-sky-400 font-medium hover:underline">allisonrps@gmail.com</a></p>
-          <p class="text-zinc-400">Website: <a href="https://bandlink.pro" target="_blank" class="text-sky-400 hover:underline">https://bandlink.pro</a></p>
+        <div class="mt-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm">
+          <p class="text-white font-semibold" data-i18n="supportEntity">BandLink • Musician Support &amp; Legal</p>
+          <p class="text-zinc-400 mt-1"><span data-i18n="supportDev">Developer:</span> <strong>Allison Rodrigues</strong></p>
+          <p class="text-zinc-400"><span data-i18n="supportEmail">Official Email:</span> <a href="mailto:allisonrps@gmail.com" class="text-sky-400 font-medium hover:underline">allisonrps@gmail.com</a></p>
+          <p class="text-zinc-400"><span data-i18n="supportWeb">Official Website:</span> <a href="https://www.bandlink.pro" target="_blank" class="text-sky-400 hover:underline">https://www.bandlink.pro</a></p>
         </div>
       </section>
 
@@ -254,12 +299,12 @@
     <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
       <a href="/" class="hover:text-zinc-300 flex items-center gap-2 transition-colors">
         <i class="fa-solid fa-arrow-left"></i>
-        <span>Voltar à Página Inicial</span>
+        <span data-i18n="backHome">Back to Home</span>
       </a>
       <div class="flex items-center gap-4">
-        <a href="privacy.html" class="hover:text-zinc-300 transition-colors">Política de Privacidade</a>
+        <a href="privacy.html" class="hover:text-zinc-300 transition-colors" data-i18n="navPrivacy">Privacy Policy</a>
         <span>•</span>
-        <a href="mailto:allisonrps@gmail.com" class="hover:text-zinc-300 transition-colors">Fale Conosco</a>
+        <a href="mailto:allisonrps@gmail.com" class="hover:text-zinc-300 transition-colors" data-i18n="contactUs">Contact Us</a>
       </div>
     </div>
 
@@ -267,10 +312,175 @@
 
   <!-- Footer -->
   <footer class="border-t border-zinc-900 py-6 text-center text-xs text-zinc-600 bg-zinc-950">
-    <div class="max-w-4xl mx-auto px-4">
-      © 2026 BandLink. Todos os direitos reservados. Desenvolvido para músicos e bandas.
+    <div class="max-w-4xl mx-auto px-4" data-i18n="copyright">
+      © 2026 BandLink. All rights reserved. Built for musicians, bands, and stage performers.
     </div>
   </footer>
+
+  <!-- Translation Dictionary Script -->
+  <script>
+    const translations = {
+      en: {
+        metaTitle: "Terms of Service • BandLink",
+        metaDesc: "Terms of Service and Conditions of Use for BandLink / Setlist Band Manager. Guidelines for using the platform, community network, and repertoire manager.",
+        navPrivacy: "Privacy Policy",
+        navApp: "Official App",
+        badgeTitle: "Terms of Use &amp; Community",
+        pageTitle: "Terms of Service",
+        lastUpdated: "Last updated: <strong>October 08, 2026</strong> • Applicable to the <strong>BandLink (Setlist Band Manager)</strong> mobile app and website.",
+        sec1Title: "Acceptance of Terms",
+        sec1Content: `<p>By downloading, installing, accessing, or using the <strong>BandLink</strong> mobile application (Google Play package <em>com.setlistbandmanager.com</em>) or accessing <a href="https://www.bandlink.pro" class="text-sky-400 hover:underline">www.bandlink.pro</a>, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our <a href="privacy.html" class="text-sky-400 hover:underline">Privacy Policy</a>.</p><p class="text-zinc-400">If you do not agree to all provisions of these terms, please do not use the application or related web services.</p>`,
+        sec2Title: "Description of Services",
+        sec2Subtitle: "BandLink provides specialized management and networking tools tailored for musicians, live bands, and stage performers:",
+        sec2Card1Title: "Live Repertoire &amp; Stage Tools",
+        sec2Card1Text: "Custom setlists, smart chord transposition in real-time, hands-free autoscroll by BPM/tempo, integrated metronome, and gig schedule management with cache division.",
+        sec2Card2Title: "Musicians Network &amp; Community",
+        sec2Card2Text: "Player profiles, instrument and influence search by city, audition postings for bands, candidate scanning, and real-time collaboration between band leaders and members.",
+        sec3Title: "Registration, Accounts &amp; Security",
+        sec3Content: `<p>You can utilize primary offline features without an account. However, publishing announcements, connecting with musicians in your city, or synchronizing repertoire across devices requires registering an account.</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li><strong>Accuracy:</strong> You agree to provide true and accurate information when registering via email or Google Sign-In.</li><li><strong>Confidentiality:</strong> You are responsible for safeguarding your credentials and for all activities conducted under your account.</li><li><strong>Account Recovery:</strong> Account recovery is available through one-time verification codes sent to your registered email address.</li><li><strong>Minimum Age:</strong> The service is designed for users aged 13 and older. Minors must use the platform with parental consent.</li></ul>`,
+        sec4Title: "User Content &amp; Live Performance Rights",
+        sec4Content: `<p>Users retain full ownership of their original content (such as personal annotations, private arrangements, band descriptions, and profile information).</p><div class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5 text-zinc-400"><p><strong class="text-white">Third-Party Songs &amp; Chords:</strong> BandLink serves strictly as a private rehearsal tool, personal digital binder, and stage viewer. It is the sole responsibility of the performer or venue to ensure compliance with copyright laws and local performance collection societies (such as ECAD, ASCAP, BMI, SGAE) regarding public performances.</p><p>BandLink does not sell musical recordings, publish sheet music catalogs, or monetize private user repertoires.</p></div>`,
+        sec5Title: "Community Code of Conduct",
+        sec5Content: `<p>The musicians network was built to promote respectful, professional artistic collaboration. The following behaviors are strictly prohibited:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li>Publishing hate speech, discriminatory, harassing, defamatory, or unlawful content;</li><li>Posting fraudulent gig offers, deceptive audition postings, or spamming musicians;</li><li>Attempting to breach security, reverse engineer services, or overload platform infrastructure;</li><li>Impersonating other musicians, bands, or organizations without authorization.</li></ul><p class="text-amber-400/90 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Violating accounts may be temporarily suspended or permanently terminated without prior notice.</p>`,
+        sec6Title: "Local Storage &amp; Cloud Synchronization",
+        sec6Content: `<p>BandLink features an <strong>offline-first architecture</strong>, keeping your active repertoire locally available on your device so that you can perform reliably without internet connection during rehearsals and live gigs.</p><p>Cloud synchronization occurs upon user command or when collaborating within an online band. Users are encouraged to maintain active backups to safeguard their musical catalog in case of device replacement or hardware failure.</p>`,
+        sec7Title: "Platform Intellectual Property",
+        sec7Content: "All proprietary rights relating to BandLink, including trademarks, logos, visual layouts, user interface designs, software architecture, and source code, are the exclusive property of its creators and protected by international intellectual property laws.",
+        sec8Title: "Limitation of Liability",
+        sec8Content: `<p>The service is provided on an "as is" and "as available" basis. While we strive to maintain high service availability and uninterrupted performance:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li>We do not warrant that service operations will be entirely error-free or uninterrupted during unforeseen network outages;</li><li>We are not responsible for private financial arrangements, verbal gig agreements, or cache splits made between musicians through community classifieds;</li><li>We are not liable for data loss caused by device malfunction, hardware failure, or unintended app removal without prior backups.</li></ul>`,
+        sec9Title: "Account Termination &amp; Deletion",
+        sec9Content: `You may close your account at any time through the in-app settings or by contacting <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>. Upon account closure, all associated cloud records and public network postings will be permanently expunged in accordance with our Privacy Policy.`,
+        sec10Title: "Governing Law",
+        sec10Content: "These Terms of Service are governed by and construed in accordance with applicable consumer protection and digital framework legislation, without regard to conflict of law principles.",
+        sec11Title: "Contact &amp; Support",
+        sec11Subtitle: "If you have questions, feedback, or require technical support regarding these Terms:",
+        supportEntity: "BandLink • Musician Support &amp; Legal",
+        supportDev: "Developer:",
+        supportEmail: "Official Email:",
+        supportWeb: "Official Website:",
+        backHome: "Back to Home",
+        contactUs: "Contact Us",
+        copyright: "© 2026 BandLink. All rights reserved. Built for musicians, bands, and stage performers."
+      },
+      pt: {
+        metaTitle: "Termos de Serviço • BandLink",
+        metaDesc: "Termos de Serviço e Condições de Uso do BandLink / Setlist Band Manager. Conheça as diretrizes para uso da plataforma, comunidade e gerenciador musical.",
+        navPrivacy: "Política de Privacidade",
+        navApp: "App Oficial",
+        badgeTitle: "Condições de Uso &amp; Comunidade",
+        pageTitle: "Termos de Serviço",
+        lastUpdated: "Última atualização: <strong>08 de outubro de 2026</strong> • Válido para o ecossistema <strong>BandLink (Setlist Band Manager)</strong>.",
+        sec1Title: "Aceitação dos Termos",
+        sec1Content: `<p>Ao baixar, instalar, acessar ou utilizar o aplicativo móvel <strong>BandLink</strong> (identificado na Google Play Store pelo pacote <em>com.setlistbandmanager.com</em>) ou acessar o site <a href="https://www.bandlink.pro" class="text-sky-400 hover:underline">www.bandlink.pro</a>, você declara que leu, compreendeu e concorda integralmente com estes Termos de Serviço e com a nossa <a href="privacy.html" class="text-sky-400 hover:underline">Política de Privacidade</a>.</p><p class="text-zinc-400">Se você não concordar com qualquer disposição destes termos, não deve utilizar a plataforma.</p>`,
+        sec2Title: "Descrição dos Serviços",
+        sec2Subtitle: "O BandLink oferece recursos especializados para o ecossistema de músicos, bandas e artistas de palco:",
+        sec2Card1Title: "Gestão de Repertório &amp; Shows",
+        sec2Card1Text: "Criação de setlists, cifras com transposição de tom em tempo real, rolagem automática ajustada por BPM/tempo, metrônomo integrado e organização de eventos da banda com divisão de cachê.",
+        sec2Card2Title: "Rede de Músicos &amp; Comunidade",
+        sec2Card2Text: "Perfis de músicos com instrumentos e influências, busca por cidade, anúncios de vagas para bandas, agenda pública de shows e sincronização colaborativa entre líderes e integrantes.",
+        sec3Title: "Cadastro, Contas e Segurança",
+        sec3Content: `<p>Você pode usufruir de ferramentas offline do BandLink sem criar conta. No entanto, para publicar anúncios na rede, conectar-se a outros músicos, sincronizar bandas na nuvem ou acessar o Web Editor, é necessário cadastrar uma conta.</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li><strong>Veracidade:</strong> Você concorda em fornecer dados verdadeiros durante o cadastro (via e-mail ou Conta Google).</li><li><strong>Confidencialidade:</strong> Você é o único responsável pela segurança da sua senha e por todas as atividades realizadas na sua conta.</li><li><strong>Recuperação de Acesso:</strong> O sistema disponibiliza redefinição de senha segura via código enviado ao seu e-mail cadastrado.</li><li><strong>Idade Mínima:</strong> A plataforma é recomendada para maiores de 13 anos. Menores de 18 anos devem utilizar a plataforma sob orientação de responsáveis legais.</li></ul>`,
+        sec4Title: "Conteúdo do Usuário e Direitos Autorais em Shows",
+        sec4Content: `<p>O usuário é o único titular dos direitos sobre o conteúdo que insere no BandLink (como arranjos próprios, anotações de palco, fotos e descrições de perfil).</p><div class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5 text-zinc-400"><p><strong class="text-white">Uso de Letras e Cifras de Terceiros:</strong> O BandLink opera primariamente como pasta digital de estudos e suporte de leitura no palco. É responsabilidade exclusiva do usuário e dos estabelecimentos onde se apresenta assegurar que a execução pública de obras musicais esteja em conformidade com as leis vigentes e entidades arrecadadoras locais (ex: ECAD no Brasil).</p><p>O BandLink não comercializa fonogramas nem explora comercialmente os repertórios privados dos usuários.</p></div>`,
+        sec5Title: "Diretrizes de Conduta Comunitária",
+        sec5Content: `<p>A rede BandLink foi criada para fomentar a colaboração profissional e amigável entre músicos. São expressamente proibidas na plataforma as seguintes condutas:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li>Publicar discursos de ódio, conteúdo discriminatório, abusivo, difamatório ou ilegal;</li><li>Veicular anúncios fraudulentos, falsas oportunidades de trabalho ou propostas enganosas;</li><li>Praticar assédio, spam ou envio massivo de mensagens contra outros músicos cadastrados;</li><li>Tentar violar a segurança, praticar engenharia reversa nos servidores ou sobrecarregar a infraestrutura de rede.</li></ul><p class="text-amber-400/90 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Contas que violarem estas diretrizes poderão ser suspensas ou banidas sem aviso prévio.</p>`,
+        sec6Title: "Armazenamento Local e Sincronização em Nuvem",
+        sec6Content: `<p>O aplicativo BandLink adota arquitetura <strong>Offline-First</strong>, permitindo que seus setlists e cifras estejam disponíveis mesmo sem conexão com a internet durante shows e ensaios.</p><p>A sincronização com a nuvem ocorre mediante iniciativa do usuário. Recomendamos realizar backups periódicos para resguardar seus dados em casos de troca ou perda de dispositivo.</p>`,
+        sec7Title: "Propriedade Intelectual da Plataforma",
+        sec7Content: "Todos os direitos de propriedade intelectual relativos ao BandLink, incluindo marcas registradas, logotipos, layout visual, código-fonte e interfaces gráficas pertencem exclusivamente aos seus desenvolvedores e são protegidos pelas leis de propriedade intelectual.",
+        sec8Title: "Limitação de Responsabilidade",
+        sec8Content: `<p>O serviço é fornecido no estado em que se encontra (\"como está\" e \"conforme disponível\"). Embora envidemos os maiores esforços para manter o serviço contínuo e seguro:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li>Não garantimos que o serviço será 100% ininterrupto durante instabilidades de rede móvel em locais de apresentação;</li><li>Não nos responsabilizamos por acertos financeiros particulares, contratos verbais de cachê ou acordos de apresentações fechados entre músicos através do mural da rede;</li><li>Não nos responsabilizamos pela perda de dados decorrente de falhas no dispositivo do usuário ou desinstalação acidental sem backup prévio.</li></ul>`,
+        sec9Title: "Encerramento e Exclusão de Conta",
+        sec9Content: `Você pode cancelar sua conta a qualquer momento por meio das configurações do aplicativo ou enviando uma solicitação para <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>. Todos os seus dados pessoais e registros na rede pública serão expurgados de forma definitiva dos servidores.`,
+        sec10Title: "Legislação Aplicável",
+        sec10Content: "Estes Termos de Serviço são regidos e interpretados segundo a legislação brasileira aplicável à proteção do consumidor e ao uso da internet.",
+        sec11Title: "Contato e Suporte",
+        sec11Subtitle: "Em caso de dúvidas, relatos de problemas técnicos ou denúncias de infrações a estes Termos:",
+        supportEntity: "BandLink • Suporte ao Músico e Jurídico",
+        supportDev: "Desenvolvedor Responsável:",
+        supportEmail: "E-mail Oficial:",
+        supportWeb: "Website Oficial:",
+        backHome: "Voltar à Página Inicial",
+        contactUs: "Fale Conosco",
+        copyright: "© 2026 BandLink. Todos os direitos reservados. Desenvolvido para músicos e bandas."
+      },
+      es: {
+        metaTitle: "Términos de Servicio • BandLink",
+        metaDesc: "Términos de Servicio y Condiciones de Uso de BandLink / Setlist Band Manager. Directrices para el uso de la plataforma, comunidad y repertorio.",
+        navPrivacy: "Política de Privacidad",
+        navApp: "App Oficial",
+        badgeTitle: "Condiciones de Uso y Comunidad",
+        pageTitle: "Términos de Servicio",
+        lastUpdated: "Última actualización: <strong>08 de octubre de 2026</strong> • Válido para el ecosistema <strong>BandLink (Setlist Band Manager)</strong>.",
+        sec1Title: "Aceptación de los Términos",
+        sec1Content: `<p>Al descargar, instalar, acceder o utilizar la app móvil <strong>BandLink</strong> (paquete Google Play <em>com.setlistbandmanager.com</em>) o ingresar a <a href="https://www.bandlink.pro" class="text-sky-400 hover:underline">www.bandlink.pro</a>, usted declara que ha leído, entendido y acepta estos Términos de Servicio y nuestra <a href="privacy.html" class="text-sky-400 hover:underline">Política de Privacidad</a>.</p><p class="text-zinc-400">Si no está de acuerdo con alguna disposición de estos términos, no debe utilizar la plataforma.</p>`,
+        sec2Title: "Descripción de los Servicios",
+        sec2Subtitle: "BandLink ofrece herramientas diseñadas especialmente para músicos, bandas y conciertos en vivo:",
+        sec2Card1Title: "Repertorio en Vivo y Escenario",
+        sec2Card1Text: "Listas de canciones, transposición de acordes en tiempo real, autoscroll manos libres según BPM/tiempo, metrónomo integrado y gestión de eventos con división de caché.",
+        sec2Card2Title: "Red Musical y Comunidad",
+        sec2Card2Text: "Perfiles de músicos por ciudad, búsqueda de vacantes para bandas, escaneo de compatibilidad y sincronización en tiempo real entre integrantes.",
+        sec3Title: "Registro, Cuentas y Seguridad",
+        sec3Content: `<p>Puede usar las funciones offline sin cuenta. Sin embargo, para publicar en la red comunitaria, sincronizar en la nube o acceder al Web Editor, es necesario registrarse.</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li><strong>Veracidad:</strong> Acepta proporcionar datos verídicos al registrarse (vía email o Cuenta Google).</li><li><strong>Confidencialidad:</strong> Es responsable de la seguridad de su contraseña y de las acciones en su cuenta.</li><li><strong>Recuperación:</strong> Dispone de restablecimiento seguro de contraseña mediante códigos enviados a su correo.</li><li><strong>Edad Mínima:</strong> Recomendado para mayores de 13 años. Los menores deben contar con supervisión de tutores legales.</li></ul>`,
+        sec4Title: "Contenido del Usuario y Derechos en Directo",
+        sec4Content: `<p>El usuario conserva todos los derechos sobre su contenido original (anotaciones, arreglos propios y datos de perfil).</p><div class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1.5 text-zinc-400"><p><strong class="text-white">Uso de Obras de Terceros:</strong> BandLink funciona como un organizador privado y soporte de lectura en escenario. Es responsabilidad exclusiva del músico o del local verificar el cumplimiento de los derechos de autor y licencias de ejecución pública ante entidades recaudadoras locales.</p><p>BandLink no comercializa música grabada ni monetiza los repertorios privados de los usuarios.</p></div>`,
+        sec5Title: "Normas de Conducta Comunitaria",
+        sec5Content: `<p>La red de músicos fue creada para promover el trabajo artístico respetuoso. Quedan terminantemente prohibidas las siguientes conductas:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li>Publicar mensajes de odio, contenido discriminatorio o ilegal;</li><li>Publicar ofertas engañosas o enviar mensajes masivos (spam);</li><li>Intentar vulnerar la seguridad o realizar ingeniería inversa sobre la plataforma;</li><li>Suplantar la identidad de otros músicos o bandas.</li></ul><p class="text-amber-400/90 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Las cuentas infractoras podrán ser suspendidas o canceladas sin previo aviso.</p>`,
+        sec6Title: "Almacenamiento Local y Sincronización",
+        sec6Content: `<p>BandLink utiliza arquitectura <strong>Offline-First</strong> para garantizar que sus canciones y acordes estén siempre disponibles en el escenario sin depender de conexión a internet.</p><p>La sincronización con la nube se realiza a solicitud del usuario. Se recomienda realizar copias de seguridad periódicas.</p>`,
+        sec7Title: "Propiedad Intelectual de la Plataforma",
+        sec7Content: "Todos los derechos relativos a BandLink (marcas, logotipos, diseño gráfico, código fuente y arquitectura de software) pertenecen exclusivamente a sus desarrolladores y están protegidos por la ley.",
+        sec8Title: "Limitación de Responsabilidad",
+        sec8Content: `<p>El servicio se presta \"tal cual\" y \"según disponibilidad\". Aunque nos esforzamos por mantener la máxima confiabilidad:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li>No garantizamos que el servicio funcione de forma ininterrumpida frente a cortes de señal móvil externa;</li><li>No nos responsabilizamos por acuerdos económicos privados o pagos pactados entre músicos mediante avisos comunitarios;</li><li>No somos responsables por pérdidas de datos derivadas de fallos en el dispositivo del usuario sin copia de seguridad previa.</li></ul>`,
+        sec9Title: "Cancelación y Eliminación de Cuenta",
+        sec9Content: `Puede dar de baja su cuenta en cualquier momento desde la app o escribiendo a <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>. Sus datos se eliminarán de forma permanente de acuerdo con nuestra Política de Privacidad.`,
+        sec10Title: "Legislación Aplicable",
+        sec10Content: "Estos Términos de Servicio se rigen por la legislación vigente aplicable en materia de servicios digitales y protección al consumidor.",
+        sec11Title: "Contacto y Soporte",
+        sec11Subtitle: "Para consultas legales o soporte técnico sobre estos Términos:",
+        supportEntity: "BandLink • Soporte y Legal",
+        supportDev: "Desarrollador Responsable:",
+        supportEmail: "Correo Oficial:",
+        supportWeb: "Sitio Web Oficial:",
+        backHome: "Volver al Inicio",
+        contactUs: "Contáctenos",
+        copyright: "© 2026 BandLink. Todos los derechos reservados. Creado para músicos, bandas y conciertos."
+      }
+    };
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+      if (!translations[lang]) lang = 'en';
+      currentLang = lang;
+      localStorage.setItem('bandlink_landing_lang', lang);
+      document.documentElement.lang = lang;
+
+      // Update switcher active state
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('lang-' + lang);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const dict = translations[lang];
+
+      if (dict.metaTitle) document.title = dict.metaTitle;
+      const metaEl = document.getElementById('metaDesc');
+      if (metaEl && dict.metaDesc) metaEl.setAttribute('content', dict.metaDesc);
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+    }
+
+    // Default to 'en' (or stored preference)
+    document.addEventListener('DOMContentLoaded', () => {
+      const stored = localStorage.getItem('bandlink_landing_lang') || 'en';
+      setLanguage(stored);
+    });
+  </script>
 
 </body>
 </html>

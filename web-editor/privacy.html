@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Política de Privacidade • BandLink</title>
-  <meta name="description" content="Política de Privacidade do BandLink / Setlist Band Manager. Saiba como seus dados e repertórios são protegidos e tratados com total segurança e transparência.">
+  <title id="metaTitle">Privacy Policy • BandLink</title>
+  <meta id="metaDesc" name="description" content="Privacy Policy for BandLink / Setlist Band Manager. Learn how your data, repertoire, and profile are protected with industry-standard security.">
   <link rel="icon" type="image/png" href="assets/bandlink-logo-official.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +18,36 @@
       color: #f4f4f5;
     }
     .glass-card {
-      background: rgba(24, 24, 27, 0.7);
+      background: rgba(24, 24, 27, 0.75);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .lang-switcher {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 2px;
+    }
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: #a1a1aa;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .lang-btn.active {
+      background: #27272a;
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .lang-btn:hover:not(.active) {
+      color: #fff;
     }
   </style>
 </head>
@@ -37,12 +64,19 @@
       </a>
 
       <div class="flex items-center gap-3">
-        <a href="terms.html" class="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 transition-all">
-          Termos de Serviço
+        <!-- Language Switcher -->
+        <div class="lang-switcher">
+          <button type="button" class="lang-btn" id="lang-en" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" id="lang-pt" onclick="setLanguage('pt')">PT</button>
+          <button type="button" class="lang-btn" id="lang-es" onclick="setLanguage('es')">ES</button>
+        </div>
+
+        <a href="terms.html" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 transition-all" data-i18n="navTerms">
+          Terms of Service
         </a>
         <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.com" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-bold text-white flex items-center gap-2 shadow-lg shadow-sky-600/20 transition-all">
           <i class="fa-brands fa-google-play"></i>
-          <span>App Oficial</span>
+          <span data-i18n="navApp">Official App</span>
         </a>
       </div>
     </div>
@@ -55,13 +89,13 @@
     <div class="mb-10 text-center sm:text-left">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-bold tracking-wide uppercase mb-3">
         <i class="fa-solid fa-shield-halved"></i>
-        <span>Segurança & Transparência</span>
+        <span data-i18n="badgeTitle">Security &amp; Transparency</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
-        Política de Privacidade
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3" data-i18n="pageTitle">
+        Privacy Policy
       </h1>
-      <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
-        Última atualização: <strong>08 de outubro de 2026</strong> • Válida para o aplicativo <strong>BandLink (Setlist Band Manager)</strong> e site oficial.
+      <p class="text-zinc-400 text-sm sm:text-base leading-relaxed" data-i18n="lastUpdated">
+        Last updated: <strong>October 08, 2026</strong> • Applicable to the <strong>BandLink (Setlist Band Manager)</strong> mobile app and website.
       </p>
     </div>
 
@@ -72,67 +106,62 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">1</span>
-          Introdução e Controlador dos Dados
+          <span data-i18n="sec1Title">Introduction &amp; Data Controller</span>
         </h2>
-        <p>
-          O <strong>BandLink</strong> (anteriormente referenciado como <em>Setlist Band Manager</em>) é uma plataforma desenvolvida para músicos, bandas e artistas ao vivo, integrando organização de repertório, cifras inteligentes com rolagem automática, controle de agenda de shows e a rede comunitária de músicos.
-        </p>
-        <p class="mt-2">
-          Esta Política de Privacidade descreve de forma clara e objetiva como coletamos, usamos, armazenamos e protegemos seus dados pessoais, em estrita conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)</strong>, com o <strong>Regulamento Geral sobre a Proteção de Dados (GDPR)</strong> e com as diretrizes do <strong>Google Play Developer Policy</strong> e <strong>Google API Services User Data Policy</strong>.
-        </p>
+        <div data-i18n="sec1Content" class="space-y-2">
+          <p>
+            <strong>BandLink</strong> (formerly referenced as <em>Setlist Band Manager</em>) is an ecosystem developed for musicians, live bands, and performers, combining repertoire organization, smart chords with autoscroll, live show schedules, and a musical community network.
+          </p>
+          <p>
+            This Privacy Policy explains clearly and transparently how we collect, use, store, and protect your information, adhering to strict international privacy standards, including the <strong>General Data Protection Regulation (GDPR)</strong>, the Brazilian <strong>LGPD (Law 13,709/2018)</strong>, and the <strong>Google Play Developer &amp; API Services User Data Policies</strong>.
+          </p>
+        </div>
       </section>
 
       <!-- 2 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">2</span>
-          Informações que Coletamos
+          <span data-i18n="sec2Title">Information We Collect</span>
         </h2>
-        <p>Coletamos apenas as informações estritamente necessárias para o funcionamento dos recursos da plataforma:</p>
+        <p data-i18n="sec2Subtitle">We collect only the information strictly necessary to provide the platform's features:</p>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div class="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800">
             <h3 class="font-bold text-white text-sm mb-1 flex items-center gap-2">
-              <i class="fa-solid fa-user-check text-sky-400"></i> Dados de Cadastro e Perfil
+              <i class="fa-solid fa-user-check text-sky-400"></i> <span data-i18n="sec2Card1Title">Account &amp; Profile Data</span>
             </h3>
-            <p class="text-xs text-zinc-400 leading-relaxed">
-              Nome de usuário, endereço de e-mail e senha criptografada. Opcionalmente, data de nascimento (para cálculo de faixa etária na rede de músicos), instrumentos que toca, cidade/estado e links de redes sociais (Instagram, YouTube, etc.).
+            <p class="text-xs text-zinc-400 leading-relaxed" data-i18n="sec2Card1Text">
+              Username, email address, and encrypted password credentials. Optionally, date of birth (for age range calculation in the musicians network), instruments played, city/state, and social media handles (Instagram, YouTube, etc.).
             </p>
           </div>
 
           <div class="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800">
             <h3 class="font-bold text-white text-sm mb-1 flex items-center gap-2">
-              <i class="fa-brands fa-google text-red-400"></i> Autenticação via Google (Google Sign-In)
+              <i class="fa-brands fa-google text-emerald-400"></i> <span data-i18n="sec2Card2Title">Google Sign-In Data</span>
             </h3>
-            <p class="text-xs text-zinc-400 leading-relaxed">
-              Ao optar pelo login com o Google, recebemos com sua permissão apenas: <em>nome</em>, <em>endereço de e-mail</em>, <em>ID de usuário do Google</em> e <em>URL da foto de perfil</em>. <strong>Nunca</strong> temos acesso à sua senha do Google, contatos ou outros arquivos.
+            <p class="text-xs text-zinc-400 leading-relaxed" data-i18n="sec2Card2Text">
+              When using Google Authentication, we only receive your public profile identifier, verified email address, full name, and avatar picture provided by Google OAuth. We never access passwords, contacts, or drive files.
             </p>
           </div>
 
           <div class="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800">
             <h3 class="font-bold text-white text-sm mb-1 flex items-center gap-2">
-              <i class="fa-solid fa-guitar text-emerald-400"></i> Repertórios e Conteúdo Musical
+              <i class="fa-solid fa-guitar text-violet-400"></i> <span data-i18n="sec2Card3Title">Musical Content &amp; Setlists</span>
             </h3>
-            <p class="text-xs text-zinc-400 leading-relaxed">
-              Títulos de músicas, artistas, cifras, letras, notas de execução, setlists, nomes e logos de bandas criadas por você, e eventos da agenda de shows.
+            <p class="text-xs text-zinc-400 leading-relaxed" data-i18n="sec2Card3Text">
+              Song titles, artists, custom chords, lyrics, tags, setlist sequences, and rehearsal/show notes. Stored locally on your device by default, and synchronized to the cloud when you choose to connect.
             </p>
           </div>
 
           <div class="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800">
             <h3 class="font-bold text-white text-sm mb-1 flex items-center gap-2">
-              <i class="fa-solid fa-database text-amber-400"></i> Armazenamento Local Offline
+              <i class="fa-solid fa-bullhorn text-amber-400"></i> <span data-i18n="sec2Card4Title">Community &amp; Classifieds</span>
             </h3>
-            <p class="text-xs text-zinc-400 leading-relaxed">
-              Seus repertórios e cifras são salvos primariamente em banco de dados local SQLite no seu dispositivo, garantindo que suas músicas abram mesmo sem internet durante apresentações ao vivo.
+            <p class="text-xs text-zinc-400 leading-relaxed" data-i18n="sec2Card4Text">
+              Audition postings, open gig announcements, candidate applications, and public band agenda schedules you explicitly publish to the musicians network.
             </p>
           </div>
-        </div>
-
-        <div class="mt-4 p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2.5">
-          <i class="fa-solid fa-circle-info text-sky-400 mt-0.5"></i>
-          <span>
-            <strong>O que NÃO coletamos:</strong> O BandLink não coleta dados bancários, números de cartão de crédito, mensagens privadas de redes externas, localização GPS contínua em segundo plano ou dados sensíveis que não tenham relação com a atividade musical.
-          </span>
         </div>
       </section>
 
@@ -140,14 +169,13 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">3</span>
-          Finalidades do Tratamento de Dados
+          <span data-i18n="sec3Title">How We Use Your Data</span>
         </h2>
-        <ul class="list-disc list-inside space-y-1.5 text-zinc-300 text-sm">
-          <li><strong>Autenticação e Acesso:</strong> Permitir o login seguro via e-mail e senha ou através do Google Sign-In.</li>
-          <li><strong>Sincronização em Nuvem:</strong> Permitir que líderes de bandas sincronizem alterações de repertório e agenda com outros integrantes do grupo.</li>
-          <li><strong>Rede Musical BandLink:</strong> Conectar músicos na mesma cidade/região e exibir anúncios públicos de busca por instrumentistas e vocalistas para quem optar por anunciá-los.</li>
-          <li><strong>Segurança e Suporte:</strong> Envio de códigos temporários para confirmação de e-mail e recuperação de senha esquecida via Azure Communication Services.</li>
-          <li><strong>Geração de Flyers de Agenda:</strong> Permitir que o usuário exporte e compartilhe artes de divulgação de seus próximos shows nas redes sociais.</li>
+        <ul class="list-disc list-inside space-y-1.5 text-xs sm:text-sm text-zinc-300" data-i18n="sec3List">
+          <li><strong>Authentication &amp; Account Recovery:</strong> Enable secure login, account activation, and password resets via time-limited verification codes.</li>
+          <li><strong>Syncing Across Devices:</strong> Synchronize your repertoire, setlists, and band data between the mobile application and PC Web Editor.</li>
+          <li><strong>Musicians Network:</strong> Display public musician profiles, connect players with open band vacancies, and match candidates in your area.</li>
+          <li><strong>Service Security:</strong> Detect fraudulent activities, protect against brute-force attacks, and maintain platform stability.</li>
         </ul>
       </section>
 
@@ -155,73 +183,74 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">4</span>
-          Autenticação Google e Escopo de Acesso
+          <span data-i18n="sec4Title">Data Storage &amp; Security Standards</span>
         </h2>
-        <p>
-          O uso de informações recebidas de APIs do Google pelo BandLink está em total conformidade com a 
-          <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" class="text-sky-400 hover:underline">Política de Dados do Usuário dos Serviços de API do Google</a>, incluindo os requisitos de uso limitado.
-        </p>
-        <p class="mt-2 text-sm text-zinc-400">
-          Utilizamos o escopo padrão do Google Sign-In exclusivamente para identificar o usuário e validar seu e-mail de forma segura. Seus dados do Google nunca são repassados a terceiros nem utilizados para fins de publicidade comportamental.
-        </p>
+        <div data-i18n="sec4Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            We implement comprehensive technical and organizational safeguards to protect your personal information against unauthorized access, loss, or misuse:
+          </p>
+          <ul class="list-disc list-inside space-y-1 mt-1 text-zinc-300">
+            <li><strong>Encrypted Communications:</strong> 100% of network traffic between the app, web editor, and servers is protected with modern Transport Layer Security (HTTPS/TLS).</li>
+            <li><strong>Password Protection:</strong> Passwords are never stored in plain text. They are hashed using industry-standard adaptive cryptographic hashing algorithms.</li>
+            <li><strong>Enterprise Cloud Infrastructure:</strong> Cloud databases and API services are hosted in enterprise data centers complying with rigorous international security certifications (ISO/IEC 27001, SOC 2).</li>
+            <li><strong>Offline-First Privacy:</strong> Your primary repertoire and custom chords remain on your device's local secure storage and function offline without transmitting unnecessary telemetry.</li>
+          </ul>
+        </div>
       </section>
 
       <!-- 5 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">5</span>
-          Compartilhamento e Não Comercialização
+          <span data-i18n="sec5Title">Google API Services User Data Compliance</span>
         </h2>
-        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-medium mb-3">
-          <i class="fa-solid fa-lock text-emerald-400 mr-1.5"></i>
-          O BandLink <strong>NÃO comercializa, não aluga e não vende</strong> seus dados pessoais para corretores de dados, anunciantes ou empresas terceiras sob nenhuma hipótese.
+        <div data-i18n="sec5Content" class="space-y-2 text-xs sm:text-sm">
+          <p>
+            BandLink's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" class="text-sky-400 underline">Google API Services User Data Policy</a>, including the Limited Use requirements:
+          </p>
+          <ul class="list-disc list-inside space-y-1 mt-1">
+            <li>We request only basic profile and email scopes (<code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">openid</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">email</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">profile</code>) to authenticate your identity.</li>
+            <li>We do not sell, rent, or transfer Google user data to third parties for advertising or profiling.</li>
+            <li>We do not use Google user data to train generalized artificial intelligence or machine learning models.</li>
+          </ul>
         </div>
-        <p class="text-sm">
-          O compartilhamento ocorre unicamente com os seguintes provedores de infraestrutura estritamente técnicos:
-        </p>
-        <ul class="list-disc list-inside space-y-1 text-xs text-zinc-400 mt-2">
-          <li><strong>Microsoft Azure (Azure App Service & Azure Communication Services):</strong> Hospedagem segura da API e envio de e-mails transacionais (confirmação e recuperação de senha).</li>
-          <li><strong>Google Identity Services:</strong> Para autenticação do usuário quando este escolhe o botão "Continuar com o Google".</li>
-        </ul>
       </section>
 
       <!-- 6 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">6</span>
-          Segurança das Informações
+          <span data-i18n="sec6Title">Third-Party Sharing</span>
         </h2>
-        <p>Adotamos medidas técnicas e organizacionais de padrão da indústria para salvaguardar suas informações:</p>
-        <ul class="list-disc list-inside space-y-1 text-sm text-zinc-300 mt-2">
-          <li>Criptografia de tráfego de ponta a ponta via <strong>HTTPS / TLS</strong>.</li>
-          <li>Senhas hasheadas e salteadas utilizando o algoritmo criptográfico <strong>BCrypt</strong>.</li>
-          <li>Autenticação de sessão protegida por <strong>Tokens JWT (JSON Web Tokens)</strong> assinados criptograficamente.</li>
-          <li>Proteção contra injeção de código, limites de taxa de requisições (Rate Limiting) e isolamento de banco de dados.</li>
-        </ul>
+        <p data-i18n="sec6Content" class="text-xs sm:text-sm">
+          We do not sell your personal information. Information is only shared with certified infrastructure providers strictly necessary to deliver essential services (such as transactional email delivery for password resets and secure hosting), or when required by competent judicial authorities in compliance with applicable law.
+        </p>
       </section>
 
       <!-- 7 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">7</span>
-          Seus Direitos e Exclusão de Conta (LGPD / GDPR)
+          <span data-i18n="sec7Title">Your Rights &amp; Account Deletion (GDPR / LGPD)</span>
         </h2>
-        <p>Você é o titular de seus dados e tem total controle sobre eles:</p>
-        <ul class="list-disc list-inside space-y-1 text-sm text-zinc-300 mt-2">
-          <li><strong>Acesso e Atualização:</strong> Visualizar e editar seu perfil, músicas e bandas a qualquer momento diretamente no aplicativo.</li>
-          <li><strong>Exclusão de Conta e Dados:</strong> Você pode solicitar a exclusão definitiva da sua conta e de todos os dados associados a qualquer momento pelo aplicativo ou enviando um e-mail para <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>.</li>
-          <li><strong>Revogação de Consentimento:</strong> Desconectar o login Google ou desativar a visibilidade de sua banda na rede pública.</li>
-        </ul>
+        <div data-i18n="sec7Content" class="space-y-2 text-xs sm:text-sm">
+          <p>You have full control over your personal data under global privacy regulations:</p>
+          <ul class="list-disc list-inside space-y-1 text-zinc-300">
+            <li><strong>Access &amp; Rectification:</strong> View and update your profile, instruments, and music repertoire directly in the app.</li>
+            <li><strong>Complete Account Deletion:</strong> You may permanently delete your account and all associated cloud data directly within the app or by emailing <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>.</li>
+            <li><strong>Revocation of Consent:</strong> Disconnect Google Sign-In or turn off network visibility for your bands at any time.</li>
+          </ul>
+        </div>
       </section>
 
       <!-- 8 -->
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">8</span>
-          Privacidade de Crianças e Menores
+          <span data-i18n="sec8Title">Children's Privacy</span>
         </h2>
-        <p class="text-sm">
-          O BandLink não é direcionado a crianças menores de 13 anos. Não coletamos intencionalmente dados pessoais de menores sem o devido consentimento dos pais ou responsáveis legais. Se identificarmos que um menor de 13 anos realizou cadastro sem autorização, tomaremos providências imediatas para excluir a respectiva conta.
+        <p data-i18n="sec8Content" class="text-xs sm:text-sm">
+          BandLink is not directed to children under 13 years of age. We do not knowingly collect personal data from minors without parental consent. If we become aware that a minor under 13 has registered without authorization, we take immediate steps to delete the account and associated records.
         </p>
       </section>
 
@@ -229,16 +258,16 @@
       <section>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-zinc-800 text-sky-400 text-xs font-extrabold flex items-center justify-center">9</span>
-          Canal de Atendimento e Encarregado (DPO)
+          <span data-i18n="sec9Title">Contact &amp; Data Protection Officer (DPO)</span>
         </h2>
-        <p class="text-sm">
-          Para dúvidas, sugestões, solicitações de exclusão de dados ou esclarecimentos sobre esta Política de Privacidade, entre em contato diretamente com o responsável pelo tratamento de dados:
+        <p data-i18n="sec9Subtitle" class="text-xs sm:text-sm">
+          For privacy inquiries, questions regarding your data, or deletion requests, please contact the developer and data controller:
         </p>
-        <div class="mt-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm">
-          <p class="text-white font-semibold">Equipe BandLink • Encarregado de Proteção de Dados</p>
-          <p class="text-zinc-400 mt-1">Desenvolvedor: <strong>Allison Rosa</strong></p>
-          <p class="text-zinc-400">E-mail de Contato: <a href="mailto:allisonrps@gmail.com" class="text-sky-400 font-medium hover:underline">allisonrps@gmail.com</a></p>
-          <p class="text-zinc-400">Website Oficial: <a href="https://bandlink.pro" target="_blank" class="text-sky-400 hover:underline">https://bandlink.pro</a></p>
+        <div class="mt-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm">
+          <p class="text-white font-semibold" data-i18n="dpoEntity">BandLink • Data Protection &amp; Support</p>
+          <p class="text-zinc-400 mt-1"><span data-i18n="dpoDev">Lead Developer:</span> <strong>Allison Rodrigues</strong></p>
+          <p class="text-zinc-400"><span data-i18n="dpoEmail">Official Email:</span> <a href="mailto:allisonrps@gmail.com" class="text-sky-400 font-medium hover:underline">allisonrps@gmail.com</a></p>
+          <p class="text-zinc-400"><span data-i18n="dpoWeb">Official Website:</span> <a href="https://www.bandlink.pro" target="_blank" class="text-sky-400 hover:underline">https://www.bandlink.pro</a></p>
         </div>
       </section>
 
@@ -248,12 +277,12 @@
     <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
       <a href="/" class="hover:text-zinc-300 flex items-center gap-2 transition-colors">
         <i class="fa-solid fa-arrow-left"></i>
-        <span>Voltar à Página Inicial</span>
+        <span data-i18n="backHome">Back to Home</span>
       </a>
       <div class="flex items-center gap-4">
-        <a href="terms.html" class="hover:text-zinc-300 transition-colors">Termos de Serviço</a>
+        <a href="terms.html" class="hover:text-zinc-300 transition-colors" data-i18n="navTerms">Terms of Service</a>
         <span>•</span>
-        <a href="mailto:allisonrps@gmail.com" class="hover:text-zinc-300 transition-colors">Fale Conosco</a>
+        <a href="mailto:allisonrps@gmail.com" class="hover:text-zinc-300 transition-colors" data-i18n="contactUs">Contact Us</a>
       </div>
     </div>
 
@@ -261,10 +290,175 @@
 
   <!-- Footer -->
   <footer class="border-t border-zinc-900 py-6 text-center text-xs text-zinc-600 bg-zinc-950">
-    <div class="max-w-4xl mx-auto px-4">
-      © 2026 BandLink. Todos os direitos reservados. Desenvolvido para músicos e bandas.
+    <div class="max-w-4xl mx-auto px-4" data-i18n="copyright">
+      © 2026 BandLink. All rights reserved. Built for musicians, bands, and stage performers.
     </div>
   </footer>
+
+  <!-- Translation Dictionary Script -->
+  <script>
+    const translations = {
+      en: {
+        metaTitle: "Privacy Policy • BandLink",
+        metaDesc: "Privacy Policy for BandLink / Setlist Band Manager. Learn how your data, repertoire, and profile are protected with industry-standard security.",
+        navTerms: "Terms of Service",
+        navApp: "Official App",
+        badgeTitle: "Security & Transparency",
+        pageTitle: "Privacy Policy",
+        lastUpdated: "Last updated: <strong>October 08, 2026</strong> • Applicable to the <strong>BandLink (Setlist Band Manager)</strong> mobile app and website.",
+        sec1Title: "Introduction & Data Controller",
+        sec1Content: `<p><strong>BandLink</strong> (formerly referenced as <em>Setlist Band Manager</em>) is an ecosystem developed for musicians, live bands, and performers, combining repertoire organization, smart chords with autoscroll, live show schedules, and a musical community network.</p><p>This Privacy Policy explains clearly and transparently how we collect, use, store, and protect your information, adhering to strict international privacy standards, including the <strong>General Data Protection Regulation (GDPR)</strong>, the Brazilian <strong>LGPD (Law 13,709/2018)</strong>, and the <strong>Google Play Developer &amp; API Services User Data Policies</strong>.</p>`,
+        sec2Title: "Information We Collect",
+        sec2Subtitle: "We collect only the information strictly necessary to provide the platform's features:",
+        sec2Card1Title: "Account & Profile Data",
+        sec2Card1Text: "Username, email address, and encrypted password credentials. Optionally, date of birth (for age range calculation in the musicians network), instruments played, city/state, and social media handles (Instagram, YouTube, etc.).",
+        sec2Card2Title: "Google Sign-In Data",
+        sec2Card2Text: "When using Google Authentication, we only receive your public profile identifier, verified email address, full name, and avatar picture provided by Google OAuth. We never access passwords, contacts, or drive files.",
+        sec2Card3Title: "Musical Content & Setlists",
+        sec2Card3Text: "Song titles, artists, custom chords, lyrics, tags, setlist sequences, and rehearsal/show notes. Stored locally on your device by default, and synchronized to the cloud when you choose to connect.",
+        sec2Card4Title: "Community & Classifieds",
+        sec2Card4Text: "Audition postings, open gig announcements, candidate applications, and public band agenda schedules you explicitly publish to the musicians network.",
+        sec3Title: "How We Use Your Data",
+        sec3List: `<li><strong>Authentication &amp; Account Recovery:</strong> Enable secure login, account activation, and password resets via time-limited verification codes.</li><li><strong>Syncing Across Devices:</strong> Synchronize your repertoire, setlists, and band data between the mobile application and PC Web Editor.</li><li><strong>Musicians Network:</strong> Display public musician profiles, connect players with open band vacancies, and match candidates in your area.</li><li><strong>Service Security:</strong> Detect fraudulent activities, protect against brute-force attacks, and maintain platform stability.</li>`,
+        sec4Title: "Data Storage & Security Standards",
+        sec4Content: `<p>We implement comprehensive technical and organizational safeguards to protect your personal information against unauthorized access, loss, or misuse:</p><ul class="list-disc list-inside space-y-1 mt-1 text-zinc-300"><li><strong>Encrypted Communications:</strong> 100% of network traffic between the app, web editor, and servers is protected with modern Transport Layer Security (HTTPS/TLS).</li><li><strong>Password Protection:</strong> Passwords are never stored in plain text. They are hashed using industry-standard adaptive cryptographic hashing algorithms.</li><li><strong>Enterprise Cloud Infrastructure:</strong> Cloud databases and API services are hosted in enterprise data centers complying with rigorous international security certifications (ISO/IEC 27001, SOC 2).</li><li><strong>Offline-First Privacy:</strong> Your primary repertoire and custom chords remain on your device's local secure storage and function offline without transmitting unnecessary telemetry.</li></ul>`,
+        sec5Title: "Google API Services User Data Compliance",
+        sec5Content: `<p>BandLink's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" class="text-sky-400 underline">Google API Services User Data Policy</a>, including the Limited Use requirements:</p><ul class="list-disc list-inside space-y-1 mt-1"><li>We request only basic profile and email scopes (<code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">openid</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">email</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">profile</code>) to authenticate your identity.</li><li>We do not sell, rent, or transfer Google user data to third parties for advertising or profiling.</li><li>We do not use Google user data to train generalized artificial intelligence or machine learning models.</li></ul>`,
+        sec6Title: "Third-Party Sharing",
+        sec6Content: "We do not sell your personal information. Information is only shared with certified infrastructure providers strictly necessary to deliver essential services (such as transactional email delivery for password resets and secure hosting), or when required by competent judicial authorities in compliance with applicable law.",
+        sec7Title: "Your Rights & Account Deletion (GDPR / LGPD)",
+        sec7Content: `<p>You have full control over your personal data under global privacy regulations:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li><strong>Access &amp; Rectification:</strong> View and update your profile, instruments, and music repertoire directly in the app.</li><li><strong>Complete Account Deletion:</strong> You may permanently delete your account and all associated cloud data directly within the app or by emailing <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>.</li><li><strong>Revocation of Consent:</strong> Disconnect Google Sign-In or turn off network visibility for your bands at any time.</li></ul>`,
+        sec8Title: "Children's Privacy",
+        sec8Content: "BandLink is not directed to children under 13 years of age. We do not knowingly collect personal data from minors without parental consent. If we become aware that a minor under 13 has registered without authorization, we take immediate steps to delete the account and associated records.",
+        sec9Title: "Contact & Data Protection Officer (DPO)",
+        sec9Subtitle: "For privacy inquiries, questions regarding your data, or deletion requests, please contact the developer and data controller:",
+        dpoEntity: "BandLink • Data Protection & Support",
+        dpoDev: "Lead Developer:",
+        dpoEmail: "Official Email:",
+        dpoWeb: "Official Website:",
+        backHome: "Back to Home",
+        contactUs: "Contact Us",
+        copyright: "© 2026 BandLink. All rights reserved. Built for musicians, bands, and stage performers."
+      },
+      pt: {
+        metaTitle: "Política de Privacidade • BandLink",
+        metaDesc: "Política de Privacidade do BandLink / Setlist Band Manager. Saiba como seus dados, repertório e perfil são protegidos com total segurança e transparência.",
+        navTerms: "Termos de Serviço",
+        navApp: "App Oficial",
+        badgeTitle: "Segurança & Transparência",
+        pageTitle: "Política de Privacidade",
+        lastUpdated: "Última atualização: <strong>08 de outubro de 2026</strong> • Válida para o aplicativo <strong>BandLink (Setlist Band Manager)</strong> e site oficial.",
+        sec1Title: "Introdução e Controlador dos Dados",
+        sec1Content: `<p>O <strong>BandLink</strong> (anteriormente referenciado como <em>Setlist Band Manager</em>) é um ecossistema desenvolvido para músicos, bandas e artistas ao vivo, integrando organização de repertório, cifras inteligentes com rolagem automática, controle de agenda de shows e a rede comunitária de músicos.</p><p>Esta Política de Privacidade descreve de forma clara e objetiva como coletamos, usamos, armazenamos e protegemos seus dados pessoais, em estrita conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)</strong>, com o <strong>Regulamento Geral sobre a Proteção de Dados (GDPR)</strong> e com as diretrizes do <strong>Google Play Developer Policy</strong> e <strong>Google API Services User Data Policy</strong>.</p>`,
+        sec2Title: "Informações que Coletamos",
+        sec2Subtitle: "Coletamos apenas as informações estritamente necessárias para o funcionamento dos recursos da plataforma:",
+        sec2Card1Title: "Dados de Cadastro e Perfil",
+        sec2Card1Text: "Nome de usuário, endereço de e-mail e senha criptografada. Opcionalmente, data de nascimento (para cálculo de faixa etária na rede de músicos), instrumentos que toca, cidade/estado e links de redes sociais (Instagram, YouTube, etc.).",
+        sec2Card2Title: "Autenticação via Google",
+        sec2Card2Text: "Ao optar pelo login via Conta Google, recebemos exclusivamente o identificador público da conta, endereço de e-mail verificado, nome completo e foto de perfil autorizados via OAuth. Jamais acessamos contatos, arquivos ou senhas do Google.",
+        sec2Card3Title: "Conteúdo Musical e Setlists",
+        sec2Card3Text: "Nomes de músicas, artistas, cifras personalizadas, letras, tags de estilo, sequências de setlists e notas de ensaio/show. Armazenados primariamente no dispositivo e sincronizados na nuvem apenas quando você comanda.",
+        sec2Card4Title: "Anúncios e Comunidade",
+        sec2Card4Text: "Vagas publicadas para bandas, avisos de audições, candidaturas e eventos da agenda pública que você decide compartilhar com a rede musical.",
+        sec3Title: "Finalidade do Uso dos Dados",
+        sec3List: `<li><strong>Autenticação e Recuperação de Conta:</strong> Permitir login seguro, confirmação de conta e redefinição de senha com códigos temporários de verificação.</li><li><strong>Sincronização entre Dispositivos:</strong> Sincronizar repertórios, cifras e dados de bandas entre o celular e o Web Editor no computador.</li><li><strong>Rede Musical Comunitária:</strong> Exibir perfis de músicos, conectar artistas a vagas abertas e calcular compatibilidade com candidatos da sua região.</li><li><strong>Segurança da Plataforma:</strong> Prevenir fraudes, mitigar ataques de força bruta e assegurar a estabilidade do serviço.</li>`,
+        sec4Title: "Armazenamento Seguro e Criptografia",
+        sec4Content: `<p>Adotamos medidas técnicas e organizacionais avançadas para salvaguardar seus dados pessoais contra acessos não autorizados e perdas:</p><ul class="list-disc list-inside space-y-1 mt-1 text-zinc-300"><li><strong>Tráfego Criptografado:</strong> Toda comunicação entre o aplicativo, o editor web e os servidores trafega sob protocolo seguro TLS 1.3 / HTTPS.</li><li><strong>Proteção de Senhas:</strong> Senhas nunca são salvas em texto puro. Elas passam por algoritmos modernos de dispersão criptográfica (hashing) com salt individual.</li><li><strong>Infraestrutura de Nuvem Certificada:</strong> Nossos servidores de nuvem são hospedados em datacenters corporativos certificados com os mais altos padrões de segurança (ISO/IEC 27001, SOC 2).</li><li><strong>Privacidade Offline-First:</strong> Seu repertório essencial e cifras permanecem no armazenamento seguro do seu próprio aparelho, operando perfeitamente sem internet durante apresentações ao vivo.</li></ul>`,
+        sec5Title: "Conformidade com os Dados de Usuários do Google",
+        sec5Content: `<p>O uso e a transferência de dados recebidos por meio das APIs do Google pelo BandLink cumprem integralmente a <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" class="text-sky-400 underline">Política de Dados do Usuário dos Serviços de API do Google</a>, incluindo os requisitos de Uso Limitado:</p><ul class="list-disc list-inside space-y-1 mt-1"><li>Solicitamos apenas permissões mínimas de identificação (<code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">openid</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">email</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">profile</code>) para autenticar seu perfil.</li><li>Não vendemos, alugamos nem transferimos dados do Google para terceiros para fins publicitários.</li><li>Não utilizamos os dados do Google para treinar modelos generalizados de inteligência artificial ou aprendizado de máquina.</li></ul>`,
+        sec6Title: "Compartilhamento com Terceiros",
+        sec6Content: "Não comercializamos seus dados pessoais sob nenhuma circunstância. Compartilhamentos ocorrem estritamente com serviços de infraestrutura corporativa essenciais para o funcionamento do app (como entrega de e-mails transacionais para recuperação de senha e hospedagem segura), ou quando exigido por ordem judicial nos termos da lei.",
+        sec7Title: "Seus Direitos e Exclusão de Conta (LGPD / GDPR)",
+        sec7Content: `<p>Você é o titular de seus dados e tem total controle sobre eles:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li><strong>Acesso e Atualização:</strong> Visualizar e editar seu perfil, músicas e bandas a qualquer momento diretamente no aplicativo.</li><li><strong>Exclusão de Conta e Dados:</strong> Você pode solicitar a exclusão definitiva da sua conta e de todos os dados associados a qualquer momento pelo aplicativo ou enviando um e-mail para <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>.</li><li><strong>Revogação de Consentimento:</strong> Desconectar o login Google ou desativar a visibilidade de sua banda na rede pública.</li></ul>`,
+        sec8Title: "Privacidade de Crianças e Menores",
+        sec8Content: "O BandLink não é direcionado a crianças menores de 13 anos. Não coletamos intencionalmente dados pessoais de menores sem o devido consentimento dos pais ou responsáveis legais. Se identificarmos que um menor de 13 anos realizou cadastro sem autorização, tomaremos providências imediatas para excluir a respectiva conta.",
+        sec9Title: "Canal de Atendimento e Encarregado (DPO)",
+        sec9Subtitle: "Para dúvidas, sugestões, solicitações de exclusão de dados ou esclarecimentos sobre esta Política de Privacidade, entre em contato diretamente com o responsável pelo tratamento de dados:",
+        dpoEntity: "Equipe BandLink • Encarregado de Proteção de Dados",
+        dpoDev: "Desenvolvedor Responsável:",
+        dpoEmail: "E-mail de Contato:",
+        dpoWeb: "Website Oficial:",
+        backHome: "Voltar à Página Inicial",
+        contactUs: "Fale Conosco",
+        copyright: "© 2026 BandLink. Todos os direitos reservados. Desenvolvido para músicos e bandas."
+      },
+      es: {
+        metaTitle: "Política de Privacidad • BandLink",
+        metaDesc: "Política de Privacidad de BandLink / Setlist Band Manager. Conozca cómo protegemos sus datos, repertorio y perfil con máxima seguridad.",
+        navTerms: "Términos de Servicio",
+        navApp: "App Oficial",
+        badgeTitle: "Seguridad y Transparencia",
+        pageTitle: "Política de Privacidad",
+        lastUpdated: "Última actualización: <strong>08 de octubre de 2026</strong> • Válida para la app <strong>BandLink (Setlist Band Manager)</strong> y el sitio oficial.",
+        sec1Title: "Introducción y Responsable del Tratamiento",
+        sec1Content: `<p><strong>BandLink</strong> (anteriormente referenciado como <em>Setlist Band Manager</em>) es un ecosistema desarrollado para músicos, bandas y artistas en vivo, que combina organización de repertorio, acordes inteligentes con autoscroll, agenda de conciertos y la red social de músicos.</p><p>Esta Política de Privacidad describe de manera clara cómo recopilamos, usamos, almacenamos y protegemos sus datos personales, en estricto cumplimiento del <strong>RGPD (GDPR)</strong>, la legislación brasileña <strong>LGPD</strong> y las políticas de datos de <strong>Google Play Developer &amp; API Services</strong>.</p>`,
+        sec2Title: "Información que Recopilamos",
+        sec2Subtitle: "Recopilamos únicamente la información estrictamente necesaria para las funciones de la plataforma:",
+        sec2Card1Title: "Datos de Cuenta y Perfil",
+        sec2Card1Text: "Nombre de usuario, correo electrónico y contraseña cifrada. Opcionalmente, fecha de nacimiento (para cálculo de rango de edad en la red de músicos), instrumentos, ciudad/estado y redes sociales.",
+        sec2Card2Title: "Autenticación con Google",
+        sec2Card2Text: "Al iniciar sesión con Google, recibimos únicamente su identificador público, correo verificado, nombre completo y foto de perfil autorizados vía OAuth. Nunca accedemos a contactos, archivos o contraseñas de Google.",
+        sec2Card3Title: "Repertorio Musical y Setlists",
+        sec2Card3Text: "Canciones, artistas, acordes personalizados, letras, etiquetas, orden de canciones y notas. Almacenados en su dispositivo por defecto y sincronizados en la nube cuando usted lo solicita.",
+        sec2Card4Title: "Comunidad y Clasificados",
+        sec2Card4Text: "Avisos de audiciones, vacantes para bandas, postulaciones de músicos y eventos de agenda pública que decide compartir en la red.",
+        sec3Title: "Finalidad del Tratamiento de Datos",
+        sec3List: `<li><strong>Autenticación y Recuperación:</strong> Permitir acceso seguro y restablecimiento de contraseña mediante códigos de verificación temporales.</li><li><strong>Sincronización Multidispositivo:</strong> Sincronizar su repertorio y bandas entre el smartphone y el Web Editor en PC.</li><li><strong>Red Musical Comunitaria:</strong> Mostrar perfiles de músicos, conectar bandas con postulantes y sugerir músicos en su ciudad.</li><li><strong>Seguridad de la Plataforma:</strong> Detectar fraudes, mitigar ataques automatizados y mantener la estabilidad del servicio.</li>`,
+        sec4Title: "Almacenamiento Seguro y Cifrado",
+        sec4Content: `<p>Aplicamos medidas técnicas rigurosas para salvaguardar sus datos contra accesos no autorizados y pérdidas:</p><ul class="list-disc list-inside space-y-1 mt-1 text-zinc-300"><li><strong>Tráfico Cifrado:</strong> Toda comunicación entre la app, el editor web y los servidores utiliza protocolos seguros TLS 1.3 / HTTPS.</li><li><strong>Protección de Contraseñas:</strong> Las contraseñas se almacenan mediante algoritmos criptográficos adaptativos modernos con salado único.</li><li><strong>Infraestructura Cloud Certificada:</strong> Servidores alojados en centros de datos con certificaciones internacionales de seguridad (ISO/IEC 27001, SOC 2).</li><li><strong>Privacidad Offline-First:</strong> Sus canciones y acordes residen de forma segura en su propio dispositivo, funcionando sin internet en vivo.</li></ul>`,
+        sec5Title: "Cumplimiento de Datos de Usuario de Google",
+        sec5Content: `<p>El uso que hace BandLink de la información recibida a través de las APIs de Google cumple con la <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" class="text-sky-400 underline">Política de Datos de Usuario de los Servicios de API de Google</a>, incluidos los requisitos de Uso Limitado:</p><ul class="list-disc list-inside space-y-1 mt-1"><li>Solicitamos únicamente los permisos mínimos necesarios (<code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">openid</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">email</code>, <code class="bg-zinc-800 px-1 py-0.5 rounded text-sky-300 text-xs">profile</code>) para autenticar su cuenta.</li><li>No vendemos ni transferimos datos de Google a terceros con fines publicitarios.</li><li>No utilizamos datos de Google para entrenar modelos generales de inteligencia artificial.</li></ul>`,
+        sec6Title: "Uso Compartido con Terceros",
+        sec6Content: "No vendemos sus datos personales bajo ninguna circunstancia. Solo se comparten con proveedores de infraestructura esenciales para el servicio (como entrega de correos para restablecer contraseñas y alojamiento seguro), o cuando sea requerido por orden judicial conforme a la ley.",
+        sec7Title: "Sus Derechos y Eliminación de Cuenta (RGPD / LGPD)",
+        sec7Content: `<p>Usted mantiene el control total sobre su información personal:</p><ul class="list-disc list-inside space-y-1 text-zinc-300"><li><strong>Acceso y Rectificación:</strong> Modificar su perfil, canciones y bandas directamente en la app.</li><li><strong>Eliminación Definitiva:</strong> Solicitar el borrado completo de su cuenta y datos en la app o por correo a <a href="mailto:allisonrps@gmail.com" class="text-sky-400 hover:underline">allisonrps@gmail.com</a>.</li><li><strong>Revocación de Consentimiento:</strong> Desconectar el inicio de sesión con Google en cualquier momento.</li></ul>`,
+        sec8Title: "Privacidad de Menores",
+        sec8Content: "BandLink no está dirigido a menores de 13 años. No recopilamos intencionalmente datos de menores sin el consentimiento de sus padres o tutores legales. Si se detecta un registro no autorizado, se procederá a su eliminación inmediata.",
+        sec9Title: "Contacto y Delegado de Protección de Datos",
+        sec9Subtitle: "Para consultas de privacidad o solicitudes de eliminación de datos, comuníquese con el responsable del tratamiento:",
+        dpoEntity: "Equipo BandLink • Protección de Datos y Soporte",
+        dpoDev: "Desarrollador Responsable:",
+        dpoEmail: "Correo Oficial:",
+        dpoWeb: "Sitio Web Oficial:",
+        backHome: "Volver al Inicio",
+        contactUs: "Contáctenos",
+        copyright: "© 2026 BandLink. Todos los derechos reservados. Creado para músicos, bandas y conciertos."
+      }
+    };
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+      if (!translations[lang]) lang = 'en';
+      currentLang = lang;
+      localStorage.setItem('bandlink_landing_lang', lang);
+      document.documentElement.lang = lang;
+
+      // Update switcher active state
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('lang-' + lang);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const dict = translations[lang];
+
+      if (dict.metaTitle) document.title = dict.metaTitle;
+      const metaEl = document.getElementById('metaDesc');
+      if (metaEl && dict.metaDesc) metaEl.setAttribute('content', dict.metaDesc);
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+    }
+
+    // Default to 'en' (or stored preference)
+    document.addEventListener('DOMContentLoaded', () => {
+      const stored = localStorage.getItem('bandlink_landing_lang') || 'en';
+      setLanguage(stored);
+    });
+  </script>
 
 </body>
 </html>

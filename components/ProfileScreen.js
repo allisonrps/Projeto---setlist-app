@@ -2542,7 +2542,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         })}
         displayName={currentDisplayName}
         headerLogo={profileImage || (currentDisplayName ? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentDisplayName)}&background=random` : null)}
-        qrValue={'https://setlistbandmanager.com/u/' + String(user?.username || 'user').toLowerCase().replace(/\s+/g, '')}
+        qrValue={'https://bandlink.pro/u/' + String(user?.username || 'user').toLowerCase().replace(/\s+/g, '')}
       />
 
       {/* ── 2. SKILL MODAL (BOTTOM SHEET) ── */}

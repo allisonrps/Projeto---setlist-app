@@ -3883,7 +3883,7 @@ export default function BandDetailScreen({
         initialSelectedIds={upcomingAgendaIds}
         displayName={band.name}
         headerLogo={bandLogoUri}
-        qrValue={'https://setlistbandmanager.com/b/' + bandQrSlug}
+        qrValue={'https://bandlink.pro/b/' + bandQrSlug}
       />
 
       {/* MODAL DE SINCRONIZAÇÃO EM NUVEM E REDE BANDLINK */}
