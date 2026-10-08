@@ -368,22 +368,42 @@ export const musiciansService = {
             } else if (b.genre) {
               parsedGenres = [b.genre];
             }
+
+            let snapshot = null;
+            const syncJson = b.syncDataJson || b.SyncDataJson;
+            if (syncJson) {
+              try {
+                snapshot = typeof syncJson === 'string' ? JSON.parse(syncJson) : syncJson;
+              } catch {}
+            }
+
+            const img = (snapshot && snapshot.band && snapshot.band.imageUri) || b.imageUri || b.ImageUri || null;
+            const snapMembers = (snapshot && Array.isArray(snapshot.members)) ? snapshot.members : [];
+            const snapSetlists = (snapshot && Array.isArray(snapshot.setlists)) ? snapshot.setlists : [];
+            const snapSongs = (snapshot && Array.isArray(snapshot.songs)) ? snapshot.songs : [];
+
             return {
               id: String(b.id || b.Id),
               bandId: b.id || b.Id,
               name: b.name || b.Name,
               bandName: b.name || b.Name,
-              imageUri: b.imageUri || b.ImageUri || null,
-              logo: b.imageUri || b.ImageUri || null,
+              imageUri: img,
+              logo: img,
+              bandImage: img,
               role: 'Integrante',
               memberType: 'Integrante',
               since: '2024',
               period: 'Ativo',
-              city: b.city || b.City || '',
-              state: b.state || b.State || '',
-              country: b.country || b.Country || '',
-              genres: parsedGenres.length > 0 ? parsedGenres : ['Música'],
-              bandType: b.bandType || b.BandType
+              city: b.city || b.City || (snapshot?.band?.city || ''),
+              state: b.state || b.State || (snapshot?.band?.state || ''),
+              country: b.country || b.Country || (snapshot?.band?.country || ''),
+              genres: parsedGenres.length > 0 ? parsedGenres : (snapshot?.band?.genres ? (Array.isArray(snapshot.band.genres) ? snapshot.band.genres : [snapshot.band.genres]) : ['Música']),
+              bandType: b.bandType || b.BandType || snapshot?.band?.bandType || '',
+              syncDataJson: syncJson || null,
+              members: snapMembers,
+              songs: snapSongs,
+              agenda: snapSetlists,
+              schedule: snapSetlists
             };
           });
 

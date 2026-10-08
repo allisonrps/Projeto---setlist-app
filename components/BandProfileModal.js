@@ -21,6 +21,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { bandService } from '../services/bandService';
 import { setlistService } from '../services/setlistService';
 import { musiciansService } from '../services/musiciansService';
+import { api } from '../services/api';
 import MusicianProfileModal from './MusicianProfileModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -233,6 +234,14 @@ export default function BandProfileModal({
     });
   };
 
+  const [currentBandImage, setCurrentBandImage] = useState(band?.bandImage || band?.imageUri || band?.logo || '');
+
+  useEffect(() => {
+    if (band) {
+      setCurrentBandImage(band.bandImage || band.imageUri || band.logo || '');
+    }
+  }, [band]);
+
   const loadBandData = useCallback(async () => {
     if (!band) return;
     setLoading(true);
@@ -240,78 +249,98 @@ export default function BandProfileModal({
       let loadedMembers = [];
       let loadedSongs = [];
       let loadedSetlists = [];
+      let loadedImage = band.bandImage || band.imageUri || band.logo || '';
 
-      // Se for uma banda cadastrada no SQLite
+      // 1. Tentar carregar do banco SQLite local se a banda foi criada neste aparelho
       const bandIdNum = typeof band.id === 'number' ? band.id : (band.id && !isNaN(Number(band.id)) ? Number(band.id) : null);
+      let foundInLocalDb = false;
+
       if (bandIdNum != null) {
         try {
-          const bMem = await bandService.getBandMembers(bandIdNum);
-          loadedMembers = bMem || [];
+          const localCheck = await bandService.getBandById(bandIdNum);
+          if (localCheck) {
+            foundInLocalDb = true;
+            if (localCheck.imageUri) loadedImage = localCheck.imageUri;
+            const bMem = await bandService.getBandMembers(bandIdNum);
+            loadedMembers = bMem || [];
+            const bSongs = await bandService.getBandSongs(bandIdNum);
+            loadedSongs = bSongs || [];
+            const allSetlists = await setlistService.getAll();
+            loadedSetlists = (allSetlists || [])
+              .filter(s => s.myBandId === bandIdNum && s.date && (s.type === 'show' || !s.type))
+              .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+          }
         } catch (e) {}
+      }
 
-        try {
-          const bSongs = await bandService.getBandSongs(bandIdNum);
-          loadedSongs = bSongs || [];
-        } catch (e) {}
-
-        try {
-          const allSetlists = await setlistService.getAll();
-          loadedSetlists = (allSetlists || [])
-            .filter(s => s.myBandId === bandIdNum && s.date && (s.type === 'show' || !s.type))
-            .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
-        } catch (e) {}
-      } else {
-        // Objeto de convite ou mock
-        if (Array.isArray(band.members)) {
-          loadedMembers = band.members;
-        } else if (band.senderName) {
-          loadedMembers = [
-            {
-              id: 'sender',
-              name: band.senderName,
-              role: 'Líder / Guitarrista',
-              username: band.senderUsername || '',
-              status: 'active',
-              startDate: '2022'
-            },
-            {
-              id: 'invitee',
-              name: 'Você (Pendente)',
-              role: band.role || 'Músico',
-              username: '',
-              status: 'pending',
-              startDate: 'Aguardando'
-            }
-          ];
+      // 2. Se não existir no banco local deste aparelho (banda de outro músico ou vinda da nuvem)
+      if (!foundInLocalDb) {
+        let snapshot = null;
+        const rawSync = band.syncDataJson || band.SyncDataJson;
+        if (rawSync) {
+          try {
+            snapshot = typeof rawSync === 'string' ? JSON.parse(rawSync) : rawSync;
+          } catch (e) {}
         }
 
-        if (Array.isArray(band.songs)) {
+        // Se não tiver snapshot ou agenda no objeto, buscar perfil público na API da nuvem
+        const cloudId = band.cloudId || band.bandId || (bandIdNum != null ? bandIdNum : null);
+        if ((!snapshot || !snapshot.setlists || snapshot.setlists.length === 0) && cloudId) {
+          try {
+            const cloudProfile = await api.getPublicBandProfile(cloudId);
+            if (cloudProfile) {
+              if (cloudProfile.imageUri) loadedImage = cloudProfile.imageUri;
+              const cpSync = cloudProfile.syncDataJson || cloudProfile.SyncDataJson;
+              if (cpSync) {
+                try {
+                  snapshot = typeof cpSync === 'string' ? JSON.parse(cpSync) : cpSync;
+                } catch (e) {}
+              }
+              if (Array.isArray(cloudProfile.members) && cloudProfile.members.length > 0) {
+                loadedMembers = cloudProfile.members;
+              }
+            }
+          } catch (cloudErr) {
+            console.log('Error fetching public band profile from cloud:', cloudErr);
+          }
+        }
+
+        if (snapshot) {
+          if (snapshot.band && snapshot.band.imageUri) {
+            loadedImage = snapshot.band.imageUri;
+          }
+          if (Array.isArray(snapshot.members) && snapshot.members.length > 0) {
+            loadedMembers = snapshot.members;
+          }
+          if (Array.isArray(snapshot.songs) && snapshot.songs.length > 0) {
+            loadedSongs = snapshot.songs;
+          }
+          if (Array.isArray(snapshot.setlists) && snapshot.setlists.length > 0) {
+            loadedSetlists = snapshot.setlists
+              .filter(s => s.type === 'show' || !s.type)
+              .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+          }
+        }
+
+        // Fallbacks se ainda faltar members ou agenda
+        if (loadedMembers.length === 0 && Array.isArray(band.members)) {
+          loadedMembers = band.members;
+        }
+        if (loadedSongs.length === 0 && Array.isArray(band.songs)) {
           loadedSongs = band.songs;
         }
-
-        if (Array.isArray(band.schedule)) {
-          loadedSetlists = band.schedule
-            .filter(s => s.type === 'show' || !s.type)
-            .map(s => ({
-              id: s.id,
-              name: s.title || s.name,
-              date: s.date,
-              local: s.local || s.venue || '',
-              type: s.type || 'show'
-            }));
-        } else if (Array.isArray(band.agenda)) {
-          loadedSetlists = band.agenda
-            .filter(s => s.type === 'show' || !s.type)
-            .map(s => ({
-              id: s.id,
-              name: s.title || s.name,
-              date: s.date,
-              local: s.local || s.venue || '',
-              type: s.type || 'show'
-            }));
+        if (loadedSetlists.length === 0) {
+          if (Array.isArray(band.schedule)) {
+            loadedSetlists = band.schedule.filter(s => s.type === 'show' || !s.type);
+          } else if (Array.isArray(band.agenda)) {
+            loadedSetlists = band.agenda.filter(s => s.type === 'show' || !s.type);
+          }
         }
       }
 
+      if (loadedImage) {
+        setCurrentBandImage(loadedImage);
+      }
       setMembers(loadedMembers);
       setBandSongs(loadedSongs);
       setBandSetlists(loadedSetlists);
@@ -371,7 +400,7 @@ export default function BandProfileModal({
   if (!visible || !band) return null;
 
   const bandName = band.bandName || band.name || 'Banda';
-  const bandImage = band.bandImage || band.imageUri || band.logo || '';
+  const bandImage = currentBandImage || band.bandImage || band.imageUri || band.logo || '';
   const bandCity = band.city || '';
   const bandState = band.state || '';
   const bandCountry = band.country || '';
@@ -594,7 +623,26 @@ export default function BandProfileModal({
 
             {/* NOME DA BANDA SOBRE O DEGRADÊ (base do header - centralizado) */}
             <View style={styles.headerBandInfoBottom}>
-              {!bandImage && (
+              {bandImage ? (
+                <View style={{
+                  width: 86,
+                  height: 86,
+                  borderRadius: 43,
+                  borderWidth: 3,
+                  borderColor: '#ffffff',
+                  marginBottom: 10,
+                  overflow: 'hidden',
+                  backgroundColor: colors.primary,
+                  alignSelf: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 6,
+                  elevation: 8
+                }}>
+                  <Image source={{ uri: bandImage }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                </View>
+              ) : (
                 <Text style={styles.headerInitialsBig}>{getBandInitials(bandName)}</Text>
               )}
               <Text style={styles.headerBandNameText}>{bandName}</Text>
