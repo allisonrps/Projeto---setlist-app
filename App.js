@@ -1239,6 +1239,7 @@ function MainApp() {
   // ===== AÇÕES BANDAS =====
   const handleSaveBand = async (bandData) => {
     try {
+      let savedBandId = null;
       if (editingBand) {
         await bandService.update(
           editingBand.id,
@@ -1260,8 +1261,9 @@ function MainApp() {
           bandData.tiktok,
           bandData.facebook
         );
+        savedBandId = editingBand.id;
       } else {
-        await bandService.insert(
+        savedBandId = await bandService.insert(
           bandData.name,
           bandData.imageUri,
           bandData.startDate,
@@ -1284,6 +1286,16 @@ function MainApp() {
       await reloadAllData();
       setShowBandModal(false);
       setEditingBand(null);
+
+      // Sincronizar na nuvem automaticamente se estiver logado
+      try {
+        const logged = await api.isLoggedIn();
+        if (logged && savedBandId) {
+          bandService.syncBandToCloud(savedBandId).then(() => reloadAllData()).catch(() => {});
+        }
+      } catch (syncErr) {
+        console.log('Auto-sync on save error:', syncErr);
+      }
     } catch (error) {
       Alert.alert(t('error') || 'Erro', t('errorSavingBand') || 'Não foi possível salvar a banda.');
     }

@@ -220,12 +220,18 @@ export default function BandModal({ visible, onClose, onSave, band }) {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        quality: 0.7,
+        quality: 0.6,
         allowsEditing: true,
+        base64: true,
       });
 
       if (!result.canceled && result.assets?.length > 0) {
-        setImageUri(result.assets[0].uri);
+        const asset = result.assets[0];
+        if (asset.base64) {
+          setImageUri(`data:image/jpeg;base64,${asset.base64}`);
+        } else {
+          setImageUri(asset.uri);
+        }
       }
     } catch (error) {
       Alert.alert(t('error'), t('imageSelectError'));

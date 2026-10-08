@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 import { db } from '../database/database';
 import { sanitizeText, sanitizeJson } from './sanitize';
 import { api } from './api';
@@ -433,15 +435,33 @@ export const bandService = {
       // 1. Gather all local data for this band
       const members = await this.getBandMembers(bandId);
       const repertoireSongs = await this.getBandSongs(bandId);
+      const finances = await this.getBandFinances(bandId);
 
-      // Gather setlists for this band
+      // Convert local image to base64 if needed so it is portable to any device/user
+      let syncImageUri = localBand.imageUri || '';
+      if (syncImageUri && (syncImageUri.startsWith('file://') || syncImageUri.startsWith('content://'))) {
+        try {
+          if (Platform.OS !== 'web' && FileSystem) {
+            const base64Data = await FileSystem.readAsStringAsync(syncImageUri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            if (base64Data) {
+              syncImageUri = `data:image/jpeg;base64,${base64Data}`;
+            }
+          }
+        } catch (imgErr) {
+          console.log('Could not convert local image to base64 for cloud sync:', imgErr);
+        }
+      }
+
+      // Gather setlists (Agenda / Shows / Ensaios) for this band
       let setlists = [];
       try {
         const rawSetlists = await db.getAllAsync('SELECT * FROM setlists WHERE myBandId = ? ORDER BY date DESC, id DESC;', [bandId]);
         if (rawSetlists && rawSetlists.length > 0) {
           setlists = await Promise.all(rawSetlists.map(async (sl) => {
             const songsInSetlist = await db.getAllAsync(
-              'SELECT ss.*, s.name, s.originalBand, s.duration, s.style FROM setlist_songs ss JOIN songs s ON ss.songId = s.id WHERE ss.setlistId = ? ORDER BY ss.position ASC;',
+              'SELECT ss.*, s.name, s.originalBand, s.duration, s.style FROM setlist_songs ss JOIN songs s ON ss.songId = s.id WHERE ss.setlistId = ? ORDER BY ss.order_num ASC;',
               [sl.id]
             );
             return { ...sl, songs: songsInSetlist || [] };
@@ -455,7 +475,7 @@ export const bandService = {
       const syncPayloadData = {
         band: {
           name: localBand.name,
-          imageUri: localBand.imageUri,
+          imageUri: syncImageUri,
           city: localBand.city,
           state: localBand.state,
           country: localBand.country,
@@ -469,6 +489,7 @@ export const bandService = {
           facebook: localBand.facebook,
         },
         members: members || [],
+        finances: finances || [],
         songs: (repertoireSongs || []).map(s => ({
           name: s.name,
           originalBand: s.originalBand,
@@ -489,7 +510,7 @@ export const bandService = {
         name: localBand.name,
         genre: localBand.genres || '',
         description: localBand.city ? `${localBand.city}${localBand.state ? ', ' + localBand.state : ''}` : '',
-        imageUri: localBand.imageUri || '',
+        imageUri: syncImageUri,
         city: localBand.city || '',
         state: localBand.state || '',
         country: localBand.country || '',
@@ -568,7 +589,41 @@ export const bandService = {
         ? JSON.parse(cloudData.syncDataJson)
         : cloudData.syncDataJson;
 
-      // 1. Update band basic metadata
+      // 1. Update band basic metadata and save image locally
+      let incomingImage = snapshot.band?.imageUri || cloudData.imageUri;
+      let finalImageUri = localBand.imageUri;
+
+      if (incomingImage) {
+        if (incomingImage.startsWith('data:image/')) {
+          if (Platform.OS !== 'web' && FileSystem && FileSystem.documentDirectory) {
+            try {
+              const base64Data = incomingImage.replace(/^data:image\/\w+;base64,/, '');
+              const filename = `${FileSystem.documentDirectory}band_${bandId}_logo.jpg`;
+              await FileSystem.writeAsStringAsync(filename, base64Data, {
+                encoding: FileSystem.EncodingType.Base64,
+              });
+              finalImageUri = filename;
+            } catch (fsErr) {
+              console.log('Error saving incoming cloud image to disk:', fsErr);
+              finalImageUri = incomingImage;
+            }
+          } else {
+            finalImageUri = incomingImage;
+          }
+        } else if (incomingImage.startsWith('http://') || incomingImage.startsWith('https://')) {
+          finalImageUri = incomingImage;
+        } else if (incomingImage.startsWith('file://')) {
+          if (Platform.OS !== 'web' && FileSystem) {
+            try {
+              const info = await FileSystem.getInfoAsync(incomingImage);
+              if (info.exists) {
+                finalImageUri = incomingImage;
+              }
+            } catch (e) {}
+          }
+        }
+      }
+
       if (snapshot.band) {
         await db.runAsync(
           `UPDATE my_bands SET 
@@ -591,7 +646,7 @@ export const bandService = {
           WHERE id = ?;`,
           [
             snapshot.band.name || localBand.name,
-            snapshot.band.imageUri,
+            finalImageUri,
             snapshot.band.city,
             snapshot.band.state,
             snapshot.band.country,
@@ -693,6 +748,19 @@ export const bandService = {
               ]
             );
             localSetlistId = insSl.lastInsertRowId;
+          } else {
+            // Update existing setlist event data (Agenda: date, time, local, notes)
+            await db.runAsync(
+              `UPDATE setlists SET
+                type = COALESCE(?, type),
+                date = COALESCE(?, date),
+                time = COALESCE(?, time),
+                local = COALESCE(?, local),
+                cachê = COALESCE(?, cachê),
+                notes = COALESCE(?, notes)
+               WHERE id = ?;`,
+              [sl.type, sl.date, sl.time, sl.local, sl.cache || sl.cachê, sl.notes, localSetlistId]
+            );
           }
 
           // Link songs in setlist
@@ -711,6 +779,47 @@ export const bandService = {
                 );
               }
             }
+          }
+        }
+      }
+
+      // 4. Synchronize band members into local SQLite
+      if (snapshot.members && Array.isArray(snapshot.members)) {
+        for (const m of snapshot.members) {
+          if (!m.name) continue;
+          const existingMem = await db.getAllAsync(
+            'SELECT id FROM band_members WHERE bandId = ? AND LOWER(name) = ?;',
+            [bandId, m.name.trim().toLowerCase()]
+          );
+
+          if (!existingMem || existingMem.length === 0) {
+            await db.runAsync(
+              'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status) VALUES (?, ?, ?, ?, ?, ?, ?);',
+              [bandId, m.name, m.role || '', m.phone || '', m.startDate || '', m.endDate || '', m.status || 'active']
+            );
+          } else {
+            await db.runAsync(
+              'UPDATE band_members SET role = COALESCE(?, role), phone = COALESCE(?, phone), startDate = COALESCE(?, startDate), endDate = COALESCE(?, endDate), status = COALESCE(?, status) WHERE id = ?;',
+              [m.role, m.phone, m.startDate, m.endDate, m.status, existingMem[0].id]
+            );
+          }
+        }
+      }
+
+      // 5. Synchronize band finances into local SQLite
+      if (snapshot.finances && Array.isArray(snapshot.finances)) {
+        for (const f of snapshot.finances) {
+          if (!f.title) continue;
+          const existingFin = await db.getAllAsync(
+            'SELECT id FROM band_finances WHERE bandId = ? AND LOWER(title) = ? AND COALESCE(date, "") = ?;',
+            [bandId, f.title.trim().toLowerCase(), f.date || '']
+          );
+
+          if (!existingFin || existingFin.length === 0) {
+            await db.runAsync(
+              'INSERT INTO band_finances (bandId, title, amount, type, date, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?);',
+              [bandId, f.title, f.amount || 0, f.type || 'income', f.date || '', f.status || 'paid', f.notes || '']
+            );
           }
         }
       }
@@ -750,11 +859,15 @@ export const bandService = {
 
         let localBandId = local ? local.id : null;
 
-        if (!localBandId) {
+          let initialImage = null;
+          if (cb.imageUri && !cb.imageUri.startsWith('file://')) {
+            initialImage = cb.imageUri;
+          }
+
           // Band exists in cloud but not locally -> create it in local SQLite!
           localBandId = await this.insert(
             cb.name || 'Minha Banda',
-            cb.imageUri || null,
+            initialImage,
             '',
             '',
             cb.bandType || 'cover',
