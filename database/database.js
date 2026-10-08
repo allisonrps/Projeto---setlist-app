@@ -1294,6 +1294,15 @@ export const createTables = async () => {
     try {
       await db.execAsync("ALTER TABLE my_bands ADD COLUMN facebook TEXT;");
     } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN cloudId INTEGER;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN cloudVersion INTEGER DEFAULT 0;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN lastSyncedAt TEXT;");
+    } catch (e) {}
 
     // Migração de chords em songs
     try {

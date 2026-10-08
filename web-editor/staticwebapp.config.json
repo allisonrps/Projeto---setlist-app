@@ -15,6 +15,18 @@
     {
       "route": "/admin.html",
       "rewrite": "/admin.html"
+    },
+    {
+      "route": "/banda",
+      "rewrite": "/band.html"
+    },
+    {
+      "route": "/banda/*",
+      "rewrite": "/band.html"
+    },
+    {
+      "route": "/band.html",
+      "rewrite": "/band.html"
     }
   ],
   "navigationFallback": {

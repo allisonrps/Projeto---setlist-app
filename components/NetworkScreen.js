@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { bandService } from '../services/bandService';
-import { musiciansService, MOCK_MUSICIANS } from '../services/musiciansService';
+import { musiciansService } from '../services/musiciansService';
 import MusicianProfileModal from './MusicianProfileModal';
 import BandProfileModal from './BandProfileModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,256 +73,8 @@ const getBandInitials = (name) => {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 };
 
-const DEFAULT_PROJECTS = [
-  {
-    id: 'proj-1',
-    creatorId: 'mus-2',
-    creatorName: 'Mariana Costa',
-    creatorUsername: 'mari_drummer',
-    bandName: 'The Midnight Echoes',
-    imageUri: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
-    soughtRole: 'Bassist',
-    options: ['Cover', 'Original', 'Professional'],
-    genres: ['Indie Rock', 'Post-Punk', 'Alternative'],
-    city: 'São Paulo',
-    state: 'SP',
-    country: 'Brazil',
-    description: 'Active band with ready setlist and upcoming shows booked over the next 2 months. Weekly rehearsals. Looking for a committed bassist with own pro gear.',
-    createdAt: '2 days ago',
-    members: [
-      { id: 'tm-1', name: 'Mariana Costa', username: 'mari_drummer', role: 'Drummer & Founder', startDate: '2022' },
-      { id: 'tm-2', name: 'Felipe Almeida', username: 'felipe_guitar', role: 'Guitarist', startDate: '2023' },
-      { id: 'tm-3', name: 'Rodrigo Mendes', username: 'rodrigo_keys', role: 'Keyboardist', startDate: '2024' }
-    ],
-    songs: [
-      { id: 'tms-1', name: 'Mr. Brightside', originalBand: 'The Killers', duration: '03:42', style: 'Indie Rock' },
-      { id: 'tms-2', name: 'Obstacle 1', originalBand: 'Interpol', duration: '04:11', style: 'Post-Punk' },
-      { id: 'tms-3', name: 'A-Punk', originalBand: 'Vampire Weekend', duration: '02:17', style: 'Indie Rock' },
-      { id: 'tms-4', name: 'Last Nite', originalBand: 'The Strokes', duration: '03:13', style: 'Alternative' }
-    ],
-    schedule: [
-      { id: 'tma-1', title: 'Indie Fest Showcase', date: '2026-10-18', local: 'Cine Joia', city: 'São Paulo', type: 'show' },
-      { id: 'tma-2', title: 'Alternative Rock Night', date: '2026-11-20', local: 'Mundo Pensante', city: 'São Paulo', type: 'show' }
-    ],
-    applicants: [
-      { id: 'app-1', name: 'Lucas Silveira', instrument: 'Bass', message: 'Playing bass for 8 years, Fender Jazz Bass owner and ready to roll!', date: 'Yesterday' }
-    ]
-  },
-  {
-    id: 'proj-2',
-    creatorId: 'mus-5',
-    creatorName: 'Felipe Almeida',
-    creatorUsername: 'felipe_guitar',
-    bandName: 'Velvet & Fuzz',
-    imageUri: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
-    soughtRole: 'Guitarist',
-    options: ['Original', 'Casual'],
-    genres: ['Stoner Rock', 'Psychedelic', 'Blues Rock'],
-    city: 'Rio de Janeiro',
-    state: 'RJ',
-    country: 'Brazil',
-    description: 'Recording a 5-track original EP. Looking for a guitarist with vintage tones and fuzzy textures for arrangements and studio sessions.',
-    createdAt: '5 days ago',
-    members: [
-      { id: 'vf-1', name: 'Felipe Almeida', username: 'felipe_guitar', role: 'Lead Guitarist & Founder', startDate: '2022' },
-      { id: 'vf-2', name: 'Mariana Costa', username: 'mari_drummer', role: 'Drummer', startDate: '2022' },
-      { id: 'vf-3', name: 'Lucas Silveira', username: 'lucas_bass', role: 'Bassist', startDate: '2023' }
-    ],
-    songs: [
-      { id: 'vfs-1', name: 'No One Knows', originalBand: 'Queens of the Stone Age', duration: '04:38', style: 'Stoner Rock' },
-      { id: 'vfs-2', name: 'Black Math', originalBand: 'The White Stripes', duration: '03:03', style: 'Blues Rock' },
-      { id: 'vfs-3', name: 'Cherub Rock', originalBand: 'The Smashing Pumpkins', duration: '04:58', style: 'Psychedelic' }
-    ],
-    schedule: [
-      { id: 'vfa-1', title: 'Lapa Rock Showcase', date: '2026-10-24', local: 'Circo Voador', city: 'Rio de Janeiro', type: 'show' }
-    ],
-    applicants: []
-  },
-  {
-    id: 'proj-3',
-    creatorId: 'mus-3',
-    creatorName: 'Rodrigo Mendes',
-    creatorUsername: 'rodrigo_keys',
-    bandName: 'Groove Express',
-    imageUri: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
-    soughtRole: 'Keyboardist',
-    options: ['Cover', 'Hobby'],
-    genres: ['Funk', 'Soul', 'Pop'],
-    city: 'Belo Horizonte',
-    state: 'MG',
-    country: 'Brazil',
-    description: 'Weekend jam sessions and occasional club gigs. Friendly atmosphere, good vibes, and tight groove.',
-    createdAt: '1 week ago',
-    members: [
-      { id: 'ge-1', name: 'Rodrigo Mendes', username: 'rodrigo_keys', role: 'Keyboardist & Founder', startDate: '2023' },
-      { id: 'ge-2', name: 'Mariana Costa', username: 'mari_drummer', role: 'Drummer', startDate: '2023' }
-    ],
-    songs: [
-      { id: 'ges-1', name: 'Superstition', originalBand: 'Stevie Wonder', duration: '04:26', style: 'Funk' },
-      { id: 'ges-2', name: 'September', originalBand: 'Earth, Wind & Fire', duration: '03:35', style: 'Soul' }
-    ],
-    schedule: [
-      { id: 'gea-1', title: 'Soul & Groove Session', date: '2026-11-05', local: 'Bar do Museu Clube da Esquina', city: 'Belo Horizonte', type: 'show' }
-    ],
-    applicants: []
-  }
-];
-
-const NETWORK_MOCK_BANDS = [
-  {
-    id: 'net-band-1',
-    name: 'The Velvet Stones',
-    bandName: 'The Velvet Stones',
-    imageUri: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=80',
-    city: 'São Paulo',
-    state: 'SP',
-    country: 'Brazil',
-    options: ['Cover', 'Profissional'],
-    genres: ['Classic Rock', 'Blues Rock', 'Hard Rock'],
-    description: 'Classic rock band playing 70s and 80s hits across live stages and pub circuits.',
-    isMyBand: false,
-    membersCount: 4,
-    songsCount: 16,
-    status: 'Active',
-    isSeeking: false,
-    members: [
-      { id: 'vs-1', name: 'Lucas Silveira', role: 'Bassist', username: 'lucas_bass' },
-      { id: 'vs-2', name: 'Rodrigo Brandão', role: 'Lead Guitarist & Vocals' },
-      { id: 'vs-3', name: 'Gabriel Siqueira', role: 'Drummer' },
-      { id: 'vs-4', name: 'Fabio Meireles', role: 'Keyboards' }
-    ],
-    songs: [
-      { id: 'vss-1', name: 'Comfortably Numb', originalBand: 'Pink Floyd', duration: '06:21', style: 'Classic Rock' },
-      { id: 'vss-2', name: 'Sweet Child O Mine', originalBand: 'Guns N Roses', duration: '05:56', style: 'Hard Rock' },
-      { id: 'vss-3', name: 'Smoke on the Water', originalBand: 'Deep Purple', duration: '05:40', style: 'Classic Rock' }
-    ],
-    schedule: [
-      { id: 'vsa-1', title: 'Classic Rock Showcase', date: '2026-10-24', local: 'Morrison Rock Bar', city: 'São Paulo' }
-    ]
-  },
-  {
-    id: 'net-band-2',
-    name: 'ElectroShock Band',
-    bandName: 'ElectroShock Band',
-    imageUri: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=600&auto=format&fit=crop&q=80',
-    city: 'São Paulo',
-    state: 'SP',
-    country: 'Brazil',
-    options: ['Cover', 'Profissional'],
-    genres: ['Pop Rock', 'Hard Rock', 'Alternative'],
-    description: 'Modern energetic pop rock and cover project for corporate events and music festivals.',
-    isMyBand: false,
-    membersCount: 4,
-    songsCount: 18,
-    status: 'Active',
-    isSeeking: false,
-    members: [
-      { id: 'es-1', name: 'Mariana Costa', role: 'Drummer', username: 'mari_drummer' },
-      { id: 'es-2', name: 'Rafael Torres', role: 'Lead Guitar' },
-      { id: 'es-3', name: 'Bruno Lima', role: 'Vocals' },
-      { id: 'es-4', name: 'Leandro Paz', role: 'Bass' }
-    ],
-    songs: [
-      { id: 'ess-1', name: 'Uprising', originalBand: 'Muse', duration: '05:03', style: 'Alternative' },
-      { id: 'ess-2', name: 'Learn to Fly', originalBand: 'Foo Fighters', duration: '03:55', style: 'Pop Rock' }
-    ],
-    schedule: [
-      { id: 'esa-1', title: 'ElectroShock Arena Tour', date: '2026-10-30', local: 'Espaço Unimed', city: 'São Paulo' }
-    ]
-  },
-  {
-    id: 'net-band-3',
-    name: 'Jazz & Soul Collective',
-    bandName: 'Jazz & Soul Collective',
-    imageUri: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=600&auto=format&fit=crop&q=80',
-    city: 'Belo Horizonte',
-    state: 'MG',
-    country: 'Brazil',
-    options: ['Cover', 'Profissional'],
-    genres: ['Jazz', 'Soul', 'MPB', 'Bossa Nova'],
-    description: 'Acoustic jazz and soul collective with sophisticated arrangements for club nights and private lounges.',
-    isMyBand: false,
-    membersCount: 4,
-    songsCount: 22,
-    status: 'Active',
-    isSeeking: false,
-    members: [
-      { id: 'jsc-1', name: 'Rodrigo Mendes', role: 'Keyboards', username: 'rodrigo_keys' },
-      { id: 'jsc-2', name: 'Paula Esteves', role: 'Lead Vocals' },
-      { id: 'jsc-3', name: 'Thiago Martins', role: 'Upright Bass' },
-      { id: 'jsc-4', name: 'Carlos Drumond', role: 'Drums & Percussion' }
-    ],
-    songs: [
-      { id: 'jss-1', name: 'Autumn Leaves', originalBand: 'Miles Davis', duration: '05:15', style: 'Jazz' },
-      { id: 'jss-2', name: 'Feeling Good', originalBand: 'Nina Simone', duration: '02:53', style: 'Soul' }
-    ],
-    schedule: [
-      { id: 'jsca-1', title: 'Jazz & Wine Night', date: '2026-10-28', local: 'Clube Chalezinho', city: 'Belo Horizonte' }
-    ]
-  },
-  {
-    id: 'net-band-4',
-    name: 'Iron Roses',
-    bandName: 'Iron Roses',
-    imageUri: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
-    city: 'Curitiba',
-    state: 'PR',
-    country: 'Brazil',
-    options: ['Cover', 'Autoral', 'Profissional'],
-    genres: ['Hard Rock', 'Heavy Metal', 'Classic Rock'],
-    description: 'Hard rock group featuring powerful female vocals, twin guitars, and heavyweight 80s & 90s anthems.',
-    isMyBand: false,
-    membersCount: 4,
-    songsCount: 20,
-    status: 'Active',
-    isSeeking: false,
-    members: [
-      { id: 'ir-1', name: 'Camila Duarte', role: 'Lead Vocalist', username: 'camila_vox' },
-      { id: 'ir-2', name: 'Marcio Silva', role: 'Guitar' },
-      { id: 'ir-3', name: 'Danilo Cruz', role: 'Bass' },
-      { id: 'ir-4', name: 'Vitor Hugo', role: 'Drums' }
-    ],
-    songs: [
-      { id: 'irs-1', name: 'Back in Black', originalBand: 'AC/DC', duration: '04:15', style: 'Hard Rock' },
-      { id: 'irs-2', name: 'The Trooper', originalBand: 'Iron Maiden', duration: '04:12', style: 'Heavy Metal' }
-    ],
-    schedule: [
-      { id: 'ira-1', title: 'Iron Roses Rock Night', date: '2026-10-25', local: 'Tork n Roll', city: 'Curitiba' }
-    ]
-  },
-  {
-    id: 'net-band-5',
-    name: 'Black Velvet',
-    bandName: 'Black Velvet',
-    imageUri: 'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=600&auto=format&fit=crop&q=80',
-    city: 'Rio de Janeiro',
-    state: 'RJ',
-    country: 'Brazil',
-    options: ['Autoral', 'Profissional'],
-    genres: ['Stoner Rock', 'Heavy Metal', 'Grunge'],
-    description: 'Heavy riffs, down-tuned fuzz, and raw grooves inspired by Black Sabbath, Kyuss, and Soundgarden.',
-    isMyBand: false,
-    membersCount: 4,
-    songsCount: 15,
-    status: 'Active',
-    isSeeking: false,
-    members: [
-      { id: 'bv-1', name: 'Felipe Almeida', role: 'Lead Guitarist', username: 'felipe_guitar' },
-      { id: 'bv-2', name: 'Arthur Ramos', role: 'Vocals & Rhythm Guitar' },
-      { id: 'bv-3', name: 'Daniel Souza', role: 'Bass' },
-      { id: 'bv-4', name: 'Henrique Alves', role: 'Drums' }
-    ],
-    songs: [
-      { id: 'bvs-1', name: 'Gardenia', originalBand: 'Kyuss', duration: '06:54', style: 'Stoner Rock' },
-      { id: 'bvs-2', name: 'Outshined', originalBand: 'Soundgarden', duration: '05:11', style: 'Grunge' }
-    ],
-    schedule: [
-      { id: 'bva-1', title: 'Black Velvet Album Release', date: '2026-10-27', local: 'Circo Voador', city: 'Rio de Janeiro' }
-    ]
-  }
-];
-
-// MOCK_MUSICIANS is imported from ../services/musiciansService
+const DEFAULT_PROJECTS = [];
+const NETWORK_MOCK_BANDS = [];
 
 
 export default function NetworkScreen({ onOpenProfile, onLogout }) {
@@ -425,15 +177,23 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const mainScrollRef = useRef(null);
   const ITEMS_PER_PAGE = 8;
 
-  // Projects data
+  // Cloud Network Data
   const [projects, setProjects] = useState([]);
   const [userBands, setUserBands] = useState([]);
+  const [cloudMusicians, setCloudMusicians] = useState([]);
+  const [publicBands, setPublicBands] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([loadUserData(), loadProjects(), loadUserBands()]);
+      await Promise.all([
+        loadUserData(),
+        loadProjects(),
+        loadMusicians(),
+        loadPublicBands(),
+        loadUserBands()
+      ]);
     } catch (e) {}
     setRefreshing(false);
   };
@@ -484,10 +244,12 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const [showFormCountryModal, setShowFormCountryModal] = useState(false);
   const [showFormStateModal, setShowFormStateModal] = useState(false);
 
-  // Load user profile & projects
+  // Load cloud data on mount
   useEffect(() => {
     loadUserData();
     loadProjects();
+    loadMusicians();
+    loadPublicBands();
     loadUserBands();
   }, []);
 
@@ -667,56 +429,70 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
 
   const loadProjects = async () => {
     try {
-      const stored = await AsyncStorage.getItem('network_projects');
-      if (stored) {
-        setProjects(JSON.parse(stored));
+      const cloudList = await api.getAnnouncements();
+      if (Array.isArray(cloudList)) {
+        const cloudFormatted = cloudList.map(ca => ({
+          id: 'cloud-' + ca.id,
+          cloudId: ca.id,
+          creatorId: ca.creator?.id || 'me',
+          creatorName: ca.creator?.username || 'Músico',
+          creatorUsername: ca.creator?.username || 'musico',
+          bandName: ca.title,
+          imageUri: '',
+          soughtRole: ca.instrument || 'Músico',
+          options: ['Cover', 'Profissional'],
+          isCover: 1,
+          isAutoral: 0,
+          genres: ['Rock'],
+          city: ca.city || '',
+          state: ca.state || '',
+          country: 'Brasil',
+          description: ca.description || '',
+          createdAt: ca.createdAt ? new Date(ca.createdAt).toLocaleDateString() : 'Recente',
+          applicants: []
+        }));
+        setProjects(cloudFormatted);
+        AsyncStorage.setItem('network_projects', JSON.stringify(cloudFormatted)).catch(() => {});
       } else {
-        setProjects(DEFAULT_PROJECTS);
-      }
-
-      // Fetch active announcements from cloud API
-      try {
-        const cloudList = await api.getAnnouncements();
-        if (Array.isArray(cloudList)) {
-          const cloudFormatted = cloudList.map(ca => ({
-            id: 'cloud-' + ca.id,
-            cloudId: ca.id,
-            creatorId: ca.creator?.id || 'me',
-            creatorName: ca.creator?.username || 'Músico',
-            creatorUsername: ca.creator?.username || 'musico',
-            bandName: ca.title,
-            imageUri: '',
-            soughtRole: ca.instrument || 'Músico',
-            options: ['Cover', 'Profissional'],
-            isCover: 1,
-            isAutoral: 0,
-            genres: ['Rock'],
-            city: ca.city || '',
-            state: ca.state || '',
-            country: 'Brasil',
-            description: ca.description || '',
-            createdAt: ca.createdAt ? new Date(ca.createdAt).toLocaleDateString() : 'Recente',
-            applicants: []
-          }));
-
-          setProjects(prev => {
-            // Remove any item that was published to the cloud or tagged with cloudId that is no longer returned by the API
-            const pureLocal = (prev || []).filter(p => 
-              !p.cloudId && 
-              !p.id?.toString().startsWith('cloud-') &&
-              p.id === 'proj-1'
-            );
-            const merged = [...cloudFormatted, ...pureLocal];
-            AsyncStorage.setItem('network_projects', JSON.stringify(merged));
-            return merged;
-          });
-        }
-      } catch (cloudErr) {
-        console.log('Error fetching cloud announcements:', cloudErr);
+        setProjects([]);
       }
     } catch (e) {
-      console.log('Error loading projects:', e);
-      setProjects(DEFAULT_PROJECTS);
+      console.log('Error loading cloud announcements:', e);
+      try {
+        const stored = await AsyncStorage.getItem('network_projects');
+        if (stored) setProjects(JSON.parse(stored));
+        else setProjects([]);
+      } catch {
+        setProjects([]);
+      }
+    }
+  };
+
+  const loadMusicians = async () => {
+    try {
+      const users = await api.getUsers();
+      if (Array.isArray(users)) {
+        setCloudMusicians(users);
+      } else {
+        setCloudMusicians([]);
+      }
+    } catch (e) {
+      console.log('Error loading cloud musicians:', e);
+      setCloudMusicians([]);
+    }
+  };
+
+  const loadPublicBands = async () => {
+    try {
+      const bList = await api.getPublicBands();
+      if (Array.isArray(bList)) {
+        setPublicBands(bList);
+      } else {
+        setPublicBands([]);
+      }
+    } catch (e) {
+      console.log('Error loading public bands:', e);
+      setPublicBands([]);
     }
   };
 
@@ -1281,66 +1057,112 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     });
   }, [projects, searchQuery, selectedCity]);
 
-  // Assemble full musicians list including the logged-in user
+  // Assemble full musicians list including the logged-in user and cloud users
   const allMusicians = useMemo(() => {
-    if (!currentUser) return MOCK_MUSICIANS;
+    const list = [];
 
-    let userPrimaryInsts = [];
-    if (currentUser.skills && Array.isArray(currentUser.skills) && currentUser.skills.length > 0) {
-      const primaries = currentUser.skills.filter(s => s.isPrimary);
-      const targetList = primaries.length > 0 ? primaries : currentUser.skills;
-      userPrimaryInsts = targetList.slice(0, 2).map(s => ({
-        name: s.instrument || s.name || 'Instrumento',
-        stars: s.stars || 5
-      }));
-    } else if (currentUser.primaryInstruments && Array.isArray(currentUser.primaryInstruments) && currentUser.primaryInstruments.length > 0) {
-      userPrimaryInsts = currentUser.primaryInstruments.slice(0, 2).map(i =>
-        typeof i === 'object' ? { name: i.name || i.instrument || 'Instrumento', stars: i.stars || 5 } : { name: String(i), stars: 5 }
-      );
-    }
-    if (userPrimaryInsts.length === 0) {
-      userPrimaryInsts = [
-        { name: 'Guitarra', stars: 5 },
-        { name: 'Violão', stars: 3 }
-      ];
-    }
-
-    let userInfluences = [];
-    if (Array.isArray(currentUser.influences) && currentUser.influences.length > 0) {
-      userInfluences = currentUser.influences.map(inf => typeof inf === 'string' ? inf : (inf.name || inf.influence)).filter(Boolean).slice(0, 5);
-    } else if (typeof currentUser.influences === 'string' && currentUser.influences.trim()) {
-      try {
-        const parsed = JSON.parse(currentUser.influences);
-        if (Array.isArray(parsed)) {
-          userInfluences = parsed.map(inf => typeof inf === 'string' ? inf : (inf.name || inf.influence)).filter(Boolean).slice(0, 5);
-        }
-      } catch (e) {
-        userInfluences = currentUser.influences.split(',').map(s => s.trim()).filter(Boolean).slice(0, 5);
+    if (currentUser) {
+      let userPrimaryInsts = [];
+      if (currentUser.skills && Array.isArray(currentUser.skills) && currentUser.skills.length > 0) {
+        const primaries = currentUser.skills.filter(s => s.isPrimary);
+        const targetList = primaries.length > 0 ? primaries : currentUser.skills;
+        userPrimaryInsts = targetList.slice(0, 2).map(s => ({
+          name: s.instrument || s.name || 'Instrumento',
+          stars: s.stars || 5
+        }));
+      } else if (currentUser.primaryInstruments && Array.isArray(currentUser.primaryInstruments) && currentUser.primaryInstruments.length > 0) {
+        userPrimaryInsts = currentUser.primaryInstruments.slice(0, 2).map(i =>
+          typeof i === 'object' ? { name: i.name || i.instrument || 'Instrumento', stars: i.stars || 5 } : { name: String(i), stars: 5 }
+        );
       }
-    }
-    if (userInfluences.length === 0) {
-      userInfluences = ['Rock Clássico', 'Blues'];
+      if (userPrimaryInsts.length === 0) {
+        userPrimaryInsts = [
+          { name: 'Guitarra', stars: 5 },
+          { name: 'Violão', stars: 3 }
+        ];
+      }
+
+      let userInfluences = [];
+      if (Array.isArray(currentUser.influences) && currentUser.influences.length > 0) {
+        userInfluences = currentUser.influences.map(inf => typeof inf === 'string' ? inf : (inf.name || inf.influence)).filter(Boolean).slice(0, 5);
+      } else if (typeof currentUser.influences === 'string' && currentUser.influences.trim()) {
+        try {
+          const parsed = JSON.parse(currentUser.influences);
+          if (Array.isArray(parsed)) {
+            userInfluences = parsed.map(inf => typeof inf === 'string' ? inf : (inf.name || inf.influence)).filter(Boolean).slice(0, 5);
+          }
+        } catch (e) {
+          userInfluences = currentUser.influences.split(',').map(s => s.trim()).filter(Boolean).slice(0, 5);
+        }
+      }
+      if (userInfluences.length === 0) {
+        userInfluences = ['Rock Clássico', 'Blues'];
+      }
+
+      const myProfileMusician = {
+        id: 'mus-me',
+        isMe: true,
+        name: currentUser.displayName || currentUser.name || currentUser.username || 'Músico',
+        username: (currentUser.username || 'voce').replace(/^@+/, ''),
+        primaryInstruments: userPrimaryInsts,
+        primaryInstrument: userPrimaryInsts[0]?.name || 'Guitarra',
+        stars: 5,
+        city: currentUser.city || '',
+        state: currentUser.state || '',
+        country: currentUser.country || '',
+        availability: currentUser.availability || 'Disponível',
+        influences: userInfluences,
+        bio: currentUser.bio || 'Músico cadastrado na plataforma.',
+        imageUri: userProfileImage || currentUser.imageUri || null
+      };
+
+      list.push(myProfileMusician);
     }
 
-    const myProfileMusician = {
-      id: 'mus-me',
-      isMe: true,
-      name: currentUser.displayName || currentUser.name || currentUser.username || 'Músico',
-      username: (currentUser.username || 'voce').replace(/^@+/, ''),
-      primaryInstruments: userPrimaryInsts,
-      primaryInstrument: userPrimaryInsts[0]?.name || 'Guitarra',
-      stars: 5,
-      city: currentUser.city || '',
-      state: currentUser.state || '',
-      country: currentUser.country || '',
-      availability: currentUser.availability || 'Disponível',
-      influences: userInfluences,
-      bio: currentUser.bio || 'Músico cadastrado na plataforma.',
-      imageUri: userProfileImage || currentUser.imageUri || null
-    };
+    (cloudMusicians || []).forEach(u => {
+      if (currentUser && (u.id === currentUser.id || u.username?.toLowerCase() === currentUser.username?.toLowerCase())) {
+        return;
+      }
+      let instruments = [];
+      if (typeof u.instruments === 'string' && u.instruments.trim()) {
+        try {
+          const parsed = JSON.parse(u.instruments);
+          instruments = Array.isArray(parsed) ? parsed : [{ name: u.instruments, stars: 5 }];
+        } catch {
+          instruments = [{ name: u.instruments, stars: 5 }];
+        }
+      } else if (Array.isArray(u.instruments)) {
+        instruments = u.instruments;
+      } else {
+        instruments = [{ name: 'Músico', stars: 5 }];
+      }
 
-    return [myProfileMusician, ...MOCK_MUSICIANS];
-  }, [currentUser, userProfileImage]);
+      list.push({
+        id: 'mus-' + u.id,
+        cloudId: u.id,
+        isMe: false,
+        name: u.username,
+        username: (u.username || '').replace(/^@+/, ''),
+        primaryInstruments: instruments,
+        primaryInstrument: instruments[0]?.name || 'Músico',
+        stars: 5,
+        city: u.city || '',
+        state: u.state || '',
+        country: u.country || 'Brasil',
+        availability: u.availability || 'Disponível',
+        influences: typeof u.influences === 'string' ? u.influences.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(u.influences) ? u.influences : []),
+        bio: u.bio || 'Músico na rede BandLink.',
+        imageUri: null,
+        instagram: u.instagram,
+        youtube: u.youtube,
+        spotify: u.spotify,
+        tiktok: u.tiktok,
+        age: u.age
+      });
+    });
+
+    return list;
+  }, [currentUser, userProfileImage, cloudMusicians]);
 
   // Helper to extract instrument name and individual star rating
   const getInstInfo = (inst, defaultStars = 5) => {
@@ -1505,16 +1327,47 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       });
     });
 
-    // 3. Network ecosystem mock bands
-    NETWORK_MOCK_BANDS.forEach(mb => {
-      const bandKey = (mb.name || '').trim().toLowerCase();
-      if (seenNames.has(bandKey)) return;
+    // 3. Real Public Bands from Cloud API
+    (publicBands || []).forEach(pb => {
+      const bName = (pb.name || '').trim();
+      const bandKey = bName.toLowerCase();
+      if (!bandKey || seenNames.has(bandKey)) return;
       seenNames.add(bandKey);
-      list.push(mb);
+
+      let parsedGenres = [];
+      try {
+        parsedGenres = typeof pb.genresJson === 'string' ? JSON.parse(pb.genresJson) : (pb.genre ? [pb.genre] : ['Rock']);
+      } catch {
+        parsedGenres = pb.genre ? [pb.genre] : ['Rock'];
+      }
+
+      list.push({
+        id: 'cloud-band-' + pb.id,
+        cloudId: pb.id,
+        name: bName,
+        bandName: bName,
+        imageUri: pb.imageUri || '',
+        city: pb.city || '',
+        state: pb.state || '',
+        country: pb.country || 'Brasil',
+        genres: parsedGenres,
+        bandType: pb.bandType || 'cover',
+        description: pb.description || 'Banda conectada na Rede BandLink.',
+        isMyBand: false,
+        membersCount: pb.membersCount || 1,
+        songsCount: 0,
+        status: 'Na Rede Musical',
+        isSeeking: false,
+        instagram: pb.instagram,
+        youtube: pb.youtube,
+        spotify: pb.spotify,
+        publicSlug: pb.publicSlug,
+        updatedAt: pb.updatedAt
+      });
     });
 
     return list;
-  }, [userBands, projects, currentUser]);
+  }, [userBands, projects, publicBands, currentUser]);
 
   // Filtered bands by city and search query
   const filteredBands = useMemo(() => {

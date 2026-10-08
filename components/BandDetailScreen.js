@@ -17,6 +17,8 @@ import {
   StatusBar,
   Animated,
   PanResponder,
+  Share,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -203,12 +205,44 @@ export default function BandDetailScreen({
   // Compartilhar Agenda da banda (mesmo sistema da agenda do perfil)
   const [showShareAgendaModal, setShowShareAgendaModal] = useState(false);
 
-  // Network Sync / Visibility State
+  // Network Sync / Visibility & Cloud Collaboration State
   const [isNetworkVisible, setIsNetworkVisible] = useState(band?.isNetworkVisible === 1 || band?.isNetworkVisible === true);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatusInfo, setSyncStatusInfo] = useState({
+    isSynced: false,
+    localVersion: band?.cloudVersion || 1,
+    remoteVersion: band?.cloudVersion || 1,
+    hasRemoteUpdates: false,
+    lastSyncedAt: band?.lastSyncedAt || null
+  });
 
   useEffect(() => {
     setIsNetworkVisible(band?.isNetworkVisible === 1 || band?.isNetworkVisible === true);
   }, [band?.id, band?.isNetworkVisible]);
+
+  const loadSyncStatus = useCallback(async () => {
+    if (!band?.id) return;
+    try {
+      const status = await bandService.checkSyncStatus(band.id);
+      if (status) {
+        setSyncStatusInfo(prev => ({
+          ...prev,
+          isSynced: status.isSynced,
+          localVersion: status.localVersion !== undefined ? status.localVersion : prev.localVersion,
+          remoteVersion: status.remoteVersion !== undefined ? status.remoteVersion : prev.remoteVersion,
+          hasRemoteUpdates: Boolean(status.hasRemoteUpdates),
+          lastSyncedAt: status.lastSyncedAt || prev.lastSyncedAt
+        }));
+      }
+    } catch (e) {
+      console.log('Error checking band sync status:', e);
+    }
+  }, [band?.id]);
+
+  useEffect(() => {
+    loadSyncStatus();
+  }, [loadSyncStatus]);
 
   const handleToggleNetworkVisibility = async () => {
     const logged = await api.isLoggedIn();
@@ -226,27 +260,92 @@ export default function BandDetailScreen({
     } catch (e) {}
 
     const nextState = !isNetworkVisible;
-    // Alternância instantânea de estado na tela
     setIsNetworkVisible(nextState);
     if (band) {
       band.isNetworkVisible = nextState ? 1 : 0;
     }
 
-    // Persistência imediata no SQLite local
     if (band?.id) {
-      bandService.toggleNetworkVisibility(band.id, nextState).catch(err => {
-        console.error('Erro ao atualizar visibilidade da banda no banco:', err);
-      });
+      await bandService.toggleNetworkVisibility(band.id, nextState);
+      if (band.cloudId) {
+        try {
+          await api.toggleBandNetworkVisibility(band.cloudId, nextState);
+        } catch (err) {
+          console.warn('Erro ao atualizar visibilidade na nuvem:', err);
+        }
+      }
       if (onReloadAll) onReloadAll();
     }
+  };
 
-    // Sincronização em nuvem na Azure em background
-    if (nextState && band) {
-      api.syncBandToCloud(band).then(res => {
-        if (res) console.log('Banda sincronizada na nuvem com sucesso:', res);
-      }).catch(err => {
-        console.log('Erro de sincronização na nuvem:', err);
+  const handlePushSyncToCloud = async () => {
+    const logged = await api.isLoggedIn();
+    if (!logged) {
+      Alert.alert('Login Necessário', 'Faça login na sua conta BandLink para sincronizar com a nuvem.', [{ text: 'OK' }]);
+      return;
+    }
+
+    try {
+      setIsSyncing(true);
+      Vibration.vibrate(50);
+      const res = await bandService.syncBandToCloud(band.id);
+      setSyncStatusInfo(prev => ({
+        ...prev,
+        isSynced: true,
+        localVersion: res.version,
+        remoteVersion: res.version,
+        hasRemoteUpdates: false,
+        lastSyncedAt: res.lastSyncedAt
+      }));
+      setIsNetworkVisible(Boolean(res.isNetworkVisible));
+      if (band) {
+        band.cloudId = res.cloudId;
+        band.cloudVersion = res.version;
+        band.lastSyncedAt = res.lastSyncedAt;
+        band.isNetworkVisible = res.isNetworkVisible ? 1 : 0;
+      }
+      Alert.alert('Sincronizado!', 'Todas as músicas, cifras, integrantes e setlists foram enviados para a nuvem.');
+      if (onReloadAll) onReloadAll();
+    } catch (err) {
+      Alert.alert('Erro ao Sincronizar', err.message || 'Falha ao sincronizar com a nuvem.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handlePullSyncFromCloud = async () => {
+    const logged = await api.isLoggedIn();
+    if (!logged) {
+      Alert.alert('Login Necessário', 'Faça login na sua conta BandLink para baixar as atualizações do líder.', [{ text: 'OK' }]);
+      return;
+    }
+
+    try {
+      setIsSyncing(true);
+      Vibration.vibrate(50);
+      await bandService.pullBandFromCloud(band.id);
+      await loadData();
+      await loadSyncStatus();
+      Alert.alert('Atualizado!', 'Todas as músicas, cifras e setlists foram gravados no seu app offline!');
+      if (onReloadAll) onReloadAll();
+    } catch (err) {
+      Alert.alert('Erro ao Baixar', err.message || 'Falha ao baixar dados da nuvem.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSharePublicBandLink = async () => {
+    const publicId = band?.cloudId || band?.id;
+    const url = `https://bandlink.pro/banda?id=${publicId}`;
+    try {
+      await Share.share({
+        title: `Banda ${band?.name || ''} no BandLink`,
+        message: `Confira o perfil, repertório e agenda da banda ${band?.name || ''} no BandLink: ${url}`,
+        url: url
       });
+    } catch (e) {
+      console.log('Error sharing band link:', e);
     }
   };
 
@@ -1300,22 +1399,24 @@ export default function BandDetailScreen({
                 {showBandOptionsMenu ? (
                   <View style={styles.headerActionPillRow}>
                     {/* Botão Sincronização / Visibilidade na Rede */}
-                    {isUserLeader && (
-                      <Pressable
-                        style={[
-                          styles.headerActionPillBtn,
-                          isNetworkVisible && { backgroundColor: 'rgba(16, 185, 129, 0.35)' }
-                        ]}
-                        onPress={handleToggleNetworkVisibility}
-                        accessibilityLabel={isNetworkVisible ? (t('bandSyncedActive') || 'Banda visível na Rede') : (t('bandSyncedOffline') || 'Banda fora da Rede')}
-                      >
-                        <Ionicons
-                          name={isNetworkVisible ? 'cloud-done' : 'cloud-offline-outline'}
-                          size={17}
-                          color={isNetworkVisible ? '#10b981' : '#ffffff'}
-                        />
-                      </Pressable>
-                    )}
+                    <Pressable
+                      style={[
+                        styles.headerActionPillBtn,
+                        isNetworkVisible && { backgroundColor: 'rgba(16, 185, 129, 0.35)' },
+                        syncStatusInfo.hasRemoteUpdates && { borderColor: '#f59e0b', borderWidth: 1.5 }
+                      ]}
+                      onPress={() => {
+                        setShowBandOptionsMenu(false);
+                        setShowSyncModal(true);
+                      }}
+                      accessibilityLabel="Sincronização em Nuvem"
+                    >
+                      <Ionicons
+                        name={isNetworkVisible ? 'cloud-done' : (syncStatusInfo.hasRemoteUpdates ? 'cloud-download-outline' : 'cloud-outline')}
+                        size={17}
+                        color={isNetworkVisible ? '#10b981' : (syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : '#ffffff')}
+                      />
+                    </Pressable>
 
                     {/* Página Pública da Banda */}
                     {onOpenPublicProfile && (
@@ -1445,8 +1546,39 @@ export default function BandDetailScreen({
                     </Pressable>
                   </View>
                 ) : (
-                  /* ESTADO PADRÃO: 2 BOTÕES COMPACTOS (REDES SOCIAIS + OPÇÕES DA BANDA) */
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  /* ESTADO PADRÃO: BOTÕES COMPACTOS (NUVEM + REDES SOCIAIS + OPÇÕES) */
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    {/* Botão de Nuvem / Sincronização direta */}
+                    <Pressable
+                      style={[
+                        styles.headerIconButton,
+                        {
+                          backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0,0,0,0.35)',
+                          borderColor: syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : (isNetworkVisible ? '#10b981' : 'rgba(255,255,255,0.15)'),
+                          borderWidth: syncStatusInfo.hasRemoteUpdates ? 1.5 : 1,
+                        }
+                      ]}
+                      onPress={() => setShowSyncModal(true)}
+                      accessibilityLabel="Sincronização em Nuvem"
+                    >
+                      <Ionicons
+                        name={isNetworkVisible ? 'cloud-done' : (syncStatusInfo.hasRemoteUpdates ? 'cloud-download-outline' : 'cloud-outline')}
+                        size={18}
+                        color={isNetworkVisible ? '#10b981' : (syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : '#ffffff')}
+                      />
+                      {syncStatusInfo.hasRemoteUpdates && (
+                        <View style={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: '#f59e0b',
+                        }} />
+                      )}
+                    </Pressable>
+
                     {/* Botão Único de Redes Sociais */}
                     {(hasAnySocialLink || isUserLeader) && (
                       <Pressable
@@ -3753,6 +3885,255 @@ export default function BandDetailScreen({
         headerLogo={bandLogoUri}
         qrValue={'https://setlistbandmanager.com/b/' + bandQrSlug}
       />
+
+      {/* MODAL DE SINCRONIZAÇÃO EM NUVEM E REDE BANDLINK */}
+      <Modal visible={showSyncModal} animationType="slide" transparent onRequestClose={() => setShowSyncModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <View style={[styles.bottomSheetContainer, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '88%' }]}>
+            
+            {/* Modal Header */}
+            <View style={styles.modalHeaderRow}>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary + '22', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="cloud-outline" size={20} color={colors.primary} />
+                </View>
+                <View>
+                  <Text style={[styles.modalTitleText, { color: colors.text }]}>Sincronização & Rede</Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted }}>BandLink Cloud (Offline-First)</Text>
+                </View>
+              </View>
+              <Pressable onPress={() => setShowSyncModal(false)} style={{ padding: 6 }}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+              {/* Role & Status Banner */}
+              <View style={{
+                backgroundColor: isUserLeader ? 'rgba(56, 189, 248, 0.1)' : 'rgba(168, 85, 247, 0.1)',
+                borderColor: isUserLeader ? 'rgba(56, 189, 248, 0.3)' : 'rgba(168, 85, 247, 0.3)',
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 16,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name={isUserLeader ? "ribbon-outline" : "people-outline"} size={18} color={isUserLeader ? "#38bdf8" : "#a855f7"} />
+                    <Text style={{ color: isUserLeader ? "#38bdf8" : "#a855f7", fontWeight: '700', fontSize: 13 }}>
+                      {isUserLeader ? "Você é o Líder da Banda" : "Você é Integrante da Banda"}
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 11, color: colors.text, fontWeight: '700' }}>
+                      v{syncStatusInfo.localVersion || 1}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
+                  {isUserLeader
+                    ? "Como líder, você atualiza o repertório, cifras e setlists e envia as novidades para a nuvem. Todos os integrantes receberão as alterações."
+                    : "Como integrante, você recebe as músicas, cifras e alterações salvas pelo líder e armazena tudo no SQLite offline para tocar nos shows."}
+                </Text>
+              </View>
+
+              {/* Alert: Remote updates available */}
+              {syncStatusInfo.hasRemoteUpdates && !isUserLeader && (
+                <View style={{
+                  backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                  borderColor: 'rgba(245, 158, 11, 0.4)',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 16,
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <Ionicons name="sparkles" size={18} color="#f59e0b" />
+                    <Text style={{ color: '#f59e0b', fontWeight: '700', fontSize: 13 }}>
+                      Atualização Disponível do Líder!
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 12, color: colors.text, opacity: 0.9, lineHeight: 17 }}>
+                    O líder publicou a versão v{syncStatusInfo.remoteVersion}. Baixe agora para atualizar seu repertório e cifras locais.
+                  </Text>
+                </View>
+              )}
+
+              {/* Network Visibility Switch (Leader Only) */}
+              <View style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 16,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <View style={{ flex: 1, marginRight: 12 }}>
+                    <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>
+                      Visível na Rede Musical
+                    </Text>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
+                      {isNetworkVisible
+                        ? "Sua banda está online na Rede e possui página pública no ar."
+                        : "Sua banda está privada/offline. Ninguém na rede pode visualizá-la."}
+                    </Text>
+                  </View>
+                  {isUserLeader ? (
+                    <Pressable
+                      onPress={handleToggleNetworkVisibility}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        backgroundColor: isNetworkVisible ? '#10b981' : (isDark ? '#27272a' : '#e4e4e7'),
+                      }}
+                    >
+                      <Text style={{ color: isNetworkVisible ? '#ffffff' : colors.textMuted, fontSize: 12, fontWeight: '700' }}>
+                        {isNetworkVisible ? 'ONLINE' : 'OFFLINE'}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <View style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                    }}>
+                      <Text style={{ color: isNetworkVisible ? '#10b981' : colors.textMuted, fontSize: 11, fontWeight: '700' }}>
+                        {isNetworkVisible ? 'ONLINE' : 'PRIVADA'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Public Link Preview */}
+                {isNetworkVisible && (
+                  <View style={{
+                    marginTop: 8,
+                    paddingTop: 10,
+                    borderTopWidth: 1,
+                    borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>LINK PÚBLICO DA BANDA</Text>
+                      <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }} numberOfLines={1}>
+                        bandlink.pro/banda?id={band?.cloudId || band?.id}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={handleSharePublicBandLink}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 4,
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                        backgroundColor: colors.primary + '22',
+                      }}
+                    >
+                      <Ionicons name="share-social-outline" size={14} color={colors.primary} />
+                      <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>Compartilhar</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+
+              {/* Sync Details Card */}
+              <View style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 20,
+              }}>
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13, marginBottom: 10 }}>
+                  Informações de Sincronização
+                </Text>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>Versão no Dispositivo:</Text>
+                  <Text style={{ color: colors.text, fontWeight: '700', fontSize: 12 }}>v{syncStatusInfo.localVersion || 1}</Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>Versão na Nuvem:</Text>
+                  <Text style={{ color: colors.text, fontWeight: '700', fontSize: 12 }}>v{syncStatusInfo.remoteVersion || 1}</Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>Última Sincronização:</Text>
+                  <Text style={{ color: colors.text, fontSize: 12 }}>
+                    {syncStatusInfo.lastSyncedAt
+                      ? new Date(syncStatusInfo.lastSyncedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+                      : 'Pendente'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Action Buttons */}
+              {isUserLeader ? (
+                <Pressable
+                  onPress={handlePushSyncToCloud}
+                  disabled={isSyncing}
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 12,
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    gap: 8,
+                    opacity: isSyncing ? 0.7 : 1,
+                  }}
+                >
+                  {isSyncing ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" />
+                      <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
+                        Enviar Alterações para a Nuvem
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={handlePullSyncFromCloud}
+                  disabled={isSyncing}
+                  style={{
+                    backgroundColor: syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : colors.primary,
+                    borderRadius: 12,
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    gap: 8,
+                    opacity: isSyncing ? 0.7 : 1,
+                  }}
+                >
+                  {isSyncing ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Ionicons name="cloud-download-outline" size={18} color="#ffffff" />
+                      <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
+                        Baixar Atualizações do Líder
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              )}
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
     </Modal>
   );

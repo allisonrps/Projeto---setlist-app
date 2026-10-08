@@ -7,6 +7,26 @@
     {
       "route": "/editor.html",
       "rewrite": "/editor.html"
+    },
+    {
+      "route": "/admin",
+      "rewrite": "/admin.html"
+    },
+    {
+      "route": "/admin.html",
+      "rewrite": "/admin.html"
+    },
+    {
+      "route": "/banda",
+      "rewrite": "/band.html"
+    },
+    {
+      "route": "/banda/*",
+      "rewrite": "/band.html"
+    },
+    {
+      "route": "/band.html",
+      "rewrite": "/band.html"
     }
   ],
   "navigationFallback": {
@@ -15,6 +35,8 @@
       "/assets/*",
       "/editor.html",
       "/editor/*",
+      "/admin.html",
+      "/admin/*",
       "/*.{png,jpg,jpeg,gif,svg,ico,css,js,json}"
     ]
   },

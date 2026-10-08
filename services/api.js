@@ -295,5 +295,150 @@ export const api = {
       console.log('Error deleting cloud announcement:', err);
       return false;
     }
+  },
+
+  // ==========================================
+  // CLOUD USERS / MUSICIANS (NETWORK)
+  // ==========================================
+  getUsers: async (filters = {}) => {
+    try {
+      const headers = await getHeaders();
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.state) params.append('state', filters.state);
+      if (filters.instrument) params.append('instrument', filters.instrument);
+
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetchWithTimeout(`${API_URL}/Users${qs}`, { headers }, 8000);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.log('Error fetching cloud musicians:', err);
+    }
+    return [];
+  },
+
+  // ==========================================
+  // CLOUD BANDS & NETWORK SYNC
+  // ==========================================
+  getPublicBands: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.state) params.append('state', filters.state);
+      if (filters.genre) params.append('genre', filters.genre);
+
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetchWithTimeout(`${API_URL}/Bands/public${qs}`, {}, 8000);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.log('Error fetching public bands:', err);
+    }
+    return [];
+  },
+
+  getPublicBandProfile: async (id) => {
+    try {
+      const response = await fetchWithTimeout(`${API_URL}/Bands/public/${id}`, {}, 8000);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.log('Error fetching public band profile:', err);
+    }
+    return null;
+  },
+
+  getMyCloudBands: async () => {
+    try {
+      const headers = await getHeaders();
+      const response = await fetchWithTimeout(`${API_URL}/Bands/my-bands`, { headers }, 8000);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.log('Error fetching my cloud bands:', err);
+    }
+    return [];
+  },
+
+  createBand: async (bandData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        name: bandData.name,
+        genre: bandData.genre || '',
+        description: bandData.description || ''
+      })
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao criar banda no servidor.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  syncBand: async (id, syncPayload) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${id}/sync`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(syncPayload)
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao sincronizar banda com a nuvem.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  pullBand: async (id) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${id}/pull`, {
+      method: "GET",
+      headers
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao carregar dados da banda da nuvem.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  toggleBandNetworkVisibility: async (id, isVisible) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${id}/network-visibility`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ isVisible: !!isVisible })
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao atualizar visibilidade da banda.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
   }
 };
