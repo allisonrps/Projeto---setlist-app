@@ -1227,7 +1227,7 @@
     <!-- ============================================================== -->
     <section id="tab-playstore" class="tab-content">
       <!-- APP INFO BANNER -->
-      <div class="card-panel" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 16px;">
+      <div class="card-panel" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div style="display: flex; align-items: center; gap: 18px;">
           <div style="width: 56px; height: 56px; border-radius: 12px; background: #000; border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; overflow: hidden;">
             <img src="assets/favicon.png" alt="BandLink" style="width: 44px; height: 44px; border-radius: 8px;">
@@ -1240,84 +1240,72 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.app" target="_blank" class="btn-action btn-primary">
             <ion-icon name="open-outline"></ion-icon>
-            Ver na Google Play
+            Ver na Google Play Store
+          </a>
+          <a href="https://play.google.com/console" target="_blank" class="btn-action">
+            <ion-icon name="speedometer-outline"></ion-icon>
+            Abrir Google Play Console
           </a>
         </div>
       </div>
 
-      <!-- VITALS CARDS -->
-      <div class="vitals-grid">
-        <div class="vital-box">
-          <div class="kpi-title">Crash Rate (Taxa de Falhas)</div>
-          <div class="vital-score" id="vitalCrashRate" style="color: var(--emerald);">
-            0.12% <small>/ Limite 1.09%</small>
-          </div>
-          <div class="vital-bar">
-            <div class="vital-bar-fill" id="vitalCrashFill" style="width: 11%;"></div>
-            <div class="vital-threshold-line" style="left: 70%;" title="Limite Crítico do Google (1.09%)"></div>
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-            <span>Comportamento Ruim: 1.09%</span>
-            <span style="color: var(--emerald); font-weight: 700;">Status: Saudável</span>
-          </div>
-        </div>
-
-        <div class="vital-box">
-          <div class="kpi-title">Taxa de ANR (App Não Responde)</div>
-          <div class="vital-score" id="vitalAnrRate" style="color: var(--emerald);">
-            0.04% <small>/ Limite 0.47%</small>
-          </div>
-          <div class="vital-bar">
-            <div class="vital-bar-fill" id="vitalAnrFill" style="width: 8%;"></div>
-            <div class="vital-threshold-line" style="left: 65%;" title="Limite Crítico do Google (0.47%)"></div>
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-            <span>Comportamento Ruim: 0.47%</span>
-            <span style="color: var(--emerald); font-weight: 700;">Status: Excelente</span>
-          </div>
-        </div>
-
-        <div class="vital-box">
-          <div class="kpi-title">Instalações Ativas Estimadas</div>
-          <div class="vital-score" id="vitalInstalls" style="color: var(--cyan);">
-            1.420 <small>dispositivos</small>
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 14px;">
-            Dispositivos ativos nos últimos 30 dias: <strong style="color: #fff;" id="vitalActiveDevices">1.180</strong>
+      <!-- CONNECTION STATUS BANNER -->
+      <div class="card-panel" style="margin-bottom: 24px; border-left: 4px solid var(--amber);">
+        <div style="display: flex; align-items: flex-start; gap: 14px;">
+          <ion-icon name="information-circle-outline" style="font-size: 1.8rem; color: var(--amber); flex-shrink: 0;"></ion-icon>
+          <div>
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 4px;">Status da Conexão com a Google Play Developer API</h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+              <strong>Política de Dados Reais:</strong> Este painel exibe apenas valores reais. Como a integração direta com a Google Play Developer API (Service Account JSON) ainda não está vinculada no backend, os dados de Crash Rate, ANRs, Contagem de Instalações e Avaliações não são simulados e permanecem vazios até a integração oficial.
+            </p>
+            <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: var(--radius-sm); color: #fde68a;">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              <span>Google Play Developer API: Desconectada (Sem telemetria simulada)</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- RATINGS & REVIEWS -->
+      <!-- RATINGS & REVIEWS REAL SECTION -->
       <div class="obs-grid">
         <div class="card-panel">
           <div class="card-panel-header">
             <h3 class="panel-title">
               <ion-icon name="chatbox-ellipses-outline" style="color: var(--cyan);"></ion-icon>
-              Feed de Avaliações Recentes (Play Store)
+              Avaliações de Usuários (Google Play)
             </h3>
           </div>
           <div class="reviews-list" id="playReviewsList">
-            <!-- Reviews will be populated here -->
+            <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 0.85rem;">
+              <ion-icon name="chatbubbles-outline" style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
+              <p>Nenhuma avaliação importada via API até o momento.</p>
+              <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 6px;">
+                Para visualizar e responder comentários reais de músicos e usuários, consulte diretamente o <a href="https://play.google.com/console" target="_blank" style="color: var(--cyan);">Google Play Console</a>.
+              </p>
+            </div>
           </div>
         </div>
 
         <div class="card-panel">
           <div class="card-panel-header">
             <h3 class="panel-title">
-              <ion-icon name="star-outline" style="color: #fbbf24);"></ion-icon>
-              Distribuição de Notas
+              <ion-icon name="stats-chart-outline" style="color: var(--violet);"></ion-icon>
+              Android Vitals (Google Console)
             </h3>
-            <span class="code-chip" style="color: #fbbf24; font-weight: 700;" id="ratingScoreBadge">★ 4.8 / 5.0</span>
           </div>
-          <div style="height: 220px; display: flex; align-items: center; justify-content: center;">
-            <canvas id="ratingsChart"></canvas>
-          </div>
-          <div style="margin-top: 16px; font-size: 0.75rem; color: var(--text-dim); text-align: center;">
-            Baseado em 48 avaliações verificadas de músicos e bandas
+          <div style="padding: 16px; font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <p style="margin-bottom: 12px;">Para monitorar os Vitals reais do aplicativo:</p>
+            <ul style="padding-left: 18px; margin-bottom: 16px; color: var(--text-dim); font-size: 0.8rem;">
+              <li><strong>Crash Rate (Taxa de Falhas):</strong> Disponível no Play Console em <em>Qualidade &rarr; Vitals do Android</em></li>
+              <li><strong>ANR Rate (App Não Responde):</strong> Limite de Comportamento Ruim do Google é 0.47%</li>
+              <li><strong>Dispositivos Ativos:</strong> Relatório em <em>Estatísticas &rarr; Usuários ativos</em></li>
+            </ul>
+            <a href="https://play.google.com/console" target="_blank" class="btn-action btn-primary" style="width: 100%; justify-content: center;">
+              <ion-icon name="open-outline"></ion-icon> Acessar Vitals no Play Console
+            </a>
           </div>
         </div>
       </div>
@@ -1779,6 +1767,9 @@
                   <button class="btn-action" onclick="toggleRole(${u.id}, '${u.username}', '${u.role}')" title="Alterar Permissão">
                     <ion-icon name="shield-outline"></ion-icon>
                   </button>
+                  <button class="btn-action" style="color: var(--rose);" onclick="deleteUser(${u.id}, '${u.username}')" title="Excluir Usuário">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -1874,6 +1865,27 @@
           fetchUsers();
         } else {
           showToast(data.message || 'Erro ao alterar função.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão.', 'error');
+      }
+    }
+
+    async function deleteUser(id, username) {
+      if (!confirm(`Tem certeza que deseja excluir definitivamente o usuário "${username}" (ID #${id}) da plataforma? Esta ação é irreversível.`)) return;
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/users/${id}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Usuário excluído definitivamente.', 'success');
+          fetchUsers();
+          fetchFullDashboard(false);
+        } else {
+          showToast(data.message || 'Erro ao excluir usuário.', 'error');
         }
       } catch (e) {
         showToast('Erro de conexão.', 'error');
@@ -2040,6 +2052,7 @@
     }
 
     // ==============================================================
+    // ==============================================================
     // TAB 4: GOOGLE PLAY STORE OBSERVABILITY
     // ==============================================================
     async function fetchPlayStore() {
@@ -2049,37 +2062,6 @@
           const data = await res.json();
           document.getElementById('playAppName').textContent = data.appName;
           document.getElementById('playPackage').innerHTML = `${data.packageName} • Versão <span style="color:var(--cyan);">${data.currentVersion}</span> (Build ${data.versionCode})`;
-
-          // Vitals
-          const vitals = data.vitals || {};
-          document.getElementById('vitalCrashRate').innerHTML = `${vitals.crashRatePercentage}% <small>/ Limite ${vitals.crashRateThreshold}%</small>`;
-          document.getElementById('vitalAnrRate').innerHTML = `${vitals.anrRatePercentage}% <small>/ Limite ${vitals.anrRateThreshold}%</small>`;
-          document.getElementById('vitalInstalls').innerHTML = `${vitals.totalInstallsEstimated?.toLocaleString()} <small>dispositivos</small>`;
-          document.getElementById('vitalActiveDevices').textContent = vitals.activeDevicesEstimated?.toLocaleString();
-
-          // Reviews
-          const reviewsList = document.getElementById('playReviewsList');
-          const reviews = data.recentReviews || [];
-          reviewsList.innerHTML = reviews.map(r => `
-            <div class="review-item">
-              <div class="review-meta">
-                <div>
-                  <strong style="color: #fff;">${r.user}</strong>
-                  <span style="color: var(--text-dim); margin-left: 8px;">(${r.device || 'Android'})</span>
-                </div>
-                <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-              </div>
-              <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">"${r.comment}"</p>
-              <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 6px;">${r.date} • Verificado na Google Play</div>
-            </div>
-          `).join('');
-
-          // Ratings Chart
-          if (data.ratings?.distribution) {
-            const dist = data.ratings.distribution;
-            ratingsChart.data.datasets[0].data = [dist.stars5, dist.stars4, dist.stars3, dist.stars2, dist.stars1];
-            ratingsChart.update();
-          }
         }
       } catch (err) {
         console.error('Erro ao buscar dados da Play Store:', err);
@@ -2116,7 +2098,7 @@
                 ${new Date(l.timestamp).toLocaleString()}
               </td>
               <td>
-                <span class="status-badge ${l.action.includes('Ban') || l.action.includes('Removed') ? 'banned' : l.action.includes('Unban') || l.action.includes('Admin') ? 'active' : 'pending'}">
+                <span class="status-badge ${l.action.includes('Ban') || l.action.includes('Removed') || l.action.includes('Deleted') ? 'banned' : l.action.includes('Unban') || l.action.includes('Admin') ? 'active' : 'pending'}">
                   ${l.action}
                 </span>
               </td>
@@ -2296,30 +2278,6 @@
             legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } } }
           },
           cutout: '72%'
-        }
-      });
-
-      // Play Store Ratings Chart
-      const ctxRatings = document.getElementById('ratingsChart').getContext('2d');
-      ratingsChart = new Chart(ctxRatings, {
-        type: 'bar',
-        data: {
-          labels: ['5 ★', '4 ★', '3 ★', '2 ★', '1 ★'],
-          datasets: [{
-            data: [41, 5, 2, 0, 0],
-            backgroundColor: ['#10b981', '#38bdf8', '#fbbf24', '#f97316', '#f43f5e'],
-            borderRadius: 6
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
-            y: { grid: { display: false }, ticks: { color: '#f8fafc', font: { weight: 'bold' } } }
-          }
         }
       });
     }
