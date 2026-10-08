@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BandLink • Admin & Observability Studio</title>
+  
+  <meta name="description" content="Centro de Observabilidade, Telemetria de API e Moderação do Ecossistema BandLink.">
+  <meta name="theme-color" content="#06080d">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Ionicons -->
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #06080d;
+      --bg-surface: #0c1018;
+      --bg-surface-elevated: #121824;
+      --bg-card: rgba(14, 20, 32, 0.75);
+      --bg-card-hover: rgba(20, 28, 44, 0.9);
+      --bg-glass: rgba(12, 16, 24, 0.85);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.14);
+      --border-focus: #0ea5e9;
+      --border-glow: rgba(14, 165, 233, 0.35);
+
+      --cyan: #0ea5e9;
+      --cyan-light: #38bdf8;
+      --cyan-glow: rgba(14, 165, 233, 0.3);
+      
+      --violet: #8b5cf6;
+      --violet-light: #a78bfa;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.25);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.25);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.12), transparent 70%),
+        radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.08), transparent 50%);
+    }
+
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    .brand-info h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid var(--cyan);
+      color: var(--cyan-light);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .brand-info p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .env-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .env-selector select {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .env-selector select option {
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+
+    .pulse-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+      animation: pulseAnim 2s infinite;
+    }
+
+    .pulse-dot.offline {
+      background: var(--rose);
+      box-shadow: 0 0 10px var(--rose);
+      animation: none;
+    }
+
+    @keyframes pulseAnim {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-action:hover {
+      border-color: var(--border-medium);
+      background: var(--bg-surface-elevated);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), #0284c7);
+      color: #fff;
+      border: none;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 24px rgba(14, 165, 233, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fda4af;
+    }
+
+    .btn-danger:hover {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .btn-warning:hover {
+      background: var(--amber);
+      color: #000;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 4px 12px 4px 6px;
+    }
+
+    .user-pill-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .user-pill-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .user-pill-role {
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: var(--violet-light);
+      font-weight: 700;
+    }
+
+    /* NAV TABS */
+    .tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 28px;
+      background: rgba(6, 8, 13, 0.9);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-surface);
+    }
+
+    .tab-btn.active {
+      color: var(--cyan-light);
+      background: rgba(14, 165, 233, 0.12);
+      border-color: rgba(14, 165, 233, 0.3);
+    }
+
+    .tab-btn ion-icon {
+      font-size: 1.1rem;
+    }
+
+    /* MAIN CONTAINER */
+    .studio-container {
+      flex: 1;
+      padding: 28px;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* KPI CARDS */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+    }
+
+    .kpi-card.emerald::before { background: linear-gradient(90deg, var(--emerald), transparent); }
+    .kpi-card.violet::before { background: linear-gradient(90deg, var(--violet), transparent); }
+    .kpi-card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+    .kpi-card.rose::before { background: linear-gradient(90deg, var(--rose), transparent); }
+
+    .kpi-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .kpi-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-icon {
+      font-size: 1.2rem;
+      color: var(--cyan);
+    }
+
+    .kpi-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* OBSERVABILITY CHARTS GRID */
+    .obs-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .obs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      position: relative;
+    }
+
+    .card-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* TABLES & LISTS */
+    .data-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .data-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* BADGES */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    .status-badge.banned {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fda4af;
+    }
+
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .status-badge.role-admin {
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      color: #c4b5fd;
+    }
+
+    .status-badge.role-mod {
+      background: rgba(14, 165, 233, 0.2);
+      border: 1px solid rgba(14, 165, 233, 0.5);
+      color: #7dd3fc;
+    }
+
+    .status-badge.role-user {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      background: var(--bg-surface);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .search-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      flex: 1;
+      max-width: 360px;
+    }
+
+    .search-input-wrap input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      width: 100%;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-group select {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ANNOUNCEMENTS GRID */
+    .ann-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .ann-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .ann-card.flagged {
+      border-color: rgba(244, 63, 94, 0.5);
+      background: rgba(30, 15, 20, 0.7);
+    }
+
+    .ann-card:hover {
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+    }
+
+    .ann-flag-banner {
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid var(--rose);
+      color: #fda4af;
+      font-size: 0.72rem;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .ann-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .ann-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    .ann-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ann-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      flex: 1;
+      white-space: pre-line;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .ann-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+
+    .ann-creator {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .ann-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* VITALS & PLAY STORE */
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .vital-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .vital-score {
+      font-size: 2.2rem;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      margin: 10px 0 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .vital-score small {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .vital-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0 8px;
+      position: relative;
+    }
+
+    .vital-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--emerald);
+    }
+
+    .vital-threshold-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--rose);
+      z-index: 2;
+    }
+
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .review-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .review-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+
+    .review-stars {
+      color: #fbbf24;
+      font-size: 0.95rem;
+      letter-spacing: 2px;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-dialog {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      max-width: 480px;
+      width: 100%;
+      padding: 26px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: scale(0.95);
+      transition: all 0.2s ease;
+    }
+
+    .modal-overlay.active .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* CODE BLOCKS */
+    .code-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* TOAST */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-medium);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.2s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.success { border-color: var(--emerald); color: #6ee7b7; }
+    .toast.error { border-color: var(--rose); color: #fda4af; }
+    .toast.info { border-color: var(--cyan); color: #7dd3fc; }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="/" class="brand-wrap">
+      <div class="brand-logo-badge">⚡</div>
+      <div class="brand-info">
+        <h1>BandLink Studio <span class="brand-badge">ADMIN & OBS</span></h1>
+        <p>Centro de Observabilidade, Telemetria & Moderação</p>
+      </div>
+    </a>
+
+    <div class="topbar-controls">
+      <!-- Environment Switcher -->
+      <div class="env-selector">
+        <ion-icon name="server-outline" style="color: var(--cyan);"></ion-icon>
+        <select id="apiEnvSelect" onchange="onEnvChange()">
+          <option value="https://bandlink-api.azurewebsites.net/api">Azure Production</option>
+          <option value="http://localhost:5280/api">Localhost (Dev)</option>
+        </select>
+      </div>
+
+      <!-- Pulse Status -->
+      <div class="pulse-status" id="pulseStatus">
+        <span class="pulse-dot" id="pulseDot"></span>
+        <span id="pulseText">Conectando...</span>
+      </div>
+
+      <!-- Refresh Controls -->
+      <button class="btn-action" onclick="fetchFullDashboard(true)">
+        <ion-icon name="refresh-outline"></ion-icon>
+        <span id="refreshLabel">Atualizar</span>
+      </button>
+
+      <!-- User Profile / Session -->
+      <div id="authHeaderBlock">
+        <button class="btn-action btn-primary" onclick="openLoginModal()">
+          <ion-icon name="log-in-outline"></ion-icon>
+          Entrar como Admin
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('obs')">
+      <ion-icon name="analytics-outline"></ion-icon>
+      1. Telemetria da API
+    </button>
+    <button class="tab-btn" onclick="switchTab('users')">
+      <ion-icon name="people-outline"></ion-icon>
+      2. Gestão de Usuários
+    </button>
+    <button class="tab-btn" onclick="switchTab('announcements')">
+      <ion-icon name="megaphone-outline"></ion-icon>
+      3. Moderação de Publicações
+    </button>
+    <button class="tab-btn" onclick="switchTab('playstore')">
+      <ion-icon name="logo-google-playstore"></ion-icon>
+      4. Play Store & Android Vitals
+    </button>
+    <button class="tab-btn" onclick="switchTab('audit')">
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      5. Logs de Auditoria
+    </button>
+  </nav>
+
+  <!-- MAIN STUDIO CONTAINER -->
+  <main class="studio-container">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: TELEMETRIA & OBSERVABILIDADE -->
+    <!-- ============================================================== -->
+    <section id="tab-obs" class="tab-content active">
+      <!-- KPI GRID -->
+      <div class="kpi-grid">
+        <div class="kpi-card emerald">
+          <div class="kpi-head">
+            <span class="kpi-title">Status da API</span>
+            <ion-icon name="cloud-done-outline" class="kpi-icon" style="color: var(--emerald);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="kpiApiStatus" style="color: var(--emerald);">200 OK</div>
+          <div class="kpi-sub" id="kpiLatency">Latência: <span class="code-chip">-- ms</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">Uptime Servidor</span>
+            <ion-icon name="time-outline" class="kpi-icon"></ion-icon>
+          </div>
+          <div class="kpi-value" id="kpiUptime">--</div>
+          <div class="kpi-sub" id="kpiStartTime">Início: --</div>
+        </div>
+
+        <div class="kpi-card violet">
+          <div class="kpi-head">
+            <span class="kpi-title">Reqs / Minuto</span>
+            <ion-icon name="flash-outline" class="kpi-icon" style="color: var(--violet);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="kpiRpm" style="color: var(--violet-light);">0</div>
+          <div class="kpi-sub" id="kpiTotalReqs">Total gravadas: 0</div>
+        </div>
+
+        <div class="kpi-card amber">
+          <div class="kpi-head">
+            <span class="kpi-title">Memória RAM</span>
+            <ion-icon name="hardware-chip-outline" class="kpi-icon" style="color: var(--amber);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="kpiMemory" style="color: var(--amber);">-- MB</div>
+          <div class="kpi-sub">Processo .NET Kestrel</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">Total Usuários</span>
+            <ion-icon name="person-circle-outline" class="kpi-icon"></ion-icon>
+          </div>
+          <div class="kpi-value" id="kpiTotalUsers">0</div>
+          <div class="kpi-sub" id="kpiNewTodayUsers">+0 hoje</div>
+        </div>
+
+        <div class="kpi-card rose">
+          <div class="kpi-head">
+            <span class="kpi-title">Anúncios Suspeitos</span>
+            <ion-icon name="warning-outline" class="kpi-icon" style="color: var(--rose);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="kpiFlaggedAnn" style="color: var(--rose);">0</div>
+          <div class="kpi-sub" id="kpiTotalAnn">De 0 publicações</div>
+        </div>
+      </div>
+
+      <!-- CHARTS SECTION -->
+      <div class="obs-grid">
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="pulse-outline" style="color: var(--cyan);"></ion-icon>
+              Tráfego & Latência em Tempo Real
+            </h3>
+            <span class="code-chip" id="chartsTimestamp">Sincronizado</span>
+          </div>
+          <div style="height: 260px;">
+            <canvas id="trafficChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="pie-chart-outline" style="color: var(--violet);"></ion-icon>
+              Respostas HTTP (Códigos)
+            </h3>
+          </div>
+          <div style="height: 260px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="statusCodesChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP ENDPOINTS & SECURITY ALERTS -->
+      <div class="obs-grid">
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="git-network-outline" style="color: var(--cyan);"></ion-icon>
+              Endpoints Mais Requisitados
+            </h3>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Endpoint / Rota</th>
+                  <th>Chamadas</th>
+                  <th>Proporção</th>
+                </tr>
+              </thead>
+              <tbody id="topEndpointsTableBody">
+                <tr><td colspan="3" style="text-align: center; color: var(--text-dim);">Aguardando telemetria...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="shield-outline" style="color: var(--rose);"></ion-icon>
+              Alertas de Segurança & Rate Limit
+            </h3>
+          </div>
+          <div id="alertsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--emerald); font-size: 0.85rem; padding: 12px; background: rgba(16, 185, 129, 0.08); border-radius: var(--radius-sm);">
+              <ion-icon name="checkmark-circle-outline"></ion-icon> Nenhum ataque ou violação de segurança detectada no momento.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: GESTÃO DE USUÁRIOS -->
+    <!-- ============================================================== -->
+    <section id="tab-users" class="tab-content">
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <ion-icon name="search-outline" style="color: var(--text-dim);"></ion-icon>
+          <input type="text" id="userSearchInput" placeholder="Buscar por nome, email ou cidade..." onkeyup="if(event.key==='Enter') fetchUsers()">
+        </div>
+
+        <div class="filter-group">
+          <select id="userStatusFilter" onchange="fetchUsers()">
+            <option value="">Todos os Status</option>
+            <option value="active">Apenas Ativos</option>
+            <option value="banned">Apenas Banidos</option>
+            <option value="unconfirmed">E-mail Pendente</option>
+          </select>
+
+          <button class="btn-action btn-primary" onclick="fetchUsers()">
+            <ion-icon name="search-outline"></ion-icon> Filtrar
+          </button>
+        </div>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>E-mail</th>
+              <th>Função</th>
+              <th>Status</th>
+              <th>Localização</th>
+              <th>Bandas</th>
+              <th>Cadastro</th>
+              <th style="text-align: right;">Ações de Moderação</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="8" style="text-align: center; padding: 24px;">Carregando usuários...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
+        <span id="usersPageInfo">Página 1</span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action" id="usersPrevBtn" onclick="changeUsersPage(-1)" disabled>Anterior</button>
+          <button class="btn-action" id="usersNextBtn" onclick="changeUsersPage(1)" disabled>Próxima</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: MODERAÇÃO DE ANÚNCIOS -->
+    <!-- ============================================================== -->
+    <section id="tab-announcements" class="tab-content">
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <ion-icon name="search-outline" style="color: var(--text-dim);"></ion-icon>
+          <input type="text" id="annSearchInput" placeholder="Buscar por título, instrumento ou autor..." onkeyup="if(event.key==='Enter') fetchAnnouncements()">
+        </div>
+
+        <div class="filter-group">
+          <select id="annStatusFilter" onchange="fetchAnnouncements()">
+            <option value="">Todos os Anúncios</option>
+            <option value="flagged">🚨 Apenas Sinalizados / Abusivos</option>
+            <option value="open">Abertos / Regulares</option>
+            <option value="removed">Removidos</option>
+          </select>
+
+          <button class="btn-action btn-primary" onclick="fetchAnnouncements()">
+            <ion-icon name="funnel-outline"></ion-icon> Filtrar
+          </button>
+        </div>
+      </div>
+
+      <div class="ann-grid" id="announcementsGrid">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+          Carregando publicações...
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: GOOGLE PLAY STORE & ANDROID VITALS -->
+    <!-- ============================================================== -->
+    <section id="tab-playstore" class="tab-content">
+      <!-- APP INFO BANNER -->
+      <div class="card-panel" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <div style="width: 56px; height: 56px; border-radius: 12px; background: #000; border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <img src="assets/favicon.png" alt="BandLink" style="width: 44px; height: 44px; border-radius: 8px;">
+          </div>
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 800;" id="playAppName">BandLink • Setlist Band Manager</h2>
+            <p style="font-size: 0.82rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;" id="playPackage">
+              com.setlistbandmanager.app • Versão <span style="color: var(--cyan);" id="playVersion">1.0.8</span> (Build 8)
+            </p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <a href="https://play.google.com/store/apps/details?id=com.setlistbandmanager.app" target="_blank" class="btn-action btn-primary">
+            <ion-icon name="open-outline"></ion-icon>
+            Ver na Google Play
+          </a>
+        </div>
+      </div>
+
+      <!-- VITALS CARDS -->
+      <div class="vitals-grid">
+        <div class="vital-box">
+          <div class="kpi-title">Crash Rate (Taxa de Falhas)</div>
+          <div class="vital-score" id="vitalCrashRate" style="color: var(--emerald);">
+            0.12% <small>/ Limite 1.09%</small>
+          </div>
+          <div class="vital-bar">
+            <div class="vital-bar-fill" id="vitalCrashFill" style="width: 11%;"></div>
+            <div class="vital-threshold-line" style="left: 70%;" title="Limite Crítico do Google (1.09%)"></div>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+            <span>Comportamento Ruim: 1.09%</span>
+            <span style="color: var(--emerald); font-weight: 700;">Status: Saudável</span>
+          </div>
+        </div>
+
+        <div class="vital-box">
+          <div class="kpi-title">Taxa de ANR (App Não Responde)</div>
+          <div class="vital-score" id="vitalAnrRate" style="color: var(--emerald);">
+            0.04% <small>/ Limite 0.47%</small>
+          </div>
+          <div class="vital-bar">
+            <div class="vital-bar-fill" id="vitalAnrFill" style="width: 8%;"></div>
+            <div class="vital-threshold-line" style="left: 65%;" title="Limite Crítico do Google (0.47%)"></div>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+            <span>Comportamento Ruim: 0.47%</span>
+            <span style="color: var(--emerald); font-weight: 700;">Status: Excelente</span>
+          </div>
+        </div>
+
+        <div class="vital-box">
+          <div class="kpi-title">Instalações Ativas Estimadas</div>
+          <div class="vital-score" id="vitalInstalls" style="color: var(--cyan);">
+            1.420 <small>dispositivos</small>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 14px;">
+            Dispositivos ativos nos últimos 30 dias: <strong style="color: #fff;" id="vitalActiveDevices">1.180</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- RATINGS & REVIEWS -->
+      <div class="obs-grid">
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="chatbox-ellipses-outline" style="color: var(--cyan);"></ion-icon>
+              Feed de Avaliações Recentes (Play Store)
+            </h3>
+          </div>
+          <div class="reviews-list" id="playReviewsList">
+            <!-- Reviews will be populated here -->
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="star-outline" style="color: #fbbf24);"></ion-icon>
+              Distribuição de Notas
+            </h3>
+            <span class="code-chip" style="color: #fbbf24; font-weight: 700;" id="ratingScoreBadge">★ 4.8 / 5.0</span>
+          </div>
+          <div style="height: 220px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="ratingsChart"></canvas>
+          </div>
+          <div style="margin-top: 16px; font-size: 0.75rem; color: var(--text-dim); text-align: center;">
+            Baseado em 48 avaliações verificadas de músicos e bandas
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: LOGS DE AUDITORIA -->
+    <!-- ============================================================== -->
+    <section id="tab-audit" class="tab-content">
+      <div class="card-panel-header" style="margin-bottom: 16px;">
+        <h3 class="panel-title">
+          <ion-icon name="shield-checkmark-outline" style="color: var(--emerald);"></ion-icon>
+          Trilha Completa de Ações Administrativas & Moderações
+        </h3>
+        <button class="btn-action" onclick="fetchAuditLogs()">
+          <ion-icon name="refresh-outline"></ion-icon> Atualizar Logs
+        </button>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data / Hora</th>
+              <th>Ação</th>
+              <th>Alvo</th>
+              <th>Detalhes / Justificativa</th>
+              <th>Executado Por</th>
+              <th>IP de Origem</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody">
+            <tr><td colspan="6" style="text-align: center; padding: 24px;">Carregando histórico de auditoria...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: LOGIN / BOOTSTRAP ADMIN -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="authModalTitle">Acesso Administrativo</h3>
+        <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+        <button class="btn-action active" id="authTabLoginBtn" onclick="switchAuthMode('login')">Entrar</button>
+        <button class="btn-action" id="authTabSetupBtn" onclick="switchAuthMode('setup')">Configurar 1º Admin</button>
+      </div>
+
+      <!-- Form Login -->
+      <div id="authModeLogin">
+        <div class="form-group">
+          <label>E-mail do Administrador</label>
+          <input type="email" id="loginEmail" placeholder="admin@bandlink.pro">
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" onkeyup="if(event.key==='Enter') executeLogin()">
+        </div>
+        <div class="modal-footer">
+          <button class="btn-action" onclick="closeLoginModal()">Cancelar</button>
+          <button class="btn-action btn-primary" onclick="executeLogin()">Entrar</button>
+        </div>
+      </div>
+
+      <!-- Form Setup First Admin -->
+      <div id="authModeSetup" style="display: none;">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+          Se o sistema ainda não possui nenhum Administrador definido, digite o e-mail da sua conta de usuário já registrada para promovê-la a Administrador com privilégios totais.
+        </p>
+        <div class="form-group">
+          <label>Seu E-mail Cadastrado</label>
+          <input type="email" id="setupEmail" placeholder="seu-email@dominio.com">
+        </div>
+        <div class="modal-footer">
+          <button class="btn-action" onclick="closeLoginModal()">Cancelar</button>
+          <button class="btn-action btn-primary" onclick="executeSetupAdmin()">Promover a Admin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: BANIR USUÁRIO -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="banModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--rose);">Suspender / Banir Usuário</h3>
+        <button class="modal-close" onclick="closeBanModal()">&times;</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+        O usuário <strong id="banModalUsername" style="color: #fff;">--</strong> perderá acesso imediato à plataforma e suas publicações serão ocultadas.
+      </p>
+      <input type="hidden" id="banModalUserId">
+      <div class="form-group">
+        <label>Motivo da Suspensão (Obrigatório)</label>
+        <textarea id="banModalReason" rows="3" placeholder="Ex: Spam reiterado, publicações com links maliciosos ou conduta abusiva no chat."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action" onclick="closeBanModal()">Cancelar</button>
+        <button class="btn-action btn-danger" onclick="executeBanUser()">Confirmar Banimento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: MODERAR ANÚNCIO -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modAnnModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modAnnTitle">Sinalizar Publicação</h3>
+        <button class="modal-close" onclick="closeModAnnModal()">&times;</button>
+      </div>
+      <input type="hidden" id="modAnnId">
+      <input type="hidden" id="modAnnIsFlagged">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="modAnnStatus">
+          <option value="Open">Aberto / Visível</option>
+          <option value="Flagged">Sinalizado / Sob Revisão</option>
+          <option value="Closed">Encerrado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Motivo da Moderação</label>
+        <textarea id="modAnnReason" rows="3" placeholder="Motivo para o histórico de moderação..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action" onclick="closeModAnnModal()">Cancelar</button>
+        <button class="btn-action btn-primary" onclick="executeModerateAnnouncement()">Salvar Moderação</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT LOGIC -->
+  <!-- ============================================================== -->
+  <script>
+    // Global State
+    let currentApiBase = localStorage.getItem('bandlink_admin_api') || 'https://bandlink-api.azurewebsites.net/api';
+    let adminToken = sessionStorage.getItem('bandlink_admin_token') || '';
+    let adminUser = JSON.parse(sessionStorage.getItem('bandlink_admin_user') || 'null');
+    let refreshInterval = null;
+
+    let usersPage = 1;
+    const usersPageSize = 15;
+
+    // Charts references
+    let trafficChart = null;
+    let statusCodesChart = null;
+    let ratingsChart = null;
+
+    // Traffic simulation history for smooth graphs
+    const trafficHistory = {
+      labels: [],
+      rpm: [],
+      latency: []
+    };
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('apiEnvSelect').value = currentApiBase;
+      renderAuthBlock();
+      initCharts();
+      fetchFullDashboard();
+
+      // Auto-refresh every 10 seconds
+      refreshInterval = setInterval(() => {
+        fetchFullDashboard(false);
+      }, 10000);
+    });
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<ion-icon name="${type === 'success' ? 'checkmark-circle' : type === 'error' ? 'alert-circle' : 'information-circle'}"></ion-icon> <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function onEnvChange() {
+      currentApiBase = document.getElementById('apiEnvSelect').value;
+      localStorage.setItem('bandlink_admin_api', currentApiBase);
+      showToast(`Ambiente alterado para: ${currentApiBase}`, 'info');
+      fetchFullDashboard(true);
+    }
+
+    function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      if (adminToken) {
+        headers['Authorization'] = `Bearer ${adminToken}`;
+      }
+      return headers;
+    }
+
+    function renderAuthBlock() {
+      const block = document.getElementById('authHeaderBlock');
+      if (adminToken && adminUser) {
+        block.innerHTML = `
+          <div class="user-pill">
+            <div class="user-pill-avatar">${(adminUser.username || 'A')[0].toUpperCase()}</div>
+            <span class="user-pill-name">${adminUser.username}</span>
+            <span class="user-pill-role">${adminUser.role || 'ADMIN'}</span>
+            <button onclick="logout()" title="Sair" style="background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;padding-left:4px;">
+              <ion-icon name="log-out-outline" style="font-size:1.1rem;"></ion-icon>
+            </button>
+          </div>
+        `;
+      } else {
+        block.innerHTML = `
+          <button class="btn-action btn-primary" onclick="openLoginModal()">
+            <ion-icon name="log-in-outline"></ion-icon>
+            Entrar como Admin
+          </button>
+        `;
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+
+      if (tabId === 'users') fetchUsers();
+      if (tabId === 'announcements') fetchAnnouncements();
+      if (tabId === 'playstore') fetchPlayStore();
+      if (tabId === 'audit') fetchAuditLogs();
+    }
+
+    // ==============================================================
+    // FETCH DASHBOARD TELEMETRY
+    // ==============================================================
+    async function fetchFullDashboard(manual = false) {
+      const pulseDot = document.getElementById('pulseDot');
+      const pulseText = document.getElementById('pulseText');
+      const startTime = performance.now();
+
+      try {
+        const res = await fetch(`${currentApiBase}/health`, { method: 'GET' });
+        const latency = Math.round(performance.now() - startTime);
+
+        if (res.ok) {
+          pulseDot.className = 'pulse-dot';
+          pulseText.textContent = `${latency}ms • Online`;
+          document.getElementById('kpiApiStatus').textContent = '200 OK';
+          document.getElementById('kpiApiStatus').style.color = 'var(--emerald)';
+          document.getElementById('kpiLatency').innerHTML = `Latência: <span class="code-chip">${latency} ms</span>`;
+        } else {
+          pulseDot.className = 'pulse-dot offline';
+          pulseText.textContent = `Erro HTTP ${res.status}`;
+        }
+      } catch (err) {
+        pulseDot.className = 'pulse-dot offline';
+        pulseText.textContent = 'API Inacessível';
+        document.getElementById('kpiApiStatus').textContent = 'OFFLINE';
+        document.getElementById('kpiApiStatus').style.color = 'var(--rose)';
+      }
+
+      // Fetch Admin Metrics if authenticated
+      if (!adminToken) {
+        if (manual) showToast('Conecte-se com sua conta de Admin para dados completos.', 'info');
+        return;
+      }
+
+      try {
+        const metricsRes = await fetch(`${currentApiBase}/admin/metrics`, {
+          headers: getAuthHeaders()
+        });
+
+        if (metricsRes.status === 401 || metricsRes.status === 403) {
+          showToast('Sessão expirada ou sem permissão de Administrador.', 'error');
+          logout();
+          return;
+        }
+
+        if (metricsRes.ok) {
+          const data = await metricsRes.json();
+          updateDashboardUI(data);
+          if (manual) showToast('Dashboard atualizado com sucesso!', 'success');
+        }
+      } catch (e) {
+        console.error('Erro ao buscar métricas:', e);
+      }
+    }
+
+    function updateDashboardUI(data) {
+      // Uptime
+      const uptimeSec = data.telemetry?.uptimeSeconds || 0;
+      const days = Math.floor(uptimeSec / 86400);
+      const hours = Math.floor((uptimeSec % 86400) / 3600);
+      const mins = Math.floor((uptimeSec % 3600) / 60);
+      document.getElementById('kpiUptime').textContent = `${days}d ${hours}h ${mins}m`;
+
+      if (data.telemetry?.serverStartTime) {
+        document.getElementById('kpiStartTime').textContent = `Início: ${new Date(data.telemetry.serverStartTime).toLocaleDateString()}`;
+      }
+
+      // RPM & Memory
+      const rpm = data.telemetry?.requestsLastMinute || 0;
+      document.getElementById('kpiRpm').textContent = rpm;
+      document.getElementById('kpiTotalReqs').textContent = `Total gravadas: ${data.telemetry?.totalRecordedRequests || 0}`;
+      document.getElementById('kpiMemory').textContent = `${data.telemetry?.memoryUsageMb || '--'} MB`;
+
+      // Users & Announcements
+      document.getElementById('kpiTotalUsers').textContent = data.users?.total || 0;
+      document.getElementById('kpiNewTodayUsers').textContent = `+${data.users?.newToday || 0} novos hoje`;
+      document.getElementById('kpiFlaggedAnn').textContent = data.ecosystem?.flaggedAnnouncements || 0;
+      document.getElementById('kpiTotalAnn').textContent = `De ${data.ecosystem?.totalAnnouncements || 0} publicações`;
+
+      // Update Charts
+      const nowLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      trafficHistory.labels.push(nowLabel);
+      trafficHistory.rpm.push(rpm);
+      trafficHistory.latency.push(data.telemetry?.latencyMs?.average || 15);
+
+      if (trafficHistory.labels.length > 12) {
+        trafficHistory.labels.shift();
+        trafficHistory.rpm.shift();
+        trafficHistory.latency.shift();
+      }
+
+      trafficChart.data.labels = trafficHistory.labels;
+      trafficChart.data.datasets[0].data = trafficHistory.rpm;
+      trafficChart.data.datasets[1].data = trafficHistory.latency;
+      trafficChart.update();
+
+      // Status Codes Chart
+      const sc = data.telemetry?.statusCodes || { success2xx: 10, clientError4xx: 0, serverError5xx: 0 };
+      statusCodesChart.data.datasets[0].data = [sc.success2xx, sc.clientError4xx, sc.serverError5xx];
+      statusCodesChart.update();
+
+      // Top Endpoints Table
+      const topTable = document.getElementById('topEndpointsTableBody');
+      const endpoints = data.telemetry?.topEndpoints || [];
+      if (endpoints.length === 0) {
+        topTable.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-dim);">Nenhum tráfego gravado recentemente.</td></tr>`;
+      } else {
+        const totalTop = endpoints.reduce((acc, curr) => acc + curr.count, 0) || 1;
+        topTable.innerHTML = endpoints.map(ep => `
+          <tr>
+            <td><span class="code-chip">${ep.endpoint}</span></td>
+            <td><strong>${ep.count}</strong></td>
+            <td>
+              <div style="background: rgba(255,255,255,0.06); height: 6px; border-radius: 999px; overflow: hidden; width: 100px;">
+                <div style="background: var(--cyan); height: 100%; width: ${(ep.count / totalTop) * 100}%;"></div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Security Alerts
+      const alertsContainer = document.getElementById('alertsContainer');
+      const alerts = data.telemetry?.recentAlerts || [];
+      if (alerts.length === 0) {
+        alertsContainer.innerHTML = `
+          <div style="color: var(--emerald); font-size: 0.85rem; padding: 12px; background: rgba(16, 185, 129, 0.08); border-radius: var(--radius-sm);">
+            <ion-icon name="checkmark-circle-outline"></ion-icon> Nenhum ataque ou violação de segurança detectada no momento.
+          </div>
+        `;
+      } else {
+        alertsContainer.innerHTML = alerts.map(a => `
+          <div style="padding: 10px 14px; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-sm); font-size: 0.8rem;">
+            <div style="color: #fda4af; font-weight: 700;">🚨 ${a.type}</div>
+            <div style="color: var(--text-muted); margin-top: 2px;">${a.details} (IP: ${a.ip})</div>
+            <div style="color: var(--text-dim); font-size: 0.7rem; margin-top: 4px;">${new Date(a.timestamp).toLocaleString()}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // ==============================================================
+    // TAB 2: USERS MANAGEMENT
+    // ==============================================================
+    async function fetchUsers() {
+      if (!adminToken) {
+        showToast('Faça login como Administrador para gerenciar usuários.', 'info');
+        openLoginModal();
+        return;
+      }
+
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px;">Carregando usuários...</td></tr>`;
+
+      const search = document.getElementById('userSearchInput').value.trim();
+      const status = document.getElementById('userStatusFilter').value;
+
+      try {
+        const url = `${currentApiBase}/admin/users?page=${usersPage}&pageSize=${usersPageSize}&search=${encodeURIComponent(search)}&status=${status}`;
+        const res = await fetch(url, { headers: getAuthHeaders() });
+        const resData = await res.json();
+
+        if (res.ok && resData.success) {
+          const list = resData.data || [];
+          document.getElementById('usersPageInfo').textContent = `Página ${resData.page} de ${resData.totalPages || 1} (${resData.total} usuários no total)`;
+          document.getElementById('usersPrevBtn').disabled = resData.page <= 1;
+          document.getElementById('usersNextBtn').disabled = resData.page >= resData.totalPages;
+
+          if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted);">Nenhum usuário encontrado com esses filtros.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = list.map(u => `
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="user-pill-avatar" style="width: 32px; height: 32px;">${(u.username || 'U')[0].toUpperCase()}</div>
+                  <div>
+                    <div style="font-weight: 700; color: #fff;">${u.username}</div>
+                    <div style="font-size: 0.72rem; color: var(--text-dim);">ID #${u.id}</div>
+                  </div>
+                </div>
+              </td>
+              <td>${u.email}</td>
+              <td>
+                <span class="status-badge role-${u.role === 'Admin' ? 'admin' : u.role === 'Moderator' ? 'mod' : 'user'}">
+                  ${u.role || 'User'}
+                </span>
+              </td>
+              <td>
+                ${u.isBanned 
+                  ? `<span class="status-badge banned" title="${u.banReason || ''}">⛔ Banido</span>` 
+                  : !u.isEmailConfirmed 
+                    ? `<span class="status-badge pending">Pendente</span>` 
+                    : `<span class="status-badge active">Ativo</span>`}
+              </td>
+              <td>${u.city ? `${u.city}/${u.state || ''}` : '<span style="color:var(--text-dim);">Não inf.</span>'}</td>
+              <td><strong>${u.ownedBandsCount || 0}</strong></td>
+              <td style="font-size: 0.75rem; color: var(--text-dim);">${new Date(u.createdAt).toLocaleDateString()}</td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 6px;">
+                  ${u.isBanned ? `
+                    <button class="btn-action" style="color: var(--emerald);" onclick="unbanUser(${u.id}, '${u.username}')">
+                      <ion-icon name="checkmark-circle-outline"></ion-icon> Reativar
+                    </button>
+                  ` : `
+                    <button class="btn-action btn-danger" onclick="openBanModal(${u.id}, '${u.username}')">
+                      <ion-icon name="ban-outline"></ion-icon> Banir
+                    </button>
+                  `}
+                  <button class="btn-action" onclick="toggleRole(${u.id}, '${u.username}', '${u.role}')" title="Alterar Permissão">
+                    <ion-icon name="shield-outline"></ion-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--rose); padding: 24px;">${resData.message || 'Erro ao carregar lista de usuários.'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--rose); padding: 24px;">Falha na requisição. Verifique o servidor.</td></tr>`;
+      }
+    }
+
+    function changeUsersPage(delta) {
+      usersPage += delta;
+      if (usersPage < 1) usersPage = 1;
+      fetchUsers();
+    }
+
+    // Ban / Unban actions
+    function openBanModal(userId, username) {
+      document.getElementById('banModalUserId').value = userId;
+      document.getElementById('banModalUsername').textContent = username;
+      document.getElementById('banModalReason').value = '';
+      document.getElementById('banModal').classList.add('active');
+    }
+
+    function closeBanModal() {
+      document.getElementById('banModal').classList.remove('active');
+    }
+
+    async function executeBanUser() {
+      const id = document.getElementById('banModalUserId').value;
+      const reason = document.getElementById('banModalReason').value.trim();
+
+      if (!reason) {
+        alert('Por favor, informe a justificativa do banimento.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/users/${id}/ban`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ isBanned: true, reason })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, 'success');
+          closeBanModal();
+          fetchUsers();
+        } else {
+          showToast(data.message || 'Erro ao banir usuário.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão.', 'error');
+      }
+    }
+
+    async function unbanUser(id, username) {
+      if (!confirm(`Deseja reativar o acesso de ${username}?`)) return;
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/users/${id}/ban`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ isBanned: false })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, 'success');
+          fetchUsers();
+        } else {
+          showToast(data.message || 'Erro ao desbanir usuário.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão.', 'error');
+      }
+    }
+
+    async function toggleRole(id, username, currentRole) {
+      const nextRole = currentRole === 'Admin' ? 'User' : currentRole === 'Moderator' ? 'Admin' : 'Moderator';
+      if (!confirm(`Alterar função de ${username} para "${nextRole}"?`)) return;
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/users/${id}/role`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ role: nextRole })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, 'success');
+          fetchUsers();
+        } else {
+          showToast(data.message || 'Erro ao alterar função.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão.', 'error');
+      }
+    }
+
+    // ==============================================================
+    // TAB 3: ANNOUNCEMENTS MODERATION
+    // ==============================================================
+    async function fetchAnnouncements() {
+      if (!adminToken) {
+        showToast('Faça login como Administrador para moderar anúncios.', 'info');
+        openLoginModal();
+        return;
+      }
+
+      const grid = document.getElementById('announcementsGrid');
+      grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">Carregando publicações...</div>`;
+
+      const search = document.getElementById('annSearchInput').value.trim();
+      const status = document.getElementById('annStatusFilter').value;
+
+      try {
+        const url = `${currentApiBase}/admin/announcements?search=${encodeURIComponent(search)}&status=${status}`;
+        const res = await fetch(url, { headers: getAuthHeaders() });
+        const resData = await res.json();
+
+        if (res.ok && resData.success) {
+          const list = resData.data || [];
+          if (list.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--text-muted);">Nenhuma publicação encontrada com esses filtros.</div>`;
+            return;
+          }
+
+          grid.innerHTML = list.map(a => `
+            <div class="ann-card ${a.isFlagged ? 'flagged' : ''}">
+              ${a.isFlagged ? `
+                <div class="ann-flag-banner">
+                  <ion-icon name="alert-circle"></ion-icon>
+                  <span>SINALIZADO: ${a.flagReason || 'Sob moderação'}</span>
+                </div>
+              ` : ''}
+
+              <div class="ann-head">
+                <h4 class="ann-title">${a.title}</h4>
+                <span class="status-badge ${a.status === 'Open' ? 'active' : 'banned'}">${a.status}</span>
+              </div>
+
+              <div class="ann-meta">
+                ${a.instrument ? `<span>🎸 ${a.instrument}</span>` : ''}
+                ${a.city ? `<span>📍 ${a.city}${a.state ? '/' + a.state : ''}</span>` : ''}
+                <span>📅 ${new Date(a.createdAt).toLocaleDateString()}</span>
+              </div>
+
+              <div class="ann-desc">${a.description}</div>
+
+              <div class="ann-footer">
+                <div class="ann-creator">
+                  Por: <strong style="color: #fff;">${a.creator?.username || 'Anônimo'}</strong>
+                  ${a.creator?.isBanned ? '<span style="color:var(--rose);"> (Banido)</span>' : ''}
+                </div>
+                <div class="ann-actions">
+                  ${a.isFlagged ? `
+                    <button class="btn-action" style="color: var(--emerald);" onclick="unflagAnnouncement(${a.id})" title="Aprovar Publicação">
+                      <ion-icon name="checkmark-outline"></ion-icon>
+                    </button>
+                  ` : `
+                    <button class="btn-action btn-warning" onclick="openModAnnModal(${a.id}, true)" title="Sinalizar Abusivo">
+                      <ion-icon name="flag-outline"></ion-icon>
+                    </button>
+                  `}
+                  <button class="btn-action btn-danger" onclick="deleteAnnouncement(${a.id})" title="Excluir Definitivamente">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
+                  ${a.creator ? `
+                    <button class="btn-action" style="color: var(--rose);" onclick="openBanModal(${a.creator.id}, '${a.creator.username}')" title="Banir Autor">
+                      <ion-icon name="ban-outline"></ion-icon>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--rose); padding: 32px;">${resData.message || 'Erro ao carregar anúncios.'}</div>`;
+        }
+      } catch (err) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--rose); padding: 32px;">Falha de comunicação com o servidor.</div>`;
+      }
+    }
+
+    function openModAnnModal(id, isFlagged) {
+      document.getElementById('modAnnId').value = id;
+      document.getElementById('modAnnIsFlagged').value = isFlagged ? 'true' : 'false';
+      document.getElementById('modAnnReason').value = '';
+      document.getElementById('modAnnModal').classList.add('active');
+    }
+
+    function closeModAnnModal() {
+      document.getElementById('modAnnModal').classList.remove('active');
+    }
+
+    async function executeModerateAnnouncement() {
+      const id = document.getElementById('modAnnId').value;
+      const isFlagged = document.getElementById('modAnnIsFlagged').value === 'true';
+      const status = document.getElementById('modAnnStatus').value;
+      const reason = document.getElementById('modAnnReason').value.trim();
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/announcements/${id}/moderate`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ isFlagged, status, reason })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, 'success');
+          closeModAnnModal();
+          fetchAnnouncements();
+        } else {
+          showToast(data.message || 'Erro ao moderar anúncio.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão.', 'error');
+      }
+    }
+
+    async function unflagAnnouncement(id) {
+      try {
+        const res = await fetch(`${currentApiBase}/admin/announcements/${id}/moderate`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ isFlagged: false, status: 'Open', reason: 'Aprovado pela moderação' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Publicação aprovada e sinalização removida!', 'success');
+          fetchAnnouncements();
+        }
+      } catch (e) {
+        showToast('Erro ao aprovar anúncio.', 'error');
+      }
+    }
+
+    async function deleteAnnouncement(id) {
+      const reason = prompt('Motivo da exclusão permanente da publicação:');
+      if (reason === null) return;
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/announcements/${id}?reason=${encodeURIComponent(reason || 'Violação das regras')}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Anúncio excluído definitivamente.', 'success');
+          fetchAnnouncements();
+        } else {
+          showToast(data.message || 'Erro ao excluir anúncio.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro de conexão.', 'error');
+      }
+    }
+
+    // ==============================================================
+    // TAB 4: GOOGLE PLAY STORE OBSERVABILITY
+    // ==============================================================
+    async function fetchPlayStore() {
+      try {
+        const res = await fetch(`${currentApiBase}/admin/playstore`, { headers: getAuthHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('playAppName').textContent = data.appName;
+          document.getElementById('playPackage').innerHTML = `${data.packageName} • Versão <span style="color:var(--cyan);">${data.currentVersion}</span> (Build ${data.versionCode})`;
+
+          // Vitals
+          const vitals = data.vitals || {};
+          document.getElementById('vitalCrashRate').innerHTML = `${vitals.crashRatePercentage}% <small>/ Limite ${vitals.crashRateThreshold}%</small>`;
+          document.getElementById('vitalAnrRate').innerHTML = `${vitals.anrRatePercentage}% <small>/ Limite ${vitals.anrRateThreshold}%</small>`;
+          document.getElementById('vitalInstalls').innerHTML = `${vitals.totalInstallsEstimated?.toLocaleString()} <small>dispositivos</small>`;
+          document.getElementById('vitalActiveDevices').textContent = vitals.activeDevicesEstimated?.toLocaleString();
+
+          // Reviews
+          const reviewsList = document.getElementById('playReviewsList');
+          const reviews = data.recentReviews || [];
+          reviewsList.innerHTML = reviews.map(r => `
+            <div class="review-item">
+              <div class="review-meta">
+                <div>
+                  <strong style="color: #fff;">${r.user}</strong>
+                  <span style="color: var(--text-dim); margin-left: 8px;">(${r.device || 'Android'})</span>
+                </div>
+                <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+              </div>
+              <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">"${r.comment}"</p>
+              <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 6px;">${r.date} • Verificado na Google Play</div>
+            </div>
+          `).join('');
+
+          // Ratings Chart
+          if (data.ratings?.distribution) {
+            const dist = data.ratings.distribution;
+            ratingsChart.data.datasets[0].data = [dist.stars5, dist.stars4, dist.stars3, dist.stars2, dist.stars1];
+            ratingsChart.update();
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao buscar dados da Play Store:', err);
+      }
+    }
+
+    // ==============================================================
+    // TAB 5: AUDIT LOGS
+    // ==============================================================
+    async function fetchAuditLogs() {
+      if (!adminToken) {
+        showToast('Faça login como Administrador para ver logs de auditoria.', 'info');
+        openLoginModal();
+        return;
+      }
+
+      const tbody = document.getElementById('auditTableBody');
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px;">Carregando histórico...</td></tr>`;
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/audit-logs?limit=50`, { headers: getAuthHeaders() });
+        const resData = await res.json();
+
+        if (res.ok && resData.success) {
+          const logs = resData.data || [];
+          if (logs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 32px; color: var(--text-muted);">Nenhum log gravado ainda.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = logs.map(l => `
+            <tr>
+              <td style="font-size: 0.75rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">
+                ${new Date(l.timestamp).toLocaleString()}
+              </td>
+              <td>
+                <span class="status-badge ${l.action.includes('Ban') || l.action.includes('Removed') ? 'banned' : l.action.includes('Unban') || l.action.includes('Admin') ? 'active' : 'pending'}">
+                  ${l.action}
+                </span>
+              </td>
+              <td><span class="code-chip">${l.targetType} #${l.targetId}</span></td>
+              <td style="max-width: 320px;">${l.details}</td>
+              <td><strong style="color: #fff;">${l.performedBy}</strong></td>
+              <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim);">${l.ipAddress || 'Internal'}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--rose); padding: 24px;">Erro ao carregar auditoria.</td></tr>`;
+      }
+    }
+
+    // ==============================================================
+    // AUTH MODAL LOGIC
+    // ==============================================================
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
+    }
+
+    function switchAuthMode(mode) {
+      if (mode === 'login') {
+        document.getElementById('authModeLogin').style.display = 'block';
+        document.getElementById('authModeSetup').style.display = 'none';
+        document.getElementById('authTabLoginBtn').classList.add('active');
+        document.getElementById('authTabSetupBtn').classList.remove('active');
+      } else {
+        document.getElementById('authModeLogin').style.display = 'none';
+        document.getElementById('authModeSetup').style.display = 'block';
+        document.getElementById('authTabLoginBtn').classList.remove('active');
+        document.getElementById('authTabSetupBtn').classList.add('active');
+      }
+    }
+
+    async function executeLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        alert('Informe e-mail e senha.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${currentApiBase}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          if (data.role !== 'Admin' && data.role !== 'Moderator') {
+            alert('Acesso negado: Sua conta não possui permissão de Administrador ou Moderador.');
+            return;
+          }
+
+          adminToken = data.token;
+          adminUser = { username: data.username, email: data.email, role: data.role };
+          sessionStorage.setItem('bandlink_admin_token', adminToken);
+          sessionStorage.setItem('bandlink_admin_user', JSON.stringify(adminUser));
+
+          showToast(`Bem-vindo, ${data.username}! Acesso concedido.`, 'success');
+          renderAuthBlock();
+          closeLoginModal();
+          fetchFullDashboard(true);
+        } else {
+          showToast(data.message || 'Falha no login. Verifique as credenciais.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro ao conectar à API.', 'error');
+      }
+    }
+
+    async function executeSetupAdmin() {
+      const email = document.getElementById('setupEmail').value.trim();
+      if (!email) {
+        alert('Digite o e-mail cadastrado.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/setup-first-admin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(data.message, 'success');
+          alert(`${data.message}\nAgora faça login com sua senha na aba "Entrar".`);
+          switchAuthMode('login');
+          document.getElementById('loginEmail').value = email;
+        } else {
+          showToast(data.message || 'Não foi possível configurar o primeiro administrador.', 'error');
+        }
+      } catch (e) {
+        showToast('Erro ao conectar ao servidor.', 'error');
+      }
+    }
+
+    function logout() {
+      adminToken = '';
+      adminUser = null;
+      sessionStorage.removeItem('bandlink_admin_token');
+      sessionStorage.removeItem('bandlink_admin_user');
+      renderAuthBlock();
+      showToast('Sessão encerrada com segurança.', 'info');
+    }
+
+    // ==============================================================
+    // CHARTS INITIALIZATION
+    // ==============================================================
+    function initCharts() {
+      // Traffic Line Chart
+      const ctxTraffic = document.getElementById('trafficChart').getContext('2d');
+      trafficChart = new Chart(ctxTraffic, {
+        type: 'line',
+        data: {
+          labels: ['--'],
+          datasets: [
+            {
+              label: 'Reqs / min (RPS)',
+              data: [0],
+              borderColor: '#0ea5e9',
+              backgroundColor: 'rgba(14, 165, 233, 0.1)',
+              fill: true,
+              tension: 0.35,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Latência Média (ms)',
+              data: [0],
+              borderColor: '#8b5cf6',
+              backgroundColor: 'transparent',
+              borderDash: [4, 4],
+              tension: 0.35,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+            y1: { position: 'right', grid: { display: false }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+
+      // Status Codes Doughnut Chart
+      const ctxCodes = document.getElementById('statusCodesChart').getContext('2d');
+      statusCodesChart = new Chart(ctxCodes, {
+        type: 'doughnut',
+        data: {
+          labels: ['2xx Sucesso', '4xx Cliente/Auth', '5xx Erro Servidor'],
+          datasets: [{
+            data: [1, 0, 0],
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } } }
+          },
+          cutout: '72%'
+        }
+      });
+
+      // Play Store Ratings Chart
+      const ctxRatings = document.getElementById('ratingsChart').getContext('2d');
+      ratingsChart = new Chart(ctxRatings, {
+        type: 'bar',
+        data: {
+          labels: ['5 ★', '4 ★', '3 ★', '2 ★', '1 ★'],
+          datasets: [{
+            data: [41, 5, 2, 0, 0],
+            backgroundColor: ['#10b981', '#38bdf8', '#fbbf24', '#f97316', '#f43f5e'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+            y: { grid: { display: false }, ticks: { color: '#f8fafc', font: { weight: 'bold' } } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
