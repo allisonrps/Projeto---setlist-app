@@ -254,6 +254,10 @@ export const bandService = {
     }
   },
 
+  async getMembers(bandId) {
+    return this.getBandMembers(bandId);
+  },
+
   async addBandMember(bandId, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '', isLeader = 0) {
     try {
       const result = await db.runAsync(
@@ -427,7 +431,7 @@ export const bandService = {
       if (!loggedIn) throw new Error('Você precisa estar logado na sua conta BandLink para sincronizar.');
 
       // 1. Gather all local data for this band
-      const members = await this.getMembers(bandId);
+      const members = await this.getBandMembers(bandId);
       const repertoireSongs = await this.getBandSongs(bandId);
 
       // Gather setlists for this band
