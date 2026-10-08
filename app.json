@@ -45,7 +45,8 @@
             "extraProguardRules": "-keep class com.facebook.react.** { *; }\n-keep class expo.modules.** { *; }\n-keep class org.sqlite.** { *; }\n-dontwarn org.sqlite.**"
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {
