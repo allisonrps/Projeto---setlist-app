@@ -1273,7 +1273,7 @@ const translations = {
     localLabel: 'LOCATION',
     shareAgenda: 'Share Schedule',
     shareAgendaDesc: 'Generate flyer to promote shows',
-    agendaFlyerTitle: 'TOUR DATES',
+    agendaFlyerTitle: 'AGENDA',
     upcomingShows: 'Upcoming Shows',
     scanToLearnMore: 'Build your community profile, post band ads & auditions, and manage setlists & chords with auto-scroll and offline sync.',
     knowTheApp: 'BAND LINK',

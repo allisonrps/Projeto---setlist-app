@@ -30,6 +30,7 @@ const bgReggae = require('../assets/bg_reggae.jpg');
 const bgGospel = require('../assets/bg_gospel.jpg');
 const bgNotes = require('../assets/bg_notes.jpg');
 const bgClassic = require('../assets/bg_classic.jpg');
+const bandlinkLogoWide = require('../assets/bandlink_logo_transparent_wide.png');
 
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.setlistbandmanager.com';
 const MAX_FLYER_EVENTS = 6;
@@ -484,9 +485,9 @@ export default function ShareAgendaModal({
                       </View>
                     )}
                     <View style={{ flex: 1 }}>
-                      {/* Linha 1: AGENDA / TOUR DATES */}
-                      <Text style={{ fontSize: headerTitleFontSize, fontWeight: '900', color: '#ffffff', textTransform: 'uppercase', letterSpacing: 2, lineHeight: headerTitleLineHeight }}>
-                        {t('agendaFlyerTitle') || (activeLang === 'en' ? 'TOUR DATES' : 'AGENDA')}
+                      {/* Linha 1: AGENDA */}
+                      <Text style={{ fontSize: headerTitleFontSize, fontWeight: '900', color: '#ffffff', textTransform: 'uppercase', letterSpacing: 3, lineHeight: headerTitleLineHeight }}>
+                        {t('agendaFlyerTitle') || 'AGENDA'}
                       </Text>
                       {/* Linha 2: Próximos Shows • Nome */}
                       <Text style={{ fontSize: headerSubtitleFontSize, fontWeight: '700', color: colors.primary || '#eab308', marginTop: 4 }}>
@@ -603,20 +604,17 @@ export default function ShareAgendaModal({
                   }}
                 >
                   <View style={{ flex: 1, marginRight: 24 }}>
-                    <View
+                    {/* Logo Oficial Band Link no Rodapé */}
+                    <Image
+                      source={bandlinkLogoWide}
                       style={{
-                        backgroundColor: colors.primary || '#eab308',
-                        paddingHorizontal: 16,
-                        paddingVertical: 5,
-                        borderRadius: 8,
-                        alignSelf: 'flex-start',
+                        width: isCompact ? 240 : 280,
+                        height: isCompact ? 64 : 76,
+                        resizeMode: 'contain',
                         marginBottom: 10,
+                        alignSelf: 'flex-start',
                       }}
-                    >
-                      <Text style={{ fontSize: footerBadgeFontSize, fontWeight: '900', color: '#000', textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                        BAND LINK
-                      </Text>
-                    </View>
+                    />
                     <Text style={{ fontSize: footerSummaryFontSize, fontWeight: 'bold', color: '#fff', lineHeight: footerSummaryLineHeight }}>
                       {getAppSummary(activeLang)}
                     </Text>
