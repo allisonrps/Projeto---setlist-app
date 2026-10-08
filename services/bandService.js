@@ -859,6 +859,7 @@ export const bandService = {
 
         let localBandId = local ? local.id : null;
 
+        if (!localBandId) {
           let initialImage = null;
           if (cb.imageUri && !cb.imageUri.startsWith('file://')) {
             initialImage = cb.imageUri;
