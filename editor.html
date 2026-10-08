@@ -1327,7 +1327,261 @@
       border-color: var(--primary);
     }
 
+  
+    /* ==========================================================
+       MODERN 3-COLUMN STUDIO WORKSPACE & EXPANDED VERTICAL EDITOR
+       ========================================================== */
+    .editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg);
+      overflow: hidden;
+      height: 100%;
+    }
+
+    #songEditorSection {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #setlistEditorSection {
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .song-workspace-container {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .editor-main-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 0;
+      background-color: var(--bg);
+      overflow: hidden;
+    }
+
+    .editor-stage-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--glass-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1.5px solid var(--border);
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 5;
+    }
+
+    .stage-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stage-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-toggle-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-toggle-meta.active {
+      background: var(--primary-subtle);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .editor-stage-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 18px;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .editor-wrapper-fullscreen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+      position: relative;
+    }
+
+    .code-textarea-fullscreen {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      background-color: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      padding: 18px 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 14.5px;
+      line-height: 1.65;
+      resize: none;
+      outline: none;
+      white-space: pre;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+
+    .code-textarea-fullscreen:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-subtle), inset 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .links-editor-fullscreen {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .editor-stage-statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px;
+      background: var(--bg-surface);
+      border-top: 1.5px solid var(--border);
+      font-size: 12px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .statusbar-info {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .statusbar-info span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    .statusbar-hints {
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    /* RIGHT METADATA SIDEBAR */
+    .song-meta-sidebar {
+      width: 330px;
+      background-color: var(--glass-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-left: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
+      overflow: hidden;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+      z-index: 10;
+    }
+
+    .song-meta-sidebar.collapsed {
+      width: 0 !important;
+      border-left: none !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .meta-sidebar-header {
+      padding: 13px 18px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--glass-bg);
+      flex-shrink: 0;
+    }
+
+    .meta-sidebar-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .meta-sidebar-title ion-icon {
+      font-size: 18px;
+      color: var(--primary);
+    }
+
+    .meta-sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .meta-quick-card {
+      background: var(--primary-subtle);
+      border: 1px solid var(--primary-glow);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-top: 6px;
+    }
+
+    .meta-card-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-quick-card p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
   </style>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
 </head>
 <body>
 
@@ -1335,9 +1589,9 @@
   <header>
     <div class="brand">
       <a href="index.html" data-i18n-title="backToHome" title="Back to Home Page" style="display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;">
-      <img src="assets/logo.png" alt="Setlist Band Manager Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../assets/logo.png';">
+      <img src="assets/favicon.png" alt="BandLink Logo" class="brand-logo-img">
       <div class="brand-text">
-        <h1>Setlist Band Manager <span class="brand-badge" data-i18n="brandBadge">WEB EDITOR</span></h1>
+        <h1>BandLink <span class="brand-badge" data-i18n="brandBadge">WEB EDITOR</span></h1>
       </div>
       </a>
     </div>
@@ -1417,7 +1671,7 @@
     <div class="editor-container" id="editorContainer">
       
       <!-- SONG EDITOR VIEW -->
-      <div id="songEditorSection" style="display: flex; flex-direction: column; flex: 1;">
+      <div id="songEditorSection" style="display: flex; flex-direction: column; flex: 1; height: 100%; min-height: 0; overflow: hidden;">
         <div class="empty-state" id="emptyStateSong">
           <ion-icon name="musical-notes-outline" class="empty-icon"></ion-icon>
           <h2 data-i18n="emptySongTitle">No song selected</h2>
@@ -1428,76 +1682,38 @@
           </button>
         </div>
 
-        <div class="editor-inner" id="songEditorInner" style="display: none;">
-          <!-- Metadata Form -->
-          <div class="form-card">
-            <div class="form-grid-3">
-              <div class="form-group">
-                <label><ion-icon name="musical-note-outline"></ion-icon> <span data-i18n="songNameLabel">Song Name *</span></label>
-                <input type="text" class="form-input" id="songName" data-i18n-placeholder="songNamePlaceholder" placeholder="e.g. Yellow" oninput="updateCurrentSong('name', this.value)">
-              </div>
-              <div class="form-group">
-                <label><ion-icon name="people-outline"></ion-icon> <span data-i18n="originalBandLabel">Original Artist / Band *</span></label>
-                <input type="text" class="form-input" id="songBand" data-i18n-placeholder="originalBandPlaceholder" placeholder="e.g. Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
-              </div>
-              <div class="form-group">
-                <label><ion-icon name="time-outline"></ion-icon> <span data-i18n="durationLabel">Duration (mm:ss)</span></label>
-                <input type="text" class="form-input" id="songDuration" data-i18n-placeholder="durationPlaceholder" placeholder="e.g. 04:30" oninput="updateCurrentSong('duration', this.value)">
-              </div>
-            </div>
-
-            <div class="form-grid-3">
-              <div class="form-group">
-                <label><ion-icon name="pricetag-outline"></ion-icon> <span data-i18n="tagsLabel">Tags / Styles (comma separated)</span></label>
-                <input type="text" class="form-input" id="songStyle" data-i18n-placeholder="tagsPlaceholder" placeholder="e.g. pop rock, 2000s, acoustic" oninput="updateCurrentSong('style', this.value)">
-              </div>
-              <div class="form-group">
-                <label><ion-icon name="eye-outline"></ion-icon> <span data-i18n="defaultViewLabel">Default Stage View</span></label>
-                <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
-                  <option value="chords" data-i18n="viewChords">🎼 Chords</option>
-                  <option value="lyrics" data-i18n="viewLyrics">📝 Lyrics</option>
-                  <option value="tabs" data-i18n="viewTabs">🎸 Tabs</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label><ion-icon name="play-forward-outline"></ion-icon> <span data-i18n="scrollSpeedLabel">Autoscroll Speed</span></label>
-                <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
-                  <option value="none" data-i18n="speedNone">Paused / Off</option>
-                  <option value="0.5x" data-i18n="speed05">0.5x (Slow)</option>
-                  <option value="1x" data-i18n="speed10">1.0x (Normal)</option>
-                  <option value="1.5x" data-i18n="speed15">1.5x (Fast)</option>
-                  <option value="2x" data-i18n="speed20">2.0x (Very Fast)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Editor Tabs -->
-          <div class="form-card">
-            <div class="tabs-header">
-              <div class="tab-buttons">
-                <button class="tab-btn active" id="tabBtnChords" onclick="switchSongTab('chords')">
-                  <ion-icon name="musical-notes-outline"></ion-icon>
-                  <span data-i18n="tabChords">Chords</span>
-                </button>
-                <button class="tab-btn" id="tabBtnLyrics" onclick="switchSongTab('lyrics')">
-                  <ion-icon name="document-text-outline"></ion-icon>
-                  <span data-i18n="tabLyrics">Lyrics</span>
-                </button>
-                <button class="tab-btn" id="tabBtnTabs" onclick="switchSongTab('tabs')">
-                  <ion-icon name="grid-outline"></ion-icon>
-                  <span data-i18n="tabTabs">Tabs</span>
-                </button>
-                <button class="tab-btn" id="tabBtnLinks" onclick="switchSongTab('links')">
-                  <ion-icon name="link-outline"></ion-icon>
-                  <span data-i18n="tabLinks">Support Links</span>
-                </button>
+        <div class="song-workspace-container" id="songEditorInner" style="display: none;">
+          
+          <!-- CENTER STAGE: Full-Height Code & Chord Editor -->
+          <main class="editor-main-stage">
+            
+            <!-- Top Studio Toolbar -->
+            <div class="editor-stage-toolbar">
+              <div class="stage-toolbar-left">
+                <div class="tab-buttons">
+                  <button class="tab-btn active" id="tabBtnChords" onclick="switchSongTab('chords')">
+                    <ion-icon name="musical-notes-outline"></ion-icon>
+                    <span data-i18n="tabChords">Chords</span>
+                  </button>
+                  <button class="tab-btn" id="tabBtnLyrics" onclick="switchSongTab('lyrics')">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span data-i18n="tabLyrics">Lyrics</span>
+                  </button>
+                  <button class="tab-btn" id="tabBtnTabs" onclick="switchSongTab('tabs')">
+                    <ion-icon name="grid-outline"></ion-icon>
+                    <span data-i18n="tabTabs">Tabs</span>
+                  </button>
+                  <button class="tab-btn" id="tabBtnLinks" onclick="switchSongTab('links')">
+                    <ion-icon name="link-outline"></ion-icon>
+                    <span data-i18n="tabLinks">Support Links</span>
+                  </button>
+                </div>
               </div>
 
-              <div class="tab-tools">
+              <div class="stage-toolbar-right">
                 <div id="chordsTools" style="display: flex; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" data-i18n="btnMinusKey">♭ -1 Key</button>
-                  <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" data-i18n="btnPlusKey">♯ +1 Key</button>
+                  <button class="btn btn-outline btn-sm" onclick="transposeChords(-1)" data-i18n="btnMinusKey" title="Transpose -1 Semitone">♭ -1 Key</button>
+                  <button class="btn btn-outline btn-sm" onclick="transposeChords(1)" data-i18n="btnPlusKey" title="Transpose +1 Semitone">♯ +1 Key</button>
                 </div>
 
                 <div id="tabsTools" style="display: none; gap: 6px;">
@@ -1511,31 +1727,122 @@
                   <ion-icon name="desktop-outline"></ion-icon>
                   <span data-i18n="btnStageMode">Stage Mode</span>
                 </button>
-              </div>
-            </div>
 
-            <!-- Code Textarea Area -->
-            <div class="editor-wrapper">
-              <textarea class="code-textarea" id="mainTextarea" placeholder="Digite aqui o conteúdo..." oninput="handleTextareaChange(this.value)"></textarea>
-            </div>
-
-            <!-- Links Editor Area -->
-            <div id="linksEditorArea" style="display: none;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                  <ion-icon name="link-outline" style="color: var(--primary);"></ion-icon>
-                  <span data-i18n="linksHeading">VIDEO, AUDIO & CHORDS LINKS:</span>
-                </span>
-                <button class="btn btn-primary btn-sm" onclick="addLinkRow()">
-                  <ion-icon name="add-outline"></ion-icon>
-                  <span data-i18n="btnAddLink">Add Link</span>
+                <!-- TOGGLE METADATA PANEL BUTTON -->
+                <button class="btn btn-outline btn-sm btn-toggle-meta active" id="btnToggleMeta" onclick="toggleSongMetaPanel()" data-i18n-title="btnSongDetailsTitle" title="Toggle Song Details Panel">
+                  <ion-icon name="options-outline"></ion-icon>
+                  <span data-i18n="btnSongDetails">Dados da Música</span>
                 </button>
               </div>
-              <div class="links-list" id="linksListContainer">
-                <!-- Rendered by JS -->
+            </div>
+
+            <!-- Stage Body: Expanded Textarea Viewport -->
+            <div class="editor-stage-body">
+              <div class="editor-wrapper-fullscreen">
+                <textarea class="code-textarea-fullscreen" id="mainTextarea" placeholder="Digite aqui o conteúdo..." oninput="handleTextareaChange(this.value)"></textarea>
+              </div>
+
+              <!-- Links Editor Area -->
+              <div id="linksEditorArea" style="display: none;" class="links-editor-fullscreen">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="font-size: 13px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                    <ion-icon name="link-outline" style="color: var(--primary); font-size: 18px;"></ion-icon>
+                    <span data-i18n="linksHeading">VIDEO, AUDIO & CHORDS LINKS:</span>
+                  </span>
+                  <button class="btn btn-primary btn-sm" onclick="addLinkRow()">
+                    <ion-icon name="add-outline"></ion-icon>
+                    <span data-i18n="btnAddLink">Add Link</span>
+                  </button>
+                </div>
+                <div class="links-list" id="linksListContainer">
+                  <!-- Rendered by JS -->
+                </div>
               </div>
             </div>
-          </div>
+
+            <!-- Stage Bottom Statusbar -->
+            <div class="editor-stage-statusbar">
+              <div class="statusbar-info">
+                <span id="editorLineCount"><ion-icon name="document-outline"></ion-icon> 0 linhas</span>
+                <span id="editorCharCount"><ion-icon name="text-outline"></ion-icon> 0 caracteres</span>
+              </div>
+              <div class="statusbar-hints">
+                <span>Tab para indentação | Autoscroll sincronizado ao celular</span>
+              </div>
+            </div>
+
+          </main>
+
+          <!-- RIGHT SIDEBAR: Song Configuration & Metadata Panel (Collapsible) -->
+          <aside class="song-meta-sidebar" id="songMetaSidebar">
+            <div class="meta-sidebar-header">
+              <div class="meta-sidebar-title">
+                <ion-icon name="options-outline"></ion-icon>
+                <span data-i18n="metaSidebarTitle">Configurações da Música</span>
+              </div>
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleSongMetaPanel()" title="Ocultar Painel" aria-label="Fechar painel">
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
+            </div>
+
+            <div class="meta-sidebar-body">
+              <!-- Song Name -->
+              <div class="form-group">
+                <label><ion-icon name="musical-note-outline"></ion-icon> <span data-i18n="songNameLabel">Nome da Música *</span></label>
+                <input type="text" class="form-input" id="songName" data-i18n-placeholder="songNamePlaceholder" placeholder="e.g. Yellow" oninput="updateCurrentSong('name', this.value)">
+              </div>
+
+              <!-- Original Artist / Band -->
+              <div class="form-group">
+                <label><ion-icon name="people-outline"></ion-icon> <span data-i18n="originalBandLabel">Banda / Artista Original *</span></label>
+                <input type="text" class="form-input" id="songBand" data-i18n-placeholder="originalBandPlaceholder" placeholder="e.g. Coldplay" oninput="updateCurrentSong('originalBand', this.value)">
+              </div>
+
+              <!-- Duration -->
+              <div class="form-group">
+                <label><ion-icon name="time-outline"></ion-icon> <span data-i18n="durationLabel">Duração (mm:ss)</span></label>
+                <input type="text" class="form-input" id="songDuration" data-i18n-placeholder="durationPlaceholder" placeholder="e.g. 04:30" oninput="updateCurrentSong('duration', this.value)">
+              </div>
+
+              <!-- Tags / Styles -->
+              <div class="form-group">
+                <label><ion-icon name="pricetag-outline"></ion-icon> <span data-i18n="tagsLabel">Tags / Estilos</span></label>
+                <input type="text" class="form-input" id="songStyle" data-i18n-placeholder="tagsPlaceholder" placeholder="e.g. pop rock, acoustic" oninput="updateCurrentSong('style', this.value)">
+              </div>
+
+              <!-- Default Stage View -->
+              <div class="form-group">
+                <label><ion-icon name="eye-outline"></ion-icon> <span data-i18n="defaultViewLabel">Visualização no Palco</span></label>
+                <select class="form-select" id="songDefaultView" onchange="updateCurrentSong('defaultView', this.value)">
+                  <option value="chords" data-i18n="viewChords">🎼 Cifras</option>
+                  <option value="lyrics" data-i18n="viewLyrics">📝 Letra</option>
+                  <option value="tabs" data-i18n="viewTabs">🎸 Tablatura</option>
+                </select>
+              </div>
+
+              <!-- Autoscroll Speed -->
+              <div class="form-group">
+                <label><ion-icon name="play-forward-outline"></ion-icon> <span data-i18n="scrollSpeedLabel">Velocidade de Rolagem</span></label>
+                <select class="form-select" id="songScrollSpeed" onchange="updateCurrentSong('scrollSpeed', this.value)">
+                  <option value="none" data-i18n="speedNone">Pausado / Desligado</option>
+                  <option value="0.5x" data-i18n="speed05">0.5x (Lenta)</option>
+                  <option value="1x" data-i18n="speed10">1.0x (Normal)</option>
+                  <option value="1.5x" data-i18n="speed15">1.5x (Rápida)</option>
+                  <option value="2x" data-i18n="speed20">2.0x (Muito Rápida)</option>
+                </select>
+              </div>
+
+              <div class="meta-quick-card">
+                <div class="meta-card-header">
+                  <ion-icon name="information-circle-outline"></ion-icon>
+                  <span data-i18n="stageTipHeading">Dica de Palco</span>
+                </div>
+                <p data-i18n="stageTipDesc">As preferências de rolagem e visualização configuradas aqui são enviadas em tempo real para os celulares conectados via sincronização QR.</p>
+              </div>
+
+            </div>
+          </aside>
+
         </div>
       </div>
 
@@ -2053,6 +2360,11 @@
     "setlistsCountLabel": "{count} SETLISTS",
     "setlistsCountLabelSingle": "1 SETLIST",
     "btnNewSong": "New Song",
+    "btnSongDetails": "Song Details",
+    "btnSongDetailsTitle": "Toggle Song Details Panel",
+    "metaSidebarTitle": "Song Details",
+    "stageTipHeading": "Stage Tip",
+    "stageTipDesc": "Scroll speed and default view settings are transmitted in real time to connected musician devices.",
     "btnNewSetlist": "New Setlist",
     "emptySongTitle": "No song selected",
     "emptySongDesc": "Select a song from the sidebar or create a new one to edit chords, lyrics, and tabs on your PC.",
@@ -2237,6 +2549,11 @@
     "setlistsCountLabel": "{count} SETLISTS",
     "setlistsCountLabelSingle": "1 SETLIST",
     "btnNewSong": "Nova Música",
+    "btnSongDetails": "Dados da Música",
+    "btnSongDetailsTitle": "Exibir/Ocultar Dados da Música",
+    "metaSidebarTitle": "Dados da Música",
+    "stageTipHeading": "Dica de Palco",
+    "stageTipDesc": "As preferências de rolagem e visualização configuradas aqui são sincronizadas em tempo real com os celulares conectados.",
     "btnNewSetlist": "Novo Setlist",
     "emptySongTitle": "Nenhuma música selecionada",
     "emptySongDesc": "Selecione uma música na barra lateral ou crie uma nova para editar cifras, letras e tablaturas no seu PC.",
@@ -2426,6 +2743,11 @@
     "setlistsCountLabel": "{count} SETLISTS",
     "setlistsCountLabelSingle": "1 SETLIST",
     "btnNewSong": "Nueva Canción",
+    "btnSongDetails": "Datos de la Canción",
+    "btnSongDetailsTitle": "Mostrar/Ocultar Datos de la Canción",
+    "metaSidebarTitle": "Datos de la Canción",
+    "stageTipHeading": "Consejo de Escenario",
+    "stageTipDesc": "Las preferencias de desplazamiento y visualización se sincronizan en tiempo real con los dispositivos conectados.",
     "btnNewSetlist": "Nuevo Setlist",
     "emptySongTitle": "Ninguna canción seleccionada",
     "emptySongDesc": "Selecciona una canción en la barra lateral o crea una nueva para editar acordes, letras y tablaturas en tu PC.",
@@ -3457,6 +3779,45 @@
       showToast(t('toastSongDeleted', { name: songName }), 'trash-outline');
     }
 
+    
+    // Song Meta Sidebar Toggle & Counters
+    function toggleSongMetaPanel() {
+      const panel = document.getElementById('songMetaSidebar');
+      const btn = document.getElementById('btnToggleMeta');
+      if (!panel) return;
+      const isCollapsed = panel.classList.toggle('collapsed');
+      if (btn) {
+        btn.classList.toggle('active', !isCollapsed);
+      }
+      try {
+        localStorage.setItem('bandlink_webEditor_metaCollapsed', isCollapsed ? 'true' : 'false');
+      } catch (e) {}
+    }
+
+    function initSongMetaPanel() {
+      try {
+        const isCollapsed = localStorage.getItem('bandlink_webEditor_metaCollapsed') === 'true';
+        const panel = document.getElementById('songMetaSidebar');
+        const btn = document.getElementById('btnToggleMeta');
+        if (panel && isCollapsed) {
+          panel.classList.add('collapsed');
+          if (btn) btn.classList.remove('active');
+        }
+      } catch (e) {}
+    }
+
+    function updateEditorCounters() {
+      const textarea = document.getElementById('mainTextarea');
+      const lineEl = document.getElementById('editorLineCount');
+      const charEl = document.getElementById('editorCharCount');
+      if (!textarea || !lineEl || !charEl) return;
+      const text = textarea.value || '';
+      const lines = text ? text.split('\n').length : 0;
+      const chars = text.length;
+      lineEl.innerHTML = '<ion-icon name="document-outline"></ion-icon> ' + lines + (lines === 1 ? ' linha' : ' linhas');
+      charEl.innerHTML = '<ion-icon name="text-outline"></ion-icon> ' + chars + (chars === 1 ? ' caractere' : ' caracteres');
+    }
+  
     function renderSongEditor() {
       const emptyState = document.getElementById('emptyStateSong');
       const editorInner = document.getElementById('songEditorInner');
@@ -3528,6 +3889,7 @@
     }
 
     function handleTextareaChange(val) {
+      updateEditorCounters();
       const song = songs.find(s => s.id === activeSongId);
       if (!song) return;
 
