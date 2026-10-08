@@ -57,8 +57,9 @@ export default function LoginScreen({ onLogin }) {
   // Estado do Google Sign-In
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleRequest, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest({
-    clientId: '674390666070-google-bandlink.apps.googleusercontent.com',
-    androidClientId: '674390666070-google-bandlink.apps.googleusercontent.com',
+    clientId: '471445409156-7t1ps3fiq4cfvnk34jvaa9ll0o4suhrm.apps.googleusercontent.com',
+    webClientId: '471445409156-7t1ps3fiq4cfvnk34jvaa9ll0o4suhrm.apps.googleusercontent.com',
+    androidClientId: '471445409156-7t1ps3fiq4cfvnk34jvaa9ll0o4suhrm.apps.googleusercontent.com',
   });
 
   // Efeito ao receber resposta do Google
