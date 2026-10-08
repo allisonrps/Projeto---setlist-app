@@ -167,6 +167,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
 
   // City filter state
   const [selectedCity, setSelectedCity] = useState('');
+  const hasInitializedCity = useRef(false);
   const [showCityFilterModal, setShowCityFilterModal] = useState(false);
   const [cityFilterInput, setCityFilterInput] = useState('');
 
@@ -258,9 +259,6 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     setProjectsPage(1);
     setMusiciansPage(1);
     setBandsPage(1);
-    if (subTab === 'musicians') {
-      loadUserData();
-    }
   }, [searchQuery, selectedCity, subTab]);
 
   // Candidate Scanner: looping magnifying glass animation
@@ -398,8 +396,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         setFormCity(normalizedUser.city || '');
         setFormState(normalizedUser.state || '');
         setFormCountry(normalizedUser.country || '');
-        if (normalizedUser.city) {
-          setSelectedCity(prev => prev || normalizedUser.city);
+        if (!hasInitializedCity.current && normalizedUser.city) {
+          hasInitializedCity.current = true;
+          setSelectedCity(normalizedUser.city);
         }
 
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
