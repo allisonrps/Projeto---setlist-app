@@ -16,7 +16,8 @@ import {
   Animated,
   ActivityIndicator,
   StatusBar as RNStatusBar,
-  LayoutAnimation
+  LayoutAnimation,
+  Dimensions,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
@@ -26,6 +27,8 @@ import { setlistService } from '../services/setlistService';
 import { musiciansService } from '../services/musiciansService';
 import MusicianProfileModal from './MusicianProfileModal';
 import ShareAgendaModal from './ShareAgendaModal';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 import { useLanguage } from '../hooks/useLanguage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sharing from 'expo-sharing';
@@ -312,6 +315,175 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const isDark = colors.isDark;
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('bio');
+  const MUSICIAN_TABS = ['bio', 'skills', 'instruments', 'projects', 'agenda'];
+  const translateX = useRef(new Animated.Value(0)).current;
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+  const activeTabRef = useRef('bio');
+  activeTabRef.current = activeTab;
+
+  const handleTabChange = (nextTabId) => {
+    if (nextTabId === activeTabRef.current) return;
+    const oldIdx = MUSICIAN_TABS.indexOf(activeTabRef.current);
+    const newIdx = MUSICIAN_TABS.indexOf(nextTabId);
+    const direction = newIdx > oldIdx ? -1 : 1;
+
+    // Transição suave com esmaecimento (fade-out + slide out, depois fade-in + slide in)
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: direction * 35,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tabOpacity, {
+        toValue: 0.15,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveTab(nextTabId);
+      translateX.setValue(-direction * 35);
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: 0,
+          tension: 75,
+          friction: 11,
+          useNativeDriver: true,
+        }),
+        Animated.timing(tabOpacity, {
+          toValue: 1,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 7 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 8 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        translateX.stopAnimation();
+        tabOpacity.stopAnimation();
+        setScrollEnabled(false);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const curIdx = MUSICIAN_TABS.indexOf(activeTabRef.current);
+        const isFirst = curIdx === 0 && gestureState.dx > 0;
+        const isLast = curIdx === MUSICIAN_TABS.length - 1 && gestureState.dx < 0;
+        const damped = isFirst || isLast ? gestureState.dx * 0.22 : gestureState.dx;
+        translateX.setValue(damped);
+
+        // Esmaecimento dinâmico suave durante o arraste
+        const dragProgress = Math.min(1, Math.abs(damped) / (SCREEN_WIDTH * 0.45));
+        tabOpacity.setValue(Math.max(0.2, 1 - dragProgress * 0.8));
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        setScrollEnabled(true);
+        const curIdx = MUSICIAN_TABS.indexOf(activeTabRef.current);
+        const swipeThreshold = 25;
+        const speedThreshold = 0.18;
+
+        if ((gestureState.dx < -swipeThreshold || gestureState.vx < -speedThreshold) && curIdx < MUSICIAN_TABS.length - 1) {
+          const nextTab = MUSICIAN_TABS[curIdx + 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: -SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(nextTab);
+            translateX.setValue(SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else if ((gestureState.dx > swipeThreshold || gestureState.vx > speedThreshold) && curIdx > 0) {
+          const prevTab = MUSICIAN_TABS[curIdx - 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(prevTab);
+            translateX.setValue(-SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateX, {
+              toValue: 0,
+              tension: 85,
+              friction: 12,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 1,
+              duration: 140,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        setScrollEnabled(true);
+        Animated.parallel([
+          Animated.spring(translateX, {
+            toValue: 0,
+            tension: 85,
+            friction: 12,
+            useNativeDriver: true,
+          }),
+          Animated.timing(tabOpacity, {
+            toValue: 1,
+            duration: 140,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
   const [profileImage, setProfileImage] = useState(null);
 
   // Modals (all bottom sheets)
@@ -2426,7 +2598,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           </View>
         </View>
 
-        {/* ── ABAS DE OPÇÕES: COM GUITARRA/VIOLÃO EM INSTRUMENTOS ── */}
+        {/* ── ABAS DE OPÇÕES COM DEGRADÊ CINTILANTE ── */}
         <View style={styles.tabBar}>
           {[
             { id: 'bio', type: 'ion', icon: 'person', iconOutline: 'person-outline', label: t('bioTab') || 'Bio' },
@@ -2440,7 +2612,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               <Pressable 
                 key={tab.id} 
                 style={[styles.tabItem, isActive && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }]} 
-                onPress={() => setActiveTab(tab.id)}
+                onPress={() => handleTabChange(tab.id)}
                 accessibilityLabel={tab.label}
               >
                 {tab.type === 'mci' ? (
@@ -2462,29 +2634,35 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         </View>
       </View>
 
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        scrollEnabled={scrollEnabled}
+      {/* ── CONTEÚDO DAS ABAS COM TRANSIÇÃO SUAVE E GESTO DE ARRASTAR ── */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={{ flex: 1, opacity: tabOpacity, transform: [{ translateX }] }}
       >
-        {!isProfileComplete && (
-          <View style={[styles.incompleteProfileBanner, { backgroundColor: colors.isDark ? 'rgba(234, 179, 8, 0.15)' : '#fef9c3', borderColor: colors.isDark ? 'rgba(234, 179, 8, 0.35)' : '#fde047' }]}>
-            <Ionicons name="information-circle-outline" size={22} color={colors.isDark ? '#facc15' : '#ca8a04'} />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.incompleteProfileBannerTitle, { color: colors.isDark ? '#facc15' : '#854d0e' }]}>
-                {t('incompleteProfileTitle') || 'Complete seu Perfil'}
-              </Text>
-              <Text style={[styles.incompleteProfileBannerText, { color: colors.isDark ? '#e2e8f0' : '#713f12' }]}>
-                {t('incompleteProfileMsg') || 'Adicione ao menos seus instrumentos ou localização para liberar seu acesso ao feed da Rede BandLink.'}
-              </Text>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          scrollEnabled={scrollEnabled}
+        >
+          {!isProfileComplete && (
+            <View style={[styles.incompleteProfileBanner, { backgroundColor: colors.isDark ? 'rgba(234, 179, 8, 0.15)' : '#fef9c3', borderColor: colors.isDark ? 'rgba(234, 179, 8, 0.35)' : '#fde047' }]}>
+              <Ionicons name="information-circle-outline" size={22} color={colors.isDark ? '#facc15' : '#ca8a04'} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.incompleteProfileBannerTitle, { color: colors.isDark ? '#facc15' : '#854d0e' }]}>
+                  {t('incompleteProfileTitle') || 'Complete seu Perfil'}
+                </Text>
+                <Text style={[styles.incompleteProfileBannerText, { color: colors.isDark ? '#e2e8f0' : '#713f12' }]}>
+                  {t('incompleteProfileMsg') || 'Adicione ao menos seus instrumentos ou localização para liberar seu acesso ao feed da Rede BandLink.'}
+                </Text>
+              </View>
             </View>
-          </View>
-        )}
-        {activeTab === 'bio' && renderBioTab()}
-        {activeTab === 'skills' && renderSkillsTab()}
-        {activeTab === 'instruments' && renderInstrumentsTab()}
-        {activeTab === 'projects' && renderProjectsTab()}
-        {activeTab === 'agenda' && renderAgendaTab()}
-      </ScrollView>
+          )}
+          {activeTab === 'bio' && renderBioTab()}
+          {activeTab === 'skills' && renderSkillsTab()}
+          {activeTab === 'instruments' && renderInstrumentsTab()}
+          {activeTab === 'projects' && renderProjectsTab()}
+          {activeTab === 'agenda' && renderAgendaTab()}
+        </ScrollView>
+      </Animated.View>
 
       {/* ── MODAL DE COMPARTILHAMENTO DE AGENDA DO MÚSICO ── */}
       <ShareAgendaModal

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,18 @@ import {
   Alert,
   TextInput,
   KeyboardAvoidingView,
-  LayoutAnimation
+  LayoutAnimation,
+  Animated,
+  PanResponder,
+  Dimensions,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { bandService } from '../services/bandService';
 import { musiciansService } from '../services/musiciansService';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const getBandInitials = (name) => {
   if (!name) return 'BD';
@@ -228,6 +233,177 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
 
 
   const [activeTab, setActiveTab] = useState('bio');
+  const MUSICIAN_TABS = ['bio', 'skills', 'instruments', 'projects', 'agenda'];
+  const translateX = useRef(new Animated.Value(0)).current;
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+  const activeTabRef = useRef('bio');
+  activeTabRef.current = activeTab;
+
+  const handleTabChange = (nextTabId) => {
+    if (nextTabId === activeTabRef.current) return;
+    const oldIdx = MUSICIAN_TABS.indexOf(activeTabRef.current);
+    const newIdx = MUSICIAN_TABS.indexOf(nextTabId);
+    const direction = newIdx > oldIdx ? -1 : 1;
+
+    // Transição suave com esmaecimento (fade-out + slide out, depois fade-in + slide in)
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: direction * 35,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tabOpacity, {
+        toValue: 0.15,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveTab(nextTabId);
+      translateX.setValue(-direction * 35);
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: 0,
+          tension: 75,
+          friction: 11,
+          useNativeDriver: true,
+        }),
+        Animated.timing(tabOpacity, {
+          toValue: 1,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const [tabScrollEnabled, setTabScrollEnabled] = useState(true);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 7 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 8 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        translateX.stopAnimation();
+        tabOpacity.stopAnimation();
+        setTabScrollEnabled(false);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const curIdx = MUSICIAN_TABS.indexOf(activeTabRef.current);
+        const isFirst = curIdx === 0 && gestureState.dx > 0;
+        const isLast = curIdx === MUSICIAN_TABS.length - 1 && gestureState.dx < 0;
+        const damped = isFirst || isLast ? gestureState.dx * 0.22 : gestureState.dx;
+        translateX.setValue(damped);
+
+        // Esmaecimento dinâmico suave durante o arraste
+        const dragProgress = Math.min(1, Math.abs(damped) / (SCREEN_WIDTH * 0.45));
+        tabOpacity.setValue(Math.max(0.2, 1 - dragProgress * 0.8));
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        setTabScrollEnabled(true);
+        const curIdx = MUSICIAN_TABS.indexOf(activeTabRef.current);
+        const swipeThreshold = 25;
+        const speedThreshold = 0.18;
+
+        if ((gestureState.dx < -swipeThreshold || gestureState.vx < -speedThreshold) && curIdx < MUSICIAN_TABS.length - 1) {
+          const nextTab = MUSICIAN_TABS[curIdx + 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: -SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(nextTab);
+            translateX.setValue(SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else if ((gestureState.dx > swipeThreshold || gestureState.vx > speedThreshold) && curIdx > 0) {
+          const prevTab = MUSICIAN_TABS[curIdx - 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(prevTab);
+            translateX.setValue(-SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateX, {
+              toValue: 0,
+              tension: 85,
+              friction: 12,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 1,
+              duration: 140,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        setTabScrollEnabled(true);
+        Animated.parallel([
+          Animated.spring(translateX, {
+            toValue: 0,
+            tension: 85,
+            friction: 12,
+            useNativeDriver: true,
+          }),
+          Animated.timing(tabOpacity, {
+            toValue: 1,
+            duration: 140,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [myBands, setMyBands] = useState([]);
   const [selectedBandId, setSelectedBandId] = useState(null);
@@ -333,14 +509,25 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
 
   // Bandas e Projetos
   const rawProjects = (() => {
-    const candidateList = (Array.isArray(musician.projects) && musician.projects.length > 0)
+    const rawList = (Array.isArray(musician.projects) && musician.projects.length > 0)
       ? musician.projects
       : (Array.isArray(musician.bands) && musician.bands.length > 0)
         ? musician.bands
         : [];
 
-    if (candidateList.length === 0) {
+    if (rawList.length === 0) {
       return [];
+    }
+
+    // Deduplicar projetos/bandas por nome para nunca exibir bandas repetidas
+    const candidateList = [];
+    const seenNames = new Set();
+    for (const item of rawList) {
+      if (!item) continue;
+      const pName = (item.name || item.bandName || '').trim().toLowerCase();
+      if (!pName || seenNames.has(pName)) continue;
+      seenNames.add(pName);
+      candidateList.push(item);
     }
 
     return candidateList.map((b, idx) => {
@@ -414,13 +601,53 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
   })();
 
   // Agenda (mostra os próximos shows do músico / bandas do músico)
-  const agenda = (Array.isArray(musician.agenda) && musician.agenda.length > 0)
-    ? musician.agenda
-    : (Array.isArray(musician.schedule) && musician.schedule.length > 0)
-      ? musician.schedule
-      : (Array.isArray(musician.shows) && musician.shows.length > 0)
-        ? musician.shows
-        : [];
+  const agenda = (() => {
+    let directAgenda = (Array.isArray(musician.agenda) && musician.agenda.length > 0)
+      ? [...musician.agenda]
+      : (Array.isArray(musician.schedule) && musician.schedule.length > 0)
+        ? [...musician.schedule]
+        : (Array.isArray(musician.shows) && musician.shows.length > 0)
+          ? [...musician.shows]
+          : [];
+
+    // Se directAgenda estiver vazia, tentar extrair dos projetos/bandas do músico
+    if (directAgenda.length === 0 && Array.isArray(rawProjects) && rawProjects.length > 0) {
+      for (const p of rawProjects) {
+        const pShows = Array.isArray(p.agenda) ? p.agenda : (Array.isArray(p.setlists) ? p.setlists : []);
+        for (const show of pShows) {
+          if (!show) continue;
+          let formattedDate = show.date || 'A definir';
+          if (show.time) formattedDate += ` • ${show.time}`;
+          directAgenda.push({
+            id: String(show.id || `${p.id}-${directAgenda.length}`),
+            bandId: p.id,
+            band: p.name,
+            bandName: p.name,
+            name: show.name || show.title || 'Show',
+            title: show.name || show.title || 'Show',
+            date: formattedDate,
+            rawDate: show.date || '',
+            time: show.time || '',
+            local: show.local || show.venue || show.location || 'Local a definir',
+            city: p.city || '',
+            logo: p.imageUri || p.logo || null,
+            status: (show.cacheStatus || 'paid') === 'paid' ? 'Confirmed' : 'Pending',
+            bandObj: p
+          });
+        }
+      }
+    }
+
+    // Deduplicar agenda por nome + data + local
+    const seenEventKeys = new Set();
+    return directAgenda.filter(ev => {
+      if (!ev) return false;
+      const evKey = `${(ev.name || ev.title || '').trim().toLowerCase()}|${(ev.rawDate || ev.date || '').trim()}|${(ev.local || '').trim().toLowerCase()}`;
+      if (seenEventKeys.has(evKey)) return false;
+      seenEventKeys.add(evKey);
+      return true;
+    });
+  })();
 
   const handleOpenLink = async (url) => {
     if (!url) return;
@@ -1158,7 +1385,32 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
       const eventTime = event.time || (event.date && String(event.date).includes(' • ') ? String(event.date).split(' • ')[1] : '');
       const eventTitle = event.name || event.title || event.local || 'Show';
       const eventLocal = event.local || event.venue || '';
-      const eventBand = event.band && event.band !== eventTitle ? event.band : '';
+
+      // Resolver a banda correspondente para abrir ao clicar no logo
+      const bandNameStr = (event.band || event.bandName || '').trim();
+      const targetBand = (Array.isArray(rawProjects) ? rawProjects : []).find(p => 
+        (event.bandId && p.id && String(p.id) === String(event.bandId)) ||
+        (bandNameStr && p.name && p.name.trim().toLowerCase() === bandNameStr.toLowerCase()) ||
+        (bandNameStr && p.bandName && p.bandName.trim().toLowerCase() === bandNameStr.toLowerCase())
+      ) || (Array.isArray(myBands) ? myBands : []).find(mb => 
+        (event.bandId && mb.id && String(mb.id) === String(event.bandId)) ||
+        (bandNameStr && mb.name && mb.name.trim().toLowerCase() === bandNameStr.toLowerCase())
+      ) || (bandNameStr ? { 
+        id: event.bandId, 
+        name: bandNameStr, 
+        bandName: bandNameStr, 
+        imageUri: event.logo || event.imageUri, 
+        logo: event.logo || event.imageUri 
+      } : null);
+
+      const bandLogoUri = event.logo || event.imageUri || targetBand?.imageUri || targetBand?.logo || null;
+      const bandDisplayName = bandNameStr || targetBand?.name || '';
+
+      const handlePressBand = () => {
+        if (targetBand && onOpenBandProfile) {
+          onOpenBandProfile(targetBand);
+        }
+      };
 
       return (
         <View 
@@ -1185,7 +1437,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
             <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '900', lineHeight: 20 }}>{badge.day}</Text>
           </View>
 
-          {/* Dados: Nome do evento no topo, localização e horário abaixo */}
+          {/* Dados: Nome do evento no topo, localização e horário abaixo (apenas local e horário) */}
           <View style={{ flex: 1, paddingVertical: 8, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ flex: 1, marginRight: 8 }}>
               <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold' }} numberOfLines={1}>
@@ -1204,16 +1456,33 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
                     <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>{eventTime}</Text>
                   </View>
                 ) : null}
-                {eventBand ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                    <Ionicons name="mic-outline" size={12} color={colors.textMuted} />
-                    <Text style={{ color: colors.textMuted, fontSize: 11 }}>{eventBand}</Text>
-                  </View>
-                ) : null}
               </View>
             </View>
-            {event.logo ? (
-              <Image source={{ uri: event.logo }} style={{ width: 34, height: 34, borderRadius: 17 }} />
+
+            {/* Logo da banda na lateral direita (Clicável para abrir o perfil da banda) */}
+            {(bandLogoUri || bandDisplayName) ? (
+              <Pressable
+                onPress={handlePressBand}
+                disabled={!targetBand && !onOpenBandProfile}
+                hitSlop={8}
+                style={({ pressed }) => [
+                  {
+                    opacity: pressed ? 0.75 : 1,
+                    transform: [{ scale: pressed ? 0.94 : 1 }]
+                  }
+                ]}
+                accessibilityLabel={`Abrir perfil da banda ${bandDisplayName}`}
+              >
+                {bandLogoUri ? (
+                  <Image source={{ uri: bandLogoUri }} style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.border }} />
+                ) : (
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>
+                      {getBandInitials(bandDisplayName)}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
             ) : null}
           </View>
         </View>
@@ -1455,6 +1724,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
           </View>
 
         {/* ── ABAS DE OPÇÕES IDÊNTICAS AO PROFILE SCREEN COM OS MESMOS ÍCONES ── */}
+          {/* ── ABAS DE OPÇÕES COM DEGRADÊ CINTILANTE ── */}
           <View style={styles.tabBar}>
             {[
               { id: 'bio', type: 'ion', icon: 'person', iconOutline: 'person-outline', label: t('bioTab') || 'Bio' },
@@ -1468,7 +1738,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
                 <Pressable 
                   key={tab.id} 
                   style={[styles.tabItem, isActive && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }]} 
-                  onPress={() => setActiveTab(tab.id)}
+                  onPress={() => handleTabChange(tab.id)}
                   accessibilityLabel={tab.label}
                 >
                   {tab.type === 'mci' ? (
@@ -1490,17 +1760,23 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
           </View>
         </View>
 
-        {/* ── CONTEÚDO DAS ABAS (COM AS MESMAS CLASSES DE ESTILO) ── */}
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        {/* ── CONTEÚDO DAS ABAS COM TRANSIÇÃO SUAVE E GESTO DE ARRASTAR ── */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={{ flex: 1, opacity: tabOpacity, transform: [{ translateX }] }}
         >
-          {activeTab === 'bio' && renderBioTab()}
-          {activeTab === 'skills' && renderSkillsTab()}
-          {activeTab === 'instruments' && renderInstrumentsTab()}
-          {activeTab === 'projects' && renderProjectsTab()}
-          {activeTab === 'agenda' && renderAgendaTab()}
-        </ScrollView>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={tabScrollEnabled}
+          >
+            {activeTab === 'bio' && renderBioTab()}
+            {activeTab === 'skills' && renderSkillsTab()}
+            {activeTab === 'instruments' && renderInstrumentsTab()}
+            {activeTab === 'projects' && renderProjectsTab()}
+            {activeTab === 'agenda' && renderAgendaTab()}
+          </ScrollView>
+        </Animated.View>
 
         {/* ── MODAL SELETOR DE BANDA PARA CONVIDAR O MÚSICO ── */}
         <Modal

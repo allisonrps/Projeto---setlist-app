@@ -144,7 +144,7 @@ export default function SetlistDetailScreen({
         // New setlist
         const defaultBandId = bands.length > 0 ? bands[0].id : null;
         setName('');
-        setType('repertório');
+        setType('show');
         setBandId(defaultBandId);
         setDate('');
         setTime('');
@@ -157,7 +157,7 @@ export default function SetlistDetailScreen({
 
         initialDataRef.current = {
           name: '',
-          type: 'repertório',
+          type: 'show',
           bandId: defaultBandId,
           date: '',
           time: '',
@@ -286,6 +286,10 @@ export default function SetlistDetailScreen({
   };
 
   const handleAddPause = () => {
+    if (selectedSongs.length >= 100) {
+      Alert.alert(t('attention'), t('setlistSongLimitReached') || 'O setlist atingiu o limite máximo de 100 itens.');
+      return;
+    }
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
     const newIdx = selectedSongs.length;
     setSelectedSongs(prev => [...prev, { id: -1, customNotes: '', customDuration: '10 min' }]);
@@ -295,6 +299,10 @@ export default function SetlistDetailScreen({
   };
 
   const handleAddNote = () => {
+    if (selectedSongs.length >= 100) {
+      Alert.alert(t('attention'), t('setlistSongLimitReached') || 'O setlist atingiu o limite máximo de 100 itens.');
+      return;
+    }
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
     const newIdx = selectedSongs.length;
     setSelectedSongs(prev => [...prev, { id: -2, customNotes: '', customDuration: '' }]);
@@ -378,7 +386,21 @@ export default function SetlistDetailScreen({
   const handleAddSelectedPickerSongs = () => {
     if (selectedPickerSongIds.size === 0) return;
     if (typeof Vibration !== 'undefined') Vibration.vibrate(15);
-    const newItems = Array.from(selectedPickerSongIds).map(id => ({
+    const availableSlots = 100 - selectedSongs.length;
+    if (availableSlots <= 0) {
+      Alert.alert(t('attention'), t('setlistSongLimitReached') || 'O setlist atingiu o limite máximo de 100 músicas.');
+      return;
+    }
+    const selectedArray = Array.from(selectedPickerSongIds);
+    let toAdd = selectedArray;
+    if (selectedArray.length > availableSlots) {
+      Alert.alert(
+        t('attention'),
+        (t('setlistSongLimitTrimmed') || 'Foram adicionadas apenas {n} músicas devido ao limite máximo de 100.').replace('{n}', availableSlots)
+      );
+      toAdd = selectedArray.slice(0, availableSlots);
+    }
+    const newItems = toAdd.map(id => ({
       id,
       customNotes: '',
       customDuration: ''

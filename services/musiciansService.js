@@ -314,8 +314,20 @@ export const musiciansService = {
     const cleanUser = String(rawUsername || '').replace(/^@+/, '').trim().toLowerCase();
     const cleanName = String(fallbackName || '').trim().toLowerCase();
 
-    // 1. If searching for a specific registered user (not 'me' / 'você'), query Cloud API first
-    if (cleanUser && cleanUser !== 'me' && cleanUser !== 'voce' && cleanUser !== 'você') {
+    // Identificar se a busca é para o próprio usuário atualmente logado
+    let currentLoggedUser = '';
+    try {
+      const savedUserStr = await AsyncStorage.getItem('user_info');
+      if (savedUserStr) {
+        const uObj = JSON.parse(savedUserStr);
+        currentLoggedUser = String(uObj.username || '').replace(/^@+/, '').trim().toLowerCase();
+      }
+    } catch (e) {}
+
+    const isCurrentMe = cleanUser === 'me' || cleanUser === 'voce' || cleanUser === 'você' || (cleanUser && currentLoggedUser && cleanUser === currentLoggedUser);
+
+    // 1. Se for outro usuário registrado (não o próprio usuário logado), consultar Cloud API
+    if (cleanUser && !isCurrentMe) {
       try {
         const cloudUser = await api.getUserProfile(cleanUser);
         if (cloudUser) {
@@ -357,7 +369,18 @@ export const musiciansService = {
             }
           }
 
-          const cloudBands = (cloudUser.bands || []).map(b => {
+          // Deduplicar bandas da nuvem por nome
+          const uniqueCloudBandsRaw = [];
+          const seenCloudNames = new Set();
+          for (const b of (cloudUser.bands || [])) {
+            const rawName = (b.name || b.Name || '').trim();
+            const normName = rawName.toLowerCase();
+            if (!normName || seenCloudNames.has(normName)) continue;
+            seenCloudNames.add(normName);
+            uniqueCloudBandsRaw.push(b);
+          }
+
+          const cloudBands = uniqueCloudBandsRaw.map(b => {
             let parsedGenres = [];
             if (b.genresJson) {
               try {
@@ -407,6 +430,38 @@ export const musiciansService = {
             };
           });
 
+          // Extrair agenda de shows de todas as bandas do usuário na nuvem
+          const cloudAgenda = [];
+          const seenCloudEvents = new Set();
+          for (const b of cloudBands) {
+            const snapSetlists = Array.isArray(b.agenda) ? b.agenda : [];
+            for (const sl of snapSetlists) {
+              if (!sl) continue;
+              const evKey = `${(sl.name || sl.title || '').trim().toLowerCase()}|${(sl.date || '').trim()}|${(sl.local || sl.venue || '').trim().toLowerCase()}`;
+              if (seenCloudEvents.has(evKey)) continue;
+              seenCloudEvents.add(evKey);
+
+              let formattedDate = sl.date || 'A definir';
+              if (sl.time) formattedDate += ` • ${sl.time}`;
+              cloudAgenda.push({
+                id: String(sl.id || `${b.id}-${cloudAgenda.length}`),
+                bandId: b.id,
+                band: b.name,
+                bandName: b.name,
+                name: sl.name || sl.title || 'Show',
+                title: sl.name || sl.title || 'Show',
+                date: formattedDate,
+                rawDate: sl.date || '',
+                time: sl.time || '',
+                local: sl.local || sl.venue || sl.location || 'Local a definir',
+                city: b.city || '',
+                logo: b.imageUri || b.logo || null,
+                status: (sl.cacheStatus || 'paid') === 'paid' ? 'Confirmed' : 'Pending',
+                bandObj: b
+              });
+            }
+          }
+
           return {
             id: 'mus-cloud-' + (cloudUser.id || cloudUser.Id),
             cloudId: cloudUser.id || cloudUser.Id,
@@ -439,7 +494,7 @@ export const musiciansService = {
             facebook: cloudUser.facebook || '',
             spotify: cloudUser.spotify || '',
             tiktok: cloudUser.tikTok || cloudUser.tiktok || '',
-            agenda: [],
+            agenda: cloudAgenda,
             gear: [],
             bands: cloudBands,
             projects: cloudBands
@@ -466,7 +521,16 @@ export const musiciansService = {
       const savedGearStr = await AsyncStorage.getItem('user_gear');
       const parsedGear = savedGearStr ? JSON.parse(savedGearStr) : [];
 
-      const localBands = await bandService.getAll();
+      const allLocalBands = await bandService.getAll();
+      const localBands = [];
+      const seenLocalNames = new Set();
+      for (const b of (allLocalBands || [])) {
+        const normName = (b.name || '').trim().toLowerCase();
+        if (!normName || seenLocalNames.has(normName)) continue;
+        seenLocalNames.add(normName);
+        localBands.push(b);
+      }
+
       const myBandsFormatted = await Promise.all((localBands || []).map(async (b) => {
         let role = 'Músico';
         let memberType = 'Proprietário';
@@ -529,33 +593,49 @@ export const musiciansService = {
       try {
         const allSetlists = await setlistService.getAll();
         const myBandIds = new Set((localBands || []).map(b => b.id));
+        const seenEvents = new Set();
         myBandAgenda = (allSetlists || [])
           .filter(s => s && (myBandIds.has(s.myBandId) || !s.myBandId) && ((s.date && s.date.trim()) || (s.local && s.local.trim())))
+          .filter(s => {
+            const evKey = `${(s.name || '').trim().toLowerCase()}|${(s.date || '').trim()}|${(s.local || '').trim().toLowerCase()}`;
+            if (seenEvents.has(evKey)) return false;
+            seenEvents.add(evKey);
+            return true;
+          })
           .map(s => {
             const bandObj = (localBands || []).find(b => b.id === s.myBandId);
             let formattedDate = s.date || 'A definir';
             if (s.time) formattedDate += ` • ${s.time}`;
             return {
               id: String(s.id),
+              bandId: s.myBandId,
               band: bandObj ? bandObj.name : (s.bandName || s.name || 'Banda'),
+              bandName: bandObj ? bandObj.name : (s.bandName || s.name || 'Banda'),
               name: s.name,
               title: s.name,
               date: formattedDate,
+              rawDate: s.date || '',
               time: s.time || '',
               local: s.local || s.name || 'Local a definir',
               city: s.city || bandObj?.city || '',
               logo: bandObj?.imageUri || s.bandImageUri || null,
-              status: (s.cacheStatus || 'paid') === 'paid' ? 'Confirmed' : 'Pending'
+              status: (s.cacheStatus || 'paid') === 'paid' ? 'Confirmed' : 'Pending',
+              bandObj: bandObj || null
             };
           });
       } catch (e) {
         console.log('Error loading band shows for musician agenda:', e);
       }
 
-      if (cached || savedUserStr) {
+      if (cached || savedUserStr || isCurrentMe) {
         const parsed = cached ? JSON.parse(cached) : parsedUserObj;
         const parsedUser = String(parsed.username || parsedUserObj.username || '').replace(/^@+/, '').toLowerCase();
-        if ((cleanUser && parsedUser === cleanUser) || cleanUser === 'me' || cleanUser === 'voce' || cleanUser === 'você') {
+        const parsedName = String(parsed.displayName || parsed.name || parsedUserObj.displayName || parsedUserObj.name || '').toLowerCase();
+        const isMatchedUser = isCurrentMe || 
+          (cleanUser && parsedUser === cleanUser) || 
+          (cleanName && parsedName === cleanName) || 
+          cleanUser === 'me' || cleanUser === 'voce' || cleanUser === 'você';
+        if (isMatchedUser) {
           let userSkills = parsed.skills || parsed.instruments || [];
           if (typeof userSkills === 'string') {
             try { userSkills = JSON.parse(userSkills); } catch (e) { userSkills = []; }

@@ -479,7 +479,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const [showEventDetails, setShowEventDetails] = useState(false);
 
   const [name, setName] = useState('');
-  const [type, setType] = useState('repertório');
+  const [type, setType] = useState('show');
   const [bandId, setBandId] = useState(null);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -553,11 +553,19 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   };
 
   const handleAddPause = () => {
+    if (selectedSongs.length >= 100) {
+      Alert.alert(t('attention'), t('setlistSongLimitReached'));
+      return;
+    }
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
     setSelectedSongs([...selectedSongs, { id: -1, customNotes: '', customDuration: '5 min' }]);
   };
 
   const handleAddNote = () => {
+    if (selectedSongs.length >= 100) {
+      Alert.alert(t('attention'), t('setlistSongLimitReached'));
+      return;
+    }
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
     setSelectedSongs([...selectedSongs, { id: -2, customNotes: '', customDuration: '' }]);
   };
@@ -617,7 +625,21 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const handleAddSelectedPickerSongs = () => {
     if (selectedPickerSongIds.size === 0) return;
     if (typeof Vibration !== 'undefined') Vibration.vibrate(15);
-    const newItems = Array.from(selectedPickerSongIds).map(id => ({
+    const availableSlots = 100 - selectedSongs.length;
+    if (availableSlots <= 0) {
+      Alert.alert(t('attention'), t('setlistSongLimitReached') || 'O setlist atingiu o limite máximo de 100 músicas.');
+      return;
+    }
+    const selectedArray = Array.from(selectedPickerSongIds);
+    let toAdd = selectedArray;
+    if (selectedArray.length > availableSlots) {
+      Alert.alert(
+        t('attention'),
+        (t('setlistSongLimitTrimmed') || 'Foram adicionadas apenas {n} músicas devido ao limite máximo de 100.').replace('{n}', availableSlots)
+      );
+      toAdd = selectedArray.slice(0, availableSlots);
+    }
+    const newItems = toAdd.map(id => ({
       id,
       customNotes: '',
       customDuration: ''

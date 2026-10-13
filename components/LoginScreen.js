@@ -11,8 +11,12 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
-  Linking
+  Linking,
+  Animated,
+  Easing,
+  Image
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -23,9 +27,67 @@ import * as Google from 'expo-auth-session/providers/google';
 
 WebBrowser.maybeCompleteAuthSession();
 
+function AnimatedGradientSignUp({ text, onPress }) {
+  const anim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 2600,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        }),
+        Animated.timing(anim, {
+          toValue: 0,
+          duration: 2600,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [anim]);
+
+  const textColor = anim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#38bdf8'],
+  });
+
+  const borderAnim = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['rgba(56, 189, 248, 0.4)', 'rgba(244, 114, 182, 0.55)', 'rgba(56, 189, 248, 0.4)'],
+  });
+
+  const bgAnim = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['rgba(56, 189, 248, 0.08)', 'rgba(244, 114, 182, 0.12)', 'rgba(56, 189, 248, 0.08)'],
+  });
+
+  return (
+    <Pressable onPress={onPress} hitSlop={6} style={styles.animatedSignUpPill}>
+      <Animated.View style={[
+        styles.animatedSignUpInner,
+        {
+          borderColor: borderAnim,
+          backgroundColor: bgAnim,
+        }
+      ]}>
+        <Ionicons name="sparkles" size={13} color="#f472b6" style={{ marginRight: 6 }} />
+        <Animated.Text style={[styles.animatedSignUpText, { color: textColor }]}>
+          {text}
+        </Animated.Text>
+        <Ionicons name="arrow-forward" size={13} color="#38bdf8" style={{ marginLeft: 6 }} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
 export default function LoginScreen({ onLogin }) {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isDark = colors.isDark;
   
   const [isRegistering, setIsRegistering] = useState(false);
@@ -351,128 +413,152 @@ export default function LoginScreen({ onLogin }) {
   // ── TELA DE CONFIRMAÇÃO DE E-MAIL ──
   if (waitingConfirmation) {
     return (
-      <ScrollView 
-        style={[styles.container, { backgroundColor: colors.background }]} 
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.header}>
-          <View style={[styles.iconBadge, { backgroundColor: colors.primary + '18' }]}>
-            <Ionicons name="mail-unread-outline" size={42} color={colors.primary} />
-          </View>
-          <Text style={[styles.title, { color: colors.text }]}>Confirme seu E-mail</Text>
-          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Digite o código de verificação de 6 dígitos enviado por e-mail para ativar sua conta na rede.
-          </Text>
-        </View>
-
-        <View style={styles.formContainer}>
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              Seu E-mail Cadastrado
-            </Text>
-            <View style={[styles.inputWrapper, { 
-              backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
-              borderColor: colors.border
-            }]}>
-              <Ionicons name="mail-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
-              <TextInput
-                maxLength={255}
-                style={[styles.input, { color: colors.text }]}
-                placeholder="seu@email.com"
-                placeholderTextColor={colors.textMuted}
-                value={pendingEmail}
-                onChangeText={setPendingEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+      <View style={{ flex: 1 }}>
+        <LinearGradient 
+          colors={isDark ? ['#070a14', '#0d1629', '#080c18'] : ['#f8fafc', '#eef2f6', '#f1f5f9']} 
+          style={StyleSheet.absoluteFillObject} 
+        />
+        <ScrollView 
+          style={styles.container} 
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.brandHeader}>
+            <View style={styles.logoOuterGlow}>
+              <Ionicons name="mail-unread-outline" size={40} color={colors.primary} />
             </View>
+            <Text style={[styles.title, { color: colors.text }]}>{t('confirmEmailTitle') || 'Confirme seu E-mail'}</Text>
+            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+              {t('confirmEmailSubtitle') || 'Digite o código de verificação de 6 dígitos enviado por e-mail para ativar sua conta na rede.'}
+            </Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.text, textAlign: 'center' }]}>
-              Código de Confirmação (6 dígitos)
-            </Text>
-            <View style={[styles.inputWrapper, { 
-              backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
-              borderColor: colors.primary,
-              justifyContent: 'center',
-              height: 56
-            }]}>
-              <TextInput
-                maxLength={6}
-                style={[styles.input, { 
-                  color: colors.text, 
-                  textAlign: 'center', 
-                  fontSize: 24, 
-                  fontWeight: '800', 
-                  letterSpacing: 8 
-                }]}
-                placeholder="000000"
-                placeholderTextColor={colors.textMuted}
-                value={confirmationCode}
-                onChangeText={setConfirmationCode}
-                keyboardType="number-pad"
-                autoFocus
-              />
+          <View style={[styles.formContainer, { 
+            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.90)',
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
+          }]}>
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {t('registeredEmail') || 'Seu E-mail Cadastrado'}
+              </Text>
+              <View style={[styles.inputWrapper, { 
+                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
+                borderColor: colors.border
+              }]}>
+                <Ionicons name="mail-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  maxLength={255}
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder={t('emailPlaceholder') || 'seu@email.com'}
+                  placeholderTextColor={colors.textMuted}
+                  value={pendingEmail}
+                  onChangeText={setPendingEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
             </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text, textAlign: 'center' }]}>
+                {t('securityCodePrompt') || 'Código de Confirmação (6 dígitos)'}
+              </Text>
+              <View style={[styles.inputWrapper, { 
+                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
+                borderColor: colors.primary,
+                justifyContent: 'center',
+                height: 56
+              }]}>
+                <TextInput
+                  maxLength={6}
+                  style={[styles.input, { 
+                    color: colors.text, 
+                    textAlign: 'center', 
+                    fontSize: 24, 
+                    fontWeight: '800', 
+                    letterSpacing: 8 
+                  }]}
+                  placeholder="000000"
+                  placeholderTextColor={colors.textMuted}
+                  value={confirmationCode}
+                  onChangeText={setConfirmationCode}
+                  keyboardType="number-pad"
+                  autoFocus
+                />
+              </View>
+            </View>
+
+            <Pressable 
+              style={({ pressed }) => [
+                styles.loginButton, 
+                { backgroundColor: colors.primary, opacity: pressed || loading ? 0.85 : 1, marginTop: 8 }
+              ]}
+              onPress={handleConfirmCode}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginButtonText}>{t('confirmAndActivate') || 'Confirmar e Ativar Conta'}</Text>
+              )}
+            </Pressable>
+
+            <Pressable 
+              style={styles.toggleRow}
+              onPress={handleResendCode}
+              disabled={loading}
+            >
+              <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>
+                {t('resendCode') || 'Reenviar código'}
+              </Text>
+            </Pressable>
+
+            <Pressable 
+              style={[styles.toggleRow, { marginTop: 4 }]}
+              onPress={() => setWaitingConfirmation(false)}
+            >
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+                {t('backToLogin') || 'Voltar para o Login'}
+              </Text>
+            </Pressable>
           </View>
-
-          <Pressable 
-            style={({ pressed }) => [
-              styles.loginButton, 
-              { backgroundColor: colors.primary, opacity: pressed || loading ? 0.85 : 1, marginTop: 8 }
-            ]}
-            onPress={handleConfirmCode}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginButtonText}>Confirmar e Ativar Conta</Text>
-            )}
-          </Pressable>
-
-          <Pressable 
-            style={styles.toggleRow}
-            onPress={handleResendCode}
-            disabled={loading}
-          >
-            <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>
-              Reenviar código
-            </Text>
-          </Pressable>
-
-          <Pressable 
-            style={[styles.toggleRow, { marginTop: 4 }]}
-            onPress={() => setWaitingConfirmation(false)}
-          >
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-              Voltar para o Login
-            </Text>
-          </Pressable>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     );
   }
 
   // ── TELA PRINCIPAL (LOGIN OU CADASTRO) ──
   return (
-    <>
+    <View style={{ flex: 1 }}>
+      {/* Fundo Gradiente Moderno */}
+      <LinearGradient 
+        colors={isDark ? ['#070a14', '#0d1629', '#080c18'] : ['#f8fafc', '#eef2f6', '#f1f5f9']} 
+        style={StyleSheet.absoluteFillObject} 
+      />
+
       <ScrollView 
-        style={[styles.container, { backgroundColor: colors.background }]} 
+        style={styles.container} 
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <View style={[styles.iconBadge, { backgroundColor: colors.primary + '15' }]}>
-            <Ionicons name="globe-outline" size={42} color={colors.primary} />
+        {/* Cabeçalho Moderno com Logo do BandLink e Subtítulo Network / Rede */}
+        <View style={styles.brandHeader}>
+          <View style={styles.logoOuterGlow}>
+            <Image 
+              source={require('../assets/logo.png')} 
+              style={styles.brandLogo} 
+              resizeMode="contain" 
+            />
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {isRegistering ? (t('createAccount') || 'Criar Conta') : (t('network') || 'Rede')}
-          </Text>
+          <Text style={[styles.brandTitleText, { color: colors.text }]}>BANDLINK</Text>
+          <View style={[styles.networkBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '45' }]}>
+            <Ionicons name="planet-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={[styles.networkBadgeText, { color: colors.primary }]}>
+              {language === 'en' ? 'NETWORK' : 'REDE'}
+            </Text>
+          </View>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             {isRegistering 
               ? (t('createAccountSubtitle') || 'Crie seu perfil e conecte-se com músicos e bandas da sua região.')
@@ -480,7 +566,10 @@ export default function LoginScreen({ onLogin }) {
           </Text>
         </View>
 
-        <View style={styles.formContainer}>
+        <View style={[styles.formContainer, { 
+          backgroundColor: isDark ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.90)',
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
+        }]}>
           {isRegistering && (
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.text }]}>{t('usernameLabel') || 'Nome de Usuário'}</Text>
@@ -527,7 +616,7 @@ export default function LoginScreen({ onLogin }) {
           {/* Data de Nascimento no Cadastro */}
           {isRegistering && (
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>Data de Nascimento (opcional)</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t('birthDateLabel') || 'Data de Nascimento (opcional)'}</Text>
               <View style={[styles.inputWrapper, { 
                 backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                 borderColor: colors.border
@@ -579,7 +668,7 @@ export default function LoginScreen({ onLogin }) {
               borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'
             }]}>
               <Text style={[styles.passwordRulesTitle, { color: colors.textMuted }]}>
-                Requisitos da Senha:
+                {t('passwordRequirements') || 'Requisitos da Senha:'}
               </Text>
               <View style={styles.rulesGrid}>
                 <View style={styles.ruleItem}>
@@ -589,7 +678,7 @@ export default function LoginScreen({ onLogin }) {
                     color={hasMinLen ? "#10b981" : colors.textMuted} 
                   />
                   <Text style={[styles.ruleText, { color: hasMinLen ? "#10b981" : colors.textMuted }]}>
-                    Mínimo 8 caracteres
+                    {t('minEightChars') || 'Mínimo 8 caracteres'}
                   </Text>
                 </View>
                 <View style={styles.ruleItem}>
@@ -599,7 +688,7 @@ export default function LoginScreen({ onLogin }) {
                     color={hasUpper ? "#10b981" : colors.textMuted} 
                   />
                   <Text style={[styles.ruleText, { color: hasUpper ? "#10b981" : colors.textMuted }]}>
-                    1 letra maiúscula
+                    {t('oneUpper') || '1 letra maiúscula'}
                   </Text>
                 </View>
                 <View style={styles.ruleItem}>
@@ -609,7 +698,7 @@ export default function LoginScreen({ onLogin }) {
                     color={hasDigit ? "#10b981" : colors.textMuted} 
                   />
                   <Text style={[styles.ruleText, { color: hasDigit ? "#10b981" : colors.textMuted }]}>
-                    1 número
+                    {t('oneNumber') || '1 número'}
                   </Text>
                 </View>
                 <View style={styles.ruleItem}>
@@ -619,7 +708,7 @@ export default function LoginScreen({ onLogin }) {
                     color={hasSpecial ? "#10b981" : colors.textMuted} 
                   />
                   <Text style={[styles.ruleText, { color: hasSpecial ? "#10b981" : colors.textMuted }]}>
-                    1 caractere especial (!@#$...)
+                    {t('oneSpecial') || '1 caractere especial (!@#$...)'}
                   </Text>
                 </View>
               </View>
@@ -629,7 +718,7 @@ export default function LoginScreen({ onLogin }) {
           {/* Campo de Confirmar Senha no Cadastro */}
           {isRegistering && (
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>Confirmar Senha</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t('confirmPasswordLabel') || 'Confirmar Senha'}</Text>
               <View style={[styles.inputWrapper, { 
                 backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                 borderColor: confirmPassword && confirmPassword !== password ? '#ef4444' : colors.border
@@ -638,7 +727,7 @@ export default function LoginScreen({ onLogin }) {
                 <TextInput
                   maxLength={128}
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Repita sua senha"
+                  placeholder={t('repeatPasswordPlaceholder') || 'Repita sua senha'}
                   placeholderTextColor={colors.textMuted}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -654,15 +743,16 @@ export default function LoginScreen({ onLogin }) {
               </View>
               {confirmPassword.length > 0 && confirmPassword !== password && (
                 <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4, marginLeft: 2 }}>
-                  As senhas não coincidem.
+                  {t('passwordsDontMatch') || 'As senhas não coincidem.'}
                 </Text>
               )}
             </View>
           )}
 
-          {/* Linha de Lembrar Dados & Esqueci Minha Senha */}
+          {/* Em modo de Login: 1) Lembrar login, 2) Esqueci minha senha abaixo, 3) Signup abaixo com degrade */}
           {!isRegistering && (
-            <View style={styles.passwordRowExtras}>
+            <View style={styles.authLinksBlock}>
+              {/* 1. Lembrar login */}
               <Pressable 
                 style={styles.rememberRow} 
                 onPress={() => setRememberMe(!rememberMe)}
@@ -678,11 +768,13 @@ export default function LoginScreen({ onLogin }) {
                   {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
                 </View>
                 <Text style={[styles.rememberText, { color: colors.text }]}>
-                  {t('rememberCredentials') || 'Lembrar dados'}
+                  {t('rememberCredentials') || 'Lembrar dados de acesso'}
                 </Text>
               </Pressable>
 
+              {/* 2. Esqueci minha senha (abaixo do remember login) */}
               <Pressable 
+                style={styles.forgotPasswordAction}
                 onPress={() => {
                   const clean = email.trim().toLowerCase();
                   if (clean) setForgotEmail(clean);
@@ -691,10 +783,26 @@ export default function LoginScreen({ onLogin }) {
                 }}
                 hitSlop={8}
               >
+                <Ionicons name="key-outline" size={14} color={colors.primary} style={{ marginRight: 6 }} />
                 <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                  Esqueci minha senha
+                  {t('forgotPassword') || 'Esqueci minha senha'}
                 </Text>
               </Pressable>
+
+              {/* 3. Signup (abaixo do esqueci a senha) com efeito de degrade animado */}
+              <View style={styles.signupActionWrapper}>
+                <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+                  {t('dontHaveAccount') || 'Não possui uma conta? '}
+                </Text>
+                <AnimatedGradientSignUp 
+                  text={t('signUp') || 'Cadastre-se'} 
+                  onPress={() => {
+                    setIsRegistering(true);
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                />
+              </View>
             </View>
           )}
 
@@ -705,7 +813,7 @@ export default function LoginScreen({ onLogin }) {
               { 
                 backgroundColor: colors.primary, 
                 opacity: pressed || loading ? 0.85 : 1,
-                marginTop: isRegistering ? 12 : 6
+                marginTop: isRegistering ? 14 : 10
               }
             ]}
             onPress={handleSubmit}
@@ -723,7 +831,7 @@ export default function LoginScreen({ onLogin }) {
           {/* Divisor "OU" */}
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#e2e8f0' }]} />
-            <Text style={[styles.dividerText, { color: colors.textMuted }]}>OU</Text>
+            <Text style={[styles.dividerText, { color: colors.textMuted }]}>{language === 'en' ? 'OR' : language === 'es' ? 'O' : 'OU'}</Text>
             <View style={[styles.dividerLine, { backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#e2e8f0' }]} />
           </View>
 
@@ -746,7 +854,7 @@ export default function LoginScreen({ onLogin }) {
               <>
                 <Ionicons name="logo-google" size={19} color="#ea4335" style={{ marginRight: 10 }} />
                 <Text style={[styles.googleButtonText, { color: colors.text }]}>
-                  Continuar com o Google
+                  {t('continueWithGoogle') || 'Continuar com o Google'}
                 </Text>
               </>
             )}
@@ -755,7 +863,7 @@ export default function LoginScreen({ onLogin }) {
           {/* Link para Ativar Conta para quem já recebeu o código */}
           {!isRegistering && (
             <Pressable 
-              style={{ alignSelf: 'center', marginTop: 16, paddingVertical: 4 }}
+              style={{ alignSelf: 'center', marginTop: 14, paddingVertical: 4 }}
               onPress={() => {
                 const clean = email.trim().toLowerCase();
                 if (clean) setPendingEmail(clean);
@@ -764,44 +872,46 @@ export default function LoginScreen({ onLogin }) {
               hitSlop={8}
             >
               <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                Já recebeu um código de confirmação? Ativar conta
+                {t('alreadyHaveCode') || 'Já recebeu um código de confirmação? Ativar conta'}
               </Text>
             </Pressable>
           )}
 
-          {/* Alternar entre Login e Cadastro */}
-          <Pressable
-            style={styles.toggleRow}
-            onPress={() => {
-              setIsRegistering(!isRegistering);
-              setPassword('');
-              setConfirmPassword('');
-            }}
-          >
-            <Text style={{ color: colors.textMuted, fontSize: 14 }}>
-              {isRegistering ? (t('alreadyHaveAccount') || 'Já possui uma conta? ') : (t('dontHaveAccount') || 'Não possui uma conta? ')}
-              <Text style={{ color: colors.primary, fontWeight: '700' }}>
-                {isRegistering ? (t('signIn') || 'Entrar') : (t('signUp') || 'Cadastre-se')}
+          {/* Alternar no modo Cadastro de volta para Login */}
+          {isRegistering && (
+            <Pressable
+              style={styles.toggleRow}
+              onPress={() => {
+                setIsRegistering(false);
+                setPassword('');
+                setConfirmPassword('');
+              }}
+            >
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                {t('alreadyHaveAccount') || 'Já possui uma conta? '}
+                <Text style={{ color: colors.primary, fontWeight: '700' }}>
+                  {t('signIn') || 'Entrar'}
+                </Text>
               </Text>
-            </Text>
-          </Pressable>
+            </Pressable>
+          )}
 
           {/* Links para Termos de Serviço e Política de Privacidade */}
-          <View style={{ marginTop: 22, marginBottom: 8, paddingHorizontal: 16, alignItems: 'center' }}>
+          <View style={{ marginTop: 20, marginBottom: 4, paddingHorizontal: 12, alignItems: 'center' }}>
             <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', lineHeight: 16 }}>
-              Ao continuar, você concorda com nossos{' '}
+              {(t('termsAndPrivacyIntro') || 'Ao continuar, você concorda com nossos')}{' '}
               <Text 
                 style={{ color: colors.primary, fontWeight: '600', textDecorationLine: 'underline' }}
                 onPress={() => Linking.openURL('https://bandlink.pro/terms.html')}
               >
-                Termos de Serviço
+                {t('termsOfService') || 'Termos de Serviço'}
               </Text>
-              {' '}e{' '}
+              {` ${t('andText') || 'e'} `}
               <Text 
                 style={{ color: colors.primary, fontWeight: '600', textDecorationLine: 'underline' }}
                 onPress={() => Linking.openURL('https://bandlink.pro/privacy.html')}
               >
-                Política de Privacidade
+                {t('privacyPolicy') || 'Política de Privacidade'}
               </Text>.
             </Text>
           </View>
@@ -825,7 +935,7 @@ export default function LoginScreen({ onLogin }) {
             
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>
-                {forgotStep === 'request' ? 'Recuperar Senha' : 'Criar Nova Senha'}
+                {forgotStep === 'request' ? (t('forgotPasswordTitle') || 'Recuperar Senha') : (t('redefinePassword') || 'Criar Nova Senha')}
               </Text>
               <Pressable onPress={() => setShowForgotModal(false)} hitSlop={10}>
                 <Ionicons name="close" size={24} color={colors.text} />
@@ -840,12 +950,12 @@ export default function LoginScreen({ onLogin }) {
                       <Ionicons name="key-outline" size={38} color={colors.primary} />
                     </View>
                     <Text style={[styles.subtitle, { color: colors.textMuted, marginTop: 8 }]}>
-                      Informe o e-mail cadastrado na sua conta. Enviaremos um código de segurança de 6 dígitos para redefinir sua senha.
+                      {t('forgotPasswordSubtitle') || 'Informe o e-mail cadastrado na sua conta. Enviaremos um código de segurança de 6 dígitos para redefinir sua senha.'}
                     </Text>
                   </View>
 
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { color: colors.text }]}>E-mail Cadastrado</Text>
+                    <Text style={[styles.label, { color: colors.text }]}>{t('registeredEmail') || 'E-mail Cadastrado'}</Text>
                     <View style={[styles.inputWrapper, { 
                       backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                       borderColor: colors.border
@@ -854,7 +964,7 @@ export default function LoginScreen({ onLogin }) {
                       <TextInput
                         maxLength={255}
                         style={[styles.input, { color: colors.text }]}
-                        placeholder="seu@email.com"
+                        placeholder={t('emailPlaceholder') || 'seu@email.com'}
                         placeholderTextColor={colors.textMuted}
                         value={forgotEmail}
                         onChangeText={setForgotEmail}
@@ -876,7 +986,7 @@ export default function LoginScreen({ onLogin }) {
                     {forgotLoading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.loginButtonText}>Enviar Código de Segurança</Text>
+                      <Text style={styles.loginButtonText}>{t('sendResetCode') || 'Enviar Código de Segurança'}</Text>
                     )}
                   </Pressable>
 
@@ -885,7 +995,7 @@ export default function LoginScreen({ onLogin }) {
                     onPress={() => setForgotStep('reset')}
                   >
                     <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                      Já possui um código de 6 dígitos? Clique aqui
+                      {t('alreadyHaveResetCode') || 'Já possui um código de 6 dígitos? Clique aqui'}
                     </Text>
                   </Pressable>
                 </>
@@ -896,12 +1006,12 @@ export default function LoginScreen({ onLogin }) {
                       <Ionicons name="shield-checkmark-outline" size={38} color="#10b981" />
                     </View>
                     <Text style={[styles.subtitle, { color: colors.textMuted, marginTop: 6 }]}>
-                      Digite o código de 6 dígitos enviado para {forgotEmail || 'seu e-mail'} e defina sua nova senha.
+                      {t('enterCodeToReset') || `Digite o código de 6 dígitos enviado para ${forgotEmail || 'seu e-mail'} e defina sua nova senha.`}
                     </Text>
                   </View>
 
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { color: colors.text }]}>E-mail</Text>
+                    <Text style={[styles.label, { color: colors.text }]}>{t('emailLabel') || 'E-mail'}</Text>
                     <View style={[styles.inputWrapper, { 
                       backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                       borderColor: colors.border
@@ -910,7 +1020,7 @@ export default function LoginScreen({ onLogin }) {
                       <TextInput
                         maxLength={255}
                         style={[styles.input, { color: colors.text }]}
-                        placeholder="seu@email.com"
+                        placeholder={t('emailPlaceholder') || 'seu@email.com'}
                         placeholderTextColor={colors.textMuted}
                         value={forgotEmail}
                         onChangeText={setForgotEmail}
@@ -922,7 +1032,7 @@ export default function LoginScreen({ onLogin }) {
 
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { color: colors.text, textAlign: 'center' }]}>
-                      Código de 6 Dígitos
+                      {t('securityCodePrompt') || 'Código de 6 Dígitos'}
                     </Text>
                     <View style={[styles.inputWrapper, { 
                       backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
@@ -950,7 +1060,7 @@ export default function LoginScreen({ onLogin }) {
                   </View>
 
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { color: colors.text }]}>Nova Senha</Text>
+                    <Text style={[styles.label, { color: colors.text }]}>{t('newPassword') || 'Nova Senha'}</Text>
                     <View style={[styles.inputWrapper, { 
                       backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                       borderColor: colors.border
@@ -959,7 +1069,7 @@ export default function LoginScreen({ onLogin }) {
                       <TextInput
                         maxLength={128}
                         style={[styles.input, { color: colors.text }]}
-                        placeholder="Nova senha segura"
+                        placeholder={t('newPasswordPlaceholder') || 'Nova senha segura'}
                         placeholderTextColor={colors.textMuted}
                         value={newPassword}
                         onChangeText={setNewPassword}
@@ -981,7 +1091,7 @@ export default function LoginScreen({ onLogin }) {
                     borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'
                   }]}>
                     <Text style={[styles.passwordRulesTitle, { color: colors.textMuted }]}>
-                      Requisitos da Nova Senha:
+                      {t('passwordRequirements') || 'Requisitos da Nova Senha:'}
                     </Text>
                     <View style={styles.rulesGrid}>
                       <View style={styles.ruleItem}>
@@ -991,7 +1101,7 @@ export default function LoginScreen({ onLogin }) {
                           color={hasResetMinLen ? "#10b981" : colors.textMuted} 
                         />
                         <Text style={[styles.ruleText, { color: hasResetMinLen ? "#10b981" : colors.textMuted }]}>
-                          Mínimo 8 caracteres
+                          {t('minEightChars') || 'Mínimo 8 caracteres'}
                         </Text>
                       </View>
                       <View style={styles.ruleItem}>
@@ -1001,7 +1111,7 @@ export default function LoginScreen({ onLogin }) {
                           color={hasResetUpper ? "#10b981" : colors.textMuted} 
                         />
                         <Text style={[styles.ruleText, { color: hasResetUpper ? "#10b981" : colors.textMuted }]}>
-                          1 letra maiúscula
+                          {t('oneUpper') || '1 letra maiúscula'}
                         </Text>
                       </View>
                       <View style={styles.ruleItem}>
@@ -1011,7 +1121,7 @@ export default function LoginScreen({ onLogin }) {
                           color={hasResetDigit ? "#10b981" : colors.textMuted} 
                         />
                         <Text style={[styles.ruleText, { color: hasResetDigit ? "#10b981" : colors.textMuted }]}>
-                          1 número
+                          {t('oneNumber') || '1 número'}
                         </Text>
                       </View>
                       <View style={styles.ruleItem}>
@@ -1021,14 +1131,14 @@ export default function LoginScreen({ onLogin }) {
                           color={hasResetSpecial ? "#10b981" : colors.textMuted} 
                         />
                         <Text style={[styles.ruleText, { color: hasResetSpecial ? "#10b981" : colors.textMuted }]}>
-                          1 caractere especial (!@#$...)
+                          {t('oneSpecial') || '1 caractere especial (!@#$...)'}
                         </Text>
                       </View>
                     </View>
                   </View>
 
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { color: colors.text }]}>Confirmar Nova Senha</Text>
+                    <Text style={[styles.label, { color: colors.text }]}>{t('confirmNewPassword') || 'Confirmar Nova Senha'}</Text>
                     <View style={[styles.inputWrapper, { 
                       backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                       borderColor: confirmNewPassword && confirmNewPassword !== newPassword ? '#ef4444' : colors.border
@@ -1037,7 +1147,7 @@ export default function LoginScreen({ onLogin }) {
                       <TextInput
                         maxLength={128}
                         style={[styles.input, { color: colors.text }]}
-                        placeholder="Repita a nova senha"
+                        placeholder={t('repeatPasswordPlaceholder') || 'Repita a nova senha'}
                         placeholderTextColor={colors.textMuted}
                         value={confirmNewPassword}
                         onChangeText={setConfirmNewPassword}
@@ -1064,7 +1174,7 @@ export default function LoginScreen({ onLogin }) {
                     {forgotLoading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.loginButtonText}>Salvar Nova Senha</Text>
+                      <Text style={styles.loginButtonText}>{t('saveAction') || 'Salvar Nova Senha'}</Text>
                     )}
                   </Pressable>
 
@@ -1074,7 +1184,7 @@ export default function LoginScreen({ onLogin }) {
                     disabled={forgotLoading}
                   >
                     <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                      Reenviar código de segurança
+                      {t('resendCode') || 'Reenviar código de segurança'}
                     </Text>
                   </Pressable>
 
@@ -1083,7 +1193,7 @@ export default function LoginScreen({ onLogin }) {
                     onPress={() => setForgotStep('request')}
                   >
                     <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-                      Alterar e-mail informado
+                      {t('changeEmail') || 'Alterar e-mail informado'}
                     </Text>
                   </Pressable>
                 </>
@@ -1092,23 +1202,91 @@ export default function LoginScreen({ onLogin }) {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
+  content: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 },
   header: { alignItems: 'center', marginTop: 16, marginBottom: 24 },
   iconBadge: { width: 72, height: 72, borderRadius: 36, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  title: { fontSize: 26, fontWeight: '800', marginBottom: 6, letterSpacing: -0.3 },
-  subtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
-  formContainer: { width: '100%', marginTop: 4 },
+  title: { fontSize: 24, fontWeight: '800', marginBottom: 6, letterSpacing: -0.3, textAlign: 'center' },
+  subtitle: { fontSize: 13, textAlign: 'center', lineHeight: 19, paddingHorizontal: 12 },
+  
+  // Brand Header moderno do BandLink Network
+  brandHeader: { alignItems: 'center', marginTop: 12, marginBottom: 20 },
+  logoOuterGlow: {
+    width: 76,
+    height: 76,
+    borderRadius: 22,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+  },
+  brandLogo: { width: 52, height: 52 },
+  brandTitleText: { fontSize: 22, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
+  networkBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  networkBadgeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
+
+  formContainer: {
+    width: '100%',
+    marginTop: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 20,
+  },
   inputGroup: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 48 },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 15, height: '100%' },
+
+  authLinksBlock: {
+    marginTop: 6,
+    marginBottom: 14,
+    gap: 12,
+  },
+  forgotPasswordAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  signupActionWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 2,
+    paddingVertical: 4,
+  },
+  animatedSignUpPill: {
+    borderRadius: 16,
+  },
+  animatedSignUpInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1.5,
+  },
+  animatedSignUpText: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
   passwordRowExtras: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, marginBottom: 18 },
   rememberRow: { flexDirection: 'row', alignItems: 'center' },
   checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center', marginRight: 10 },

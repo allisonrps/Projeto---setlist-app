@@ -77,9 +77,52 @@ const getFormattedDateBadge = (dateStr, lang) => {
   return { day: String(day).padStart(2, '0'), month: months[monthNum] || '---' };
 };
 
+const isFutureDate = (dateStr) => {
+  if (!dateStr) return false;
+  const clean = String(dateStr).trim();
+  
+  // Format: DD/MM/YYYY or DD/MM/YY
+  const dmyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
+  const match = clean.match(dmyRegex);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    let year = parseInt(match[3], 10);
+    if (year < 100) year += 2000;
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return parsedDate >= today;
+  }
+
+  // Format: YYYY-MM-DD
+  const ymdRegex = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/;
+  const matchYmd = clean.match(ymdRegex);
+  if (matchYmd) {
+    const year = parseInt(matchYmd[1], 10);
+    const month = parseInt(matchYmd[2], 10) - 1;
+    const day = parseInt(matchYmd[3], 10);
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return parsedDate >= today;
+  }
+
+  try {
+    const parsed = new Date(clean);
+    if (!isNaN(parsed.getTime())) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return parsed >= today;
+    }
+  } catch (e) {}
+
+  return false;
+};
+
 const parseDateForSort = (dateStr) => {
   if (!dateStr) return 0;
-  const clean = dateStr.trim();
+  const clean = String(dateStr).trim();
   if (clean.includes('-')) {
     const parts = clean.split('-');
     if (parts.length === 3) return new Date(parts[0], parts[1] - 1, parts[2]).getTime();
@@ -93,55 +136,33 @@ const parseDateForSort = (dateStr) => {
   return 0;
 };
 
-const getMonthYearHeader = (dateStr, lang = 'pt') => {
-  if (!dateStr || !dateStr.trim()) return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
-  const clean = dateStr.trim();
-  let year = '';
-  let monthNum = -1;
-
-  if (clean.includes('-')) {
-    const parts = clean.split('-');
-    if (parts.length === 3) {
-      year = parts[0];
-      monthNum = parseInt(parts[1], 10) - 1;
-    }
-  } else if (clean.includes('/')) {
-    const parts = clean.split('/');
-    if (parts.length === 3) {
-      if (parts[0].length === 4) {
-        year = parts[0];
-        monthNum = parseInt(parts[1], 10) - 1;
-      } else {
-        year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
-        monthNum = parseInt(parts[1], 10) - 1;
-      }
-    }
-  }
-
-  const monthsPt = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
-  const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-  const monthsEs = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
-
-  const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
-
-  if (monthNum >= 0 && monthNum < 12 && year) {
-    return `${months[monthNum]} ${year}`;
-  }
-  return lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS';
-};
-
-
 const getMonthInfo = (dateStr, lang = 'pt') => {
-  if (!dateStr || !dateStr.trim()) return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
-  const clean = dateStr.trim();
+  const clean = String(dateStr || '').trim();
+  if (!clean) return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
   let year = 0;
   let monthNum = -1;
 
   if (clean.includes('-')) {
     const parts = clean.split('-');
     if (parts.length === 3) {
-      year = parseInt(parts[0], 10);
-      monthNum = parseInt(parts[1], 10) - 1;
+      if (parts[0].length === 4) {
+        year = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else {
+        year = parts[2].length === 2 ? parseInt('20' + parts[2], 10) : parseInt(parts[2], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      }
+    } else if (parts.length === 2) {
+      if (parts[0].length === 4) {
+        year = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else if (parts[1].length === 4) {
+        year = parseInt(parts[1], 10);
+        monthNum = parseInt(parts[0], 10) - 1;
+      } else {
+        monthNum = parseInt(parts[1], 10) - 1;
+        year = new Date().getFullYear();
+      }
     }
   } else if (clean.includes('/')) {
     const parts = clean.split('/');
@@ -153,6 +174,30 @@ const getMonthInfo = (dateStr, lang = 'pt') => {
         year = parts[2].length === 2 ? parseInt('20' + parts[2], 10) : parseInt(parts[2], 10);
         monthNum = parseInt(parts[1], 10) - 1;
       }
+    } else if (parts.length === 2) {
+      if (parts[0].length === 4) {
+        year = parseInt(parts[0], 10);
+        monthNum = parseInt(parts[1], 10) - 1;
+      } else if (parts[1].length === 4) {
+        year = parseInt(parts[1], 10);
+        monthNum = parseInt(parts[0], 10) - 1;
+      } else {
+        monthNum = parseInt(parts[1], 10) - 1;
+        year = new Date().getFullYear();
+      }
+    }
+  }
+
+  if (monthNum < 0) {
+    const ptMonths = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const lower = clean.toLowerCase();
+    for (let i = 0; i < 12; i++) {
+      if (lower.includes(ptMonths[i]) || lower.includes(ptMonths[i].slice(0, 3))) {
+        monthNum = i;
+        const yearMatch = clean.match(/\b(20\d{2})\b/);
+        year = yearMatch ? parseInt(yearMatch[1], 10) : new Date().getFullYear();
+        break;
+      }
     }
   }
 
@@ -162,15 +207,103 @@ const getMonthInfo = (dateStr, lang = 'pt') => {
 
   const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
 
-  if (monthNum >= 0 && monthNum < 12 && year > 0) {
-    return { name: months[monthNum], year, index: monthNum };
+  if (monthNum >= 0 && monthNum < 12) {
+    return { name: months[monthNum], year: year || new Date().getFullYear(), index: monthNum };
   }
-  return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: 0, index: -1 };
+  return { name: lang === 'en' ? 'OTHER' : lang === 'es' ? 'OTROS' : 'OUTROS', year: year || 0, index: -1 };
+};
+
+const getMonthYearHeader = (dateStr, lang = 'pt') => {
+  const m = getMonthInfo(dateStr, lang);
+  if (m.index >= 0 && m.year > 0) {
+    return `${m.name} ${m.year}`;
+  }
+  return m.name;
 };
 
 const STYLE_COLOR_PALETTE = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#eab308', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
 ];
+
+const formatActivityDateTime = (dateStr, lang = 'pt') => {
+  if (!dateStr) return '';
+  try {
+    let clean = String(dateStr).trim();
+    if (!clean.includes('T') && clean.includes(' ')) {
+      clean = clean.replace(' ', 'T');
+      if (!clean.endsWith('Z')) clean = clean + 'Z';
+    }
+    const d = new Date(clean);
+    if (isNaN(d.getTime())) return String(dateStr);
+    const day = d.getDate();
+    const monthsPt = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthsEs = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const monthList = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
+    const monthName = monthList[d.getMonth()] || '';
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+
+    if (lang === 'en') {
+      return `${monthName} ${day}, ${hours}:${minutes}`;
+    } else if (lang === 'es') {
+      return `${day} de ${monthName} a las ${hours}:${minutes}`;
+    }
+    return `${day} de ${monthName} às ${hours}:${minutes}`;
+  } catch (e) {
+    return String(dateStr);
+  }
+};
+
+const getActivityIconAndColor = (actionType, colors) => {
+  switch (actionType) {
+    // Aba Agenda / Setlists (Ícone da aba: calendar)
+    case 'created_setlist':
+    case 'updated_setlist':
+    case 'deleted_setlist':
+      return { icon: 'calendar', color: '#10b981', bg: '#10b98120' };
+
+    // Aba Repertório / Músicas (Ícone da aba: musical-notes)
+    case 'added_song':
+    case 'added_songs':
+    case 'removed_song':
+    case 'updated_tabs':
+    case 'updated_chords':
+    case 'updated_lyrics':
+    case 'updated_song':
+    case 'update_song':
+      return { icon: 'musical-notes', color: '#8b5cf6', bg: '#8b5cf620' };
+
+    // Aba Integrantes / Membros (Ícone da aba: people)
+    case 'added_member':
+    case 'updated_member':
+    case 'update_member':
+    case 'removed_member':
+      return { icon: 'people', color: '#06b6d4', bg: '#06b6d420' };
+
+    // Aba Financeiro (Ícone da aba: wallet)
+    case 'added_finance':
+    case 'updated_finance':
+    case 'deleted_finance':
+      return { icon: 'wallet', color: '#eab308', bg: '#eab30820' };
+
+    // Aba Estatísticas (Ícone da aba: stats-chart)
+    case 'stats_update':
+      return { icon: 'stats-chart', color: '#3b82f6', bg: '#3b82f620' };
+
+    // Modo Online
+    case 'online_mode':
+      return { icon: 'cloud-done', color: '#10b981', bg: '#10b98120' };
+
+    // Dados da Banda / Criação
+    case 'created_band':
+    case 'updated_band':
+    case 'update_band':
+    default:
+      return { icon: 'time', color: colors.primary, bg: colors.primary + '20' };
+  }
+};
+
 
 export default function BandDetailScreen({
   visible,
@@ -199,8 +332,181 @@ export default function BandDetailScreen({
   const { t, language } = useLanguage();
   const isDark = colors.isDark;
 
-  // Dedicated Tab Pages: 'repertoire' | 'members' | 'stats' | 'financial' | 'setlists'
-  const [activeTab, setActiveTab] = useState('repertoire');
+  // Dedicated Tab Pages: 'feed' (Histórico) | 'repertoire' | 'members' | 'stats' | 'financial' | 'setlists'
+  const [activeTab, setActiveTab] = useState('feed');
+  const BAND_TABS = ['feed', 'repertoire', 'members', 'stats', 'financial', 'setlists'];
+  const translateX = useRef(new Animated.Value(0)).current;
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+  const activeTabRef = useRef('feed');
+  activeTabRef.current = activeTab;
+
+  const handleTabChange = (nextTabId) => {
+    if (nextTabId === activeTabRef.current) return;
+    const oldIdx = BAND_TABS.indexOf(activeTabRef.current);
+    const newIdx = BAND_TABS.indexOf(nextTabId);
+    const direction = newIdx > oldIdx ? -1 : 1;
+
+    // Transição suave com esmaecimento (fade-out + slide out, depois fade-in + slide in)
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: direction * 35,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tabOpacity, {
+        toValue: 0.15,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveTab(nextTabId);
+      translateX.setValue(-direction * 35);
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: 0,
+          tension: 75,
+          friction: 11,
+          useNativeDriver: true,
+        }),
+        Animated.timing(tabOpacity, {
+          toValue: 1,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const [isTabSwiping, setIsTabSwiping] = useState(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 7 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 8 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        translateX.stopAnimation();
+        tabOpacity.stopAnimation();
+        setIsTabSwiping(true);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const curIdx = BAND_TABS.indexOf(activeTabRef.current);
+        const isFirst = curIdx === 0 && gestureState.dx > 0;
+        const isLast = curIdx === BAND_TABS.length - 1 && gestureState.dx < 0;
+        const damped = isFirst || isLast ? gestureState.dx * 0.22 : gestureState.dx;
+        translateX.setValue(damped);
+
+        // Esmaecimento dinâmico e suave conforme o usuário arrasta para o lado
+        const dragProgress = Math.min(1, Math.abs(damped) / (width * 0.45));
+        tabOpacity.setValue(Math.max(0.2, 1 - dragProgress * 0.8));
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        setIsTabSwiping(false);
+        const curIdx = BAND_TABS.indexOf(activeTabRef.current);
+        const swipeThreshold = 25;
+        const speedThreshold = 0.18;
+
+        if ((gestureState.dx < -swipeThreshold || gestureState.vx < -speedThreshold) && curIdx < BAND_TABS.length - 1) {
+          const nextTab = BAND_TABS[curIdx + 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: -width * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(nextTab);
+            translateX.setValue(width * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else if ((gestureState.dx > swipeThreshold || gestureState.vx > speedThreshold) && curIdx > 0) {
+          const prevTab = BAND_TABS[curIdx - 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: width * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(prevTab);
+            translateX.setValue(-width * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateX, {
+              toValue: 0,
+              tension: 85,
+              friction: 12,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 1,
+              duration: 140,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        setIsTabSwiping(false);
+        Animated.parallel([
+          Animated.spring(translateX, {
+            toValue: 0,
+            tension: 85,
+            friction: 12,
+            useNativeDriver: true,
+          }),
+          Animated.timing(tabOpacity, {
+            toValue: 1,
+            duration: 140,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [isTurningOnline, setIsTurningOnline] = useState(false);
 
   // Compartilhar Agenda da banda (mesmo sistema da agenda do perfil)
   const [showShareAgendaModal, setShowShareAgendaModal] = useState(false);
@@ -281,7 +587,7 @@ export default function BandDetailScreen({
   const handlePushSyncToCloud = async () => {
     const logged = await api.isLoggedIn();
     if (!logged) {
-      Alert.alert('Login Necessário', 'Faça login na sua conta BandLink para sincronizar com a nuvem.', [{ text: 'OK' }]);
+      Alert.alert(t('attention') || 'Atenção', t('loginRequiredSync') || 'Faça login na sua conta BandLink para sincronizar com a nuvem.', [{ text: 'OK' }]);
       return;
     }
 
@@ -304,19 +610,55 @@ export default function BandDetailScreen({
         band.lastSyncedAt = res.lastSyncedAt;
         band.isNetworkVisible = res.isNetworkVisible ? 1 : 0;
       }
-      Alert.alert('Sincronizado!', 'Todas as músicas, cifras, integrantes e setlists foram enviados para a nuvem.');
+      Alert.alert(t('syncSuccess') || 'Sincronizado!', t('syncSuccessAlert') || 'Todas as músicas, cifras, integrantes e setlists foram enviados para a nuvem.');
       if (onReloadAll) onReloadAll();
     } catch (err) {
-      Alert.alert('Erro ao Sincronizar', err.message || 'Falha ao sincronizar com a nuvem.');
+      Alert.alert(t('attention') || 'Atenção', err.message || t('syncErrorAlert') || 'Falha ao sincronizar com a nuvem.');
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleTurnBandOnline = async () => {
+    const logged = await api.isLoggedIn();
+    if (!logged) {
+      Alert.alert(
+        t('attention') || 'Atenção',
+        t('loginRequiredSync') || 'Faça login na sua conta BandLink para conectar a banda à comunidade online.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    try {
+      setIsTurningOnline(true);
+      if (typeof Vibration !== 'undefined') Vibration.vibrate(60);
+      const res = await bandService.syncBandToCloud(band.id);
+      if (res && res.cloudId) {
+        band.cloudId = res.cloudId;
+        band.cloudVersion = res.version;
+        band.lastSyncedAt = res.lastSyncedAt;
+        await bandService.logBandActivity(band.id, 'online_mode', 'conectou a banda à comunidade online!');
+        await loadData();
+        await loadSyncStatus();
+        Alert.alert(
+          t('onlineBand') || 'Banda Online',
+          t('turnBandOnlineSuccess') || 'Banda conectada à nuvem com sucesso! Agora todas as alterações serão compartilhadas com os integrantes.'
+        );
+        if (onReloadAll) onReloadAll();
+      }
+    } catch (err) {
+      console.error('Error turning band online:', err);
+      Alert.alert(t('attention') || 'Atenção', err.message || 'Falha ao conectar banda à nuvem.');
+    } finally {
+      setIsTurningOnline(false);
     }
   };
 
   const handlePullSyncFromCloud = async () => {
     const logged = await api.isLoggedIn();
     if (!logged) {
-      Alert.alert('Login Necessário', 'Faça login na sua conta BandLink para baixar as atualizações do líder.', [{ text: 'OK' }]);
+      Alert.alert(t('attention') || 'Atenção', t('loginRequiredPull') || 'Faça login na sua conta BandLink para baixar as atualizações do líder.', [{ text: 'OK' }]);
       return;
     }
 
@@ -326,10 +668,10 @@ export default function BandDetailScreen({
       await bandService.pullBandFromCloud(band.id);
       await loadData();
       await loadSyncStatus();
-      Alert.alert('Atualizado!', 'Todas as músicas, cifras e setlists foram gravados no seu app offline!');
+      Alert.alert(t('success') || 'Atualizado!', t('pullSuccessAlert') || 'Todas as músicas, cifras e setlists foram gravados no seu app offline!');
       if (onReloadAll) onReloadAll();
     } catch (err) {
-      Alert.alert('Erro ao Baixar', err.message || 'Falha ao baixar dados da nuvem.');
+      Alert.alert(t('attention') || 'Atenção', err.message || t('pullErrorAlert') || 'Falha ao baixar dados da nuvem.');
     } finally {
       setIsSyncing(false);
     }
@@ -411,7 +753,10 @@ export default function BandDetailScreen({
   const [expandedFinanceMonths, setExpandedFinanceMonths] = useState({});
 
   const toggleEventMonth = (monthName) => {
-    setExpandedEventMonths(prev => ({ ...prev, [monthName]: !prev[monthName] }));
+    setExpandedEventMonths(prev => {
+      const currentVal = prev[monthName] !== undefined ? prev[monthName] : true;
+      return { ...prev, [monthName]: !currentVal };
+    });
   };
   const toggleFinanceMonth = (monthName) => {
     setExpandedFinanceMonths(prev => ({ ...prev, [monthName]: !prev[monthName] }));
@@ -592,6 +937,9 @@ export default function BandDetailScreen({
 
         const bFin = await bandService.getBandFinances(band.id);
         setFinances(bFin || []);
+
+        const bLogs = await bandService.getBandActivityLogs(band.id, 50);
+        setActivityLogs(bLogs || []);
       } catch (err) {
         console.error('Error loading BandDetailScreen data:', err);
       }
@@ -615,7 +963,15 @@ export default function BandDetailScreen({
 
   // Filter setlists belonging to this band sorted by date
   const bandSetlists = (allSetlists || [])
-    .filter(s => s && s.myBandId === band.id)
+    .filter(s => {
+      if (!s) return false;
+      const sBandId = Number(s.myBandId || s.bandId);
+      const bId = Number(band.id);
+      const bCloudId = band.cloudId ? Number(band.cloudId) : null;
+      if (sBandId && (sBandId === bId || (bCloudId && sBandId === bCloudId))) return true;
+      if (s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+      return false;
+    })
     .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
   // Eventos (shows) da banda no formato da arte de agenda do perfil
@@ -1354,6 +1710,7 @@ export default function BandDetailScreen({
           stickyHeaderIndices={[1]}
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled={true}
+          scrollEnabled={!isTabSwiping}
         >
           {/* INDEX 0: HEADER HERO MODERNO COM IMAGEM TRANSLÚCIDA E DEGRADÊ */}
           <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#1e293b' }]}>
@@ -1374,16 +1731,15 @@ export default function BandDetailScreen({
               </View>
             )}
 
-            {/* 2. Degradê suave para contraste perfeito dos botões e textos, mantendo a foto visível */}
+            {/* 2. Degradê suave mantendo a foto do background bem visível */}
             <LinearGradient
               colors={[
-                'rgba(0, 0, 0, 0.45)',
+                'rgba(0, 0, 0, 0.50)',
                 'transparent',
-                'rgba(0, 0, 0, 0.15)',
-                'rgba(0, 0, 0, 0.55)',
-                isDark ? 'rgba(9, 9, 11, 0.92)' : 'rgba(0, 0, 0, 0.82)'
+                'transparent',
+                'rgba(0, 0, 0, 0.20)',
               ]}
-              locations={[0, 0.25, 0.45, 0.75, 1]}
+              locations={[0, 0.22, 0.65, 1]}
               style={StyleSheet.absoluteFillObject}
               pointerEvents="none"
             />
@@ -1548,37 +1904,6 @@ export default function BandDetailScreen({
                 ) : (
                   /* ESTADO PADRÃO: BOTÕES COMPACTOS (NUVEM + REDES SOCIAIS + OPÇÕES) */
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    {/* Botão de Nuvem / Sincronização direta */}
-                    <Pressable
-                      style={[
-                        styles.headerIconButton,
-                        {
-                          backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0,0,0,0.35)',
-                          borderColor: syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : (isNetworkVisible ? '#10b981' : 'rgba(255,255,255,0.15)'),
-                          borderWidth: syncStatusInfo.hasRemoteUpdates ? 1.5 : 1,
-                        }
-                      ]}
-                      onPress={() => setShowSyncModal(true)}
-                      accessibilityLabel="Sincronização em Nuvem"
-                    >
-                      <Ionicons
-                        name={isNetworkVisible ? 'cloud-done' : (syncStatusInfo.hasRemoteUpdates ? 'cloud-download-outline' : 'cloud-outline')}
-                        size={18}
-                        color={isNetworkVisible ? '#10b981' : (syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : '#ffffff')}
-                      />
-                      {syncStatusInfo.hasRemoteUpdates && (
-                        <View style={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4,
-                          width: 8,
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: '#f59e0b',
-                        }} />
-                      )}
-                    </Pressable>
-
                     {/* Botão Único de Redes Sociais */}
                     {(hasAnySocialLink || isUserLeader) && (
                       <Pressable
@@ -1650,8 +1975,26 @@ export default function BandDetailScreen({
                 </View>
               )}
 
-              {/* 3ª Linha: Pílulas Cover / Autoral + Tags de Estilo */}
+              {/* 3ª Linha: Pílulas Cover / Autoral + Status Online/Offline + Tags de Estilo */}
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                {/* Status Online / Offline */}
+                <View style={{
+                  backgroundColor: band.cloudId ? 'rgba(16, 185, 129, 0.25)' : 'rgba(148, 163, 184, 0.25)',
+                  borderColor: band.cloudId ? '#10b981' : 'rgba(255, 255, 255, 0.4)',
+                  borderWidth: 1,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4
+                }}>
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: band.cloudId ? '#10b981' : '#94a3b8' }} />
+                  <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
+                    {band.cloudId ? (t('onlineBand') || 'Online') : (t('offlineBand') || 'Offline')}
+                  </Text>
+                </View>
+
                 {(band.isCover === 1 || (band.bandType && band.bandType.includes('cover')) || (!band.bandType && band.isCover === undefined)) && (
                   <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
                     <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalCover') || 'Cover'}</Text>
@@ -1671,13 +2014,29 @@ export default function BandDetailScreen({
             </View>
           </View>
 
-        {/* TOP TAB BAR DE 5 PÁGINAS SOMENTE ÍCONES */}
+        {/* TOP TAB BAR DE 6 PÁGINAS SOMENTE ÍCONES COM DEGRADÊ CINTILANTE */}
         <View style={[styles.tabBarContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
           <View style={styles.tabBarRow}>
             
             <Pressable
+              style={[styles.tabItemIconOnly, activeTab === 'feed' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
+              onPress={() => handleTabChange('feed')}
+            >
+              <View style={{ position: 'relative', paddingHorizontal: 4 }}>
+                <Ionicons
+                  name={activeTab === 'feed' ? "time" : "time-outline"}
+                  size={22}
+                  color={activeTab === 'feed' ? colors.primary : colors.textMuted}
+                />
+                {syncStatusInfo.hasRemoteUpdates && (
+                  <View style={{ position: 'absolute', top: -3, right: -4, backgroundColor: '#ef4444', borderRadius: 6, width: 8, height: 8 }} />
+                )}
+              </View>
+            </Pressable>
+
+            <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'repertoire' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-              onPress={() => setActiveTab('repertoire')}
+              onPress={() => handleTabChange('repertoire')}
             >
               <View style={{position: 'relative', paddingHorizontal: 4}}>
                 <Ionicons
@@ -1695,7 +2054,7 @@ export default function BandDetailScreen({
 
             <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'members' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-              onPress={() => setActiveTab('members')}
+              onPress={() => handleTabChange('members')}
             >
               <View style={{position: 'relative', paddingHorizontal: 4}}>
                 <Ionicons
@@ -1713,7 +2072,7 @@ export default function BandDetailScreen({
 
             <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'stats' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-              onPress={() => setActiveTab('stats')}
+              onPress={() => handleTabChange('stats')}
             >
               <Ionicons
                 name={activeTab === 'stats' ? "stats-chart" : "stats-chart-outline"}
@@ -1724,7 +2083,7 @@ export default function BandDetailScreen({
 
             <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'financial' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-              onPress={() => setActiveTab('financial')}
+              onPress={() => handleTabChange('financial')}
             >
               <Ionicons
                 name={activeTab === 'financial' ? "wallet" : "wallet-outline"}
@@ -1735,7 +2094,7 @@ export default function BandDetailScreen({
 
             <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'setlists' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-              onPress={() => setActiveTab('setlists')}
+              onPress={() => handleTabChange('setlists')}
             >
               <Ionicons
                 name={activeTab === 'setlists' ? "calendar" : "calendar-outline"}
@@ -1746,6 +2105,278 @@ export default function BandDetailScreen({
 
           </View>
         </View>
+
+        {/* ── CONTEÚDO DAS ABAS DA BANDA COM TRANSIÇÃO SUAVE E GESTO DE ARRASTAR ── */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={{ flex: 1, opacity: tabOpacity, transform: [{ translateX }] }}
+        >
+        {/* ABA 0: FEED DE ATIVIDADES E SINCRONIZAÇÃO */}
+        {activeTab === 'feed' && (
+          <ScrollView
+            style={styles.tabContentFlex}
+            contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Status Card: Offline ou Online */}
+            {!band.cloudId ? (
+              // BANDA OFFLINE
+              <View style={{
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 20,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: isDark ? '#334155' : '#f1f5f9', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                    <Ionicons name="cloud-offline-outline" size={22} color={colors.textMuted} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{t('offlineBand') || 'Banda Offline'}</Text>
+                      <View style={{ backgroundColor: isDark ? '#334155' : '#e2e8f0', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: colors.textMuted }}>LOCAL</Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                      {t('turnBandOnlineDesc') || 'Esta banda está armazenada apenas neste dispositivo. Conecte-a à comunidade para sincronizar com os integrantes.'}
+                    </Text>
+                  </View>
+                </View>
+
+                <Pressable
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    marginTop: 4,
+                  }}
+                  onPress={handleTurnBandOnline}
+                  disabled={isTurningOnline}
+                >
+                  {isTurningOnline ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Ionicons name="cloud-upload" size={18} color="#ffffff" />
+                      <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
+                        {t('turnBandOnline') || 'Tornar Banda Online'}
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+            ) : (
+              // BANDA ONLINE
+              <View style={{
+                backgroundColor: colors.cardBackground,
+                borderColor: syncStatusInfo.hasRemoteUpdates ? colors.primary : colors.border,
+                borderWidth: syncStatusInfo.hasRemoteUpdates ? 1.5 : 1,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 20,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#10b98120', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                    <Ionicons name="cloud-done" size={22} color="#10b981" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{t('onlineBand') || 'Banda Online'}</Text>
+                      <View style={{ backgroundColor: '#10b98120', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#10b981' }}>NUVEM ATIVA</Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                      {syncStatusInfo.hasRemoteUpdates
+                        ? 'Novas alterações disponíveis na nuvem! Clique abaixo para atualizar.'
+                        : (t('bandUpdatesSynced') || 'Todas as alterações são sincronizadas na nuvem automaticamente.')}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Botões de Ação na Nuvem */}
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                  <Pressable
+                    style={{
+                      flex: 1,
+                      backgroundColor: syncStatusInfo.hasRemoteUpdates ? colors.primary : (colors.primary + '18'),
+                      borderColor: colors.primary,
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      paddingVertical: 12,
+                      paddingHorizontal: 14,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                    onPress={handlePullSyncFromCloud}
+                    disabled={isSyncing}
+                  >
+                    {isSyncing ? (
+                      <ActivityIndicator size="small" color={syncStatusInfo.hasRemoteUpdates ? '#ffffff' : colors.primary} />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name="cloud-download-outline"
+                          size={18}
+                          color={syncStatusInfo.hasRemoteUpdates ? '#ffffff' : colors.primary}
+                        />
+                        <Text style={{
+                          color: syncStatusInfo.hasRemoteUpdates ? '#ffffff' : colors.primary,
+                          fontWeight: '700',
+                          fontSize: 13
+                        }}>
+                          {syncStatusInfo.hasRemoteUpdates
+                            ? `${t('updateFromCloudBtn') || 'Atualizar Alterações'} (!)`
+                            : (t('updateFromCloudBtn') || 'Atualizar Alterações')}
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+
+                  <Pressable
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      paddingVertical: 12,
+                      paddingHorizontal: 12,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onPress={handlePushSyncToCloud}
+                    disabled={isSyncing}
+                  >
+                    <Ionicons name="cloud-upload-outline" size={18} color={colors.textMuted} />
+                  </Pressable>
+                </View>
+              </View>
+            )}
+
+            {/* Cabeçalho da Linha do Tempo / Histórico */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <View>
+                <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
+                  {t('bandFeedTitle') || 'Histórico de Atividades'}
+                </Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                  {t('bandFeedSubtitle') || 'Linha do tempo das mudanças feitas na banda'}
+                </Text>
+              </View>
+              {activityLogs.length > 0 && (
+                <View style={{ backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
+                    {activityLogs.length} {activityLogs.length === 1 ? 'registro' : 'registros'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Lista da Linha do Tempo */}
+            {activityLogs.length === 0 ? (
+              <View style={{
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: 16,
+                padding: 32,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: 8
+              }}>
+                <Ionicons name="time-outline" size={44} color={colors.textMuted} style={{ marginBottom: 12, opacity: 0.6 }} />
+                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
+                  {t('noBandActivity') || 'Nenhuma atividade registrada ainda.'}
+                </Text>
+                <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', marginTop: 6, lineHeight: 18 }}>
+                  Criações e edições de setlists, inclusões de músicas, membros e cifras aparecerão aqui em tempo real.
+                </Text>
+              </View>
+            ) : (
+              <View style={{ marginTop: 4 }}>
+                {activityLogs.map((logItem, index) => {
+                  const itemStyle = getActivityIconAndColor(logItem.actionType, colors);
+                  const isLast = index === activityLogs.length - 1;
+                  return (
+                    <View key={logItem.id || index} style={{ flexDirection: 'row', minHeight: 64 }}>
+                      {/* Timeline Coluna Esquerda: Ícone e Linha Conectora */}
+                      <View style={{ alignItems: 'center', width: 38, marginRight: 12 }}>
+                        <View style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 18,
+                          backgroundColor: itemStyle.bg,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          borderWidth: 1.5,
+                          borderColor: itemStyle.color
+                        }}>
+                          <Ionicons name={itemStyle.icon} size={17} color={itemStyle.color} />
+                        </View>
+                        {!isLast && (
+                          <View style={{
+                            width: 2,
+                            flex: 1,
+                            backgroundColor: colors.border,
+                            marginVertical: 4,
+                          }} />
+                        )}
+                      </View>
+
+                      {/* Card de Conteúdo da Atividade */}
+                      <View style={{
+                        flex: 1,
+                        backgroundColor: colors.cardBackground,
+                        borderColor: colors.border,
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        padding: 12,
+                        marginBottom: isLast ? 0 : 12,
+                      }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
+                            {formatActivityDateTime(logItem.createdAt, language)}
+                          </Text>
+                          {logItem.authorName && (
+                            <View style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6 }}>
+                              <Text style={{ fontSize: 10, fontWeight: '700', color: colors.primary }}>
+                                {logItem.authorName}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+
+                        <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18, fontWeight: '500' }}>
+                          {logItem.description ? (logItem.description.charAt(0).toUpperCase() + logItem.description.slice(1)) : ''}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </ScrollView>
+        )}
 
         {/* ABA 1: REPERTÓRIO */}
         {activeTab === 'repertoire' && (
@@ -2758,7 +3389,10 @@ export default function BandDetailScreen({
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
             {/* NOVO: CARD 1: RESUMO DE EVENTOS - 3 CÍRCULOS (ANO, SHOWS, ENSAIOS) */}
             {(() => {
-              const yearEvents = bandSetlists.filter(s => getMonthInfo(s.date, language).year === selectedEventYear);
+              const yearEvents = bandSetlists.filter(s => {
+                const m = getMonthInfo(s.date, language);
+                return m.year === selectedEventYear || m.year === 0 || !s.date;
+              });
               const showCount = yearEvents.filter(s => s.type === 'show').length;
               const rehearsalCount = yearEvents.filter(s => s.type !== 'show').length;
 
@@ -2894,8 +3528,11 @@ export default function BandDetailScreen({
               </View>
             ) : (
               (() => {
-                const filteredEvents = bandSetlists.filter(s => getMonthInfo(s.date, language).year === selectedEventYear);
-                if (filteredEvents.length === 0) {
+                const yearEvents = bandSetlists.filter(s => {
+                  const m = getMonthInfo(s.date, language);
+                  return m.year === selectedEventYear || m.year === 0 || !s.date;
+                });
+                if (yearEvents.length === 0) {
                   return (
                     <View style={{ paddingVertical: 14, alignItems: 'center' }}>
                       <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
@@ -2904,25 +3541,91 @@ export default function BandDetailScreen({
                     </View>
                   );
                 }
-                
-                let lastEventHeader = '';
-                return filteredEvents.map(setlist => {
-                  const monthInfo = getMonthInfo(setlist.date, language);
-                  const header = monthInfo.name;
-                  const showHeader = header !== lastEventHeader;
-                  if (showHeader) lastEventHeader = header;
-                  const dateBadge = getFormattedDateBadge(setlist.date, language);
-                  
-                  const isPastMonth = selectedEventYear < currentYearNum || (selectedEventYear === currentYearNum && monthInfo.index < currentMonthNum);
-                  const isExpanded = expandedEventMonths[header] !== undefined ? expandedEventMonths[header] : !isPastMonth;
 
+                // Próximos eventos no topo (cronológico ascendente) e passados descendo até janeiro (decrescente)
+                const upcomingEvents = yearEvents
+                  .filter(s => isFutureDate(s.date))
+                  .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+                const pastEvents = yearEvents
+                  .filter(s => !isFutureDate(s.date))
+                  .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+
+                const upcomingMonthsMap = upcomingEvents.reduce((acc, s) => {
+                  const header = getMonthInfo(s.date, language).name;
+                  if (!acc[header]) acc[header] = [];
+                  acc[header].push(s);
+                  return acc;
+                }, {});
+
+                const pastMonthsMap = pastEvents.reduce((acc, s) => {
+                  const header = getMonthInfo(s.date, language).name;
+                  if (!acc[header]) acc[header] = [];
+                  acc[header].push(s);
+                  return acc;
+                }, {});
+
+                const renderEventCard = (setlist) => {
+                  const dateBadge = getFormattedDateBadge(setlist.date, language);
                   return (
-                    <View key={setlist.id}>
-                      {showHeader && (() => {
-                        const mGroup = filteredEvents.filter(s => getMonthInfo(s.date, language).name === header);
-                        const mShows = mGroup.filter(s => s.type === 'show').length;
-                        const mRehearsals = mGroup.filter(s => s.type !== 'show').length;
-                        return (
+                    <Pressable
+                      key={setlist.id}
+                      style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                      onPress={() => onSelectSetlist ? onSelectSetlist(setlist) : onExportDoc(setlist)}
+                    >
+                      <View style={[styles.dateBadgeBox, { backgroundColor: colors.primary + '15' }]}>
+                        <Text style={[styles.dateBadgeDay, { color: colors.primary }]}>{dateBadge.day}</Text>
+                        <Text style={[styles.dateBadgeMonth, { color: colors.primary }]}>{dateBadge.month}</Text>
+                      </View>
+
+                      <View style={styles.eventCardBody}>
+                        <Text style={[styles.eventTitle, { color: colors.text }]}>{setlist.name}</Text>
+                        
+                        <View style={styles.eventMetaRow}>
+                          <View style={[
+                            styles.typePill,
+                            { backgroundColor: setlist.type === 'show' ? '#ef444420' : '#3b82f620' }
+                          ]}>
+                            <Text style={[
+                              styles.typePillText,
+                              { color: setlist.type === 'show' ? '#ef4444' : '#3b82f6' }
+                            ]}>
+                              {(setlist.type === 'show' ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')).toUpperCase()}
+                            </Text>
+                          </View>
+
+                          {setlist.local ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1, marginRight: setlist.time ? 8 : 0 }}>
+                              <Ionicons name="location-outline" size={13} color={colors.textMuted} />
+                              <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
+                                {setlist.local}
+                              </Text>
+                            </View>
+                          ) : null}
+
+                          {setlist.time ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
+                              <Ionicons name="time-outline" size={13} color={colors.primary} />
+                              <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
+                                {setlist.time}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                };
+
+                return (
+                  <View>
+                    {/* Próximos Eventos por Mês (Ascendente) */}
+                    {Object.keys(upcomingMonthsMap).map(header => {
+                      const mEvents = upcomingMonthsMap[header];
+                      const isExpanded = expandedEventMonths[header] !== undefined ? expandedEventMonths[header] : true;
+                      const mShows = mEvents.filter(s => s.type === 'show').length;
+                      const mRehearsals = mEvents.filter(s => s.type !== 'show').length;
+                      return (
+                        <View key={'upcoming-' + header} style={{ marginBottom: 6 }}>
                           <Pressable onPress={() => toggleEventMonth(header)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
                             <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
                               {header}
@@ -2940,65 +3643,61 @@ export default function BandDetailScreen({
                             <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
                             <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
                           </Pressable>
-                        );
-                      })()}
-                      
-                      {isExpanded && (
-                      <Pressable
-                        style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                        onPress={() => onSelectSetlist ? onSelectSetlist(setlist) : onExportDoc(setlist)}
-                      >
-                        <View style={[styles.dateBadgeBox, { backgroundColor: colors.primary + '15' }]}>
-                          <Text style={[styles.dateBadgeDay, { color: colors.primary }]}>{dateBadge.day}</Text>
-                          <Text style={[styles.dateBadgeMonth, { color: colors.primary }]}>{dateBadge.month}</Text>
+                          {isExpanded && mEvents.map(renderEventCard)}
                         </View>
+                      );
+                    })}
 
-                        <View style={styles.eventCardBody}>
-                          <Text style={[styles.eventTitle, { color: colors.text }]}>{setlist.name}</Text>
-                          
-                          <View style={styles.eventMetaRow}>
-                            <View style={[
-                              styles.typePill,
-                              { backgroundColor: setlist.type === 'show' ? '#ef444420' : '#3b82f620' }
-                            ]}>
-                              <Text style={[
-                                styles.typePillText,
-                                { color: setlist.type === 'show' ? '#ef4444' : '#3b82f6' }
-                              ]}>
-                                {setlist.type === 'show' ? t('show').toUpperCase() : t('rehearsal').toUpperCase()}
-                              </Text>
-                            </View>
-
-                            {setlist.local ? (
-                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1, marginRight: setlist.time ? 8 : 0 }}>
-                                <Ionicons name="location-outline" size={13} color={colors.textMuted} />
-                                <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
-                                  {setlist.local}
-                                </Text>
-                              </View>
-                            ) : null}
-
-                            {setlist.time ? (
-                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
-                                <Ionicons name="time-outline" size={13} color={colors.primary} />
-                                <Text style={[styles.eventLocalText, { color: colors.textMuted }]} numberOfLines={1}>
-                                  {setlist.time}
-                                </Text>
-                              </View>
-                            ) : null}
+                    {/* Eventos Anteriores por Mês (Descendente até Janeiro) */}
+                    {pastEvents.length > 0 && (
+                      <View style={{ marginTop: upcomingEvents.length > 0 ? 14 : 0 }}>
+                        {upcomingEvents.length > 0 && (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginVertical: 10 }}>
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                              {t('pastEvents') || 'Eventos Anteriores'}
+                            </Text>
+                            <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.3 }} />
                           </View>
-                        </View>
-
-                      </Pressable>
-                      )}
-                    </View>
-                  );
-                });
+                        )}
+                        {Object.keys(pastMonthsMap).map(header => {
+                          const mEvents = pastMonthsMap[header];
+                          const pastKey = 'past-' + header;
+                          const isExpanded = expandedEventMonths[pastKey] !== undefined ? expandedEventMonths[pastKey] : true;
+                          const mShows = mEvents.filter(s => s.type === 'show').length;
+                          const mRehearsals = mEvents.filter(s => s.type !== 'show').length;
+                          return (
+                            <View key={pastKey} style={{ marginBottom: 6 }}>
+                              <Pressable onPress={() => toggleEventMonth(pastKey)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 8, gap: 8 }}>
+                                <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 0.8 }}>
+                                  {header}
+                                </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 2 }}>
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                    <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
+                                    <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted }}>{mShows}</Text>
+                                  </View>
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                    <Ionicons name="headset-outline" size={13} color={colors.textMuted} />
+                                    <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted }}>{mRehearsals}</Text>
+                                  </View>
+                                </View>
+                                <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                                <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
+                              </Pressable>
+                              {isExpanded && mEvents.map(renderEventCard)}
+                            </View>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
+                );
               })()
             )}
           </ScrollView>
         )}
 
+        </Animated.View>
         </ScrollView>
       </View>
 
@@ -3898,8 +4597,8 @@ export default function BandDetailScreen({
                   <Ionicons name="cloud-outline" size={20} color={colors.primary} />
                 </View>
                 <View>
-                  <Text style={[styles.modalTitleText, { color: colors.text }]}>Sincronização & Rede</Text>
-                  <Text style={{ fontSize: 11, color: colors.textMuted }}>BandLink Cloud (Offline-First)</Text>
+                  <Text style={[styles.modalTitleText, { color: colors.text }]}>{t('cloudSyncNetworkTitle') || 'Sincronização & Rede'}</Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('cloudSyncOfflineFirst') || 'BandLink Cloud (Offline-First)'}</Text>
                 </View>
               </View>
               <Pressable onPress={() => setShowSyncModal(false)} style={{ padding: 6 }}>
@@ -3921,7 +4620,7 @@ export default function BandDetailScreen({
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <Ionicons name={isUserLeader ? "ribbon-outline" : "people-outline"} size={18} color={isUserLeader ? "#38bdf8" : "#a855f7"} />
                     <Text style={{ color: isUserLeader ? "#38bdf8" : "#a855f7", fontWeight: '700', fontSize: 13 }}>
-                      {isUserLeader ? "Você é o Líder da Banda" : "Você é Integrante da Banda"}
+                      {isUserLeader ? (t('youAreLeader') || "Você é o Líder da Banda") : (t('youAreMember') || "Você é Integrante da Banda")}
                     </Text>
                   </View>
                   <View style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
@@ -3932,8 +4631,8 @@ export default function BandDetailScreen({
                 </View>
                 <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 17 }}>
                   {isUserLeader
-                    ? "Como líder, você atualiza o repertório, cifras e setlists e envia as novidades para a nuvem. Todos os integrantes receberão as alterações."
-                    : "Como integrante, você recebe as músicas, cifras e alterações salvas pelo líder e armazena tudo no SQLite offline para tocar nos shows."}
+                    ? (t('leaderSyncDesc') || "Como líder, você atualiza o repertório, cifras e setlists e envia as novidades para a nuvem. Todos os integrantes receberão as alterações.")
+                    : (t('memberSyncDesc') || "Como integrante, você recebe as músicas, cifras e alterações salvas pelo líder e armazena tudo no SQLite offline para tocar nos shows.")}
                 </Text>
               </View>
 
@@ -3950,11 +4649,11 @@ export default function BandDetailScreen({
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <Ionicons name="sparkles" size={18} color="#f59e0b" />
                     <Text style={{ color: '#f59e0b', fontWeight: '700', fontSize: 13 }}>
-                      Atualização Disponível do Líder!
+                      {t('leaderUpdateAvailable') || "Atualização Disponível do Líder!"}
                     </Text>
                   </View>
                   <Text style={{ fontSize: 12, color: colors.text, opacity: 0.9, lineHeight: 17 }}>
-                    O líder publicou a versão v{syncStatusInfo.remoteVersion}. Baixe agora para atualizar seu repertório e cifras locais.
+                    {(t('leaderUpdateDesc') || "O líder publicou a versão v{version}. Baixe agora para atualizar seu repertório e cifras locais.").replace('{version}', syncStatusInfo.remoteVersion || 1)}
                   </Text>
                 </View>
               )}
@@ -3971,12 +4670,12 @@ export default function BandDetailScreen({
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <View style={{ flex: 1, marginRight: 12 }}>
                     <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>
-                      Visível na Rede Musical
+                      {t('visibleOnMusicNetwork') || "Visível na Rede Musical"}
                     </Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
                       {isNetworkVisible
-                        ? "Sua banda está online na Rede e possui página pública no ar."
-                        : "Sua banda está privada/offline. Ninguém na rede pode visualizá-la."}
+                        ? (t('bandIsOnlineNetwork') || "Sua banda está online na Rede e possui página pública no ar.")
+                        : (t('bandIsPrivateNetwork') || "Sua banda está privada/offline. Ninguém na rede pode visualizá-la.")}
                     </Text>
                   </View>
                   {isUserLeader ? (
@@ -4001,7 +4700,7 @@ export default function BandDetailScreen({
                       backgroundColor: isNetworkVisible ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.2)',
                     }}>
                       <Text style={{ color: isNetworkVisible ? '#10b981' : colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                        {isNetworkVisible ? 'ONLINE' : 'PRIVADA'}
+                        {isNetworkVisible ? 'ONLINE' : (t('private') || 'PRIVADA')}
                       </Text>
                     </View>
                   )}
@@ -4019,7 +4718,7 @@ export default function BandDetailScreen({
                     justifyContent: 'space-between',
                   }}>
                     <View style={{ flex: 1, marginRight: 8 }}>
-                      <Text style={{ fontSize: 10, color: colors.textMuted }}>LINK PÚBLICO DA BANDA</Text>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>{t('publicBandLink') || 'LINK PÚBLICO DA BANDA'}</Text>
                       <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }} numberOfLines={1}>
                         bandlink.pro/banda?id={band?.cloudId || band?.id}
                       </Text>
@@ -4037,7 +4736,7 @@ export default function BandDetailScreen({
                       }}
                     >
                       <Ionicons name="share-social-outline" size={14} color={colors.primary} />
-                      <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>Compartilhar</Text>
+                      <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>{t('share') || 'Compartilhar'}</Text>
                     </Pressable>
                   </View>
                 )}
@@ -4053,56 +4752,80 @@ export default function BandDetailScreen({
                 marginBottom: 20,
               }}>
                 <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13, marginBottom: 10 }}>
-                  Informações de Sincronização
+                  {t('syncInfoTitle') || 'Informações de Sincronização'}
                 </Text>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>Versão no Dispositivo:</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('deviceVersion') || 'Versão no Dispositivo:'}</Text>
                   <Text style={{ color: colors.text, fontWeight: '700', fontSize: 12 }}>v{syncStatusInfo.localVersion || 1}</Text>
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>Versão na Nuvem:</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('cloudVersion') || 'Versão na Nuvem:'}</Text>
                   <Text style={{ color: colors.text, fontWeight: '700', fontSize: 12 }}>v{syncStatusInfo.remoteVersion || 1}</Text>
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>Última Sincronização:</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('lastSyncLabel') || 'Última Sincronização:'}</Text>
                   <Text style={{ color: colors.text, fontSize: 12 }}>
                     {syncStatusInfo.lastSyncedAt
-                      ? new Date(syncStatusInfo.lastSyncedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-                      : 'Pendente'}
+                      ? new Date(syncStatusInfo.lastSyncedAt).toLocaleString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : 'pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+                      : (t('pendingSync') || 'Pendente')}
                   </Text>
                 </View>
               </View>
 
               {/* Action Buttons */}
               {isUserLeader ? (
-                <Pressable
-                  onPress={handlePushSyncToCloud}
-                  disabled={isSyncing}
-                  style={{
-                    backgroundColor: colors.primary,
-                    borderRadius: 12,
-                    paddingVertical: 14,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    gap: 8,
-                    opacity: isSyncing ? 0.7 : 1,
-                  }}
-                >
-                  {isSyncing ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
-                  ) : (
-                    <>
-                      <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" />
-                      <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
-                        Enviar Alterações para a Nuvem
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
+                <View style={{ gap: 10 }}>
+                  <Pressable
+                    onPress={handlePushSyncToCloud}
+                    disabled={isSyncing}
+                    style={{
+                      backgroundColor: colors.primary,
+                      borderRadius: 12,
+                      paddingVertical: 14,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      gap: 8,
+                      opacity: isSyncing ? 0.7 : 1,
+                    }}
+                  >
+                    {isSyncing ? (
+                      <ActivityIndicator size="small" color="#ffffff" />
+                    ) : (
+                      <>
+                        <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" />
+                        <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
+                          {t('pushChangesToCloud') || 'Enviar Alterações para a Nuvem'}
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+
+                  <Pressable
+                    onPress={handlePullSyncFromCloud}
+                    disabled={isSyncing}
+                    style={{
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                      borderRadius: 12,
+                      paddingVertical: 12,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      gap: 8,
+                      opacity: isSyncing ? 0.7 : 1,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <Ionicons name="cloud-download-outline" size={17} color={colors.text} />
+                    <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
+                      {t('restoreFromCloud') || 'Restaurar / Baixar da Nuvem'}
+                    </Text>
+                  </Pressable>
+                </View>
               ) : (
                 <Pressable
                   onPress={handlePullSyncFromCloud}
@@ -4124,7 +4847,7 @@ export default function BandDetailScreen({
                     <>
                       <Ionicons name="cloud-download-outline" size={18} color="#ffffff" />
                       <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
-                        Baixar Atualizações do Líder
+                        {t('pullUpdatesFromLeader') || 'Baixar Atualizações do Líder'}
                       </Text>
                     </>
                   )}
@@ -4147,7 +4870,7 @@ const styles = StyleSheet.create({
   },
   headerHeroContainer: {
     width: '100%',
-    height: 220,
+    height: 280,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -4185,10 +4908,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 40,
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.70)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.12)',
   },
   headerInitialsBig: {
     fontSize: 28,

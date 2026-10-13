@@ -492,6 +492,24 @@ const createWebDB = () => {
         });
       });
     }
+
+    // Limpeza de duplicatas em setlist_songs no mock Web
+    if (Array.isArray(data.setlist_songs)) {
+      const seenOrder = new Set();
+      const seenSong = new Set();
+      data.setlist_songs = data.setlist_songs.filter(ss => {
+        const orderKey = `${ss.setlistId}_${ss.order_num}`;
+        if (seenOrder.has(orderKey)) return false;
+        seenOrder.add(orderKey);
+
+        if (ss.songId >= 0) {
+          const songKey = `${ss.setlistId}_${ss.songId}`;
+          if (seenSong.has(songKey)) return false;
+          seenSong.add(songKey);
+        }
+        return (ss.order_num || 0) < 100;
+      });
+    }
   };
 
   const saveToStorage = () => {
@@ -697,9 +715,14 @@ const createWebDB = () => {
       }
       if (sql.includes('DELETE FROM my_bands')) {
         const id = params[0];
-        data.my_bands = data.my_bands.filter(b => b.id !== id);
+        data.my_bands = (data.my_bands || []).filter(b => b.id !== id);
         // Cascata no setlist
-        data.setlists = data.setlists.map(s => s.myBandId === id ? { ...s, myBandId: null } : s);
+        data.setlists = (data.setlists || []).map(s => s.myBandId === id ? { ...s, myBandId: null } : s);
+        // Cascata nas tabelas filhas
+        data.band_songs = (data.band_songs || []).filter(bs => bs.bandId !== id);
+        data.band_members = (data.band_members || []).filter(bm => bm.bandId !== id);
+        data.band_finances = (data.band_finances || []).filter(bf => bf.bandId !== id);
+        data.band_activity_logs = (data.band_activity_logs || []).filter(ba => ba.bandId !== id);
         saveToStorage();
         return {};
       }
@@ -782,6 +805,12 @@ const createWebDB = () => {
         });
         saveToStorage();
         return { lastInsertRowId: id };
+      }
+      if (sql.includes('UPDATE setlists SET myBandId = NULL WHERE myBandId = ?')) {
+        const bandId = params[0];
+        data.setlists = (data.setlists || []).map(s => s.myBandId === bandId ? { ...s, myBandId: null } : s);
+        saveToStorage();
+        return {};
       }
       if (sql.includes('UPDATE setlists')) {
         const updateId = params[params.length - 1];
@@ -880,6 +909,13 @@ const createWebDB = () => {
         saveToStorage();
         return {};
       }
+      if (sql.includes('DELETE FROM band_songs WHERE bandId = ?')) {
+        data.band_songs = data.band_songs || [];
+        const bandId = params[0];
+        data.band_songs = data.band_songs.filter(bs => bs.bandId !== bandId);
+        saveToStorage();
+        return {};
+      }
 
       if (sql.includes('UPDATE band_songs SET isFavorite = ?')) {
         data.band_songs = data.band_songs || [];
@@ -959,9 +995,15 @@ const createWebDB = () => {
         return { changes: 1 };
       }
 
+      if (sql.includes('DELETE FROM band_members WHERE bandId = ?')) {
+        const bandId = params[0];
+        data.band_members = (data.band_members || []).filter(m => m.bandId !== bandId);
+        saveToStorage();
+        return { changes: 1 };
+      }
       if (sql.includes('DELETE FROM band_members')) {
         const id = params[0];
-        data.band_members = data.band_members.filter(m => m.id !== id);
+        data.band_members = (data.band_members || []).filter(m => m.id !== id);
         saveToStorage();
         return { changes: 1 };
       }
@@ -1010,10 +1052,24 @@ const createWebDB = () => {
         }
         return {};
       }
+      if (sql.includes('DELETE FROM band_finances WHERE bandId = ?')) {
+        data.band_finances = data.band_finances || [];
+        const bandId = params[0];
+        data.band_finances = data.band_finances.filter(f => f.bandId !== bandId);
+        saveToStorage();
+        return {};
+      }
       if (sql.includes('DELETE FROM band_finances WHERE id = ?')) {
         data.band_finances = data.band_finances || [];
         const id = params[0];
         data.band_finances = data.band_finances.filter(f => f.id !== id);
+        saveToStorage();
+        return {};
+      }
+      if (sql.includes('DELETE FROM band_activity_logs WHERE bandId = ?')) {
+        data.band_activity_logs = data.band_activity_logs || [];
+        const bandId = params[0];
+        data.band_activity_logs = data.band_activity_logs.filter(a => a.bandId !== bandId);
         saveToStorage();
         return {};
       }
@@ -1173,6 +1229,17 @@ export const createTables = async () => {
         FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE,
         FOREIGN KEY (setlistId) REFERENCES setlists(id) ON DELETE SET NULL
       );
+      CREATE TABLE IF NOT EXISTS band_activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bandId INTEGER NOT NULL,
+        actionType TEXT NOT NULL,
+        authorName TEXT,
+        authorId INTEGER,
+        description TEXT NOT NULL,
+        metadataJson TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE
+      );
     `);
     
     console.log("Nativo: Tabelas preparadas com sucesso!");
@@ -1302,6 +1369,9 @@ export const createTables = async () => {
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE my_bands ADD COLUMN lastSyncedAt TEXT;");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN hasLocalChanges INTEGER DEFAULT 0;");
     } catch (e) {}
 
     // Migração de chords em songs
@@ -1480,6 +1550,32 @@ export const createTables = async () => {
       }
     } catch (e) {
       console.log("Nativo: Erro ao inserir músicas de exemplo:", e.message);
+    }
+
+    // Limpeza de músicas duplicadas em setlists (devido a sincronizações repetidas)
+    try {
+      await db.execAsync(`
+        DELETE FROM setlist_songs
+        WHERE id NOT IN (
+          SELECT MIN(id)
+          FROM setlist_songs
+          GROUP BY setlistId, order_num
+        );
+
+        DELETE FROM setlist_songs
+        WHERE songId >= 0 AND id NOT IN (
+          SELECT MIN(id)
+          FROM setlist_songs
+          WHERE songId >= 0
+          GROUP BY setlistId, songId
+        );
+
+        DELETE FROM setlist_songs
+        WHERE order_num >= 100;
+      `);
+      console.log("Nativo: Deduplicação profunda de setlist_songs executada com sucesso!");
+    } catch (e) {
+      console.log("Nativo: Nota da deduplicação de setlist_songs:", e.message);
     }
 
   } catch (error) {

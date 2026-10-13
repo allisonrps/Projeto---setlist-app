@@ -524,5 +524,22 @@ export const api = {
       throw new Error(errMsg);
     }
     return response.json();
+  },
+
+  deleteBand: async (id) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${id}`, {
+      method: "DELETE",
+      headers
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao excluir banda do servidor.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
   }
 };

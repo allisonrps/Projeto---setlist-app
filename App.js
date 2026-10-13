@@ -675,6 +675,7 @@ function MainApp() {
   const [dbReady, setDbReady] = useState(false);
   const [splashFinished, setSplashFinished] = useState(false);
   const [refreshingBands, setRefreshingBands] = useState(false);
+  const [cloudBandsMap, setCloudBandsMap] = useState({});
 
   // Convites Recebidos de Bandas / Projetos
   const [receivedInvites, setReceivedInvites] = useState([]);
@@ -937,9 +938,65 @@ function MainApp() {
         }
       }
       await loadReceivedInvites();
+      try {
+        const token = await AsyncStorage.getItem('jwt_token');
+        if (token) {
+          const cbList = await api.getMyCloudBands();
+          if (Array.isArray(cbList)) {
+            const map = {};
+            for (const cb of cbList) {
+              if (cb && cb.id) map[cb.id] = cb;
+            }
+            setCloudBandsMap(map);
+          }
+        }
+      } catch (cbErr) {}
     } catch (error) {
       console.error('Erro ao recarregar dados:', error);
     }
+  };
+
+  const getBandSyncStatus = (band) => {
+    if (!band || !band.cloudId) {
+      return {
+        key: 'offline',
+        label: t('offline') || 'Offline',
+        color: colors.textMuted,
+        bg: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+        icon: 'cloud-offline-outline'
+      };
+    }
+    const cloudBand = cloudBandsMap[band.cloudId] || cloudBandsMap[Number(band.cloudId)];
+    const remoteVer = cloudBand ? (cloudBand.version || 0) : 0;
+    const localVer = band.cloudVersion || 0;
+
+    if (remoteVer > localVer) {
+      return {
+        key: 'updateAvailable',
+        label: t('updateAvailable') || 'Recebeu Atualização',
+        color: colors.secondary || '#3b82f6',
+        bg: (colors.secondary || '#3b82f6') + '20',
+        icon: 'cloud-download-outline'
+      };
+    }
+
+    if (band.hasLocalChanges === 1 || !band.lastSyncedAt) {
+      return {
+        key: 'pushPending',
+        label: t('pushPending') || 'Enviar p/ Nuvem',
+        color: '#f59e0b',
+        bg: 'rgba(245, 158, 11, 0.18)',
+        icon: 'cloud-upload-outline'
+      };
+    }
+
+    return {
+      key: 'synced',
+      label: t('synced') || 'Sincronizada',
+      color: colors.success || '#10b981',
+      bg: (colors.success || '#10b981') + '20',
+      icon: 'checkmark-circle-outline'
+    };
   };
 
   const handleRefreshBands = async () => {
@@ -1322,6 +1379,9 @@ function MainApp() {
               await bandService.delete(bandId);
               if (activeBandDetail && activeBandDetail.id === bandId) {
                 setActiveBandDetail(null);
+              }
+              if (selectedBandId === bandId) {
+                setSelectedBandId(null);
               }
               await reloadAllData();
             } catch (err) {
@@ -3353,38 +3413,81 @@ function MainApp() {
                           </Text>
                           
                           {/* Subtítulo: Tipo, Banda e Local */}
-                          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                            <View style={{
-                              backgroundColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '15',
-                              borderColor: (setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success) + '30',
-                              borderWidth: 1,
-                              borderRadius: 6,
-                              paddingHorizontal: 7,
-                              paddingVertical: 2,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 4
-                            }}>
-                              <Ionicons 
-                                name={setlist.type === 'show' ? 'mic-outline' : setlist.type === 'ensaio' ? 'musical-notes-outline' : 'clipboard-outline'} 
-                                size={10} 
-                                color={setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success} 
-                              />
-                              <Text style={{ 
-                                fontSize: 9.5, 
-                                fontWeight: '900', 
-                                color: setlist.type === 'show' ? colors.danger : setlist.type === 'ensaio' ? colors.primary : colors.success 
-                              }}>
-                                {t(setlist.type).toUpperCase()}
-                              </Text>
-                            </View>
+                          {(() => {
+                            const eventLocation = (setlist.local || setlist.venue || setlist.location || setlist.place || '').trim();
+                            const isShow = !setlist.type || setlist.type === 'show';
+                            const isRehearsal = setlist.type === 'ensaio' || setlist.type === 'rehearsal';
+                            const typeLabel = isShow ? (t('show') || 'SHOW') : isRehearsal ? (t('rehearsal') || 'ENSAIO') : (setlist.type || 'EVENTO');
+                            const typeColor = isShow ? colors.danger : isRehearsal ? colors.primary : colors.success;
 
-                            {setlist.local ? (
-                              <Text style={{ fontSize: 11, color: colors.textMuted }} numberOfLines={1}>
-                                <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {setlist.local}
-                              </Text>
-                            ) : null}
-                          </View>
+                            return (
+                              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                                <View style={{
+                                  backgroundColor: typeColor + '15',
+                                  borderColor: typeColor + '30',
+                                  borderWidth: 1,
+                                  borderRadius: 6,
+                                  paddingHorizontal: 7,
+                                  paddingVertical: 2,
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  gap: 4
+                                }}>
+                                  <Ionicons 
+                                    name={isShow ? 'mic-outline' : isRehearsal ? 'musical-notes-outline' : 'clipboard-outline'} 
+                                    size={10} 
+                                    color={typeColor} 
+                                  />
+                                  <Text style={{ 
+                                    fontSize: 9.5, 
+                                    fontWeight: '900', 
+                                    color: typeColor 
+                                  }}>
+                                    {typeLabel.toUpperCase()}
+                                  </Text>
+                                </View>
+
+                                {eventLocation ? (
+                                  <View style={{
+                                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                                    borderColor: colors.border,
+                                    borderWidth: 1,
+                                    borderRadius: 6,
+                                    paddingHorizontal: 7,
+                                    paddingVertical: 2,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    maxWidth: 170,
+                                  }}>
+                                    <Ionicons name="location-outline" size={11} color={colors.textMuted} />
+                                    <Text style={{ fontSize: 10.5, fontWeight: '600', color: colors.textMuted }} numberOfLines={1}>
+                                      {eventLocation}
+                                    </Text>
+                                  </View>
+                                ) : null}
+
+                                {setlist.time ? (
+                                  <View style={{
+                                    backgroundColor: colors.primary + '12',
+                                    borderColor: colors.primary + '30',
+                                    borderWidth: 1,
+                                    borderRadius: 6,
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 2,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 3
+                                  }}>
+                                    <Ionicons name="time-outline" size={10} color={colors.primary} />
+                                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: colors.primary }}>
+                                      {setlist.time}
+                                    </Text>
+                                  </View>
+                                ) : null}
+                              </View>
+                            );
+                          })()}
                         </View>
 
                         {/* Band Logo Avatar (DIREITA) */}
@@ -3518,13 +3621,81 @@ function MainApp() {
                                       <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textMuted }} numberOfLines={1}>
                                         {setlist.name || 'Sem Nome'}
                                       </Text>
-                                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                                        {setlist.local ? (
-                                          <Text style={{ fontSize: 11, color: colors.textMuted, opacity: 0.8 }} numberOfLines={1}>
-                                            <Ionicons name="location-outline" size={11} color={colors.textMuted} /> {setlist.local}
-                                          </Text>
-                                        ) : null}
-                                      </View>
+                                      {(() => {
+                                        const eventLocation = (setlist.local || setlist.venue || setlist.location || setlist.place || '').trim();
+                                        const isShow = !setlist.type || setlist.type === 'show';
+                                        const isRehearsal = setlist.type === 'ensaio' || setlist.type === 'rehearsal';
+                                        const typeLabel = isShow ? (t('show') || 'SHOW') : isRehearsal ? (t('rehearsal') || 'ENSAIO') : (setlist.type || 'EVENTO');
+                                        const typeColor = isShow ? colors.danger : isRehearsal ? colors.primary : colors.success;
+
+                                        return (
+                                          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                                            <View style={{
+                                              backgroundColor: typeColor + '15',
+                                              borderColor: typeColor + '30',
+                                              borderWidth: 1,
+                                              borderRadius: 6,
+                                              paddingHorizontal: 7,
+                                              paddingVertical: 2,
+                                              flexDirection: 'row',
+                                              alignItems: 'center',
+                                              gap: 4
+                                            }}>
+                                              <Ionicons 
+                                                name={isShow ? 'mic-outline' : isRehearsal ? 'musical-notes-outline' : 'clipboard-outline'} 
+                                                size={10} 
+                                                color={typeColor} 
+                                              />
+                                              <Text style={{ 
+                                                fontSize: 9.5, 
+                                                fontWeight: '900', 
+                                                color: typeColor 
+                                              }}>
+                                                {typeLabel.toUpperCase()}
+                                              </Text>
+                                            </View>
+
+                                            {eventLocation ? (
+                                              <View style={{
+                                                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                                                borderColor: colors.border,
+                                                borderWidth: 1,
+                                                borderRadius: 6,
+                                                paddingHorizontal: 7,
+                                                paddingVertical: 2,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 4,
+                                                maxWidth: 170,
+                                              }}>
+                                                <Ionicons name="location-outline" size={11} color={colors.textMuted} />
+                                                <Text style={{ fontSize: 10.5, fontWeight: '600', color: colors.textMuted }} numberOfLines={1}>
+                                                  {eventLocation}
+                                                </Text>
+                                              </View>
+                                            ) : null}
+
+                                            {setlist.time ? (
+                                              <View style={{
+                                                backgroundColor: colors.primary + '12',
+                                                borderColor: colors.primary + '30',
+                                                borderWidth: 1,
+                                                borderRadius: 6,
+                                                paddingHorizontal: 6,
+                                                paddingVertical: 2,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 3
+                                              }}>
+                                                <Ionicons name="time-outline" size={10} color={colors.primary} />
+                                                <Text style={{ fontSize: 9.5, fontWeight: '700', color: colors.primary }}>
+                                                  {setlist.time}
+                                                </Text>
+                                              </View>
+                                            ) : null}
+                                          </View>
+                                        );
+                                      })()}
                                     </View>
 
                                     {/* Band Logo Avatar (DIREITA) */}
@@ -3626,6 +3797,7 @@ function MainApp() {
               hideFinancialValues={hideFinancialValues}
               onToggleHideFinancials={() => setHideFinancialValues(!hideFinancialValues)}
               selectedBandId={selectedBandId}
+              getBandSyncStatus={getBandSyncStatus}
             onSelectBand={(band) => {
               setActiveBandDetail(band);
             }}
@@ -3634,26 +3806,7 @@ function MainApp() {
               setShowBandModal(true);
             }}
             onEditBand={handleEditBand}
-            onDeleteBand={(band) => {
-              Alert.alert(
-                t('deleteBandConfirmTitle'),
-                t('deleteBandConfirmMsg').replace('{name}', band.name),
-                [
-                  { text: t('cancel'), style: 'cancel' },
-                  {
-                    text: t('delete'),
-                    style: 'destructive',
-                    onPress: async () => {
-                      await bandService.delete(band.id);
-                      if (selectedBandId === band.id) {
-                        setSelectedBandId(null);
-                      }
-                      await reloadAllData();
-                    },
-                  },
-                ]
-              );
-            }}
+            onDeleteBand={handleDeleteBand}
           />
 
           {(() => {
@@ -4048,9 +4201,32 @@ function MainApp() {
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, letterSpacing: -0.2 }} numberOfLines={1}>
-                        {band.name}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, letterSpacing: -0.2, flexShrink: 1 }} numberOfLines={1}>
+                          {band.name}
+                        </Text>
+                        {(() => {
+                          const syncStatus = getBandSyncStatus(band);
+                          return (
+                            <View style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 4,
+                              backgroundColor: syncStatus.bg,
+                              borderColor: syncStatus.color + '40',
+                              borderWidth: 1,
+                              borderRadius: 10,
+                              paddingHorizontal: 7,
+                              paddingVertical: 2,
+                            }}>
+                              <Ionicons name={syncStatus.icon} size={11} color={syncStatus.color} />
+                              <Text style={{ fontSize: 10, fontWeight: '800', color: syncStatus.color }}>
+                                {syncStatus.label}
+                              </Text>
+                            </View>
+                          );
+                        })()}
+                      </View>
 
                       <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginTop: 2 }}>
                         {t('since')}: {band.startDate ? band.startDate : (currentYear - 1)}{band.endDate ? ` ${t('until')} ${band.endDate}` : ''}
@@ -5120,7 +5296,7 @@ function MainApp() {
                   </Pressable>
                   <Text style={[styles.aboutAppTitle, { color: colors.primary, marginTop: 8 }]}>BANDLINK</Text>
                   <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.5</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.6 (Build 15)</Text>
                   </View>
                   
                   <Pressable 

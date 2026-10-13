@@ -48,6 +48,22 @@ const LAYOUT_TEMPLATES = [
   { id: 9, name: 'Clássico & Orquestra', icon: 'sparkles' },
 ];
 
+const getTemplateName = (id, t) => {
+  if (!t) return 'Layout';
+  switch (id) {
+    case 1: return t('templateRockMetal') || 'Rock & Metal';
+    case 2: return t('templateAcousticFolk') || 'Folk Acústico';
+    case 3: return t('templatePopSynth') || 'Pop Synthwave';
+    case 4: return t('templateJazzBlues') || 'Jazz & Blues';
+    case 5: return t('templateElectronicEDM') || 'Eletrônica EDM';
+    case 6: return t('templateReggaeRoots') || 'Reggae Roots';
+    case 7: return t('templateGospelWorship') || 'Gospel & Worship';
+    case 8: return t('templateGenericNotes') || 'Música Genérica (Notas)';
+    case 9: return t('templateClassicalOrchestra') || 'Clássico & Orquestra';
+    default: return 'Rock & Metal';
+  }
+};
+
 const WEEKDAYS_MAP = {
   pt: ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'],
   en: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
@@ -226,33 +242,57 @@ export default function ShareAgendaModal({
     if (isSharing) return;
     setIsSharing(true);
     try {
-      // Pausa essencial de 600ms para garantir que o layout 1080x1920 seja montado,
-      // todas as fontes personalizadas e imagens sejam desenhadas pelo motor nativo
+      // Pausa essencial para garantir que o layout 1080x1920 e os elementos visuais
+      // estejam completamente renderizados pelo motor nativo
       await new Promise(resolve => setTimeout(resolve, 600));
 
       let uri = null;
-      try {
-        if (viewShotRef.current && typeof viewShotRef.current.capture === 'function') {
+      let captureError = null;
+
+      // 1ª Tentativa: capture direto pelo componente ViewShot
+      if (viewShotRef.current && typeof viewShotRef.current.capture === 'function') {
+        try {
           uri = await viewShotRef.current.capture();
+        } catch (err1) {
+          captureError = err1;
+          console.log('[ShareAgendaModal] Tentativa 1 (direct capture) falhou:', err1);
         }
-      } catch (directErr) {
-        console.log('Direct viewShotRef capture failed, trying captureRef fallback:', directErr);
       }
 
+      // 2ª Tentativa: captureRef nativo com nó raiz (JPG 95%)
       if (!uri && viewShotRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 300));
         try {
-          uri = await captureRef(viewShotRef, {
+          const targetNode = viewShotRef.current.root || viewShotRef.current;
+          uri = await captureRef(targetNode, {
             format: 'jpg',
             quality: 0.95,
             result: 'tmpfile',
           });
-        } catch (refErr) {
-          console.log('captureRef fallback also failed:', refErr);
+        } catch (err2) {
+          captureError = err2;
+          console.log('[ShareAgendaModal] Tentativa 2 (captureRef JPG) falhou:', err2);
+        }
+      }
+
+      // 3ª Tentativa: fallback com PNG (formato alternativo universal)
+      if (!uri && viewShotRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        try {
+          const targetNode = viewShotRef.current.root || viewShotRef.current;
+          uri = await captureRef(targetNode, {
+            format: 'png',
+            quality: 1.0,
+            result: 'tmpfile',
+          });
+        } catch (err3) {
+          captureError = err3;
+          console.log('[ShareAgendaModal] Tentativa 3 (captureRef PNG) falhou:', err3);
         }
       }
 
       if (!uri) {
-        throw new Error('Capture returned empty URI');
+        throw captureError || new Error('Falha ao capturar imagem da agenda.');
       }
 
       const isAvailable = await Sharing.isAvailableAsync();
@@ -262,9 +302,9 @@ export default function ShareAgendaModal({
       }
 
       await Sharing.shareAsync(uri, {
-        mimeType: 'image/jpeg',
+        mimeType: uri.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg',
         dialogTitle: t('shareAgenda') || 'Compartilhar Agenda',
-        UTI: 'public.jpeg',
+        UTI: uri.toLowerCase().endsWith('.png') ? 'public.png' : 'public.jpeg',
       });
 
       onClose && onClose();
@@ -387,58 +427,207 @@ export default function ShareAgendaModal({
     };
   };
 
-  // Escala dinâmica dos elementos para comportar com elegância de 1 até 6 eventos sem transbordar
+  // Escala dinâmica calibrada individualmente para 1, 2, 3, 4, 5 ou 6 eventos para preencher o flyer
   const eventCount = selectedEvents.length;
-  const isCompact = eventCount >= 5;
-  const isMedium = eventCount === 4;
+  const count = Math.max(1, Math.min(6, eventCount || 1));
 
-  const headerLogoSize = isCompact ? 115 : (isMedium ? 130 : 145);
-  const headerTitleFontSize = isCompact ? 68 : (isMedium ? 74 : 82);
-  const headerTitleLineHeight = isCompact ? 72 : (isMedium ? 80 : 88);
-  const headerSubtitleFontSize = isCompact ? 26 : (isMedium ? 30 : 34);
-  const headerMarginBottom = isCompact ? 24 : (isMedium ? 36 : 48);
-
-  const cardMarginBottom = isCompact ? 14 : (isMedium ? 20 : 28);
-  const cardPaddingVertical = isCompact ? 12 : (isMedium ? 18 : 22);
-  const cardPaddingHorizontal = isCompact ? 20 : (isMedium ? 24 : 26);
-  const cardBorderRadius = isCompact ? 16 : (isMedium ? 18 : 22);
-
-  const dateBadgeMinWidth = isCompact ? 115 : (isMedium ? 130 : 145);
-  const dateBadgePaddingV = isCompact ? 8 : (isMedium ? 10 : 12);
-  const dateBadgeMarginRight = isCompact ? 18 : (isMedium ? 22 : 26);
-  const dateBadgeWeekDayFontSize = isCompact ? 14 : (isMedium ? 16 : 18);
-  const dateBadgeDayFontSize = isCompact ? 38 : (isMedium ? 44 : 48);
-  const dateBadgeDayLineHeight = isCompact ? 42 : (isMedium ? 48 : 52);
-  const dateBadgeMonthFontSize = isCompact ? 17 : (isMedium ? 20 : 22);
-
-  const eventTitleFontSize = isCompact ? 28 : (isMedium ? 33 : 38);
-  const eventTitleLineHeight = isCompact ? 34 : (isMedium ? 40 : 46);
-  const eventTitleMarginBottom = isCompact ? 4 : (isMedium ? 6 : 8);
-  const eventInfoFontSize = isCompact ? 22 : (isMedium ? 26 : 30);
-  const eventInfoIconSize = isCompact ? 22 : (isMedium ? 25 : 28);
-
-  const footerPadding = isCompact ? 24 : (isMedium ? 30 : 36);
-  const footerBorderRadius = isCompact ? 22 : (isMedium ? 24 : 28);
-  const footerBadgeFontSize = isCompact ? 19 : 22;
-  const footerSummaryFontSize = isCompact ? 23 : (isMedium ? 26 : 30);
-  const footerSummaryLineHeight = isCompact ? 30 : (isMedium ? 34 : 38);
-  const footerSloganFontSize = isCompact ? 18 : (isMedium ? 20 : 22);
-  const footerQrSize = isCompact ? 125 : (isMedium ? 135 : 145);
-  const footerScanFontSize = isCompact ? 14 : 16;
+  // Tabela de dimensões por quantidade para preencher o espaço vertical do flyer 1080x1920
+  const flyerDim = {
+    1: {
+      cardHeight: 340,
+      cardPaddingV: 44,
+      cardPaddingH: 38,
+      cardBorderRadius: 28,
+      dateBadgeMinWidth: 200,
+      dateBadgePadV: 26,
+      dateBadgeMarginRight: 34,
+      dateBadgeWeekDayFontSize: 24,
+      dateBadgeDayFontSize: 74,
+      dateBadgeDayLineHeight: 78,
+      dateBadgeMonthFontSize: 30,
+      eventTitleFontSize: 56,
+      eventTitleLineHeight: 64,
+      eventTitleMarginBottom: 16,
+      eventInfoFontSize: 36,
+      eventInfoIconSize: 36,
+      headerLogoSize: 220,
+      headerTitleFontSize: 92,
+      headerTitleLineHeight: 98,
+      headerSubtitleFontSize: 38,
+      headerMarginBottom: 48,
+      footerPadding: 34,
+      footerBorderRadius: 28,
+      footerSummaryFontSize: 28,
+      footerSummaryLineHeight: 36,
+      footerSloganFontSize: 22,
+      footerQrSize: 145,
+      footerScanFontSize: 16,
+    },
+    2: {
+      cardHeight: 310,
+      cardPaddingV: 42,
+      cardPaddingH: 36,
+      cardBorderRadius: 26,
+      dateBadgeMinWidth: 190,
+      dateBadgePadV: 24,
+      dateBadgeMarginRight: 32,
+      dateBadgeWeekDayFontSize: 22,
+      dateBadgeDayFontSize: 68,
+      dateBadgeDayLineHeight: 72,
+      dateBadgeMonthFontSize: 28,
+      eventTitleFontSize: 50,
+      eventTitleLineHeight: 58,
+      eventTitleMarginBottom: 14,
+      eventInfoFontSize: 34,
+      eventInfoIconSize: 34,
+      headerLogoSize: 200,
+      headerTitleFontSize: 88,
+      headerTitleLineHeight: 94,
+      headerSubtitleFontSize: 36,
+      headerMarginBottom: 42,
+      footerPadding: 32,
+      footerBorderRadius: 26,
+      footerSummaryFontSize: 28,
+      footerSummaryLineHeight: 36,
+      footerSloganFontSize: 22,
+      footerQrSize: 145,
+      footerScanFontSize: 16,
+    },
+    3: {
+      cardHeight: 260,
+      cardPaddingV: 38,
+      cardPaddingH: 34,
+      cardBorderRadius: 24,
+      dateBadgeMinWidth: 175,
+      dateBadgePadV: 20,
+      dateBadgeMarginRight: 30,
+      dateBadgeWeekDayFontSize: 21,
+      dateBadgeDayFontSize: 60,
+      dateBadgeDayLineHeight: 64,
+      dateBadgeMonthFontSize: 25,
+      eventTitleFontSize: 46,
+      eventTitleLineHeight: 54,
+      eventTitleMarginBottom: 12,
+      eventInfoFontSize: 31,
+      eventInfoIconSize: 31,
+      headerLogoSize: 180,
+      headerTitleFontSize: 84,
+      headerTitleLineHeight: 90,
+      headerSubtitleFontSize: 34,
+      headerMarginBottom: 36,
+      footerPadding: 30,
+      footerBorderRadius: 24,
+      footerSummaryFontSize: 26,
+      footerSummaryLineHeight: 34,
+      footerSloganFontSize: 20,
+      footerQrSize: 140,
+      footerScanFontSize: 16,
+    },
+    4: {
+      cardHeight: 195,
+      cardPaddingV: 28,
+      cardPaddingH: 28,
+      cardBorderRadius: 22,
+      dateBadgeMinWidth: 155,
+      dateBadgePadV: 15,
+      dateBadgeMarginRight: 26,
+      dateBadgeWeekDayFontSize: 18,
+      dateBadgeDayFontSize: 52,
+      dateBadgeDayLineHeight: 56,
+      dateBadgeMonthFontSize: 22,
+      eventTitleFontSize: 40,
+      eventTitleLineHeight: 48,
+      eventTitleMarginBottom: 10,
+      eventInfoFontSize: 28,
+      eventInfoIconSize: 28,
+      headerLogoSize: 150,
+      headerTitleFontSize: 78,
+      headerTitleLineHeight: 84,
+      headerSubtitleFontSize: 31,
+      headerMarginBottom: 30,
+      footerPadding: 28,
+      footerBorderRadius: 24,
+      footerSummaryFontSize: 25,
+      footerSummaryLineHeight: 32,
+      footerSloganFontSize: 20,
+      footerQrSize: 135,
+      footerScanFontSize: 15,
+    },
+    5: {
+      cardHeight: 152,
+      cardPaddingV: 20,
+      cardPaddingH: 24,
+      cardBorderRadius: 18,
+      dateBadgeMinWidth: 135,
+      dateBadgePadV: 10,
+      dateBadgeMarginRight: 22,
+      dateBadgeWeekDayFontSize: 16,
+      dateBadgeDayFontSize: 44,
+      dateBadgeDayLineHeight: 48,
+      dateBadgeMonthFontSize: 19,
+      eventTitleFontSize: 33,
+      eventTitleLineHeight: 40,
+      eventTitleMarginBottom: 7,
+      eventInfoFontSize: 24,
+      eventInfoIconSize: 24,
+      headerLogoSize: 125,
+      headerTitleFontSize: 70,
+      headerTitleLineHeight: 76,
+      headerSubtitleFontSize: 27,
+      headerMarginBottom: 24,
+      footerPadding: 26,
+      footerBorderRadius: 22,
+      footerSummaryFontSize: 24,
+      footerSummaryLineHeight: 30,
+      footerSloganFontSize: 19,
+      footerQrSize: 130,
+      footerScanFontSize: 14,
+    },
+    6: {
+      cardHeight: 124,
+      cardPaddingV: 14,
+      cardPaddingH: 22,
+      cardBorderRadius: 16,
+      dateBadgeMinWidth: 125,
+      dateBadgePadV: 8,
+      dateBadgeMarginRight: 20,
+      dateBadgeWeekDayFontSize: 15,
+      dateBadgeDayFontSize: 38,
+      dateBadgeDayLineHeight: 42,
+      dateBadgeMonthFontSize: 17,
+      eventTitleFontSize: 29,
+      eventTitleLineHeight: 35,
+      eventTitleMarginBottom: 6,
+      eventInfoFontSize: 21,
+      eventInfoIconSize: 21,
+      headerLogoSize: 118,
+      headerTitleFontSize: 68,
+      headerTitleLineHeight: 72,
+      headerSubtitleFontSize: 26,
+      headerMarginBottom: 20,
+      footerPadding: 24,
+      footerBorderRadius: 22,
+      footerSummaryFontSize: 23,
+      footerSummaryLineHeight: 30,
+      footerSloganFontSize: 18,
+      footerQrSize: 125,
+      footerScanFontSize: 14,
+    },
+  }[count];
 
   return (
     <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-        {/* ── HIGH-RES FLYER VIEWSHOT (DENTRO DO MODAL WINDOW, SEM RECORTE FORA DA TELA) ── */}
+        {/* ── HIGH-RES FLYER VIEWSHOT (MANTIDO MONTADO E PREVIAMENTE MEDIDO EM 1080x1920) ── */}
         <View
           style={{
             position: 'absolute',
-            left: isSharing ? 0 : -9999,
+            left: 0,
             top: 0,
             width: 1080,
             height: 1920,
-            zIndex: -10,
-            opacity: isSharing ? 1 : 0.01,
+            zIndex: -999,
+            opacity: isSharing ? 1 : 0.001,
           }}
           pointerEvents="none"
           collapsable={false}
@@ -464,20 +653,83 @@ export default function ShareAgendaModal({
                   flex: 1,
                   backgroundColor: 'rgba(0,0,0,0.58)',
                   paddingHorizontal: 70,
-                  paddingVertical: isCompact ? 50 : 65,
+                  paddingTop: count <= 3 ? 55 : 45,
+                  paddingBottom: count <= 3 ? 55 : 45,
                   justifyContent: 'space-between',
                 }}
               >
-                <View collapsable={false}>
-                  {/* TOP ROW: Logo da banda do lado esquerdo no topo da arte */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: headerMarginBottom, marginTop: 10 }}>
+                {/* HEADER: ADAPTATIVO (PARA POUCOS EVENTOS: LOGO NO TOPO GRANDE, AGENDA NA 2ª LINHA, UPCOMING EVENTS NA 3ª LINHA) */}
+                {count <= 4 ? (
+                  <View collapsable={false} style={{ alignItems: 'center', marginBottom: flyerDim.headerMarginBottom, marginTop: 10 }}>
+                    {/* Linha 1: Logo no topo maior e centralizado */}
                     {artLogo ? (
                       <Image
                         source={{ uri: artLogo }}
                         style={{
-                          width: headerLogoSize,
-                          height: headerLogoSize,
-                          borderRadius: headerLogoSize / 2,
+                          width: flyerDim.headerLogoSize,
+                          height: flyerDim.headerLogoSize,
+                          borderRadius: flyerDim.headerLogoSize / 2,
+                          marginBottom: 16,
+                          borderWidth: 5,
+                          borderColor: colors.primary || '#eab308',
+                          backgroundColor: 'rgba(0,0,0,0.4)',
+                        }}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          width: flyerDim.headerLogoSize,
+                          height: flyerDim.headerLogoSize,
+                          borderRadius: flyerDim.headerLogoSize / 2,
+                          marginBottom: 16,
+                          borderWidth: 5,
+                          borderColor: colors.primary || '#eab308',
+                          backgroundColor: colors.primary || '#eab308',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text style={{ fontSize: count <= 2 ? 68 : 58, fontWeight: '900', color: '#ffffff' }}>
+                          {(displayName || 'BD').substring(0, 2).toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Linha 2: AGENDA */}
+                    <Text style={{
+                      fontSize: flyerDim.headerTitleFontSize,
+                      fontWeight: '900',
+                      color: '#ffffff',
+                      textTransform: 'uppercase',
+                      letterSpacing: 4,
+                      lineHeight: flyerDim.headerTitleLineHeight,
+                      textAlign: 'center',
+                    }}>
+                      {t('agendaFlyerTitle') || 'AGENDA'}
+                    </Text>
+
+                    {/* Linha 3: UPCOMING EVENTS / PRÓXIMOS SHOWS • NOME */}
+                    <Text style={{
+                      fontSize: flyerDim.headerSubtitleFontSize,
+                      fontWeight: '800',
+                      color: colors.primary || '#eab308',
+                      marginTop: 6,
+                      textAlign: 'center',
+                      letterSpacing: 1,
+                    }}>
+                      {t('upcomingShows') || (activeLang === 'en' ? 'Upcoming Shows' : activeLang === 'es' ? 'Próximos Conciertos' : 'Próximos Shows')}
+                      {displayName ? ` • ${displayName}` : ''}
+                    </Text>
+                  </View>
+                ) : (
+                  <View collapsable={false} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: flyerDim.headerMarginBottom, marginTop: 4 }}>
+                    {artLogo ? (
+                      <Image
+                        source={{ uri: artLogo }}
+                        style={{
+                          width: flyerDim.headerLogoSize,
+                          height: flyerDim.headerLogoSize,
+                          borderRadius: flyerDim.headerLogoSize / 2,
                           marginRight: 26,
                           borderWidth: 4,
                           borderColor: colors.primary || '#eab308',
@@ -487,9 +739,9 @@ export default function ShareAgendaModal({
                     ) : (
                       <View
                         style={{
-                          width: headerLogoSize,
-                          height: headerLogoSize,
-                          borderRadius: headerLogoSize / 2,
+                          width: flyerDim.headerLogoSize,
+                          height: flyerDim.headerLogoSize,
+                          borderRadius: flyerDim.headerLogoSize / 2,
                           marginRight: 26,
                           borderWidth: 4,
                           borderColor: colors.primary || '#eab308',
@@ -498,25 +750,34 @@ export default function ShareAgendaModal({
                           alignItems: 'center',
                         }}
                       >
-                        <Text style={{ fontSize: isCompact ? 46 : 54, fontWeight: '900', color: '#ffffff' }}>
+                        <Text style={{ fontSize: 48, fontWeight: '900', color: '#ffffff' }}>
                           {(displayName || 'BD').substring(0, 2).toUpperCase()}
                         </Text>
                       </View>
                     )}
                     <View style={{ flex: 1 }}>
                       {/* Linha 1: AGENDA */}
-                      <Text style={{ fontSize: headerTitleFontSize, fontWeight: '900', color: '#ffffff', textTransform: 'uppercase', letterSpacing: 3, lineHeight: headerTitleLineHeight }}>
+                      <Text style={{ fontSize: flyerDim.headerTitleFontSize, fontWeight: '900', color: '#ffffff', textTransform: 'uppercase', letterSpacing: 3, lineHeight: flyerDim.headerTitleLineHeight }}>
                         {t('agendaFlyerTitle') || 'AGENDA'}
                       </Text>
                       {/* Linha 2: Próximos Shows • Nome */}
-                      <Text style={{ fontSize: headerSubtitleFontSize, fontWeight: '700', color: colors.primary || '#eab308', marginTop: 4 }}>
+                      <Text style={{ fontSize: flyerDim.headerSubtitleFontSize, fontWeight: '700', color: colors.primary || '#eab308', marginTop: 4 }}>
                         {t('upcomingShows') || (activeLang === 'en' ? 'Upcoming Shows' : activeLang === 'es' ? 'Próximos Conciertos' : 'Próximos Shows')}
                         {displayName ? ` • ${displayName}` : ''}
                       </Text>
                     </View>
                   </View>
+                )}
 
-                  {/* CARDS DE EVENTOS (ATÉ 6 EVENTOS COM ESCALA ADAPTATIVA) */}
+                {/* CARDS DE EVENTOS: PREENCHIMENTO ADAPTATIVO TOTAL DO ESPAÇO (2, 3, 4, 5 OU 6 EVENTOS) */}
+                <View
+                  collapsable={false}
+                  style={{
+                    flex: 1,
+                    justifyContent: 'space-evenly',
+                    marginVertical: count <= 3 ? 24 : 12,
+                  }}
+                >
                   {selectedEvents.map(event => {
                     const { day, month, weekDay, time } = getEventDateDetails(event);
                     const eventTitle = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
@@ -527,13 +788,13 @@ export default function ShareAgendaModal({
                         key={event.id}
                         collapsable={false}
                         style={{
-                          marginBottom: cardMarginBottom,
                           flexDirection: 'row',
                           alignItems: 'center',
                           backgroundColor: 'rgba(0,0,0,0.70)',
-                          paddingVertical: cardPaddingVertical,
-                          paddingHorizontal: cardPaddingHorizontal,
-                          borderRadius: cardBorderRadius,
+                          minHeight: flyerDim.cardHeight,
+                          paddingVertical: flyerDim.cardPaddingV,
+                          paddingHorizontal: flyerDim.cardPaddingH,
+                          borderRadius: flyerDim.cardBorderRadius,
                           borderWidth: 1.5,
                           borderColor: 'rgba(255,255,255,0.14)',
                         }}
@@ -541,28 +802,28 @@ export default function ShareAgendaModal({
                         {/* Data do lado esquerdo do card */}
                         <View
                           style={{
-                            minWidth: dateBadgeMinWidth,
-                            paddingVertical: dateBadgePaddingV,
+                            minWidth: flyerDim.dateBadgeMinWidth,
+                            paddingVertical: flyerDim.dateBadgePadV,
                             paddingHorizontal: 12,
-                            borderRadius: isCompact ? 12 : 16,
+                            borderRadius: count >= 5 ? 12 : 16,
                             backgroundColor: 'rgba(255,255,255,0.08)',
                             borderWidth: 2,
                             borderColor: colors.primary || '#eab308',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginRight: dateBadgeMarginRight,
+                            marginRight: flyerDim.dateBadgeMarginRight,
                           }}
                         >
                           {weekDay ? (
-                            <Text style={{ fontSize: dateBadgeWeekDayFontSize, fontWeight: '800', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', marginBottom: 2 }}>
+                            <Text style={{ fontSize: flyerDim.dateBadgeWeekDayFontSize, fontWeight: '800', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', marginBottom: 2 }}>
                               {weekDay}
                             </Text>
                           ) : null}
-                          <Text style={{ fontSize: dateBadgeDayFontSize, fontWeight: '900', color: '#ffffff', lineHeight: dateBadgeDayLineHeight }}>
+                          <Text style={{ fontSize: flyerDim.dateBadgeDayFontSize, fontWeight: '900', color: '#ffffff', lineHeight: flyerDim.dateBadgeDayLineHeight }}>
                             {day}
                           </Text>
                           {month ? (
-                            <Text style={{ fontSize: dateBadgeMonthFontSize, fontWeight: '900', color: colors.primary || '#eab308', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 2 }}>
+                            <Text style={{ fontSize: flyerDim.dateBadgeMonthFontSize, fontWeight: '900', color: colors.primary || '#eab308', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 2 }}>
                               {month}
                             </Text>
                           ) : null}
@@ -572,13 +833,13 @@ export default function ShareAgendaModal({
                         <View style={{ flex: 1, justifyContent: 'center' }}>
                           <Text
                             style={{
-                              fontSize: eventTitleFontSize,
+                              fontSize: flyerDim.eventTitleFontSize,
                               fontWeight: '900',
                               color: '#ffffff',
-                              marginBottom: eventTitleMarginBottom,
-                              lineHeight: eventTitleLineHeight,
+                              marginBottom: flyerDim.eventTitleMarginBottom,
+                              lineHeight: flyerDim.eventTitleLineHeight,
                             }}
-                            numberOfLines={isCompact ? 1 : 2}
+                            numberOfLines={count >= 5 ? 1 : 2}
                           >
                             {eventTitle}
                           </Text>
@@ -586,17 +847,17 @@ export default function ShareAgendaModal({
                           <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                             {eventLocal ? (
                               <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: time ? 20 : 0 }}>
-                                <Ionicons name="location-sharp" size={eventInfoIconSize} color="rgba(255,255,255,0.85)" style={{ marginRight: 6 }} />
-                                <Text style={{ fontSize: eventInfoFontSize, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }} numberOfLines={1}>
-                                  {eventLocal}
+                                <Ionicons name="location-sharp" size={flyerDim.eventInfoIconSize} color="rgba(255,255,255,0.85)" style={{ marginRight: 6 }} />
+                                <Text style={{ fontSize: flyerDim.eventInfoFontSize, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }} numberOfLines={1}>
+                                   {eventLocal}
                                 </Text>
                               </View>
                             ) : null}
 
                             {time ? (
                               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Ionicons name="time" size={eventInfoIconSize} color={colors.primary || '#eab308'} style={{ marginRight: 6 }} />
-                                <Text style={{ fontSize: eventInfoFontSize, color: colors.primary || '#eab308', fontWeight: '800' }}>
+                                <Ionicons name="time" size={flyerDim.eventInfoIconSize} color={colors.primary || '#eab308'} style={{ marginRight: 6 }} />
+                                <Text style={{ fontSize: flyerDim.eventInfoFontSize, color: colors.primary || '#eab308', fontWeight: '800' }}>
                                   {time}
                                 </Text>
                               </View>
@@ -616,8 +877,8 @@ export default function ShareAgendaModal({
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     backgroundColor: 'rgba(10, 15, 26, 0.88)',
-                    padding: footerPadding,
-                    borderRadius: footerBorderRadius,
+                    padding: flyerDim.footerPadding,
+                    borderRadius: flyerDim.footerBorderRadius,
                     borderWidth: 1.5,
                     borderColor: 'rgba(255,255,255,0.22)',
                   }}
@@ -627,31 +888,31 @@ export default function ShareAgendaModal({
                     <Image
                       source={bandlinkLogoWide}
                       style={{
-                        width: isCompact ? 240 : 280,
-                        height: isCompact ? 64 : 76,
+                        width: count >= 5 ? 240 : 280,
+                        height: count >= 5 ? 64 : 76,
                         resizeMode: 'contain',
                         marginBottom: 10,
                         alignSelf: 'flex-start',
                       }}
                     />
-                    <Text style={{ fontSize: footerSummaryFontSize, fontWeight: 'bold', color: '#fff', lineHeight: footerSummaryLineHeight }}>
+                    <Text style={{ fontSize: flyerDim.footerSummaryFontSize, fontWeight: 'bold', color: '#fff', lineHeight: flyerDim.footerSummaryLineHeight }}>
                       {getAppSummary(activeLang)}
                     </Text>
-                    <Text style={{ fontSize: footerSloganFontSize, color: 'rgba(255,255,255,0.75)', marginTop: 8, fontWeight: '600' }}>
+                    <Text style={{ fontSize: flyerDim.footerSloganFontSize, color: 'rgba(255,255,255,0.75)', marginTop: 8, fontWeight: '600' }}>
                       {getAppFooterSlogan(activeLang)}
                     </Text>
                   </View>
                   <View
                     style={{
                       backgroundColor: '#fff',
-                      padding: isCompact ? 14 : 16,
+                      padding: count >= 5 ? 14 : 16,
                       borderRadius: 20,
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <QRCode value={PLAY_STORE_URL} size={footerQrSize} />
-                    <Text style={{ fontSize: footerScanFontSize, fontWeight: '900', color: '#0b0f19', marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                    <QRCode value={PLAY_STORE_URL} size={flyerDim.footerQrSize} />
+                    <Text style={{ fontSize: flyerDim.footerScanFontSize, fontWeight: '900', color: '#0b0f19', marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>
                       {getScanQrText(activeLang)}
                     </Text>
                   </View>
@@ -796,7 +1057,7 @@ export default function ShareAgendaModal({
                   onPress={() => setSelectedLayout(item.id)}
                 >
                   <Ionicons name={item.icon} size={22} color={selectedLayout === item.id ? colors.primary : colors.textMuted} />
-                  <Text style={[styles.layoutName, { color: selectedLayout === item.id ? colors.primary : colors.text }]}>{item.name}</Text>
+                  <Text style={[styles.layoutName, { color: selectedLayout === item.id ? colors.primary : colors.text }]}>{getTemplateName(item.id, t)}</Text>
                   {selectedLayout === item.id && <Ionicons name='checkmark-circle' size={20} color={colors.primary} style={{ marginLeft: 'auto' }} />}
                 </Pressable>
               ))}

@@ -1,10 +1,64 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 import { db } from '../database/database';
 import { sanitizeText, sanitizeJson } from './sanitize';
 import { api } from './api';
 
+const normalizeDateStr = (d) => {
+  if (!d) return '';
+  const clean = String(d).trim();
+  const dmyMatch = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, '0');
+    const month = dmyMatch[2].padStart(2, '0');
+    let year = dmyMatch[3];
+    if (year.length === 2) year = '20' + year;
+    return `${year}-${month}-${day}`;
+  }
+  const ymdMatch = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (ymdMatch) {
+    const year = ymdMatch[1];
+    const month = ymdMatch[2].padStart(2, '0');
+    const day = ymdMatch[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  return clean;
+};
+
 export const bandService = {
+  async cleanDuplicateBands() {
+    try {
+      const all = await db.getAllAsync('SELECT id, name, cloudId FROM my_bands ORDER BY id ASC;');
+      if (!all || all.length <= 1) return;
+      const seen = new Map();
+      const duplicateIds = [];
+      for (const b of all) {
+        const normName = (b.name || '').trim().toLowerCase();
+        if (!normName) continue;
+        if (seen.has(normName)) {
+          const prev = seen.get(normName);
+          if (!prev.cloudId && b.cloudId) {
+            duplicateIds.push(prev.id);
+            seen.set(normName, b);
+          } else {
+            duplicateIds.push(b.id);
+          }
+        } else {
+          seen.set(normName, b);
+        }
+      }
+
+      for (const dupId of duplicateIds) {
+        try {
+          await this.delete(dupId);
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.warn('Erro ao limpar bandas duplicadas:', err);
+    }
+  },
+
   async getAll() {
     try {
       const result = await db.getAllAsync('SELECT * FROM my_bands ORDER BY name ASC;');
@@ -39,7 +93,11 @@ export const bandService = {
           sanitizeText(facebook, 200) || ''
         ]
       );
-      return result.lastInsertRowId;
+      const newId = result.lastInsertRowId;
+      try {
+        await this.logBandActivity(newId, 'created_band', `criou a banda ${name.trim()}`);
+      } catch (e) {}
+      return newId;
     } catch (error) {
       console.error('Error in bandService.insert:', error);
       throw error;
@@ -49,7 +107,7 @@ export const bandService = {
   async update(id, name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '') {
     try {
       await db.runAsync(
-        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ?, links = ?, instagram = ?, youtube = ?, spotify = ?, tiktok = ?, facebook = ? WHERE id = ?;',
+        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ?, links = ?, instagram = ?, youtube = ?, spotify = ?, tiktok = ?, facebook = ?, hasLocalChanges = 1 WHERE id = ?;',
         [
           sanitizeText(name, 100),
           imageUri,
@@ -71,6 +129,7 @@ export const bandService = {
           id
         ]
       );
+      await this.logBandActivity(id, 'update_band', `atualizou os dados da banda: ${name.trim()}`);
     } catch (error) {
       console.error('Error in bandService.update:', error);
       throw error;
@@ -79,7 +138,67 @@ export const bandService = {
 
   async delete(id) {
     try {
+      // 1. Obter os dados da banda antes da exclusão (para recuperar cloudId)
+      let band = null;
+      try {
+        const rows = await db.getAllAsync('SELECT * FROM my_bands WHERE id = ?;', [id]);
+        if (rows && rows.length > 0) {
+          band = rows[0];
+        }
+      } catch (findErr) {
+        console.warn('Erro ao buscar banda para exclusão:', findErr);
+      }
+
+      // 2. Se a banda estiver sincronizada na nuvem, apagar/desvincular no servidor
+      if (band && band.cloudId) {
+        try {
+          await api.deleteBand(band.cloudId);
+        } catch (cloudErr) {
+          console.warn('Erro ao excluir banda na nuvem (ou já removida):', cloudErr);
+        }
+      }
+
+      // 3. Excluir dados relacionados no SQLite local (cascata manual para segurança)
+      try {
+        await db.runAsync('DELETE FROM band_songs WHERE bandId = ?;', [id]);
+      } catch (e) {}
+
+      try {
+        await db.runAsync('DELETE FROM band_members WHERE bandId = ?;', [id]);
+      } catch (e) {}
+
+      try {
+        await db.runAsync('DELETE FROM band_finances WHERE bandId = ?;', [id]);
+      } catch (e) {}
+
+      try {
+        await db.runAsync('DELETE FROM band_activity_logs WHERE bandId = ?;', [id]);
+      } catch (e) {}
+
+      // 4. Excluir setlists e músicas associadas vinculadas a esta banda
+      try {
+        await db.runAsync(`
+          DELETE FROM setlist_songs 
+          WHERE setlistId IN (SELECT id FROM setlists WHERE myBandId = ?);
+        `, [id]);
+        await db.runAsync('DELETE FROM setlists WHERE myBandId = ?;', [id]);
+      } catch (e) {}
+
+      // 5. Excluir o registro principal da banda
       await db.runAsync('DELETE FROM my_bands WHERE id = ?;', [id]);
+
+      // 6. Limpar cache de perfil em AsyncStorage se contiver a banda
+      try {
+        const cachedStr = await AsyncStorage.getItem('user_profile_cache');
+        if (cachedStr) {
+          const cached = JSON.parse(cachedStr);
+          if (cached && Array.isArray(cached.bands)) {
+            cached.bands = cached.bands.filter(b => b && b.bandId !== id && b.id !== String(id));
+            await AsyncStorage.setItem('user_profile_cache', JSON.stringify(cached));
+          }
+        }
+      } catch (cacheErr) {}
+
     } catch (error) {
       console.error('Error in bandService.delete:', error);
       throw error;
@@ -110,20 +229,34 @@ export const bandService = {
         'SELECT s.*, bs.isFavorite as isBandFavorite FROM band_songs bs JOIN songs s ON bs.songId = s.id WHERE bs.bandId = ? ORDER BY s.name ASC;',
         [bandId]
       );
-      if (!result) return [];
+      if (!result || result.length === 0) return [];
       
-      // Carregar song_links para cada música do repertório da banda e usar o isFavorite específico da banda
-      const songsWithLinks = await Promise.all(
-        result.map(async (song) => {
-          const links = await db.getAllAsync('SELECT * FROM song_links WHERE songId = ?;', [song.id]);
-          return { 
-            ...song, 
-            isFavorite: song.isBandFavorite !== undefined ? Boolean(song.isBandFavorite) : Boolean(song.isFavorite),
-            links: links || [] 
-          };
-        })
-      );
-      return songsWithLinks;
+      // Carregar song_links para as músicas em uma única query otimizada
+      try {
+        const songIds = result.map(s => s.id);
+        const placeholders = songIds.map(() => '?').join(',');
+        const allLinks = await db.getAllAsync(`SELECT * FROM song_links WHERE songId IN (${placeholders});`, songIds);
+
+        const linksBySongId = {};
+        if (allLinks && allLinks.length > 0) {
+          for (const l of allLinks) {
+            if (!linksBySongId[l.songId]) linksBySongId[l.songId] = [];
+            linksBySongId[l.songId].push(l);
+          }
+        }
+
+        return result.map(song => ({
+          ...song,
+          isFavorite: song.isBandFavorite !== undefined ? Boolean(song.isBandFavorite) : Boolean(song.isFavorite),
+          links: linksBySongId[song.id] || []
+        }));
+      } catch (linkErr) {
+        return result.map(song => ({
+          ...song,
+          isFavorite: song.isBandFavorite !== undefined ? Boolean(song.isBandFavorite) : Boolean(song.isFavorite),
+          links: []
+        }));
+      }
     } catch (error) {
       console.error('Error in bandService.getBandSongs:', error);
       return [];
@@ -146,10 +279,21 @@ export const bandService = {
 
   async addSongToBand(bandId, songId) {
     try {
+      const existing = await db.getAllAsync(
+        'SELECT 1 FROM band_songs WHERE bandId = ? AND songId = ?;',
+        [bandId, songId]
+      );
+      if (existing && existing.length > 0) {
+        // Música já pertence ao repertório desta banda!
+        return;
+      }
       await db.runAsync(
         'INSERT OR IGNORE INTO band_songs (bandId, songId) VALUES (?, ?);',
         [bandId, songId]
       );
+      const songRow = await db.getAllAsync('SELECT name FROM songs WHERE id = ?;', [songId]);
+      const songName = songRow && songRow[0] ? songRow[0].name : 'música';
+      await this.logBandActivity(bandId, 'add_song', `adicionou a música: ${songName}`);
     } catch (error) {
       console.error('Error in bandService.addSongToBand:', error);
     }
@@ -157,12 +301,23 @@ export const bandService = {
 
   async addSongsToBand(bandId, songIds) {
     try {
-      if (!Array.isArray(songIds)) return;
+      if (!Array.isArray(songIds) || songIds.length === 0) return;
+      let actuallyAdded = 0;
       for (const songId of songIds) {
-        await db.runAsync(
-          'INSERT OR IGNORE INTO band_songs (bandId, songId) VALUES (?, ?);',
+        const existing = await db.getAllAsync(
+          'SELECT 1 FROM band_songs WHERE bandId = ? AND songId = ?;',
           [bandId, songId]
         );
+        if (!existing || existing.length === 0) {
+          await db.runAsync(
+            'INSERT OR IGNORE INTO band_songs (bandId, songId) VALUES (?, ?);',
+            [bandId, songId]
+          );
+          actuallyAdded++;
+        }
+      }
+      if (actuallyAdded > 0) {
+        await this.logBandActivity(bandId, 'add_songs', `adicionou ${actuallyAdded} música${actuallyAdded > 1 ? 's' : ''} ao repertório`);
       }
     } catch (error) {
       console.error('Error in bandService.addSongsToBand:', error);
@@ -171,10 +326,13 @@ export const bandService = {
 
   async removeSongFromBand(bandId, songId) {
     try {
+      const songRow = await db.getAllAsync('SELECT name FROM songs WHERE id = ?;', [songId]);
+      const songName = songRow && songRow[0] ? songRow[0].name : 'música';
       await db.runAsync(
         'DELETE FROM band_songs WHERE bandId = ? AND songId = ?;',
         [bandId, songId]
       );
+      await this.logBandActivity(bandId, 'remove_song', `removeu a música: ${songName}`);
     } catch (error) {
       console.error('Error in bandService.removeSongFromBand:', error);
     }
@@ -200,7 +358,11 @@ export const bandService = {
         'INSERT INTO band_finances (bandId, title, amount, type, date, status, notes, setlistId) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
         [bandId, sanitizeText(title, 200), parseFloat(amount) || 0, sanitizeText(type, 20), sanitizeText(date, 20) || '', sanitizeText(status, 20), sanitizeText(notes, 500) || '', setlistId]
       );
-      return result.lastInsertRowId;
+      const finId = result.lastInsertRowId;
+      try {
+        await this.logBandActivity(bandId, 'added_finance', `registrou financeiro: ${title.trim()}`);
+      } catch (e) {}
+      return finId;
     } catch (error) {
       console.error('Error in bandService.addFinancialEntry:', error);
       throw error;
@@ -213,6 +375,12 @@ export const bandService = {
         'UPDATE band_finances SET title = ?, amount = ?, type = ?, date = ?, status = ?, notes = ? WHERE id = ?;',
         [sanitizeText(title, 200), parseFloat(amount) || 0, sanitizeText(type, 20), sanitizeText(date, 20) || '', sanitizeText(status, 20), sanitizeText(notes, 500) || '', id]
       );
+      try {
+        const row = await db.getAllAsync('SELECT bandId FROM band_finances WHERE id = ?;', [id]);
+        if (row && row[0]) {
+          await this.logBandActivity(row[0].bandId, 'updated_finance', `atualizou financeiro: ${title.trim()}`);
+        }
+      } catch (e) {}
     } catch (error) {
       console.error('Error in bandService.updateFinancialEntry:', error);
       throw error;
@@ -235,6 +403,12 @@ export const bandService = {
 
   async deleteFinancialEntry(id) {
     try {
+      try {
+        const row = await db.getAllAsync('SELECT bandId, title FROM band_finances WHERE id = ?;', [id]);
+        if (row && row[0]) {
+          await this.logBandActivity(row[0].bandId, 'deleted_finance', `removeu registro financeiro: ${row[0].title.trim()}`);
+        }
+      } catch (e) {}
       await db.runAsync('DELETE FROM band_finances WHERE id = ?;', [id]);
     } catch (error) {
       console.error('Error in bandService.deleteFinancialEntry:', error);
@@ -266,6 +440,7 @@ export const bandService = {
         'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status, cycles, username, inviteMessage, replyMessage, isLeader) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
         [bandId, sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '', isLeader ? 1 : 0]
       );
+      await this.logBandActivity(bandId, 'add_member', `adicionou o integrante: ${name.trim()}`);
       return result.lastInsertRowId;
     } catch (error) {
       console.error('Error in bandService.addBandMember:', error);
@@ -275,10 +450,15 @@ export const bandService = {
 
   async updateBandMember(id, name, role, phone = '', startDate = '', endDate = '', status = 'active', cycles = '[]', username = '', inviteMessage = '', replyMessage = '', isLeader = 0) {
     try {
+      const existing = await db.getAllAsync('SELECT bandId FROM band_members WHERE id = ?;', [id]);
+      const bandId = existing && existing[0] ? existing[0].bandId : null;
       await db.runAsync(
         'UPDATE band_members SET name = ?, role = ?, phone = ?, startDate = ?, endDate = ?, status = ?, cycles = ?, username = ?, inviteMessage = ?, replyMessage = ?, isLeader = ? WHERE id = ?;',
         [sanitizeText(name, 100), sanitizeText(role, 100), sanitizeText(phone, 20), sanitizeText(startDate, 20), sanitizeText(endDate, 20), sanitizeText(status, 20), sanitizeJson(cycles), sanitizeText(username, 50) || '', sanitizeText(inviteMessage, 500) || '', sanitizeText(replyMessage, 500) || '', isLeader ? 1 : 0, id]
       );
+      if (bandId) {
+        await this.logBandActivity(bandId, 'update_member', `atualizou o integrante: ${name.trim()}`);
+      }
     } catch (error) {
       console.error('Error in bandService.updateBandMember:', error);
       throw error;
@@ -317,6 +497,12 @@ export const bandService = {
 
   async deleteBandMember(id) {
     try {
+      try {
+        const memRows = await db.getAllAsync('SELECT bandId, name FROM band_members WHERE id = ?;', [id]);
+        if (memRows && memRows[0]) {
+          await this.logBandActivity(memRows[0].bandId, 'removed_member', `removeu o integrante: ${memRows[0].name.trim()}`);
+        }
+      } catch (e) {}
       await db.runAsync('DELETE FROM band_members WHERE id = ?;', [id]);
     } catch (error) {
       console.error('Error in bandService.deleteBandMember:', error);
@@ -380,11 +566,78 @@ export const bandService = {
   async updateCloudInfo(id, cloudId, cloudVersion, lastSyncedAt, isNetworkVisible) {
     try {
       await db.runAsync(
-        'UPDATE my_bands SET cloudId = ?, cloudVersion = ?, lastSyncedAt = ?, isNetworkVisible = ? WHERE id = ?;',
+        'UPDATE my_bands SET cloudId = ?, cloudVersion = ?, lastSyncedAt = ?, isNetworkVisible = ?, hasLocalChanges = 0 WHERE id = ?;',
         [cloudId, cloudVersion, lastSyncedAt, isNetworkVisible ? 1 : 0, id]
       );
     } catch (error) {
       console.error('Error in bandService.updateCloudInfo:', error);
+    }
+  },
+
+  async logBandActivity(bandId, actionType, description, metadata = null) {
+    if (!bandId) return;
+    try {
+      let authorName = 'Usuário';
+      let authorId = null;
+      try {
+        const userInfoStr = await AsyncStorage.getItem('user_info');
+        if (userInfoStr) {
+          const user = JSON.parse(userInfoStr);
+          authorName = user.username || user.displayName || user.email || 'Usuário';
+          authorId = user.id || user.userId || null;
+        }
+      } catch (uErr) {}
+
+      const metaStr = metadata ? JSON.stringify(metadata) : null;
+      await db.runAsync(
+        'INSERT INTO band_activity_logs (bandId, actionType, authorName, authorId, description, metadataJson, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?);',
+        [bandId, actionType, authorName, authorId, description, metaStr, new Date().toISOString()]
+      );
+
+      // Toda alteração marca que a banda precisa sincronizar
+      await this.markBandNeedsSync(bandId);
+
+      // Se a banda já for online, sincroniza automaticamente em background
+      this.autoSyncIfOnline(bandId).catch(() => {});
+    } catch (err) {
+      console.warn('Error in bandService.logBandActivity:', err);
+    }
+  },
+
+  async getBandActivityLogs(bandId, limit = 50) {
+    try {
+      const rows = await db.getAllAsync(
+        'SELECT * FROM band_activity_logs WHERE bandId = ? ORDER BY createdAt DESC, id DESC LIMIT ?;',
+        [bandId, limit]
+      );
+      return rows || [];
+    } catch (err) {
+      console.warn('Error in bandService.getBandActivityLogs:', err);
+      return [];
+    }
+  },
+
+  async autoSyncIfOnline(bandId) {
+    try {
+      const local = await this.getBandById(bandId);
+      if (!local || !local.cloudId) return; // Banda offline não auto-sincroniza
+
+      const loggedIn = await api.isLoggedIn();
+      if (!loggedIn) return;
+
+      // Dispara push silencioso em background
+      await this.syncBandToCloud(bandId);
+    } catch (e) {
+      console.log('Background auto-sync note for band', bandId, ':', e.message);
+    }
+  },
+
+  async markBandNeedsSync(bandId) {
+    if (!bandId) return;
+    try {
+      await db.runAsync('UPDATE my_bands SET hasLocalChanges = 1 WHERE id = ?;', [bandId]);
+    } catch (e) {
+      console.warn('Error in bandService.markBandNeedsSync:', e);
     }
   },
 
@@ -464,15 +717,33 @@ export const bandService = {
               'SELECT ss.*, s.name, s.originalBand, s.duration, s.style FROM setlist_songs ss JOIN songs s ON ss.songId = s.id WHERE ss.setlistId = ? ORDER BY ss.order_num ASC;',
               [sl.id]
             );
-            return { ...sl, songs: songsInSetlist || [] };
+            // Deduplicate and cap at 100
+            const seenSongIds = new Set();
+            const cleanList = [];
+            for (const item of (songsInSetlist || [])) {
+              if (item.songId >= 0 && seenSongIds.has(item.songId)) continue;
+              if (item.songId >= 0) seenSongIds.add(item.songId);
+              cleanList.push(item);
+              if (cleanList.length >= 100) break;
+            }
+            return { ...sl, songs: cleanList };
           }));
         }
       } catch (sle) {
         console.warn('Could not read setlists for band sync:', sle);
       }
 
+      // Gather activity logs for this band
+      let activityLogs = [];
+      try {
+        activityLogs = await this.getBandActivityLogs(bandId, 60);
+      } catch (ale) {
+        console.warn('Could not read activity logs for band sync:', ale);
+      }
+
       // Snapshot structure
       const syncPayloadData = {
+        activityLogs: activityLogs || [],
         band: {
           name: localBand.name,
           imageUri: syncImageUri,
@@ -722,16 +993,49 @@ export const bandService = {
 
       // 3. Synchronize setlists into local SQLite
       if (snapshot.setlists && Array.isArray(snapshot.setlists)) {
+        // Load all local setlists for this band or orphan setlists to match accurately without collisions
+        const rawLocalSetlists = await db.getAllAsync(
+          'SELECT * FROM setlists WHERE myBandId = ? OR myBandId IS NULL;',
+          [bandId]
+        );
+        const localSetlists = Array.isArray(rawLocalSetlists) ? [...rawLocalSetlists] : [];
+        const matchedLocalIds = new Set();
+
         for (const sl of snapshot.setlists) {
           if (!sl.name) continue;
-          const existingSl = await db.getAllAsync(
-            'SELECT id FROM setlists WHERE myBandId = ? AND LOWER(name) = ?;',
-            [bandId, sl.name.trim().toLowerCase()]
-          );
+          const slNameClean = sl.name.trim().toLowerCase();
+          const slNormDate = normalizeDateStr(sl.date);
 
-          let localSetlistId = existingSl && existingSl.length > 0 ? existingSl[0].id : null;
+          // Find an unmatched local setlist with same name and matching date
+          let matchedItem = null;
+          for (const item of localSetlists) {
+            if (matchedLocalIds.has(item.id)) continue;
+            const itemNameClean = (item.name || '').trim().toLowerCase();
+            if (itemNameClean !== slNameClean) continue;
+
+            const itemNormDate = normalizeDateStr(item.date);
+            if (slNormDate) {
+              if (itemNormDate === slNormDate) {
+                matchedItem = item;
+                break;
+              }
+            } else {
+              if (!itemNormDate) {
+                matchedItem = item;
+                break;
+              }
+            }
+          }
+
+          let localSetlistId = matchedItem ? matchedItem.id : null;
+          if (matchedItem && matchedItem.myBandId !== bandId) {
+            try {
+              await db.runAsync('UPDATE setlists SET myBandId = ? WHERE id = ?;', [bandId, matchedItem.id]);
+            } catch (e) {}
+          }
 
           if (!localSetlistId) {
+            const slLocal = sl.local || sl.venue || sl.location || sl.place || '';
             const insSl = await db.runAsync(
               `INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
@@ -741,41 +1045,69 @@ export const bandService = {
                 bandId,
                 sl.date || '',
                 sl.time || '',
-                sl.local || '',
+                slLocal,
                 sl.cache || sl.cachê || '',
                 sl.notes || '',
                 sl.isFavorite ? 1 : 0
               ]
             );
             localSetlistId = insSl.lastInsertRowId;
+            localSetlists.push({
+              id: localSetlistId,
+              name: sl.name,
+              type: sl.type || 'show',
+              myBandId: bandId,
+              date: sl.date || '',
+              time: sl.time || '',
+              local: slLocal
+            });
+            matchedLocalIds.add(localSetlistId);
           } else {
-            // Update existing setlist event data (Agenda: date, time, local, notes)
+            matchedLocalIds.add(localSetlistId);
+            const slLocal = sl.local || sl.venue || sl.location || sl.place || '';
+            // Update existing setlist event data
             await db.runAsync(
               `UPDATE setlists SET
-                type = COALESCE(?, type),
-                date = COALESCE(?, date),
-                time = COALESCE(?, time),
-                local = COALESCE(?, local),
-                cachê = COALESCE(?, cachê),
-                notes = COALESCE(?, notes)
+                type = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE type END,
+                date = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE date END,
+                time = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE time END,
+                local = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE local END,
+                cachê = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE cachê END,
+                notes = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE notes END
                WHERE id = ?;`,
-              [sl.type, sl.date, sl.time, sl.local, sl.cache || sl.cachê, sl.notes, localSetlistId]
+              [
+                sl.type, sl.type, sl.type,
+                sl.date, sl.date, sl.date,
+                sl.time, sl.time, sl.time,
+                slLocal, slLocal, slLocal,
+                sl.cache || sl.cachê, sl.cache || sl.cachê, sl.cache || sl.cachê,
+                sl.notes, sl.notes, sl.notes,
+                localSetlistId
+              ]
             );
           }
 
           // Link songs in setlist
           if (localSetlistId && sl.songs && Array.isArray(sl.songs)) {
+            // Clean previous associations to prevent duplicating songs on repeated syncs
+            await db.runAsync('DELETE FROM setlist_songs WHERE setlistId = ?;', [localSetlistId]);
+            const seenSongIds = new Set();
+            let orderIdx = 0;
             for (let i = 0; i < sl.songs.length; i++) {
+              if (orderIdx >= 100) break;
               const slSong = sl.songs[i];
+              if (!slSong || !slSong.name) continue;
               const matchSong = await db.getAllAsync(
                 'SELECT id FROM songs WHERE LOWER(name) = ?;',
                 [slSong.name.trim().toLowerCase()]
               );
               if (matchSong && matchSong.length > 0) {
                 const sId = matchSong[0].id;
+                if (seenSongIds.has(sId)) continue;
+                seenSongIds.add(sId);
                 await db.runAsync(
-                  'INSERT OR IGNORE INTO setlist_songs (setlistId, songId, order_num, customDuration, customNotes) VALUES (?, ?, ?, ?, ?);',
-                  [localSetlistId, sId, i, slSong.customDuration || '', slSong.customNotes || '']
+                  'INSERT INTO setlist_songs (setlistId, songId, order_num, customDuration, customNotes) VALUES (?, ?, ?, ?, ?);',
+                  [localSetlistId, sId, orderIdx++, slSong.customDuration || '', slSong.customNotes || '']
                 );
               }
             }
@@ -823,6 +1155,29 @@ export const bandService = {
           }
         }
       }
+
+      // 6. Synchronize band activity logs into local SQLite
+      if (snapshot.activityLogs && Array.isArray(snapshot.activityLogs)) {
+        for (const act of snapshot.activityLogs) {
+          if (!act.description) continue;
+          const existingAct = await db.getAllAsync(
+            'SELECT id FROM band_activity_logs WHERE bandId = ? AND description = ? AND createdAt = ?;',
+            [bandId, act.description, act.createdAt || '']
+          );
+          if (!existingAct || existingAct.length === 0) {
+            await db.runAsync(
+              'INSERT INTO band_activity_logs (bandId, actionType, authorName, authorId, description, metadataJson, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?);',
+              [bandId, act.actionType || 'update', act.authorName || 'Membro', act.authorId || null, act.description, act.metadataJson || null, act.createdAt || new Date().toISOString()]
+            );
+          }
+        }
+      }
+
+      // Update local band sync state
+      await db.runAsync(
+        'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ? WHERE id = ?;',
+        [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), bandId]
+      );
 
       return {
         success: true,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,9 @@ import {
   Share,
   Dimensions,
   ActivityIndicator,
-  Linking
+  Linking,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,6 +26,8 @@ import { musiciansService } from '../services/musiciansService';
 import { api } from '../services/api';
 import MusicianProfileModal from './MusicianProfileModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const STYLE_COLOR_PALETTE = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#eab308', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
@@ -195,6 +199,172 @@ export default function BandProfileModal({
 
   // Active Tab: 'members' | 'stats' | 'setlists' (sem repertório e finanças)
   const [activeTab, setActiveTab] = useState('members');
+  const BAND_PROFILE_TABS = ['members', 'stats', 'setlists'];
+  const translateX = useRef(new Animated.Value(0)).current;
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+  const activeTabRef = useRef('members');
+  activeTabRef.current = activeTab;
+
+  const handleTabChange = (nextTabId) => {
+    if (nextTabId === activeTabRef.current) return;
+    const oldIdx = BAND_PROFILE_TABS.indexOf(activeTabRef.current);
+    const newIdx = BAND_PROFILE_TABS.indexOf(nextTabId);
+    const direction = newIdx > oldIdx ? -1 : 1;
+
+    // Transição suave com esmaecimento (fade-out + slide out, depois fade-in + slide in)
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: direction * 35,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tabOpacity, {
+        toValue: 0.15,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveTab(nextTabId);
+      translateX.setValue(-direction * 35);
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: 0,
+          tension: 75,
+          friction: 11,
+          useNativeDriver: true,
+        }),
+        Animated.timing(tabOpacity, {
+          toValue: 1,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 7 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 8 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 0.85;
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        translateX.stopAnimation();
+        tabOpacity.stopAnimation();
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const curIdx = BAND_PROFILE_TABS.indexOf(activeTabRef.current);
+        const isFirst = curIdx === 0 && gestureState.dx > 0;
+        const isLast = curIdx === BAND_PROFILE_TABS.length - 1 && gestureState.dx < 0;
+        const damped = isFirst || isLast ? gestureState.dx * 0.22 : gestureState.dx;
+        translateX.setValue(damped);
+
+        // Esmaecimento dinâmico suave durante o arraste
+        const dragProgress = Math.min(1, Math.abs(damped) / (SCREEN_WIDTH * 0.45));
+        tabOpacity.setValue(Math.max(0.2, 1 - dragProgress * 0.8));
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        const curIdx = BAND_PROFILE_TABS.indexOf(activeTabRef.current);
+        const swipeThreshold = 25;
+        const speedThreshold = 0.18;
+
+        if ((gestureState.dx < -swipeThreshold || gestureState.vx < -speedThreshold) && curIdx < BAND_PROFILE_TABS.length - 1) {
+          const nextTab = BAND_PROFILE_TABS[curIdx + 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: -SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(nextTab);
+            translateX.setValue(SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else if ((gestureState.dx > swipeThreshold || gestureState.vx > speedThreshold) && curIdx > 0) {
+          const prevTab = BAND_PROFILE_TABS[curIdx - 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setActiveTab(prevTab);
+            translateX.setValue(-SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateX, {
+              toValue: 0,
+              tension: 85,
+              friction: 12,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 1,
+              duration: 140,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.parallel([
+          Animated.spring(translateX, {
+            toValue: 0,
+            tension: 85,
+            friction: 12,
+            useNativeDriver: true,
+          }),
+          Animated.timing(tabOpacity, {
+            toValue: 1,
+            duration: 140,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
 
   // Loaded data
   const [members, setMembers] = useState([]);
@@ -688,14 +858,14 @@ export default function BandProfileModal({
             </View>
           </View>
 
-          {/* INDEX 1: TOP TAB BAR DE 3 PÁGINAS SOMENTE ÍCONES (SEM REPERTÓRIO E FINANÇAS) */}
+          {/* INDEX 1: TOP TAB BAR DE 3 PÁGINAS SOMENTE ÍCONES COM DEGRADÊ CINTILANTE */}
           <View style={[styles.tabBarContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
             <View style={styles.tabBarRow}>
               
               {/* ABA 1: INTEGRANTES */}
               <Pressable
                 style={[styles.tabItemIconOnly, activeTab === 'members' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-                onPress={() => setActiveTab('members')}
+                onPress={() => handleTabChange('members')}
               >
                 <View style={{ position: 'relative', paddingHorizontal: 4 }}>
                   <Ionicons
@@ -714,7 +884,7 @@ export default function BandProfileModal({
               {/* ABA 2: ESTATÍSTICAS / ESTILOS DO REPERTÓRIO */}
               <Pressable
                 style={[styles.tabItemIconOnly, activeTab === 'stats' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-                onPress={() => setActiveTab('stats')}
+                onPress={() => handleTabChange('stats')}
               >
                 <Ionicons
                   name={activeTab === 'stats' ? "stats-chart" : "stats-chart-outline"}
@@ -726,7 +896,7 @@ export default function BandProfileModal({
               {/* ABA 3: EVENTOS / AGENDA */}
               <Pressable
                 style={[styles.tabItemIconOnly, activeTab === 'setlists' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
-                onPress={() => setActiveTab('setlists')}
+                onPress={() => handleTabChange('setlists')}
               >
                 <Ionicons
                   name={activeTab === 'setlists' ? "calendar" : "calendar-outline"}
@@ -738,6 +908,11 @@ export default function BandProfileModal({
             </View>
           </View>
 
+          {/* ── CONTEÚDO DAS ABAS COM TRANSIÇÃO SUAVE E GESTO DE ARRASTAR ── */}
+          <Animated.View
+            {...panResponder.panHandlers}
+            style={{ flex: 1, opacity: tabOpacity, transform: [{ translateX }] }}
+          >
           {/* ════════════════════ ABA: INTEGRANTES ════════════════════ */}
           {activeTab === 'members' && (
             <View style={styles.dedicatedTabPadding}>
@@ -1079,6 +1254,7 @@ export default function BandProfileModal({
               )}
             </View>
           )}
+          </Animated.View>
         </ScrollView>
 
         {/* ── BARRA FIXA DE AÇÃO PARA CONVITES PENDENTES (SE ABERTO DE CONVITE) ── */}

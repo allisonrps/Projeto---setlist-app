@@ -18,7 +18,7 @@ const getBandInitials = (name) => {
   return initials.slice(0, 3);
 };
 
-export default function BandCarousel({ bands, setlists = [], hideFinancialValues = false, onToggleHideFinancials = () => {}, selectedBandId, onSelectBand, onAddBand, onEditBand, onDeleteBand }) {
+export default function BandCarousel({ bands, setlists = [], hideFinancialValues = false, onToggleHideFinancials = () => {}, selectedBandId, onSelectBand, onAddBand, onEditBand, onDeleteBand, getBandSyncStatus }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const isDark = colors.isDark;
@@ -92,6 +92,33 @@ export default function BandCarousel({ bands, setlists = [], hideFinancialValues
                     </Text>
               </View>
                 )}
+
+                {/* Indicador de Sincronização */}
+                {getBandSyncStatus && (() => {
+                  const sync = getBandSyncStatus(band);
+                  if (!sync || sync.key === 'offline') return null;
+                  return (
+                    <View style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9,
+                      backgroundColor: sync.color,
+                      borderWidth: 2,
+                      borderColor: colors.cardBackground,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                      <Ionicons 
+                        name={sync.key === 'synced' ? 'checkmark' : sync.key === 'updateAvailable' ? 'arrow-down' : 'arrow-up'} 
+                        size={10} 
+                        color="#ffffff" 
+                      />
+                    </View>
+                  );
+                })()}
 
                 {/* Botões Flutuantes e Redondos (Editar e Excluir) */}
                 {showActions && (

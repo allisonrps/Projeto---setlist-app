@@ -1,5 +1,6 @@
 import { db } from '../database/database';
 import { sanitizeText, sanitizeMultiline, sanitizeUrl } from './sanitize';
+import { bandService } from './bandService';
 
 export const songService = {
   async getAll(searchQuery = '', styleFilter = '', sortBy = 'name', sortOrder = 'asc') {
@@ -61,13 +62,32 @@ export const songService = {
         return a.name.localeCompare(b.name);
       });
 
-      const songsWithLinks = await Promise.all(
-        filteredResult.map(async (song) => {
-          const links = await db.getAllAsync('SELECT * FROM song_links WHERE songId = ?;', [song.id]);
-          return { ...song, links: links || [] };
-        })
-      );
-      return songsWithLinks;
+      if (filteredResult.length === 0) {
+        return [];
+      }
+
+      // Buscar todos os links das músicas filtradas em uma única query otimizada
+      try {
+        const songIds = filteredResult.map(s => s.id);
+        const placeholders = songIds.map(() => '?').join(',');
+        const allLinks = await db.getAllAsync(`SELECT * FROM song_links WHERE songId IN (${placeholders});`, songIds);
+        
+        const linksBySongId = {};
+        if (allLinks && allLinks.length > 0) {
+          for (const l of allLinks) {
+            if (!linksBySongId[l.songId]) linksBySongId[l.songId] = [];
+            linksBySongId[l.songId].push(l);
+          }
+        }
+
+        return filteredResult.map(song => ({
+          ...song,
+          links: linksBySongId[song.id] || []
+        }));
+      } catch (linkErr) {
+        // Fallback seguro caso haja falha transitória na tabela song_links
+        return filteredResult.map(song => ({ ...song, links: [] }));
+      }
     } catch (error) {
       console.error('Error in songService.getAll:', error);
       throw error;
@@ -89,10 +109,55 @@ export const songService = {
 
   async update(id, name, originalBand, style, lyrics, chords, tabs, defaultView, duration, scrollSpeed) {
     try {
+      // Obter dados anteriores da música para identificar exatamente a aba/conteúdo alterado
+      let oldSong = null;
+      try {
+        const oldRows = await db.getAllAsync('SELECT * FROM songs WHERE id = ?;', [id]);
+        if (oldRows && oldRows.length > 0) oldSong = oldRows[0];
+      } catch (e) {}
+
       await db.runAsync(
         'UPDATE songs SET name = ?, originalBand = ?, style = ?, lyrics = ?, chords = ?, tabs = ?, defaultView = ?, duration = ?, scrollSpeed = ? WHERE id = ?;',
         [sanitizeText(name, 200), sanitizeText(originalBand, 200), sanitizeText(style, 300), sanitizeMultiline(lyrics, 10000), sanitizeMultiline(chords, 10000), sanitizeMultiline(tabs, 20000), sanitizeText(defaultView, 20) || 'lyrics', sanitizeText(duration, 10) || null, sanitizeText(scrollSpeed, 20) || 'none', id]
       );
+
+      // Notificar todas as bandas que possuem essa música no repertório
+      try {
+        const bandRows = await db.getAllAsync('SELECT bandId FROM band_songs WHERE songId = ?;', [id]);
+        if (bandRows && bandRows.length > 0) {
+          const sName = (name || (oldSong && oldSong.name) || 'música').trim();
+          const changedTabs = oldSong && (oldSong.tabs || '').trim() !== (tabs || '').trim();
+          const changedChords = oldSong && (oldSong.chords || '').trim() !== (chords || '').trim();
+          const changedLyrics = oldSong && (oldSong.lyrics || '').trim() !== (lyrics || '').trim();
+
+          let actionType = 'update_song';
+          let description = `alterou dados de: ${sName}`;
+
+          if (changedTabs && !changedChords && !changedLyrics) {
+            actionType = 'updated_tabs';
+            description = `alterou a tablatura de: ${sName}`;
+          } else if (changedChords && !changedTabs && !changedLyrics) {
+            actionType = 'updated_chords';
+            description = `alterou a cifra de: ${sName}`;
+          } else if (changedLyrics && !changedTabs && !changedChords) {
+            actionType = 'updated_lyrics';
+            description = `alterou a letra de: ${sName}`;
+          } else if (changedTabs && changedChords && !changedLyrics) {
+            actionType = 'updated_chords';
+            description = `alterou cifras e tablaturas de: ${sName}`;
+          } else if (changedTabs && changedLyrics) {
+            actionType = 'updated_tabs';
+            description = `alterou letra e tablatura de: ${sName}`;
+          } else if (changedChords && changedLyrics) {
+            actionType = 'updated_chords';
+            description = `alterou letra e cifra de: ${sName}`;
+          }
+
+          for (const row of bandRows) {
+            await bandService.logBandActivity(row.bandId, actionType, description);
+          }
+        }
+      } catch (bErr) {}
     } catch (error) {
       console.error('Error in songService.update:', error);
       throw error;

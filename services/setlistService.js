@@ -1,9 +1,27 @@
 import { db } from '../database/database';
 import { sanitizeText, sanitizeMultiline } from './sanitize';
+import { bandService } from './bandService';
 
 export const setlistService = {
+  async cleanDuplicateSetlists() {
+    try {
+      // Apenas desassocia eventos de bandas que foram excluídas (setando myBandId = NULL para NÃO perder o setlist/evento criado)
+      try {
+        await db.runAsync(`
+          UPDATE setlists 
+          SET myBandId = NULL 
+          WHERE myBandId IS NOT NULL 
+          AND myBandId NOT IN (SELECT id FROM my_bands);
+        `);
+      } catch (e) {}
+    } catch (err) {
+      console.warn('Erro ao verificar integridade de setlists:', err);
+    }
+  },
+
   async getAll() {
     try {
+      await this.cleanDuplicateSetlists();
       const result = await db.getAllAsync(`
         SELECT s.*, b.name as bandName, b.imageUri as bandImageUri 
         FROM setlists s
@@ -25,9 +43,10 @@ export const setlistService = {
       );
       const setlistId = result.lastInsertRowId;
 
-      // Salvar as músicas associadas em ordem
-      for (let order = 0; order < songIds.length; order++) {
-        const item = songIds[order];
+      const cappedSongs = (songIds || []).slice(0, 100);
+      // Salvar as músicas associadas em ordem (máximo 100)
+      for (let order = 0; order < cappedSongs.length; order++) {
+        const item = cappedSongs[order];
         const songId = typeof item === 'object' && item !== null ? item.id : item;
         const customNotes = typeof item === 'object' && item !== null ? item.customNotes : '';
         const customDuration = typeof item === 'object' && item !== null ? item.customDuration : '';
@@ -38,6 +57,12 @@ export const setlistService = {
           'INSERT INTO setlist_songs (setlistId, songId, order_num, customNotes, customDuration, rehearsalStatus, rehearsalNotes) VALUES (?, ?, ?, ?, ?, ?, ?);',
           [setlistId, songId, order, customNotes || '', customDuration || '', rehearsalStatus || 'none', rehearsalNotes || '']
         );
+      }
+
+      if (myBandId) {
+        try {
+          await bandService.logBandActivity(myBandId, 'create_setlist', `criou a setlist: ${name.trim() || 'Sem título'}`);
+        } catch (e) {}
       }
 
       return setlistId;
@@ -57,9 +82,10 @@ export const setlistService = {
       // Deletar associações antigas
       await db.runAsync('DELETE FROM setlist_songs WHERE setlistId = ?;', [id]);
 
-      // Salvar as novas músicas associadas em ordem
-      for (let order = 0; order < songIds.length; order++) {
-        const item = songIds[order];
+      const cappedSongs = (songIds || []).slice(0, 100);
+      // Salvar as novas músicas associadas em ordem (máximo 100)
+      for (let order = 0; order < cappedSongs.length; order++) {
+        const item = cappedSongs[order];
         const songId = typeof item === 'object' && item !== null ? item.id : item;
         const customNotes = typeof item === 'object' && item !== null ? item.customNotes : '';
         const customDuration = typeof item === 'object' && item !== null ? item.customDuration : '';
@@ -71,6 +97,12 @@ export const setlistService = {
           [id, songId, order, customNotes || '', customDuration || '', rehearsalStatus || 'none', rehearsalNotes || '']
         );
       }
+
+      if (myBandId) {
+        try {
+          await bandService.logBandActivity(myBandId, 'update_setlist', `editou a setlist: ${name.trim() || 'Sem título'}`);
+        } catch (e) {}
+      }
     } catch (error) {
       console.error('Error in setlistService.update:', error);
       throw error;
@@ -79,7 +111,15 @@ export const setlistService = {
 
   async delete(id) {
     try {
+      const existing = await db.getAllAsync('SELECT name, myBandId FROM setlists WHERE id = ?;', [id]);
+      const myBandId = existing && existing[0] ? existing[0].myBandId : null;
+      const setlistName = existing && existing[0] ? existing[0].name : '';
       await db.runAsync('DELETE FROM setlists WHERE id = ?;', [id]);
+      if (myBandId) {
+        try {
+          await bandService.logBandActivity(myBandId, 'delete_setlist', `excluiu a setlist: ${setlistName || 'Setlist'}`);
+        } catch (e) {}
+      }
     } catch (error) {
       console.error('Error in setlistService.delete:', error);
       throw error;
@@ -88,7 +128,7 @@ export const setlistService = {
 
   async getSongsForSetlist(setlistId) {
     try {
-      const result = await db.getAllAsync(`
+      const rawResult = await db.getAllAsync(`
         SELECT s.*, ss.customNotes, ss.customDuration, ss.rehearsalStatus, ss.rehearsalNotes 
         FROM setlist_songs ss
         JOIN songs s ON ss.songId = s.id
@@ -96,14 +136,30 @@ export const setlistService = {
         ORDER BY ss.order_num ASC;
       `, [setlistId]);
 
-      const songsWithLinks = await Promise.all(
-        (result || []).map(async (song) => {
-          const links = await db.getAllAsync('SELECT * FROM song_links WHERE songId = ?;', [song.id]);
-          return { ...song, links: links || [] };
-        })
-      );
+      // Retorna as músicas associadas em sua ordem real configurada (limitando a 100 itens de segurança)
+      const result = (rawResult || []).slice(0, 100);
+      if (result.length === 0) return [];
 
-      return songsWithLinks;
+      try {
+        const songIds = result.map(s => s.id);
+        const placeholders = songIds.map(() => '?').join(',');
+        const allLinks = await db.getAllAsync(`SELECT * FROM song_links WHERE songId IN (${placeholders});`, songIds);
+
+        const linksBySongId = {};
+        if (allLinks && allLinks.length > 0) {
+          for (const l of allLinks) {
+            if (!linksBySongId[l.songId]) linksBySongId[l.songId] = [];
+            linksBySongId[l.songId].push(l);
+          }
+        }
+
+        return result.map(song => ({
+          ...song,
+          links: linksBySongId[song.id] || []
+        }));
+      } catch (linkErr) {
+        return result.map(song => ({ ...song, links: [] }));
+      }
     } catch (error) {
       console.error('Error in setlistService.getSongsForSetlist:', error);
       throw error;
