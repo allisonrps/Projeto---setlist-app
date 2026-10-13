@@ -848,8 +848,10 @@
       cursor: pointer;
       transition: all 0.15s ease;
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
     .sb-song-item:hover {
       background: rgba(255, 255, 255, 0.04);
@@ -861,6 +863,46 @@
       background: rgba(52, 211, 153, 0.09);
       border-color: rgba(52, 211, 153, 0.28);
       border-left-color: #34d399;
+    }
+    .sb-song-item-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sb-song-content-dots {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5px;
+      flex-shrink: 0;
+      padding-left: 4px;
+    }
+    .sb-content-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    .sb-content-dot.dot-lyrics {
+      background-color: #3b82f6;
+      box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+    }
+    .sb-content-dot.dot-chords {
+      background-color: #10b981;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+    }
+    .sb-content-dot.dot-tabs {
+      background-color: #8b5cf6;
+      box-shadow: 0 0 6px rgba(139, 92, 246, 0.6);
+    }
+    .sb-content-dot.dot-empty {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+    .sb-song-item:hover .sb-content-dot.dot-empty {
+      background-color: rgba(255, 255, 255, 0.22);
     }
     .sb-song-row-main {
       display: flex;
@@ -5393,18 +5435,31 @@
             : [];
           const tagsHtml = songTags.map(t => `<span class="sb-song-row-tag">${escapeHtml(t)}</span>`).join('');
 
+          // Content indicators (Letra: Azul #3b82f6, Cifra: Verde #10b981, Tablatura: Roxo #8b5cf6)
+          const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+          const hasChords = !!(song.chords && song.chords.trim());
+          const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
+          const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
+
           listHtml += `
             <div class="sb-song-item ${activeClass}" onclick="selectSongbookItem('${song.id}')" id="sbItem-${song.id}">
-              <div class="sb-song-row-main">
-                <span class="sb-song-row-title">${escapeHtml(song.name || 'Sem título')}</span>
-                <span class="sb-song-row-sep">-</span>
-                <span class="sb-song-row-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
+              <div class="sb-song-item-body">
+                <div class="sb-song-row-main">
+                  <span class="sb-song-row-title">${escapeHtml(song.name || 'Sem título')}</span>
+                  <span class="sb-song-row-sep">-</span>
+                  <span class="sb-song-row-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
+                </div>
+                <div class="sb-song-row-meta">
+                  ${tagsHtml}
+                  ${song.key ? `<span class="sb-song-row-key">${escapeHtml(song.key)}</span>` : ''}
+                  ${song.bpm ? `<span class="sb-song-row-bpm">${song.bpm} BPM</span>` : ''}
+                  ${song.isFavorite ? `<ion-icon name="star" class="sb-song-row-fav"></ion-icon>` : ''}
+                </div>
               </div>
-              <div class="sb-song-row-meta">
-                ${tagsHtml}
-                ${song.key ? `<span class="sb-song-row-key">${escapeHtml(song.key)}</span>` : ''}
-                ${song.bpm ? `<span class="sb-song-row-bpm">${song.bpm} BPM</span>` : ''}
-                ${song.isFavorite ? `<ion-icon name="star" class="sb-song-row-fav"></ion-icon>` : ''}
+              <div class="sb-song-content-dots" title="${dotsTooltip}">
+                <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
+                <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
+                <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
               </div>
             </div>
           `;
@@ -5709,6 +5764,29 @@
         }
         showToast('Salvo offline no navegador.', 'info');
       }
+
+      // Atualiza os pontinhos no card da lista lateral imediatamente
+      updateSongItemContentDots(song);
+    }
+
+    function updateSongItemContentDots(song) {
+      if (!song) return;
+      const item = document.getElementById(`sbItem-${song.id}`);
+      if (!item) return;
+      const dotsContainer = item.querySelector('.sb-song-content-dots');
+      if (!dotsContainer) return;
+
+      const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+      const hasChords = !!(song.chords && song.chords.trim());
+      const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
+      const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
+
+      dotsContainer.setAttribute('title', dotsTooltip);
+      dotsContainer.innerHTML = `
+        <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
+        <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
+        <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
+      `;
     }
 
     function toggleCurrentSongFavorite() {
