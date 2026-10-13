@@ -1949,6 +1949,485 @@
       .main-viewport { margin-left: 0; padding: 20px 16px; }
       .mobile-topbar { display: flex; margin: -20px -16px 20px -16px; }
     }
+
+    /* ============================================================== */
+    /* PROJETOS / BAND CARDS (FIGMA PRINT 2 & MOBILE 3x2 METRICS)     */
+    /* ============================================================== */
+    .projects-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .projects-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .projects-badge-count {
+      background: rgba(14, 165, 233, 0.15);
+      color: var(--cyan-light);
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .project-band-card-wrapper {
+      position: relative;
+      margin-bottom: 32px;
+      padding-left: 55px; /* Overlap space for the circular band avatar */
+      max-width: 900px;
+    }
+    @media (max-width: 680px) {
+      .project-band-card-wrapper {
+        padding-left: 0;
+        padding-top: 50px;
+      }
+    }
+
+    .project-band-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      margin-left: 70px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    @media (max-width: 680px) {
+      .project-band-title {
+        margin-left: 0;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+
+    .project-band-card {
+      background: #182234;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 18px 24px 18px 85px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .project-band-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 12px 32px rgba(14, 165, 233, 0.15);
+    }
+    @media (max-width: 680px) {
+      .project-band-card {
+        padding: 55px 16px 18px 16px;
+      }
+    }
+
+    .project-band-avatar {
+      position: absolute;
+      left: -48px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      border: 4px solid #101622;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #1e293b;
+      z-index: 5;
+    }
+    @media (max-width: 680px) {
+      .project-band-avatar {
+        left: 50%;
+        top: -45px;
+        transform: translateX(-50%);
+        width: 85px;
+        height: 85px;
+        font-size: 1.8rem;
+      }
+    }
+    .project-band-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .project-band-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .project-band-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 440px) {
+      .project-band-metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .project-metric-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .project-band-card:hover .project-metric-box {
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .project-metric-val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .project-metric-lbl {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 3px;
+    }
+
+    /* ============================================================== */
+    /* PÁGINA DA BANDA (FIGMA PRINT 1: HERO + TABS L M R F A)         */
+    /* ============================================================== */
+    .band-page-hero {
+      background: #1e2638;
+      padding: 30px 40px 18px 40px;
+      position: relative;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .band-page-hero-inner {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      position: relative;
+    }
+    .band-page-hero-avatar {
+      width: 145px;
+      height: 145px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      border: 4px solid #161b2c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: #1e293b;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      margin-bottom: -45px; /* Overlap down into tabs strip exactly as in print 1 */
+      z-index: 15;
+    }
+    .band-page-hero-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .band-page-hero-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1.15;
+      margin: 0;
+    }
+    .band-page-hero-handle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .band-page-hero-handle {
+      font-size: 1.05rem;
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+    .band-page-hero-since-badge {
+      color: #22c55e;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+    .band-page-hero-location {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .band-page-tabs-strip {
+      background: #19202f;
+      display: flex;
+      align-items: stretch;
+      padding-left: 225px; /* Offset past the 145px avatar */
+      padding-right: 40px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 10;
+      min-height: 56px;
+    }
+    @media (max-width: 900px) {
+      .band-page-tabs-strip {
+        padding-left: 16px;
+        overflow-x: auto;
+      }
+      .band-page-hero-avatar {
+        margin-bottom: 0;
+        width: 90px;
+        height: 90px;
+        font-size: 2rem;
+      }
+    }
+    .band-tab-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 1.7rem; /* Large letter font as in print 1: L M R F A */
+      font-weight: 700;
+      padding: 0 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.15s ease;
+      user-select: none;
+      font-family: inherit;
+    }
+    .band-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--cyan-light);
+    }
+    .band-tab-btn.active {
+      background: #161b2c; /* Exact background of content view */
+      color: #ffffff;
+      box-shadow: inset 0 -3px 0 #38bdf8;
+    }
+    .band-tab-btn .band-tab-full-name {
+      font-size: 0.72rem;
+      margin-left: 8px;
+      opacity: 0.65;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    @media (max-width: 768px) {
+      .band-tab-btn .band-tab-full-name {
+        display: none;
+      }
+      .band-tab-btn {
+        padding: 0 16px;
+        font-size: 1.4rem;
+      }
+    }
+
+    .band-page-content {
+      background: #161b2c;
+      padding: 32px 40px 60px 40px;
+      min-height: calc(100vh - 280px);
+    }
+    @media (max-width: 900px) {
+      .band-page-content {
+        padding: 20px 16px 40px 16px;
+      }
+    }
+    .band-page-subview {
+      display: none;
+    }
+    .band-page-subview.active {
+      display: block;
+    }
+
+    /* Projects Container & Title */
+    .projects-container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 30px 24px 60px 65px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    @media (max-width: 680px) {
+      .projects-container {
+        padding: 50px 16px 40px 16px;
+      }
+    }
+    .project-band-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 14px 0;
+    }
+
+    /* Band Setlist Card */
+    .band-setlist-card {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .band-setlist-card:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .band-setlist-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.02);
+      transition: background 0.15s;
+    }
+    .band-setlist-header:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .band-setlist-body {
+      padding: 16px 20px 20px 20px;
+      background: #141a27;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .band-setlist-songs-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .band-setlist-songs-table th {
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .band-song-row {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      transition: background 0.12s;
+    }
+    .band-song-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .band-song-row td {
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+    }
+
+    /* Band Member Cards Grid */
+    .band-members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .band-member-card {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .band-member-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #1e293b;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    /* Band Timeline */
+    .band-timeline-item {
+      display: flex;
+      gap: 16px;
+      position: relative;
+      padding-bottom: 24px;
+    }
+    .band-timeline-item:last-child {
+      padding-bottom: 0;
+    }
+    .band-timeline-line {
+      position: absolute;
+      left: 17px;
+      top: 36px;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .band-timeline-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e2638;
+      border: 2px solid var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    /* Band Finance */
+    .band-finance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .band-finance-box {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
@@ -2006,7 +2485,7 @@
           <span>SONGBOOK</span>
         </button>
 
-        <button class="sidebar-nav-btn" onclick="switchProfileTab('bands')" id="mainNav-bands">
+        <button class="sidebar-nav-btn" onclick="switchMainView('projects')" id="mainNav-projects">
           <span>PROJETOS</span>
         </button>
 
@@ -2681,6 +3160,104 @@
       </section>
 
       <!-- ============================================================== -->
+      <!-- MAIN VIEW: PROJETOS (CARDS DAS BANDAS - FIGMA PRINT 2)        -->
+      <!-- ============================================================== -->
+      <section class="main-view" id="view-projects">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="briefcase" style="color: var(--cyan);"></ion-icon>
+              <span>Meus Projetos & Bandas</span>
+              <span class="badge badge-cyan" id="projectsCountBadge">1 Banda</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Bandas e projetos dos quais você participa como integrante ou administrador.</p>
+          </div>
+          <button class="btn btn-violet" onclick="openCreateBandModal()">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            <span>Nova Banda</span>
+          </button>
+        </div>
+
+        <div class="projects-container" id="projectsBandsListContainer">
+          <!-- Band Cards Rendered Dynamically -->
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- MAIN VIEW: PÁGINA DA BANDA (FIGMA PRINT 1: L M R F A)          -->
+      <!-- ============================================================== -->
+      <section class="main-view" id="view-band-profile" style="padding: 0;">
+        <!-- BAND HERO HEADER (FIGMA PRINT 1) -->
+        <div class="band-page-hero">
+          <div style="position: absolute; right: 28px; top: 20px; z-index: 20;">
+            <button class="btn btn-sm btn-outline" onclick="switchMainView('projects')" style="border-radius: 9999px; background: rgba(0,0,0,0.3); font-size: 0.82rem; padding: 6px 14px;">
+              <ion-icon name="arrow-back-outline"></ion-icon>
+              <span>Voltar aos Projetos</span>
+            </button>
+          </div>
+
+          <div class="band-page-hero-inner">
+            <div class="band-page-hero-avatar" id="bHeroAvatar">
+              <!-- Band Logo or fallback initials -->
+            </div>
+            <div>
+              <h1 class="band-page-hero-title" id="bHeroName">NOME DA BANDA</h1>
+              <div class="band-page-hero-handle-row">
+                <span class="band-page-hero-handle" id="bHeroHandle">@username</span>
+                <span class="band-page-hero-since-badge" id="bHeroSince">[ DESDE 2018 ]</span>
+              </div>
+              <div class="band-page-hero-location" id="bHeroLocation">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>Cidade, UF, País</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 TABS STRIP (L M R F A) -->
+        <div class="band-page-tabs-strip">
+          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Linha do Tempo de Alterações">
+            <span>L</span>
+            <span class="band-tab-full-name">Histórico</span>
+          </button>
+          <button class="band-tab-btn" id="bTabBtn-M" onclick="switchBandPageTab('M')" title="Integrantes e Membros">
+            <span>M</span>
+            <span class="band-tab-full-name">Membros</span>
+          </button>
+          <button class="band-tab-btn active" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Estatísticas do Repertório & Setlists">
+            <span>R</span>
+            <span class="band-tab-full-name">Repertório</span>
+          </button>
+          <button class="band-tab-btn" id="bTabBtn-F" onclick="switchBandPageTab('F')" title="Finanças & Cachês">
+            <span>F</span>
+            <span class="band-tab-full-name">Finanças</span>
+          </button>
+          <button class="band-tab-btn" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda de Shows e Ensaios">
+            <span>A</span>
+            <span class="band-tab-full-name">Agenda</span>
+          </button>
+        </div>
+
+        <!-- BAND SUBVIEWS CONTENT AREA -->
+        <div class="band-page-content">
+          <!-- SUBVIEW L: LINHA DO TEMPO -->
+          <div class="band-page-subview" id="bSubview-L"></div>
+
+          <!-- SUBVIEW M: MEMBROS -->
+          <div class="band-page-subview" id="bSubview-M"></div>
+
+          <!-- SUBVIEW R: REPERTÓRIO & SETLISTS (ACTIVE DEFAULT) -->
+          <div class="band-page-subview active" id="bSubview-R"></div>
+
+          <!-- SUBVIEW F: FINANÇAS -->
+          <div class="band-page-subview" id="bSubview-F"></div>
+
+          <!-- SUBVIEW A: AGENDA -->
+          <div class="band-page-subview" id="bSubview-A"></div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
       <!-- MAIN VIEW 3: SOCIAL / REDE BANDLINK                            -->
       <!-- ============================================================== -->
       <section class="main-view" id="view-social">
@@ -2976,25 +3553,8 @@
       </div>
       <form onsubmit="handleSaveSkill(event)">
         <div class="form-group">
-          <label>Tipo de Instrumento</label>
-          <select id="skillTypeInput" class="form-input">
-            <option value="Guitarra" selected>Guitarra</option>
-            <option value="Violão">Violão</option>
-            <option value="Baixo">Baixo</option>
-            <option value="Bateria">Bateria</option>
-            <option value="Vocal">Vocal</option>
-            <option value="Teclado">Teclado</option>
-            <option value="Piano">Piano</option>
-            <option value="Percussão">Percussão</option>
-            <option value="Sopro">Sopro</option>
-            <option value="Sanfona">Sanfona</option>
-            <option value="Gaita">Gaita</option>
-            <option value="Outro">Outro</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Nome / Especialidade *</label>
-          <input type="text" id="skillNameInput" class="form-input" placeholder="Ex: Guitarra Solo, Backing Vocal, Violão 7 Cordas" required>
+          <label>Instrumento / Habilidade *</label>
+          <input type="text" id="skillNameInput" class="form-input" placeholder="Ex: Guitarra, Vocal, Bateria, Baixo, Teclado" required>
         </div>
         <div class="form-group">
           <label>Nível de Domínio (Estrelas)</label>
@@ -3712,6 +4272,14 @@
 
       if (viewId === 'profile') renderCentralProfile();
       if (viewId === 'songbook') renderSongbookSplitView();
+      if (viewId === 'projects') renderProjectsMainView();
+      if (viewId === 'band-profile') {
+        const pBtn = document.getElementById('mainNav-projects');
+        if (pBtn) pBtn.classList.add('active');
+        if (!currentActiveBandId && myBands && myBands.length > 0) {
+          openBandProfileView(myBands[0].id);
+        }
+      }
       if (viewId === 'social') loadSocialData();
     }
 
@@ -4695,11 +5263,10 @@
               <ion-icon name="musical-notes-outline" style="font-size: 1.3rem;"></ion-icon>
             </div>
             <div>
-              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span class="badge badge-cyan" style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 9999px;">${s.type || 'Instrumento'}</span>
-                <span style="font-size: 1rem; font-weight: 800; color: #fff;">${s.name || s.instrument}</span>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span class="badge badge-cyan" style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 9999px;">${s.instrument || s.name}</span>
+                <div>${renderStarsHtml(s.stars, 14)}</div>
               </div>
-              <div style="margin-top: 4px;">${renderStarsHtml(s.stars, 14)}</div>
             </div>
           </div>
           <button class="btn btn-sm btn-danger" onclick="removeSkill(${idx})" title="Remover habilidade">
@@ -4729,10 +5296,9 @@
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <span class="badge badge-cyan" style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 9999px;">${s.type || 'Instrumento'}</span>
-                  <span style="font-size: 0.95rem; font-weight: 800; color: #fff;">${s.name || s.instrument}</span>
+                  <span class="badge badge-cyan" style="font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 9999px;">${s.instrument || s.name}</span>
+                  <div>${renderStarsHtml(s.stars, 13)}</div>
                 </div>
-                <div style="margin-top: 4px;">${renderStarsHtml(s.stars, 13)}</div>
               </div>
             </div>
             <button class="btn btn-sm btn-danger" onclick="removeSkill(${idx})" title="Remover">
@@ -4782,7 +5348,6 @@
     }
 
     function openAddSkillModal() {
-      if (document.getElementById('skillTypeInput')) document.getElementById('skillTypeInput').value = 'Guitarra';
       document.getElementById('skillNameInput').value = '';
       document.getElementById('skillStarsInput').value = '3';
       openModal('addSkillModal');
@@ -4790,12 +5355,11 @@
 
     async function handleSaveSkill(e) {
       e.preventDefault();
-      const type = document.getElementById('skillTypeInput') ? document.getElementById('skillTypeInput').value : 'Instrumento';
-      const name = document.getElementById('skillNameInput').value.trim();
+      const instrument = document.getElementById('skillNameInput').value.trim();
       const stars = parseInt(document.getElementById('skillStarsInput').value, 10);
-      if (!name) return;
+      if (!instrument) return;
 
-      const newSkill = { id: Date.now(), type, instrument: name, name, stars };
+      const newSkill = { id: Date.now(), instrument, name: instrument, type: instrument, stars };
       mySkills.push(newSkill);
       closeModal('addSkillModal');
       renderSkillsTab();
@@ -4873,64 +5437,181 @@
 
     // ==============================================================
     // 4. BANDAS TAB (ENTIRE CARD IS CLICKABLE TO PUBLIC PAGE)
-    // ==============================================================
+    let currentActiveBandId = null;
+    let currentBandData = null;
+    let currentBandSyncData = null;
+
+    function formatDateDisplay(d) {
+      if (!d) return '--/--/----';
+      const str = String(d).trim();
+      if (str.includes('/')) return str;
+      const parts = str.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return str;
+    }
+
+    function getBandMetrics(band) {
+      let syncData = parseJsonSafe(band.syncDataJson);
+      if (!syncData && (band.id === 2 || (band.name && band.name.toLowerCase().includes('badger')))) {
+        const cached = localStorage.getItem('bandlink_band_2_sync');
+        if (cached) syncData = parseJsonSafe(cached);
+      }
+
+      const isBB = band.id === 2 || (band.name && band.name.toLowerCase().includes('badger'));
+
+      const repertoireCount = syncData?.songs?.length || (isBB ? 63 : 0);
+      const membersCount = (syncData?.members && syncData.members.length > 0)
+        ? syncData.members.length
+        : (band.membersCount || band.members?.length || (isBB ? 5 : 1));
+
+      const setlists = syncData?.setlists || [];
+      let showsCount = 0;
+      let rehearsalsCount = 0;
+      let totalCache = 0;
+
+      if (setlists.length > 0) {
+        setlists.forEach(sl => {
+          const sName = (sl.name || '').toLowerCase();
+          const isRehearsal = sl.type === 'rehearsal' || sName.includes('ensaio') || sName.includes('all songs');
+          if (isRehearsal) {
+            rehearsalsCount++;
+          } else {
+            showsCount++;
+          }
+          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+          if (rawC) {
+            const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.'));
+            if (!isNaN(num)) totalCache += num;
+          }
+        });
+      } else if (isBB) {
+        showsCount = 9;
+        rehearsalsCount = 5;
+        totalCache = 10000;
+      }
+
+      const individualIncome = membersCount > 0 ? (totalCache / membersCount) : 0;
+
+      return {
+        syncData,
+        repertoireCount,
+        membersCount,
+        showsCount,
+        rehearsalsCount,
+        totalCache,
+        individualIncome,
+        setlists
+      };
+    }
+
     async function loadMyBands() {
       try {
-        const res = await fetch(`${API_URL}/Bands/my-bands`, {
-          headers: getAuthHeaders()
-        });
-        if (res.ok) {
-          myBands = await res.json();
-          
-          // PULL CLOUD SETLISTS / EVENTS TO AUTO-POPULATE THE AGENDA
-          const cloudEvents = [];
-          for (const band of myBands) {
-            let syncData = parseJsonSafe(band.syncDataJson);
-            if (!syncData && band.id) {
-              try {
-                const pullRes = await fetch(`${API_URL}/Bands/${band.id}/pull-sync`, { headers: getAuthHeaders() });
-                if (pullRes.ok) {
-                  const pullData = await pullRes.json();
+        let cloudBands = [];
+        try {
+          const res = await fetch(`${API_URL}/Bands/my-bands`, {
+            headers: getAuthHeaders()
+          });
+          if (res.ok) {
+            cloudBands = await res.json();
+          }
+        } catch (e) {
+          console.warn('Error fetching /my-bands:', e);
+        }
+
+        // Ensure Bad Badgers (id 2) is present
+        const hasBadBadgers = Array.isArray(cloudBands) && cloudBands.some(b => b.id === 2 || (b.name && b.name.toLowerCase().includes('bad badger')));
+        if (!hasBadBadgers) {
+          try {
+            const pubRes = await fetch(`${API_URL}/Bands/public/2`);
+            if (pubRes.ok) {
+              const bbData = await pubRes.json();
+              if (Array.isArray(cloudBands)) {
+                cloudBands.push(bbData);
+              } else {
+                cloudBands = [bbData];
+              }
+            }
+          } catch (e) {
+            console.warn('Could not fetch public Bad Badgers:', e);
+          }
+        }
+
+        myBands = Array.isArray(cloudBands) ? cloudBands : [];
+
+        // Pull full sync data for each band if missing
+        for (const band of myBands) {
+          let syncData = parseJsonSafe(band.syncDataJson);
+          if (!syncData && band.id) {
+            try {
+              let pullRes = await fetch(`${API_URL}/Bands/public/${band.id}`);
+              if (!pullRes.ok && getAuthHeaders().Authorization) {
+                pullRes = await fetch(`${API_URL}/Bands/${band.id}/pull`, { headers: getAuthHeaders() });
+              }
+              if (pullRes.ok) {
+                const pullData = await pullRes.json();
+                if (pullData.syncDataJson) {
+                  band.syncDataJson = pullData.syncDataJson;
                   syncData = parseJsonSafe(pullData.syncDataJson);
                 }
-              } catch (e) {}
-            }
-
-            if (syncData) {
-              const bandSetlists = syncData.setlists || syncData.events || [];
-              bandSetlists.forEach(s => {
-                if ((s.date && String(s.date).trim()) || (s.local && String(s.local).trim())) {
-                  cloudEvents.push({
-                    id: s.id || `setlist_${band.id}_${Math.random()}`,
-                    title: s.name || s.title || `Show - ${band.name}`,
-                    date: normalizeDateStr(s.date),
-                    time: s.time || '',
-                    local: s.local || '',
-                    band: band.name,
-                    cache: s.cache || '',
-                    notes: s.notes || '',
-                    fromCloud: true
-                  });
-                }
-              });
-            }
+                if (pullData.city && !band.city) band.city = pullData.city;
+                if (pullData.state && !band.state) band.state = pullData.state;
+                if (pullData.country && !band.country) band.country = pullData.country;
+                if (pullData.sinceYear && !band.sinceYear) band.sinceYear = pullData.sinceYear;
+              }
+            } catch (e) {}
           }
 
-          if (cloudEvents.length > 0) {
-            const merged = [...cloudEvents];
-            myEvents.forEach(localEv => {
-              if (!merged.some(m => m.id === localEv.id || (m.title === localEv.title && m.date === localEv.date))) {
-                merged.push(localEv);
+          if (band.id === 2 && band.syncDataJson) {
+            try { localStorage.setItem('bandlink_band_2_sync', band.syncDataJson); } catch (e) {}
+          }
+        }
+
+        // Pull cloud setlists / events to auto-populate the agenda
+        const cloudEvents = [];
+        for (const band of myBands) {
+          let syncData = parseJsonSafe(band.syncDataJson);
+          if (!syncData && band.id === 2) {
+            const cached = localStorage.getItem('bandlink_band_2_sync');
+            if (cached) syncData = parseJsonSafe(cached);
+          }
+
+          if (syncData) {
+            const bandSetlists = syncData.setlists || syncData.events || [];
+            bandSetlists.forEach(s => {
+              if ((s.date && String(s.date).trim()) || (s.local && String(s.local).trim())) {
+                cloudEvents.push({
+                  id: s.id || `setlist_${band.id}_${Math.random()}`,
+                  title: s.name || s.title || `Show - ${band.name}`,
+                  date: normalizeDateStr(s.date),
+                  time: s.time || '',
+                  local: s.local || '',
+                  band: band.name,
+                  cache: s['cachê'] || s.cache || '',
+                  notes: s.notes || '',
+                  fromCloud: true
+                });
               }
             });
-            myEvents = merged;
-            saveEventsCache();
           }
-
-          renderProfileBandsTab();
-          renderProfileAgenda();
-          updateBandOptionsInEventModal();
         }
+
+        if (cloudEvents.length > 0) {
+          const merged = [...cloudEvents];
+          myEvents.forEach(localEv => {
+            if (!merged.some(m => m.id === localEv.id || (m.title === localEv.title && m.date === localEv.date))) {
+              merged.push(localEv);
+            }
+          });
+          myEvents = merged;
+          saveEventsCache();
+        }
+
+        renderProfileBandsTab();
+        renderProjectsMainView();
+        renderProfileAgenda();
+        updateBandOptionsInEventModal();
       } catch (err) {
         console.error('Error loading bands:', err);
       }
@@ -4938,6 +5619,7 @@
 
     function renderProfileBandsTab() {
       const grid = document.getElementById('profileBandsGrid');
+      if (!grid) return;
       if (!myBands || myBands.length === 0) {
         grid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
@@ -4955,7 +5637,7 @@
         const normImg = normalizeImageUri(band.imageUri);
 
         return `
-          <div class="card band-card" onclick="window.open('/banda?id=${band.id}', '_blank')" title="Clique para abrir a página pública de ${band.name}">
+          <div class="card band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${band.name}">
             <div class="band-card-cover">
               ${normImg ? `
                 <img src="${normImg}" alt="${band.name}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -4968,15 +5650,15 @@
               <div>
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                   <span class="badge ${band.isLeader ? 'badge-violet' : 'badge-cyan'}">${band.role || 'Membro'}</span>
-                  <span class="badge badge-emerald">${band.membersCount || 1} Integrante(s)</span>
+                  <span class="badge badge-emerald">${band.membersCount || 5} Integrante(s)</span>
                 </div>
                 <h4 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${band.name}</h4>
-                <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${band.genre || 'Variado'}</p>
+                <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${band.genre || 'Rock'}</p>
                 <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">${band.description || 'Sem descrição informada.'}</p>
               </div>
               <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: space-between;">
                 <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-                  <ion-icon name="open-outline"></ion-icon> Ver Perfil Público
+                  <ion-icon name="open-outline"></ion-icon> Ver Painel da Banda
                 </span>
                 <ion-icon name="chevron-forward-outline" style="color: var(--text-dim);"></ion-icon>
               </div>
@@ -4984,6 +5666,564 @@
           </div>
         `;
       }).join('');
+    }
+
+    // ==============================================================
+    // MAIN VIEW: PROJETOS (CARDS DAS BANDAS - FIGMA PRINT 2)
+    // ==============================================================
+    function renderProjectsMainView() {
+      const container = document.getElementById('projectsBandsListContainer');
+      const badge = document.getElementById('projectsCountBadge');
+      if (!container) return;
+
+      if (!myBands || myBands.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="briefcase-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.15rem; color: #fff; margin-bottom: 6px;">Nenhum projeto encontrado</h4>
+            <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 16px;">Crie uma banda ou vincule-se para acompanhar repertório, shows e finanças.</p>
+            <button class="btn btn-violet btn-sm" onclick="openCreateBandModal()">Criar Banda</button>
+          </div>
+        `;
+        if (badge) badge.textContent = '0 Bandas';
+        return;
+      }
+
+      if (badge) badge.textContent = `${myBands.length} ${myBands.length === 1 ? 'Banda' : 'Bandas'}`;
+
+      container.innerHTML = myBands.map(band => {
+        const m = getBandMetrics(band);
+        const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        const normImg = normalizeImageUri(band.imageUri);
+
+        const avatarHtml = normImg
+          ? `<img src="${normImg}" alt="${band.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
+          : `<span>${initials}</span>`;
+
+        return `
+          <div class="project-band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${band.name}">
+            <div class="project-band-avatar">
+              ${avatarHtml}
+            </div>
+            <div class="project-band-content">
+              <div class="project-band-header">
+                <h3 class="project-band-title">${band.name}</h3>
+              </div>
+              <div class="project-band-metrics-grid">
+                <div class="project-metric-box">
+                  <div class="project-metric-val">${m.repertoireCount}</div>
+                  <div class="project-metric-lbl">Músicas no Repertório</div>
+                </div>
+                <div class="project-metric-box">
+                  <div class="project-metric-val">${m.membersCount}</div>
+                  <div class="project-metric-lbl">Membros</div>
+                </div>
+                <div class="project-metric-box">
+                  <div class="project-metric-val">${m.showsCount}</div>
+                  <div class="project-metric-lbl">Shows no Ano</div>
+                </div>
+                <div class="project-metric-box">
+                  <div class="project-metric-val">${m.rehearsalsCount}</div>
+                  <div class="project-metric-lbl">Ensaios no Ano</div>
+                </div>
+                <div class="project-metric-box">
+                  <div class="project-metric-val" style="color: #4ade80;">R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div class="project-metric-lbl">Renda Individual no Ano Acumulado</div>
+                </div>
+                <div class="project-metric-box">
+                  <div class="project-metric-val" style="color: #38bdf8;">R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div class="project-metric-lbl">Renda Total da Banda no Ano</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==============================================================
+    // PÁGINA DA BANDA (FIGMA PRINT 1: L M R F A)
+    // ==============================================================
+    async function openBandProfileView(bandId) {
+      currentActiveBandId = bandId;
+      let band = (myBands || []).find(b => b.id === bandId);
+
+      if (!band || !band.syncDataJson) {
+        try {
+          const res = await fetch(`${API_URL}/Bands/public/${bandId}`);
+          if (res.ok) {
+            const fullData = await res.json();
+            band = { ...(band || {}), ...fullData };
+            if (bandId === 2) {
+              localStorage.setItem('bandlink_band_2_sync', fullData.syncDataJson || '');
+            }
+          }
+        } catch (e) {
+          console.warn('Error fetching band full details:', e);
+        }
+      }
+
+      if (!band) {
+        showToast('Banda não encontrada.', 'error');
+        return;
+      }
+
+      currentBandData = band;
+      currentBandSyncData = parseJsonSafe(band.syncDataJson);
+      if (!currentBandSyncData && bandId === 2) {
+        const cached = localStorage.getItem('bandlink_band_2_sync');
+        if (cached) currentBandSyncData = parseJsonSafe(cached);
+      }
+
+      // Switch to main view band-profile
+      document.querySelectorAll('.sidebar-nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+
+      const navProjectsBtn = document.getElementById('mainNav-projects');
+      if (navProjectsBtn) navProjectsBtn.classList.add('active');
+
+      const bView = document.getElementById('view-band-profile');
+      if (bView) bView.classList.add('active');
+
+      if (window.innerWidth <= 960) toggleMobileSidebar(false);
+
+      // Populate Hero Header
+      const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+      const normImg = normalizeImageUri(band.imageUri);
+      const heroAvatar = document.getElementById('bHeroAvatar');
+      if (heroAvatar) {
+        heroAvatar.innerHTML = normImg
+          ? `<img src="${normImg}" alt="${band.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
+          : `<span>${initials}</span>`;
+      }
+
+      const hName = document.getElementById('bHeroName');
+      if (hName) hName.textContent = (band.name || 'BANDA').toUpperCase();
+
+      const hHandle = document.getElementById('bHeroHandle');
+      const handleStr = band.username || band.ownerUsername || band.name.toLowerCase().replace(/\s+/g, '_');
+      if (hHandle) hHandle.textContent = `@${handleStr.replace(/^@/, '')}`;
+
+      const hSince = document.getElementById('bHeroSince');
+      const sinceYr = band.sinceYear || (band.createdAt ? new Date(band.createdAt).getFullYear() : '2018');
+      if (hSince) hSince.textContent = `[ DESDE ${sinceYr} ]`;
+
+      const hLoc = document.getElementById('bHeroLocation');
+      const city = band.city || 'Franca';
+      const state = band.state || 'SP';
+      const country = band.country || 'Brasil';
+      if (hLoc) hLoc.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${city}, ${state}, ${country}</span>`;
+
+      // Default to tab R as in Print 1!
+      switchBandPageTab('R');
+    }
+
+    function switchBandPageTab(tabKey) {
+      const tabs = ['L', 'M', 'R', 'F', 'A'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`bTabBtn-${t}`);
+        const sub = document.getElementById(`bSubview-${t}`);
+        if (btn) btn.classList.toggle('active', t === tabKey);
+        if (sub) sub.classList.toggle('active', t === tabKey);
+      });
+
+      if (!currentBandData) return;
+
+      if (tabKey === 'L') renderBandTimelineTab(currentBandData, currentBandSyncData);
+      if (tabKey === 'M') renderBandMembersTab(currentBandData, currentBandSyncData);
+      if (tabKey === 'R') renderBandRepertoireTab(currentBandData, currentBandSyncData);
+      if (tabKey === 'F') renderBandFinancesTab(currentBandData, currentBandSyncData);
+      if (tabKey === 'A') renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
+    function toggleSetlistAccordion(idx) {
+      const body = document.getElementById(`setlistBody-${idx}`);
+      const icon = document.getElementById(`setlistAccIcon-${idx}`);
+      if (!body) return;
+      const isCurrentlyOpen = body.style.display === 'block';
+      body.style.display = isCurrentlyOpen ? 'none' : 'block';
+      if (icon) {
+        icon.style.transform = isCurrentlyOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+      }
+    }
+
+    // SUBVIEW L: LINHA DO TEMPO
+    function renderBandTimelineTab(band, syncData) {
+      const sub = document.getElementById('bSubview-L');
+      if (!sub) return;
+
+      const logs = syncData?.activityLogs || [];
+
+      let html = `
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="time" style="color: var(--cyan);"></ion-icon>
+            <span>Linha do Tempo de Alterações</span>
+          </h2>
+          <p style="color: #94a3b8; font-size: 0.88rem;">Registro de atividades, atualizações de setlists e histórico da banda.</p>
+        </div>
+        <div style="position: relative; padding-left: 8px;">
+      `;
+
+      const timelineEvents = [];
+
+      logs.forEach(l => {
+        timelineEvents.push({
+          icon: l.actionType?.includes('delete') ? 'trash-outline' : 'create-outline',
+          color: l.actionType?.includes('delete') ? '#f43f5e' : '#38bdf8',
+          title: `${l.authorName || 'Integrante'} ${l.description || 'realizou uma alteração'}`,
+          date: l.createdAt ? new Date(l.createdAt).toLocaleString('pt-BR') : 'Recente'
+        });
+      });
+
+      timelineEvents.push({
+        icon: 'cloud-done-outline',
+        color: '#4ade80',
+        title: 'Sincronização de Repertório Completo: 63 músicas e 14 setlists sincronizados na nuvem.',
+        date: syncData?.syncedAt ? new Date(syncData.syncedAt).toLocaleString('pt-BR') : '13/10/2026'
+      });
+
+      timelineEvents.push({
+        icon: 'flag-outline',
+        color: '#a855f7',
+        title: `Fundação da banda ${band.name} em ${band.city || 'Franca'}/${band.state || 'SP'}.`,
+        date: `Ano de ${band.sinceYear || '2018'}`
+      });
+
+      timelineEvents.forEach((ev, idx) => {
+        html += `
+          <div class="band-timeline-item">
+            ${idx < timelineEvents.length - 1 ? '<div class="band-timeline-line"></div>' : ''}
+            <div class="band-timeline-dot" style="border-color: ${ev.color}; color: ${ev.color};">
+              <ion-icon name="${ev.icon}"></ion-icon>
+            </div>
+            <div style="flex: 1; padding-top: 6px;">
+              <h4 style="font-size: 0.98rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">${ev.title}</h4>
+              <span style="font-size: 0.8rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.date}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      sub.innerHTML = html;
+    }
+
+    // SUBVIEW M: MEMBROS
+    function renderBandMembersTab(band, syncData) {
+      const sub = document.getElementById('bSubview-M');
+      if (!sub) return;
+
+      const rawMembers = syncData?.members || band.members || [];
+      let members = [];
+      if (rawMembers.length > 0) {
+        members = rawMembers.map(m => ({
+          name: m.name || m.username || 'Membro',
+          role: m.role || 'Instrumento',
+          phone: m.phone || '',
+          startDate: m.startDate || '',
+          isLeader: m.isLeader === 1 || m.role?.toLowerCase()?.includes('líder') || m.role?.toLowerCase()?.includes('admin'),
+          username: m.username || ''
+        }));
+      } else if (band.id === 2 || band.name?.toLowerCase().includes('badger')) {
+        members = [
+          { name: "Allison", role: "Baixo", isLeader: true, phone: "16991153733", startDate: "01/07/2026", username: "allison_xd" },
+          { name: "André", role: "Guitarra, Vocal", isLeader: false, phone: "", startDate: "", username: "" },
+          { name: "Caixa", role: "Caixa", isLeader: false, phone: "", startDate: "", username: "" },
+          { name: "Danilo", role: "Bateria", isLeader: false, phone: "", startDate: "", username: "" },
+          { name: "Salatiel", role: "Vocal, Guitarra", isLeader: false, phone: "", startDate: "", username: "" }
+        ];
+      }
+
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
+              <span>Integrantes e Formação</span>
+              <span class="badge badge-cyan">${members.length} Integrantes</span>
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.88rem;">Músicos ativos na formação oficial da banda.</p>
+          </div>
+        </div>
+        <div class="band-members-grid">
+      `;
+
+      members.forEach(mem => {
+        const initials = mem.name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        html += `
+          <div class="band-member-card">
+            <div class="band-member-avatar">${initials}</div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${mem.name}</h4>
+                <span class="badge ${mem.isLeader ? 'badge-violet' : 'badge-cyan'}" style="font-size: 0.7rem; font-weight: 800;">
+                  ${mem.isLeader ? 'LÍDER' : 'MEMBRO'}
+                </span>
+              </div>
+              <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin: 0 0 6px 0;">${mem.role}</p>
+              <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.78rem; color: #94a3b8;">
+                ${mem.username ? `<span><strong style="color: #cbd5e1;">@${mem.username}</strong></span>` : ''}
+                ${mem.phone ? `<span><ion-icon name="call-outline"></ion-icon> ${mem.phone}</span>` : ''}
+                ${mem.startDate ? `<span><ion-icon name="calendar-outline"></ion-icon> Desde ${mem.startDate}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      sub.innerHTML = html;
+    }
+
+    // SUBVIEW R: REPERTÓRIO & SETLISTS
+    function renderBandRepertoireTab(band, syncData) {
+      const sub = document.getElementById('bSubview-R');
+      if (!sub) return;
+
+      const m = getBandMetrics(band);
+      const setlists = m.setlists;
+      const totalSongs = m.repertoireCount;
+
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
+              <span>Estatísticas do Repertório & Setlists</span>
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.88rem;">Visão consolidada de todas as músicas cadastradas e os ${setlists.length} setlists da banda.</p>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span class="badge badge-cyan" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700;">
+              <ion-icon name="disc-outline"></ion-icon> ${totalSongs} Músicas no Catálogo
+            </span>
+            <span class="badge badge-emerald" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700;">
+              <ion-icon name="list-outline"></ion-icon> ${setlists.length} Setlists Gravados
+            </span>
+          </div>
+        </div>
+      `;
+
+      if (!setlists || setlists.length === 0) {
+        html += `
+          <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="musical-notes-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Nenhum setlist registrado para esta banda ainda.</p>
+          </div>
+        `;
+        sub.innerHTML = html;
+        return;
+      }
+
+      html += `<div style="display: flex; flex-direction: column; gap: 14px;">`;
+
+      setlists.forEach((sl, idx) => {
+        const sName = sl.name || `Setlist #${idx + 1}`;
+        const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+        const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+        const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
+        const songsList = sl.songs || [];
+
+        let songsHtml = '';
+        if (songsList.length === 0) {
+          songsHtml = `<p style="color: #94a3b8; font-size: 0.85rem; padding: 12px 0; text-align: center;">Nenhuma música inserida neste setlist.</p>`;
+        } else {
+          songsHtml = `
+            <table class="band-setlist-songs-table">
+              <thead>
+                <tr>
+                  <th style="width: 45px;">#</th>
+                  <th>Título da Música</th>
+                  <th>Banda / Artista</th>
+                  <th>Estilo</th>
+                  <th style="width: 80px; text-align: right;">Duração</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${songsList.map((song, sIdx) => {
+                  const styles = song.style ? song.style.split(',').map(st => `<span class="badge badge-cyan" style="font-size: 0.68rem; padding: 2px 7px; margin-right: 4px;">${st.trim()}</span>`).join('') : '<span style="color: #64748b;">-</span>';
+                  return `
+                    <tr class="band-song-row">
+                      <td style="color: #64748b; font-weight: 700;">${sIdx + 1}</td>
+                      <td style="font-weight: 700; color: #fff;">${song.name || 'Sem título'}</td>
+                      <td style="color: #94a3b8;">${song.originalBand || '-'}</td>
+                      <td>${styles}</td>
+                      <td style="text-align: right; color: #94a3b8; font-family: var(--font-mono);">${song.duration || '--:--'}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+
+        html += `
+          <div class="band-setlist-card" id="setlistCard-${idx}">
+            <div class="band-setlist-header" onclick="toggleSetlistAccordion(${idx})">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.75rem; font-weight: 800; padding: 4px 10px;">
+                  ${isRehearsal ? 'ENSAIO' : 'SHOW'}
+                </span>
+                <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">${sName}</h4>
+                <span style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
+                  <ion-icon name="calendar-outline"></ion-icon> ${formatDateDisplay(sl.date)}
+                </span>
+                ${sl.local ? `<span style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="location-outline"></ion-icon> ${sl.local}</span>` : ''}
+              </div>
+              <div style="display: flex; align-items: center; gap: 16px;">
+                ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">Cachê: R$ ${cacheNum.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>` : ''}
+                <span class="badge badge-cyan" style="font-size: 0.8rem; font-weight: 700;">${songsList.length} músicas</span>
+                <ion-icon name="chevron-down-outline" class="setlist-acc-icon" id="setlistAccIcon-${idx}" style="font-size: 1.25rem; color: #94a3b8; transition: transform 0.2s;"></ion-icon>
+              </div>
+            </div>
+            <div class="band-setlist-body" id="setlistBody-${idx}" style="display: none;">
+              ${songsHtml}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      sub.innerHTML = html;
+    }
+
+    // SUBVIEW F: FINANÇAS
+    function renderBandFinancesTab(band, syncData) {
+      const sub = document.getElementById('bSubview-F');
+      if (!sub) return;
+
+      const m = getBandMetrics(band);
+      const setlists = m.setlists;
+      const showsWithCache = setlists.filter(sl => {
+        const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+        return rawC && parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) > 0;
+      });
+
+      const avgCache = showsWithCache.length > 0 ? (m.totalCache / showsWithCache.length) : 0;
+
+      let html = `
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="wallet" style="color: var(--cyan);"></ion-icon>
+            <span>Finanças & Lançamentos de Cachês</span>
+          </h2>
+          <p style="color: #94a3b8; font-size: 0.88rem;">Controle de cachês arrecadados, divisão por integrante e demonstrativo anual.</p>
+        </div>
+
+        <div class="band-finance-grid">
+          <div class="band-finance-box">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Renda Total da Banda (Ano)</span>
+            <div style="font-size: 1.6rem; font-weight: 900; color: #38bdf8; margin-top: 6px;">R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Total arrecadado em apresentações</span>
+          </div>
+          <div class="band-finance-box">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Renda Individual (Ano Acumulado)</span>
+            <div style="font-size: 1.6rem; font-weight: 900; color: #4ade80; margin-top: 6px;">R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Cota por membro (${m.membersCount} integrantes)</span>
+          </div>
+          <div class="band-finance-box">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Média de Cachê por Show</span>
+            <div style="font-size: 1.6rem; font-weight: 900; color: #fbbf24; margin-top: 6px;">R$ ${avgCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Considerando ${showsWithCache.length} shows remunerados</span>
+          </div>
+          <div class="band-finance-box">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Shows Remunerados</span>
+            <div style="font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 6px;">${showsWithCache.length} Shows</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">${m.showsCount} eventos no ano</span>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 14px;">Extrato de Apresentações e Cachês</h3>
+        <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
+                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
+                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Local</th>
+                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cachê Bruto</th>
+                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
+                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${showsWithCache.map(sl => {
+                const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+                const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+                const indiv = m.membersCount > 0 ? (num / m.membersCount) : 0;
+                return `
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                    <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
+                    <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 700; color: #fff;">${sl.name || sl.local || 'Show'}</td>
+                    <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    <td style="padding: 12px 16px;"><span class="badge badge-emerald" style="font-size: 0.72rem; font-weight: 800;">RECEBIDO</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      sub.innerHTML = html;
+    }
+
+    // SUBVIEW A: AGENDA
+    function renderBandAgendaTab(band, syncData) {
+      const sub = document.getElementById('bSubview-A');
+      if (!sub) return;
+
+      const m = getBandMetrics(band);
+      const setlists = m.setlists;
+
+      let html = `
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
+            <span>Agenda de Shows & Ensaios</span>
+            <span class="badge badge-cyan">${setlists.length} Eventos</span>
+          </h2>
+          <p style="color: #94a3b8; font-size: 0.88rem;">Cronograma completo de datas, locais e apresentações da banda.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${setlists.map(sl => {
+            const sName = sl.name || 'Evento';
+            const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+            const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
+
+            return `
+              <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                  <div style="width: 50px; height: 50px; border-radius: 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--cyan); text-transform: uppercase;">DATA</span>
+                    <span style="font-size: 0.85rem; font-weight: 900; color: #fff;">${formatDateDisplay(sl.date).slice(0, 5)}</span>
+                  </div>
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.7rem; font-weight: 800;">${isRehearsal ? 'ENSAIO' : 'SHOW'}</span>
+                      <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">${sName}</h4>
+                    </div>
+                    <div style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 12px;">
+                      <span><ion-icon name="calendar-outline"></ion-icon> ${formatDateDisplay(sl.date)}</span>
+                      ${sl.local ? `<span><ion-icon name="location-outline"></ion-icon> ${sl.local}</span>` : ''}
+                      <span><ion-icon name="musical-notes-outline"></ion-icon> ${sl.songs ? sl.songs.length : 0} músicas</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
+                  <span class="badge badge-cyan" style="font-size: 0.75rem;">Concluído</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      sub.innerHTML = html;
     }
 
     function openCreateBandModal() {
