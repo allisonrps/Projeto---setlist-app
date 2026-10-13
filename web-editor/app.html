@@ -476,41 +476,101 @@
       }
     }
     .profile-tab-btn {
-      padding: 12px 24px;
+      padding: 10px 22px;
       background: transparent;
       border: none;
-      color: #e2e8f0;
-      font-size: 1.7rem;
-      font-weight: 800;
+      color: #64748b;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
       transition: all 0.2s ease;
       position: relative;
-      min-width: 64px;
+      min-width: 66px;
+    }
+    .profile-tab-btn .tab-icon {
+      font-size: 1.35rem;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+    .profile-tab-btn .tab-letter {
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      color: #64748b;
+      transition: all 0.2s ease;
     }
     .profile-tab-btn .tab-sublabel {
       font-size: 0.62rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: #94a3b8;
+      color: #64748b;
+      transition: all 0.2s ease;
     }
     .profile-tab-btn:hover {
-      color: #fff;
       background: rgba(255, 255, 255, 0.04);
     }
-    /* CRITICAL REQUIREMENT: Active tab matches background of main content page (#161b2c) */
+    .profile-tab-btn:hover .tab-icon,
+    .profile-tab-btn:hover .tab-letter,
+    .profile-tab-btn:hover .tab-sublabel {
+      color: #94a3b8;
+    }
+    /* CRITICAL REQUIREMENT: Active tab matches background of main content page (#161b2c) and IS COLORFUL */
     .profile-tab-btn.active {
-      color: #ffffff;
       background: #161b2c;
       box-shadow: none;
     }
+    .profile-tab-btn.active .tab-icon {
+      color: #38bdf8;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+    }
+    .profile-tab-btn.active .tab-letter {
+      color: #38bdf8;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
     .profile-tab-btn.active .tab-sublabel {
       color: #38bdf8;
+      font-weight: 800;
+    }
+    /* Distinct colorful accents for active tabs */
+    .profile-tab-btn#pTab-bio.active .tab-icon,
+    .profile-tab-btn#pTab-bio.active .tab-letter,
+    .profile-tab-btn#pTab-bio.active .tab-sublabel {
+      color: #38bdf8;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+    }
+    .profile-tab-btn#pTab-skills.active .tab-icon,
+    .profile-tab-btn#pTab-skills.active .tab-letter,
+    .profile-tab-btn#pTab-skills.active .tab-sublabel {
+      color: #fbbf24;
+      filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6));
+    }
+    .profile-tab-btn#pTab-gear.active .tab-icon,
+    .profile-tab-btn#pTab-gear.active .tab-letter,
+    .profile-tab-btn#pTab-gear.active .tab-sublabel {
+      color: #c084fc;
+      filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.6));
+    }
+    .profile-tab-btn#pTab-songbook_p.active .tab-icon,
+    .profile-tab-btn#pTab-songbook_p.active .tab-letter,
+    .profile-tab-btn#pTab-songbook_p.active .tab-sublabel {
+      color: #34d399;
+      filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.6));
+    }
+    .profile-tab-btn#pTab-bands.active .tab-icon,
+    .profile-tab-btn#pTab-bands.active .tab-letter,
+    .profile-tab-btn#pTab-bands.active .tab-sublabel {
+      color: #f472b6;
+      filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.6));
+    }
+    .profile-tab-btn#pTab-agenda.active .tab-icon,
+    .profile-tab-btn#pTab-agenda.active .tab-letter,
+    .profile-tab-btn#pTab-agenda.active .tab-sublabel {
+      color: #60a5fa;
+      filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
     }
 
     /* MAIN CONTENT CONTAINER UNDER TABS */
@@ -1158,29 +1218,37 @@
 
         <!-- FIGMA 6 TABS: B - H - E - S - P - A -->
         <!-- ACTIVE TAB HAS THE SAME BACKGROUND COLOR AS THE MAIN CONTENT PAGE (#161b2c) -->
+        <!-- FIGMA 6 TABS: B - H - E - S - P - A COM ÍCONES E CORES -->
+        <!-- ACTIVE TAB HAS THE SAME BACKGROUND COLOR AS THE MAIN CONTENT PAGE (#161b2c) -->
         <div class="profile-tabs-strip">
           <button class="profile-tab-btn active" onclick="switchProfileTab('bio')" id="pTab-bio" title="Bio">
-            <span>B</span>
+            <ion-icon name="document-text-outline" class="tab-icon"></ion-icon>
+            <span class="tab-letter">B</span>
             <span class="tab-sublabel">Bio</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('skills')" id="pTab-skills" title="Habilidades">
-            <span>H</span>
+            <ion-icon name="flash-outline" class="tab-icon"></ion-icon>
+            <span class="tab-letter">H</span>
             <span class="tab-sublabel">Habilidade</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('gear')" id="pTab-gear" title="Equipamentos (Gear)">
-            <span>E</span>
+            <ion-icon name="hardware-chip-outline" class="tab-icon"></ion-icon>
+            <span class="tab-letter">E</span>
             <span class="tab-sublabel">Equipamentos</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('songbook_p')" id="pTab-songbook_p" title="Songbook">
-            <span>S</span>
+            <ion-icon name="musical-notes-outline" class="tab-icon"></ion-icon>
+            <span class="tab-letter">S</span>
             <span class="tab-sublabel">Songbook</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('bands')" id="pTab-bands" title="Bandas e Projetos">
-            <span>P</span>
+            <ion-icon name="people-outline" class="tab-icon"></ion-icon>
+            <span class="tab-letter">P</span>
             <span class="tab-sublabel">Projetos</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('agenda')" id="pTab-agenda" title="Agenda">
-            <span>A</span>
+            <ion-icon name="calendar-outline" class="tab-icon"></ion-icon>
+            <span class="tab-letter">A</span>
             <span class="tab-sublabel">Agenda</span>
           </button>
         </div>
@@ -1188,79 +1256,213 @@
         <!-- MAIN CONTENT CONTAINER (COLOR: #161b2c MATCHING ACTIVE TAB) -->
         <div class="profile-content-container">
 
-          <!-- ── TAB B: BIO (ESTRUTURA EXATA DO FIGMA) ── -->
+          <!-- ── TAB B: BIO (ESTRUTURA EXATA DO FIGMA + EDIÇÃO INLINE) ── -->
           <div class="profile-subview active" id="subview-bio">
             <div style="display: flex; flex-direction: column; gap: 40px; max-width: 980px;">
               
-              <!-- 1. SOBRE -->
+              <!-- 1. SOBRE (CLICAR NO BOTÃO VERDE TRANSFORMA O TEXTO EM FORMULÁRIO) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
                   <div class="figma-section-title">sobre</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
-                  <button class="btn-edit-circle" onclick="openEditBioModal()" title="Editar Sobre mim">
+                  <button class="btn-edit-circle" onclick="toggleInlineBioEdit()" id="btnEditBio" title="Editar Sobre mim">
                     <ion-icon name="create"></ion-icon>
                   </button>
                 </div>
                 <div class="figma-content-block">
-                  <p id="bioText" style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.7; white-space: pre-line;">
-                    sobre sobre sobre sobre sobre sbore sobre sobre sobre
-                    sobre sobre sbore sobre sobre sobre sobre sobre sbore
-                    sobre sobre sobre sobre sobre sbore sobre sobre sobre
-                    sobre sobre sbore sobre sobre sobre sobre sobre sbore
-                  </p>
+                  <div id="bioViewMode">
+                    <p id="bioText" style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.7; white-space: pre-line;">
+                      Carregando apresentação...
+                    </p>
+                  </div>
+                  <div id="bioEditMode" style="display: none; background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <label class="form-label" style="margin-bottom: 8px;">Biografia & Apresentação:</label>
+                    <textarea id="inlineBioInput" class="form-input" rows="6" style="width: 100%; font-size: 1rem; line-height: 1.6; resize: vertical; margin-bottom: 12px;" placeholder="Conte um pouco sobre sua trajetória musical, bandas anteriores, preferências de repertório..."></textarea>
+                    <div style="display: flex; gap: 10px;">
+                      <button class="btn btn-primary btn-sm" type="button" onclick="saveInlineBio()">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <span>Salvar</span>
+                      </button>
+                      <button class="btn btn-outline btn-sm" type="button" onclick="cancelInlineBio()">
+                        <span>Cancelar</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- 2. NÍVEL DE INTERESSE -->
+              <!-- 2. NÍVEL DE INTERESSE & DISPONIBILIDADE (POLÍTICA DO APP + EDIÇÃO INLINE) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
                   <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">nivel de<br>interesse</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
-                  <button class="btn-edit-circle" onclick="openInterestModal()" title="Editar Nível de Interesse">
+                  <button class="btn-edit-circle" onclick="toggleInlineInterestEdit()" id="btnEditInterest" title="Editar Nível de Interesse e Disponibilidade">
                     <ion-icon name="create"></ion-icon>
                   </button>
                 </div>
                 <div class="figma-content-block">
-                  <!-- 5 CÍRCULOS CINZAS DO FIGMA COM VALORES / ESTILOS -->
-                  <div class="figma-circles-row" id="interestCirclesContainer">
-                    <div class="figma-circle-avatar" onclick="setInterestLevel('Hobbie')" id="cInterest1" title="Hobbie">1</div>
-                    <div class="figma-circle-avatar" onclick="setInterestLevel('Casual')" id="cInterest2" title="Casual">2</div>
-                    <div class="figma-circle-avatar" onclick="setInterestLevel('Semi-Pro')" id="cInterest3" title="Semi-Pro">3</div>
-                    <div class="figma-circle-avatar" onclick="setInterestLevel('Profissional')" id="cInterest4" title="Profissional">4</div>
-                    <div class="figma-circle-avatar" onclick="setInterestLevel('Turnê / Full')" id="cInterest5" title="Turnê / Full">5</div>
+                  <!-- VIEW MODE -->
+                  <div id="interestViewMode">
+                    <div style="margin-bottom: 14px;">
+                      <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px;">Nível de Interesse:</div>
+                      <div class="pills-row" id="viewInterestPills">
+                        <!-- Rendered dynamically: Hobbie, Profissional, Casual -->
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px;">Disponibilidade:</div>
+                      <div class="pills-row" id="viewAvailabilityPills">
+                        <!-- Rendered dynamically: Disponível, Indisponível -->
+                      </div>
+                    </div>
                   </div>
-                  <div style="margin-top: 8px; font-size: 0.85rem; color: #94a3b8;" id="interestLevelLabel">Nível Selecionado: Profissional</div>
+
+                  <!-- EDIT MODE (FORMULÁRIO INLINE) -->
+                  <div id="interestEditMode" style="display: none; background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <div style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 14px;">
+                      Selecione ao menos <strong>1 nível de interesse</strong> e sua <strong>disponibilidade atual</strong>:
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                      <label class="form-label" style="margin-bottom: 8px;">Nível de Interesse (Múltipla escolha, mín. 1):</label>
+                      <div class="pills-row" id="editInterestPills">
+                        <button type="button" class="interactive-pill" id="pillInterest-Hobbie" onclick="toggleDraftInterest('Hobbie')">Hobbie</button>
+                        <button type="button" class="interactive-pill" id="pillInterest-Profissional" onclick="toggleDraftInterest('Profissional')">Profissional</button>
+                        <button type="button" class="interactive-pill" id="pillInterest-Casual" onclick="toggleDraftInterest('Casual')">Casual</button>
+                      </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                      <label class="form-label" style="margin-bottom: 8px;">Disponibilidade para Projetos (Escolha 1):</label>
+                      <div class="pills-row" id="editAvailabilityPills">
+                        <button type="button" class="interactive-pill" id="pillAvail-Disponivel" onclick="setDraftAvailability('Disponível')">
+                          <ion-icon name="checkmark-circle-outline"></ion-icon>
+                          <span>Disponível</span>
+                        </button>
+                        <button type="button" class="interactive-pill" id="pillAvail-Indisponivel" onclick="setDraftAvailability('Indisponível')">
+                          <ion-icon name="close-circle-outline"></ion-icon>
+                          <span>Indisponível</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                      <button class="btn btn-primary btn-sm" type="button" onclick="saveInlineInterest()">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <span>Salvar Condições</span>
+                      </button>
+                      <button class="btn btn-outline btn-sm" type="button" onclick="cancelInlineInterest()">
+                        <span>Cancelar</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- 3. INFLUÊNCIAS MUSICAIS (COM ESTRELAS) -->
+              <!-- 3. INFLUÊNCIAS MUSICAIS (COM ESTRELAS CLICÁVEIS E EDIÇÃO INLINE) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
                   <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">influencias<br>musicais</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
-                  <button class="btn-edit-circle" onclick="openEditInfluencesModal()" title="Editar Influências Musicais">
+                  <button class="btn-edit-circle" onclick="toggleInlineInfluencesEdit()" id="btnEditInfluences" title="Editar Influências Musicais">
                     <ion-icon name="create"></ion-icon>
                   </button>
                 </div>
                 <div class="figma-content-block">
-                  <div id="influencesListContainer" style="display: flex; flex-direction: column;">
-                    <!-- Rows generated dynamically: musical influence 1-5 + stars -->
+                  <!-- VIEW MODE -->
+                  <div id="influencesViewMode">
+                    <div id="influencesListContainer" style="display: flex; flex-direction: column;">
+                      <!-- Rows generated dynamically: musical influence 1-5 + stars -->
+                    </div>
+                  </div>
+
+                  <!-- EDIT MODE (INTERACTIVE FORM WITH CLICKABLE STARS) -->
+                  <div id="influencesEditMode" style="display: none; background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 14px;">
+                      Edite os artistas e clique diretamente nas <strong>estrelas (1 a 5)</strong> para definir o nível de influência. Máximo de 5 influências.
+                    </div>
+                    
+                    <div id="influencesEditableRows" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                      <!-- Rendered dynamically with input, 5 clickable stars, delete button -->
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                      <button class="btn btn-outline btn-sm" type="button" onclick="addDraftInfluenceRow()" id="btnAddInfluenceRow">
+                        <ion-icon name="add-outline"></ion-icon>
+                        <span>Adicionar Influência</span>
+                      </button>
+                      <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary btn-sm" type="button" onclick="saveInlineInfluences()">
+                          <ion-icon name="checkmark-circle-outline"></ion-icon>
+                          <span>Salvar Influências</span>
+                        </button>
+                        <button class="btn btn-outline btn-sm" type="button" onclick="cancelInlineInfluences()">
+                          <span>Cancelar</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 4. LINKS SOCIAIS (CÍRCULOS CINZAS FIGMA) -->
+              <!-- 4. LINKS SOCIAIS (FORMULÁRIO INLINE PARA ADICIONAR OS LINKS) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
                   <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">links<br>sociais</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
-                  <button class="btn-edit-circle" onclick="openEditSocialsModal()" title="Editar Links Sociais">
+                  <button class="btn-edit-circle" onclick="toggleInlineSocialsEdit()" id="btnEditSocials" title="Editar Links Sociais">
                     <ion-icon name="create"></ion-icon>
                   </button>
                 </div>
                 <div class="figma-content-block">
-                  <div class="figma-circles-row" id="figmaSocialCirclesRow">
-                    <!-- 4 Círculos Cinzas interativos com ícones -->
+                  <!-- VIEW MODE -->
+                  <div id="socialsViewMode">
+                    <div class="figma-circles-row" id="figmaSocialCirclesRow">
+                      <!-- 4 Círculos Cinzas interativos com ícones -->
+                    </div>
+                  </div>
+
+                  <!-- EDIT MODE (FORMULÁRIOS DE LINKS SOCIAIS) -->
+                  <div id="socialsEditMode" style="display: none; background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 16px;">
+                      <div>
+                        <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
+                          <ion-icon name="logo-instagram" style="color: #e1306c; font-size: 1.1rem;"></ion-icon>
+                          <span>Instagram (@perfil)</span>
+                        </label>
+                        <input type="text" id="inlineInstagramInput" class="form-input" placeholder="@seu.perfil">
+                      </div>
+                      <div>
+                        <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
+                          <ion-icon name="logo-youtube" style="color: #ef4444; font-size: 1.1rem;"></ion-icon>
+                          <span>YouTube (Link ou Canal)</span>
+                        </label>
+                        <input type="text" id="inlineYoutubeInput" class="form-input" placeholder="https://youtube.com/@seucanal">
+                      </div>
+                      <div>
+                        <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
+                          <ion-icon name="musical-notes" style="color: #10b981; font-size: 1.1rem;"></ion-icon>
+                          <span>Spotify (Link Artista)</span>
+                        </label>
+                        <input type="text" id="inlineSpotifyInput" class="form-input" placeholder="https://open.spotify.com/artist/...">
+                      </div>
+                      <div>
+                        <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
+                          <ion-icon name="logo-twitter" style="color: #38bdf8; font-size: 1.1rem;"></ion-icon>
+                          <span>X / Twitter (@usuario)</span>
+                        </label>
+                        <input type="text" id="inlineTwitterInput" class="form-input" placeholder="@seutwitter">
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                      <button class="btn btn-primary btn-sm" type="button" onclick="saveInlineSocials()">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <span>Salvar Links</span>
+                      </button>
+                      <button class="btn btn-outline btn-sm" type="button" onclick="cancelInlineSocials()">
+                        <span>Cancelar</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2374,18 +2576,18 @@
       `).join('');
     }
 
-    // Modal helpers for green buttons
+    // Modal helpers for green buttons -> Inline editing toggles
     function openEditBioModal() {
-      openEditProfileModal();
+      toggleInlineBioEdit();
     }
     function openInterestModal() {
-      showToast('Selecione uma das 5 opções clicando nos círculos de nível!', 'info');
+      toggleInlineInterestEdit();
     }
     function openEditInfluencesModal() {
-      openEditProfileModal();
+      toggleInlineInfluencesEdit();
     }
     function openEditSocialsModal() {
-      openEditProfileModal();
+      toggleInlineSocialsEdit();
     }
 
     function toggleMobileSidebar(open) {
@@ -2611,7 +2813,29 @@
       renderBioTab();
     }
 
-    // ── 1. BIO TAB (ESTRUTURA EXATA DO FIGMA) ──
+    // ── 1. BIO TAB (ESTRUTURA FIGMA + POLÍTICA DO APP + EDIÇÃO INLINE) ──
+    function parseUserInterests(raw) {
+      if (!raw) return ['Profissional'];
+      if (Array.isArray(raw)) return raw.length > 0 ? raw : ['Profissional'];
+      if (typeof raw === 'string') {
+        const str = raw.trim();
+        if (str.startsWith('[') && str.endsWith(']')) {
+          try {
+            const arr = JSON.parse(str);
+            if (Array.isArray(arr) && arr.length > 0) return arr;
+          } catch {}
+        }
+        const found = [];
+        const lower = str.toLowerCase();
+        if (lower.includes('hobb')) found.push('Hobbie');
+        if (lower.includes('prof')) found.push('Profissional');
+        if (lower.includes('casu') || lower.includes('ver')) found.push('Casual');
+        if (found.length > 0) return found;
+        return [raw];
+      }
+      return ['Profissional'];
+    }
+
     function renderBioTab() {
       if (!currentUser) return;
 
@@ -2621,33 +2845,35 @@
         bioEl.textContent = currentUser.bio || 'Adicione uma apresentação sobre você, sua história musical e experiência.';
       }
 
-      // 2. NÍVEL DE INTERESSE (5 CÍRCULOS FIGMA)
-      const interest = String(currentUser.interestLevel || 'Profissional').toLowerCase();
-      const levels = [
-        { id: 'cInterest1', name: 'Hobbie', match: 'hobb' },
-        { id: 'cInterest2', name: 'Casual', match: 'casu' },
-        { id: 'cInterest3', name: 'Semi-Pro', match: 'semi' },
-        { id: 'cInterest4', name: 'Profissional', match: 'prof' },
-        { id: 'cInterest5', name: 'Turnê / Full', match: 'turn' }
-      ];
+      // 2. NÍVEL DE INTERESSE & DISPONIBILIDADE (VIEW MODE)
+      const currentInterests = parseUserInterests(currentUser.interestLevel);
+      const viewIntContainer = document.getElementById('viewInterestPills');
+      if (viewIntContainer) {
+        const allInterests = ['Hobbie', 'Profissional', 'Casual'];
+        viewIntContainer.innerHTML = allInterests.map(name => {
+          const isSelected = currentInterests.some(i => String(i).toLowerCase().includes(name.slice(0, 4).toLowerCase()));
+          return `
+            <div class="interactive-pill ${isSelected ? 'active' : ''}" style="${isSelected ? 'background: rgba(14,165,233,0.18); border-color: #38bdf8; color: #38bdf8; font-weight: 800;' : 'opacity: 0.35; border-color: rgba(255,255,255,0.08);'}; pointer-events: none; flex: 1; text-align: center;">
+              ${name}
+            </div>
+          `;
+        }).join('');
+      }
 
-      levels.forEach((lvl, idx) => {
-        const el = document.getElementById(lvl.id);
-        if (el) {
-          const isSelected = interest.includes(lvl.match) || (idx === 3 && !interest);
-          if (isSelected) {
-            el.style.background = '#38bdf8';
-            el.style.color = '#0f172a';
-            el.style.boxShadow = '0 0 16px rgba(56, 189, 248, 0.5)';
-            const labelEl = document.getElementById('interestLevelLabel');
-            if (labelEl) labelEl.textContent = `Nível Selecionado: ${lvl.name}`;
-          } else {
-            el.style.background = '#cbd5e1';
-            el.style.color = '#1e293b';
-            el.style.boxShadow = 'none';
-          }
-        }
-      });
+      const viewAvailContainer = document.getElementById('viewAvailabilityPills');
+      if (viewAvailContainer) {
+        const isAvail = (currentUser.availability === 'Disponível' || String(currentUser.availability).toLowerCase() === 'available');
+        viewAvailContainer.innerHTML = `
+          <div class="interactive-pill ${isAvail ? 'active-emerald' : ''}" style="${isAvail ? 'background: rgba(16,185,129,0.18); border-color: #10b981; color: #34d399; font-weight: 800;' : 'opacity: 0.35; border-color: rgba(255,255,255,0.08);'}; pointer-events: none; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <ion-icon name="${isAvail ? 'checkmark-circle' : 'checkmark-circle-outline'}"></ion-icon>
+            <span>Disponível</span>
+          </div>
+          <div class="interactive-pill ${!isAvail ? 'active' : ''}" style="${!isAvail ? 'background: rgba(239,68,68,0.18); border-color: #ef4444; color: #f87171; font-weight: 800;' : 'opacity: 0.35; border-color: rgba(255,255,255,0.08);'}; pointer-events: none; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <ion-icon name="close-circle-outline"></ion-icon>
+            <span>Indisponível</span>
+          </div>
+        `;
+      }
 
       // 3. INFLUÊNCIAS MUSICAIS (TABELA COM 5 LINHAS E ESTRELAS)
       const infContainer = document.getElementById('influencesListContainer');
@@ -2657,16 +2883,16 @@
       for (let i = 0; i < 5; i++) {
         const item = infList[i];
         const label = item ? item.name : `musical influence ${i + 1}`;
-        const starsCount = item?.stars || (5 - (i % 3));
+        const starsCount = item ? item.stars : (5 - (i % 3));
         let starsHtml = '';
         for (let s = 1; s <= 5; s++) {
           const isFilled = s <= starsCount;
-          starsHtml += `<ion-icon name="${isFilled ? 'star' : 'star-outline'}" style="color: ${isFilled ? '#e2e8f0' : 'rgba(255,255,255,0.2)'}; font-size: 1.15rem;"></ion-icon>`;
+          starsHtml += `<ion-icon name="${isFilled ? 'star' : 'star-outline'}" style="color: ${isFilled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}; font-size: 1.15rem; ${isFilled ? 'filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));' : ''}"></ion-icon>`;
         }
 
         rowsHtml += `
           <div class="figma-influence-row">
-            <span>${label}</span>
+            <span style="${item ? 'color: #fff;' : 'color: #64748b; font-style: italic;'}">${label}</span>
             <div style="display: flex; gap: 4px; align-items: center;">
               ${starsHtml}
             </div>
@@ -2679,53 +2905,379 @@
       const socialRow = document.getElementById('figmaSocialCirclesRow');
       if (socialRow) {
         const socials = [
-          { icon: 'logo-instagram', label: 'Instagram', val: currentUser.instagram, href: currentUser.instagram ? `https://instagram.com/${currentUser.instagram.replace('@','')}` : null },
-          { icon: 'logo-youtube', label: 'YouTube', val: currentUser.youtube, href: currentUser.youtube || null },
-          { icon: 'logo-twitter', label: 'X (Twitter)', val: currentUser.twitter, href: currentUser.twitter ? `https://twitter.com/${currentUser.twitter.replace('@','')}` : null },
-          { icon: 'musical-notes', label: 'Spotify', val: currentUser.spotify, href: currentUser.spotify || null }
+          { icon: 'logo-instagram', label: 'Instagram', val: currentUser.instagram, href: currentUser.instagram ? (currentUser.instagram.startsWith('http') ? currentUser.instagram : `https://instagram.com/${currentUser.instagram.replace('@','')}`) : null },
+          { icon: 'logo-youtube', label: 'YouTube', val: currentUser.youtube, href: currentUser.youtube ? (currentUser.youtube.startsWith('http') ? currentUser.youtube : `https://youtube.com/@${currentUser.youtube.replace('@','')}`) : null },
+          { icon: 'musical-notes', label: 'Spotify', val: currentUser.spotify, href: currentUser.spotify || null },
+          { icon: 'logo-twitter', label: 'X (Twitter)', val: currentUser.twitter, href: currentUser.twitter ? (currentUser.twitter.startsWith('http') ? currentUser.twitter : `https://twitter.com/${currentUser.twitter.replace('@','')}`) : null }
         ];
 
         socialRow.innerHTML = socials.map(s => `
-          <div class="figma-circle-avatar" onclick="${s.href ? `window.open('${s.href}', '_blank')` : 'openEditProfileModal()'}" title="${s.label}: ${s.val || 'Clique para adicionar'}">
-            <ion-icon name="${s.icon}" style="font-size: 1.6rem; color: #1e293b;"></ion-icon>
+          <div class="figma-circle-avatar" onclick="${s.href ? `window.open('${s.href}', '_blank')` : 'toggleInlineSocialsEdit()'}" title="${s.label}: ${s.val || 'Clique para adicionar'}">
+            <ion-icon name="${s.icon}" style="font-size: 1.6rem; color: ${s.val ? '#0f172a' : '#475569'};"></ion-icon>
           </div>
         `).join('');
       }
     }
 
-    async function setInterestLevel(level) {
-      if (!currentUser) return;
-      currentUser.interestLevel = level;
-      renderBioTab();
-      try {
-        await fetch(`${API_URL}/Users/profile`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ interestLevel: level })
-        });
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-        showToast(`Nível de interesse atualizado: ${level}`, 'success');
-      } catch (e) {
-        console.error(e);
+    // ══════════════════════════════════════════════════════════════
+    // 1. INLINE EDIT: SOBRE (O TEXTO VIRA FORMULÁRIO)
+    // ══════════════════════════════════════════════════════════════
+    function toggleInlineBioEdit() {
+      const viewEl = document.getElementById('bioViewMode');
+      const editEl = document.getElementById('bioEditMode');
+      const input = document.getElementById('inlineBioInput');
+      if (!viewEl || !editEl) return;
+      const isEditing = editEl.style.display !== 'none';
+      if (isEditing) {
+        cancelInlineBio();
+      } else {
+        input.value = currentUser?.bio || '';
+        viewEl.style.display = 'none';
+        editEl.style.display = 'block';
+        input.focus();
       }
     }
 
-    async function setAvailability(avail) {
+    async function saveInlineBio() {
       if (!currentUser) return;
-      currentUser.availability = avail;
-      document.getElementById('heroAvailBadge').textContent = avail;
-      renderBioTab();
+      const bio = document.getElementById('inlineBioInput').value.trim();
+      currentUser.bio = bio;
       try {
         await fetch(`${API_URL}/Users/profile`, {
           method: "PUT",
           headers: getAuthHeaders(),
-          body: JSON.stringify({ availability: avail })
+          body: JSON.stringify({ bio })
         });
         localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-        showToast(`Disponibilidade atualizada: ${avail}`, 'success');
+        showToast('Apresentação salva com sucesso!', 'success');
       } catch (e) {
         console.error(e);
+        showToast('Salvo localmente.', 'info');
       }
+      cancelInlineBio();
+      renderBioTab();
+    }
+
+    function cancelInlineBio() {
+      const viewEl = document.getElementById('bioViewMode');
+      const editEl = document.getElementById('bioEditMode');
+      if (viewEl) viewEl.style.display = 'block';
+      if (editEl) editEl.style.display = 'none';
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 2. INLINE EDIT: NÍVEL DE INTERESSE & DISPONIBILIDADE
+    // ══════════════════════════════════════════════════════════════
+    let draftInterests = ['Profissional'];
+    let draftAvailability = 'Disponível';
+
+    function toggleInlineInterestEdit() {
+      const viewEl = document.getElementById('interestViewMode');
+      const editEl = document.getElementById('interestEditMode');
+      if (!viewEl || !editEl) return;
+      const isEditing = editEl.style.display !== 'none';
+      if (isEditing) {
+        cancelInlineInterest();
+      } else {
+        draftInterests = [...parseUserInterests(currentUser?.interestLevel)];
+        if (draftInterests.length === 0) draftInterests = ['Profissional'];
+        draftAvailability = currentUser?.availability || 'Disponível';
+        renderDraftInterestPills();
+        viewEl.style.display = 'none';
+        editEl.style.display = 'block';
+      }
+    }
+
+    function toggleDraftInterest(val) {
+      const isMatching = (item) => {
+        const v = String(item || '').toLowerCase();
+        const k = String(val).toLowerCase();
+        if ((k.includes('casual') || k.includes('ver')) && (v.includes('casual') || v.includes('ver'))) return true;
+        if (k.includes('hobb') && v.includes('hobb')) return true;
+        if (k.includes('prof') && v.includes('prof')) return true;
+        return v === k;
+      };
+
+      const exists = draftInterests.some(isMatching);
+      if (exists) {
+        if (draftInterests.length === 1) {
+          showToast('Você deve manter pelo menos 1 nível de interesse selecionado.', 'warning');
+          return;
+        }
+        draftInterests = draftInterests.filter(x => !isMatching(x));
+      } else {
+        draftInterests.push(val);
+      }
+      renderDraftInterestPills();
+    }
+
+    function setDraftAvailability(val) {
+      draftAvailability = val;
+      renderDraftInterestPills();
+    }
+
+    function renderDraftInterestPills() {
+      const allLevels = ['Hobbie', 'Profissional', 'Casual'];
+      allLevels.forEach(lvl => {
+        const btn = document.getElementById(`pillInterest-${lvl}`);
+        if (!btn) return;
+        const isSelected = draftInterests.some(i => {
+          const v = String(i).toLowerCase();
+          const k = lvl.toLowerCase();
+          if (k.includes('hobb') && v.includes('hobb')) return true;
+          if (k.includes('prof') && v.includes('prof')) return true;
+          if (k.includes('casu') && (v.includes('casu') || v.includes('ver'))) return true;
+          return v === k;
+        });
+        if (isSelected) {
+          btn.className = 'interactive-pill active';
+        } else {
+          btn.className = 'interactive-pill';
+        }
+      });
+
+      const btnDisp = document.getElementById('pillAvail-Disponivel');
+      const btnIndisp = document.getElementById('pillAvail-Indisponivel');
+      if (btnDisp) {
+        const isDisp = draftAvailability === 'Disponível' || String(draftAvailability).toLowerCase() === 'available';
+        btnDisp.className = isDisp ? 'interactive-pill active-emerald' : 'interactive-pill';
+      }
+      if (btnIndisp) {
+        const isIndisp = draftAvailability === 'Indisponível' || String(draftAvailability).toLowerCase() === 'unavailable';
+        btnIndisp.className = isIndisp ? 'interactive-pill active' : 'interactive-pill';
+      }
+    }
+
+    async function saveInlineInterest() {
+      if (!currentUser) return;
+      if (draftInterests.length === 0) {
+        showToast('Selecione pelo menos um nível de interesse.', 'warning');
+        return;
+      }
+      currentUser.interestLevel = draftInterests;
+      currentUser.availability = draftAvailability;
+
+      // Update hero badge
+      const heroBadge = document.getElementById('heroAvailBadge');
+      if (heroBadge) heroBadge.textContent = draftAvailability;
+      const statusPill = document.getElementById('sideUserPillStatus');
+      if (statusPill) statusPill.textContent = draftAvailability;
+
+      try {
+        await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            interestLevel: JSON.stringify(draftInterests),
+            availability: draftAvailability
+          })
+        });
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+        showToast('Condições e disponibilidade salvas com sucesso!', 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Salvo localmente.', 'info');
+      }
+      cancelInlineInterest();
+      renderBioTab();
+    }
+
+    function cancelInlineInterest() {
+      const viewEl = document.getElementById('interestViewMode');
+      const editEl = document.getElementById('interestEditMode');
+      if (viewEl) viewEl.style.display = 'block';
+      if (editEl) editEl.style.display = 'none';
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 3. INLINE EDIT: INFLUÊNCIAS MUSICAIS COM ESTRELAS CLICÁVEIS
+    // ══════════════════════════════════════════════════════════════
+    let draftInfluences = [];
+
+    function toggleInlineInfluencesEdit() {
+      const viewEl = document.getElementById('influencesViewMode');
+      const editEl = document.getElementById('influencesEditMode');
+      if (!viewEl || !editEl) return;
+      const isEditing = editEl.style.display !== 'none';
+      if (isEditing) {
+        cancelInlineInfluences();
+      } else {
+        const currentList = parseInstrumentsList(currentUser?.influences);
+        draftInfluences = currentList.length > 0
+          ? currentList.map(x => ({ id: x.id || Date.now(), name: x.name, stars: x.stars || 3 }))
+          : [
+              { id: 1, name: '', stars: 5 },
+              { id: 2, name: '', stars: 4 },
+              { id: 3, name: '', stars: 3 }
+            ];
+        renderDraftInfluences();
+        viewEl.style.display = 'none';
+        editEl.style.display = 'block';
+      }
+    }
+
+    function renderDraftInfluences() {
+      const container = document.getElementById('influencesEditableRows');
+      if (!container) return;
+
+      container.innerHTML = draftInfluences.map((inf, idx) => {
+        let starsHtml = '';
+        for (let s = 1; s <= 5; s++) {
+          const isFilled = s <= (inf.stars || 1);
+          starsHtml += `
+            <ion-icon 
+              name="${isFilled ? 'star' : 'star-outline'}" 
+              onclick="setDraftInfluenceStar(${idx}, ${s})" 
+              style="cursor: pointer; font-size: 1.45rem; color: ${isFilled ? '#fbbf24' : 'rgba(255,255,255,0.25)'}; ${isFilled ? 'filter: drop-shadow(0 0 6px rgba(251,191,36,0.6));' : ''} transition: transform 0.15s;"
+              onmouseenter="this.style.transform='scale(1.2)'"
+              onmouseleave="this.style.transform='scale(1)'"
+              title="${s} estrela${s > 1 ? 's' : ''}">
+            </ion-icon>
+          `;
+        }
+
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #1e283b; padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+            <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; width: 22px;">#${idx + 1}</span>
+              <input 
+                type="text" 
+                class="form-input" 
+                style="flex: 1; padding: 8px 12px; font-size: 0.95rem; font-weight: 600;" 
+                value="${escapeHtml(inf.name || '')}" 
+                placeholder="Nome da banda ou artista..." 
+                oninput="updateDraftInfluenceName(${idx}, this.value)"
+                maxlength="100">
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center; user-select: none;">
+              ${starsHtml}
+            </div>
+            <button class="btn-icon" type="button" onclick="removeDraftInfluenceRow(${idx})" title="Remover" style="color: #ef4444; margin-left: 4px;">
+              <ion-icon name="trash-outline" style="font-size: 1.2rem;"></ion-icon>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      const addBtn = document.getElementById('btnAddInfluenceRow');
+      if (addBtn) {
+        addBtn.style.display = draftInfluences.length >= 5 ? 'none' : 'inline-flex';
+      }
+    }
+
+    function setDraftInfluenceStar(idx, star) {
+      if (!draftInfluences[idx]) return;
+      draftInfluences[idx].stars = star;
+      renderDraftInfluences();
+    }
+
+    function updateDraftInfluenceName(idx, name) {
+      if (!draftInfluences[idx]) return;
+      draftInfluences[idx].name = name;
+    }
+
+    function addDraftInfluenceRow() {
+      if (draftInfluences.length >= 5) {
+        showToast('Você pode adicionar no máximo 5 influências.', 'warning');
+        return;
+      }
+      draftInfluences.push({ id: Date.now(), name: '', stars: 5 });
+      renderDraftInfluences();
+    }
+
+    function removeDraftInfluenceRow(idx) {
+      draftInfluences.splice(idx, 1);
+      renderDraftInfluences();
+    }
+
+    async function saveInlineInfluences() {
+      if (!currentUser) return;
+      const cleanList = draftInfluences
+        .filter(x => x.name && x.name.trim())
+        .map((x, i) => ({
+          id: x.id || (i + 1),
+          name: x.name.trim(),
+          stars: Math.max(1, Math.min(5, Number(x.stars) || 3))
+        }));
+
+      currentUser.influences = cleanList;
+
+      try {
+        await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ influences: JSON.stringify(cleanList) })
+        });
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+        showToast('Influências musicais salvas com sucesso!', 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Salvo localmente.', 'info');
+      }
+      cancelInlineInfluences();
+      renderBioTab();
+    }
+
+    function cancelInlineInfluences() {
+      const viewEl = document.getElementById('influencesViewMode');
+      const editEl = document.getElementById('influencesEditMode');
+      if (viewEl) viewEl.style.display = 'block';
+      if (editEl) editEl.style.display = 'none';
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 4. INLINE EDIT: LINKS SOCIAIS (FORMULÁRIOS DE LINKS)
+    // ══════════════════════════════════════════════════════════════
+    function toggleInlineSocialsEdit() {
+      const viewEl = document.getElementById('socialsViewMode');
+      const editEl = document.getElementById('socialsEditMode');
+      if (!viewEl || !editEl) return;
+      const isEditing = editEl.style.display !== 'none';
+      if (isEditing) {
+        cancelInlineSocials();
+      } else {
+        document.getElementById('inlineInstagramInput').value = currentUser?.instagram || '';
+        document.getElementById('inlineYoutubeInput').value = currentUser?.youtube || '';
+        document.getElementById('inlineSpotifyInput').value = currentUser?.spotify || '';
+        document.getElementById('inlineTwitterInput').value = currentUser?.twitter || '';
+        viewEl.style.display = 'none';
+        editEl.style.display = 'block';
+      }
+    }
+
+    async function saveInlineSocials() {
+      if (!currentUser) return;
+      const instagram = document.getElementById('inlineInstagramInput').value.trim();
+      const youtube = document.getElementById('inlineYoutubeInput').value.trim();
+      const spotify = document.getElementById('inlineSpotifyInput').value.trim();
+      const twitter = document.getElementById('inlineTwitterInput').value.trim();
+
+      currentUser.instagram = instagram;
+      currentUser.youtube = youtube;
+      currentUser.spotify = spotify;
+      currentUser.twitter = twitter;
+
+      try {
+        await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ instagram, youtube, spotify, twitter })
+        });
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+        showToast('Links sociais atualizados com sucesso!', 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Salvo localmente.', 'info');
+      }
+      cancelInlineSocials();
+      renderBioTab();
+    }
+
+    function cancelInlineSocials() {
+      const viewEl = document.getElementById('socialsViewMode');
+      const editEl = document.getElementById('socialsEditMode');
+      if (viewEl) viewEl.style.display = 'block';
+      if (editEl) editEl.style.display = 'none';
     }
 
     // ── 2. HABILIDADE TAB ──
