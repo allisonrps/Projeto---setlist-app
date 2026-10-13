@@ -433,9 +433,9 @@
       font-family: var(--font-mono);
     }
     .profile-hero-age-pill {
-      background: rgba(34, 197, 94, 0.14);
+      background: rgba(34, 197, 94, 0.12);
       color: #34d399;
-      border: 1px solid rgba(34, 197, 94, 0.35);
+      border: 1px solid rgba(34, 197, 94, 0.3);
       padding: 3px 10px;
       border-radius: 14px;
       font-size: 0.78rem;
@@ -444,11 +444,8 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      transition: all 0.2s ease;
-    }
-    .profile-hero-age-pill:hover {
-      background: rgba(34, 197, 94, 0.24);
-      border-color: #34d399;
+      cursor: default;
+      user-select: none;
     }
     .profile-hero-location {
       font-size: 1.05rem;
@@ -2053,7 +2050,7 @@
               <!-- USERNAME UNDERNEATH + [PÍLULA DE IDADE] -->
               <div class="profile-hero-handle-row">
                 <span class="profile-hero-handle" id="heroUserHandle">@username</span>
-                <span class="profile-hero-age-pill" id="heroAgeBadge" onclick="openEditProfileModal()" style="cursor: pointer;" title="Clique para alterar data de nascimento">
+                <span class="profile-hero-age-pill" id="heroAgeBadge">
                   <ion-icon name="calendar-outline"></ion-icon>
                   <span>-- anos</span>
                 </span>
@@ -2153,19 +2150,25 @@
                 <div class="figma-content-block">
                   <!-- CÍRCULOS FIGMA: 3 NÍVEIS DE INTERESSE + ESPAÇO + CÍRCULO ALTERNÁVEL DISPONÍVEL/INDISPONÍVEL -->
                   <div id="interestViewMode" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 4px 0;">
-                    <!-- 3 CÍRCULOS DE INTERESSE -->
+                    <!-- 3 CÍRCULOS DE INTERESSE COM ÍCONES -->
                     <div class="interest-circle-node" id="circle-Hobbie" onclick="toggleCircleInterest('Hobbie')" title="Clique para alternar: Hobbie">
-                      <div class="interest-circle-disc">H</div>
+                      <div class="interest-circle-disc">
+                        <ion-icon name="sparkles" style="font-size: 1.55rem;"></ion-icon>
+                      </div>
                       <span class="interest-circle-caption">Hobbie</span>
                     </div>
 
                     <div class="interest-circle-node" id="circle-Profissional" onclick="toggleCircleInterest('Profissional')" title="Clique para alternar: Profissional">
-                      <div class="interest-circle-disc">P</div>
+                      <div class="interest-circle-disc">
+                        <ion-icon name="briefcase" style="font-size: 1.55rem;"></ion-icon>
+                      </div>
                       <span class="interest-circle-caption">Profissional</span>
                     </div>
 
                     <div class="interest-circle-node" id="circle-Casual" onclick="toggleCircleInterest('Casual')" title="Clique para alternar: Casual">
-                      <div class="interest-circle-disc">C</div>
+                      <div class="interest-circle-disc">
+                        <ion-icon name="beer-outline" style="font-size: 1.6rem;"></ion-icon>
+                      </div>
                       <span class="interest-circle-caption">Casual</span>
                     </div>
 
@@ -2973,8 +2976,25 @@
       </div>
       <form onsubmit="handleSaveSkill(event)">
         <div class="form-group">
-          <label>Nome do Instrumento / Habilidade *</label>
-          <input type="text" id="skillNameInput" class="form-input" placeholder="Ex: Guitarra Solo, Vocal, Bateria, Baixo" required>
+          <label>Tipo de Instrumento</label>
+          <select id="skillTypeInput" class="form-input">
+            <option value="Guitarra" selected>Guitarra</option>
+            <option value="Violão">Violão</option>
+            <option value="Baixo">Baixo</option>
+            <option value="Bateria">Bateria</option>
+            <option value="Vocal">Vocal</option>
+            <option value="Teclado">Teclado</option>
+            <option value="Piano">Piano</option>
+            <option value="Percussão">Percussão</option>
+            <option value="Sopro">Sopro</option>
+            <option value="Sanfona">Sanfona</option>
+            <option value="Gaita">Gaita</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nome / Especialidade *</label>
+          <input type="text" id="skillNameInput" class="form-input" placeholder="Ex: Guitarra Solo, Backing Vocal, Violão 7 Cordas" required>
         </div>
         <div class="form-group">
           <label>Nível de Domínio (Estrelas)</label>
@@ -3370,6 +3390,20 @@
           const savedDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
           if (savedDisplayName) currentUser.displayName = savedDisplayName;
 
+          // Restore saved profile picture from local storage if not returned by backend
+          const savedPic = localStorage.getItem('bandlink_user_picture');
+          if (savedPic && (!currentUser.pictureUrl || !currentUser.pictureUrl.trim())) {
+            currentUser.pictureUrl = savedPic;
+          } else if (currentUser.pictureUrl && !savedPic) {
+            localStorage.setItem('bandlink_user_picture', currentUser.pictureUrl);
+          }
+
+          // Restore saved skills from local storage if not returned by backend
+          const savedSkills = localStorage.getItem('bandlink_user_skills');
+          if (savedSkills && (!currentUser.instruments || currentUser.instruments === '[]' || currentUser.instruments === '')) {
+            currentUser.instruments = savedSkills;
+          }
+
           localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
           hideAuthModal();
           
@@ -3392,6 +3426,14 @@
         const cachedUser = localStorage.getItem(USER_KEY);
         if (cachedUser) {
           currentUser = JSON.parse(cachedUser);
+          const savedPic = localStorage.getItem('bandlink_user_picture');
+          if (savedPic && (!currentUser.pictureUrl || !currentUser.pictureUrl.trim())) {
+            currentUser.pictureUrl = savedPic;
+          }
+          const savedSkills = localStorage.getItem('bandlink_user_skills');
+          if (savedSkills && (!currentUser.instruments || currentUser.instruments === '[]' || currentUser.instruments === '')) {
+            currentUser.instruments = savedSkills;
+          }
           hideAuthModal();
           parseUserSkillsAndGear();
           renderSidebarUserCard();
@@ -3404,7 +3446,20 @@
 
     function parseUserSkillsAndGear() {
       if (!currentUser) return;
+      const savedSkills = localStorage.getItem('bandlink_user_skills');
+      if (savedSkills) {
+        try {
+          const parsed = JSON.parse(savedSkills);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            mySkills = parseInstrumentsList(parsed);
+            return;
+          }
+        } catch (e) {}
+      }
       mySkills = parseInstrumentsList(currentUser.instruments || currentUser.skillsJson);
+      if (mySkills.length > 0 && !savedSkills) {
+        localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
+      }
     }
 
     function showAuthModal(mode = 'login') {
@@ -3910,15 +3965,44 @@
       return t;
     }
 
+    function inferInstrumentType(name) {
+      if (!name) return 'Instrumento';
+      const n = name.toLowerCase();
+      if (n.includes('guitarr')) return 'Guitarra';
+      if (n.includes('viol') || n.includes('acoust')) return 'Violão';
+      if (n.includes('baix') || n.includes('bass')) return 'Baixo';
+      if (n.includes('bater') || n.includes('drum')) return 'Bateria';
+      if (n.includes('voc') || n.includes('cant') || n.includes('voz') || n.includes('sing')) return 'Vocal';
+      if (n.includes('tecl') || n.includes('keyb') || n.includes('synth')) return 'Teclado';
+      if (n.includes('pian')) return 'Piano';
+      if (n.includes('percu') || n.includes('cajon') || n.includes('conga')) return 'Percussão';
+      if (n.includes('sax') || n.includes('tromp') || n.includes('flaut') || n.includes('sopro')) return 'Sopro';
+      if (n.includes('sanfon') || n.includes('acorde')) return 'Sanfona';
+      if (n.includes('gait') || n.includes('harp')) return 'Gaita';
+      return 'Instrumento';
+    }
+
     function parseInstrumentsList(raw) {
       if (!raw) return [];
       if (Array.isArray(raw)) {
         return raw.map((item, idx) => {
-          if (typeof item === 'string') return { id: idx, instrument: item, name: item, stars: 3, isPrimary: false };
+          if (typeof item === 'string') {
+            const clean = item.trim();
+            return {
+              id: idx,
+              type: inferInstrumentType(clean),
+              instrument: clean,
+              name: clean,
+              stars: 3,
+              isPrimary: false
+            };
+          }
+          const instName = item.name || item.instrument || '';
           return {
             id: item.id || idx,
-            instrument: item.instrument || item.name || '',
-            name: item.name || item.instrument || '',
+            type: item.type || inferInstrumentType(instName),
+            instrument: item.instrument || instName,
+            name: instName,
             stars: item.stars || 3,
             isPrimary: Boolean(item.isPrimary)
           };
@@ -3942,6 +4026,7 @@
           .replace(/[\[\]{}"']/g, '')
           .replace(/instrument:/gi, '')
           .replace(/name:/gi, '')
+          .replace(/type:/gi, '')
           .replace(/stars:\d+/gi, '')
           .replace(/isPrimary:\w+/gi, '')
           .replace(/id:\w+/gi, '')
@@ -3949,7 +4034,14 @@
         if (!cleaned) return [];
         return cleaned.split(',').map((s, idx) => {
           const cleanName = s.trim();
-          return { id: idx, instrument: cleanName, name: cleanName, stars: 3, isPrimary: false };
+          return {
+            id: idx,
+            type: inferInstrumentType(cleanName),
+            instrument: cleanName,
+            name: cleanName,
+            stars: 3,
+            isPrimary: false
+          };
         }).filter(x => x.instrument && x.instrument.length > 0);
       }
       return [];
@@ -4114,12 +4206,13 @@
       if (ageBadge) {
         if (calcAge) {
           ageBadge.innerHTML = `<ion-icon name="calendar-outline" style="font-size: 0.85rem;"></ion-icon><span>${calcAge} anos</span>`;
+          ageBadge.style.display = 'inline-flex';
         } else {
-          ageBadge.innerHTML = `<ion-icon name="calendar-outline" style="font-size: 0.85rem;"></ion-icon><span>Informar idade</span>`;
+          ageBadge.style.display = 'none';
         }
-        ageBadge.onclick = openEditProfileModal;
-        ageBadge.style.cursor = 'pointer';
-        ageBadge.title = 'Clique para alterar data de nascimento';
+        ageBadge.onclick = null;
+        ageBadge.style.cursor = 'default';
+        ageBadge.removeAttribute('title');
       }
 
       // LOCALIZAÇÃO: CIDADE, ESTADO, PAÍS
@@ -4598,12 +4691,15 @@
       container.innerHTML = mySkills.map((s, idx) => `
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
           <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan-light);">
+            <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan-light); flex-shrink: 0;">
               <ion-icon name="musical-notes-outline" style="font-size: 1.3rem;"></ion-icon>
             </div>
             <div>
-              <div style="font-size: 1rem; font-weight: 800; color: #fff;">${s.instrument}</div>
-              <div style="margin-top: 2px;">${renderStarsHtml(s.stars, 14)}</div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="badge badge-cyan" style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 9999px;">${s.type || 'Instrumento'}</span>
+                <span style="font-size: 1rem; font-weight: 800; color: #fff;">${s.name || s.instrument}</span>
+              </div>
+              <div style="margin-top: 4px;">${renderStarsHtml(s.stars, 14)}</div>
             </div>
           </div>
           <button class="btn btn-sm btn-danger" onclick="removeSkill(${idx})" title="Remover habilidade">
@@ -4628,12 +4724,15 @@
         instBox.innerHTML = mySkills.map((s, idx) => `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan-light);">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan-light); flex-shrink: 0;">
                 <ion-icon name="musical-notes-outline" style="font-size: 1.2rem;"></ion-icon>
               </div>
               <div>
-                <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">${s.instrument}</div>
-                <div style="margin-top: 2px;">${renderStarsHtml(s.stars, 13)}</div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span class="badge badge-cyan" style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 9999px;">${s.type || 'Instrumento'}</span>
+                  <span style="font-size: 0.95rem; font-weight: 800; color: #fff;">${s.name || s.instrument}</span>
+                </div>
+                <div style="margin-top: 4px;">${renderStarsHtml(s.stars, 13)}</div>
               </div>
             </div>
             <button class="btn btn-sm btn-danger" onclick="removeSkill(${idx})" title="Remover">
@@ -4683,6 +4782,7 @@
     }
 
     function openAddSkillModal() {
+      if (document.getElementById('skillTypeInput')) document.getElementById('skillTypeInput').value = 'Guitarra';
       document.getElementById('skillNameInput').value = '';
       document.getElementById('skillStarsInput').value = '3';
       openModal('addSkillModal');
@@ -4690,14 +4790,22 @@
 
     async function handleSaveSkill(e) {
       e.preventDefault();
-      const instrument = document.getElementById('skillNameInput').value.trim();
+      const type = document.getElementById('skillTypeInput') ? document.getElementById('skillTypeInput').value : 'Instrumento';
+      const name = document.getElementById('skillNameInput').value.trim();
       const stars = parseInt(document.getElementById('skillStarsInput').value, 10);
-      if (!instrument) return;
+      if (!name) return;
 
-      mySkills.push({ id: Date.now(), instrument, name: instrument, stars });
+      const newSkill = { id: Date.now(), type, instrument: name, name, stars };
+      mySkills.push(newSkill);
       closeModal('addSkillModal');
       renderSkillsTab();
       renderInstrumentsTab();
+
+      localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
+      if (currentUser) {
+        currentUser.instruments = JSON.stringify(mySkills);
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      }
 
       try {
         await fetch(`${API_URL}/Users/profile`, {
@@ -4705,11 +4813,10 @@
           headers: getAuthHeaders(),
           body: JSON.stringify({ instruments: JSON.stringify(mySkills), skillsJson: JSON.stringify(mySkills) })
         });
-        if (currentUser) currentUser.instruments = JSON.stringify(mySkills);
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
         showToast('Instrumento adicionado ao perfil!', 'success');
       } catch (err) {
         console.error(err);
+        showToast('Instrumento salvo localmente.', 'info');
       }
     }
 
@@ -4718,14 +4825,19 @@
       mySkills.splice(idx, 1);
       renderSkillsTab();
       renderInstrumentsTab();
+
+      localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
+      if (currentUser) {
+        currentUser.instruments = JSON.stringify(mySkills);
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      }
+
       try {
         await fetch(`${API_URL}/Users/profile`, {
           method: "PUT",
           headers: getAuthHeaders(),
           body: JSON.stringify({ instruments: JSON.stringify(mySkills), skillsJson: JSON.stringify(mySkills) })
         });
-        if (currentUser) currentUser.instruments = JSON.stringify(mySkills);
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
         showToast('Instrumento removido.', 'info');
       } catch (err) {
         console.error(err);
@@ -5099,7 +5211,8 @@
     function openEditProfileModal() {
       if (!currentUser) return;
       document.getElementById('editDisplayName').value = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || currentUser.username || '';
-      document.getElementById('editPictureUrl').value = currentUser.pictureUrl || '';
+      const savedPic = localStorage.getItem('bandlink_user_picture');
+      document.getElementById('editPictureUrl').value = currentUser.pictureUrl || savedPic || '';
 
       const birthInput = document.getElementById('editBirthDate');
       if (birthInput) {
@@ -5260,7 +5373,21 @@
     async function handleSaveProfile(e) {
       e.preventDefault();
       const displayName = document.getElementById('editDisplayName').value.trim();
-      const pictureUrl = document.getElementById('editPictureUrl').value.trim();
+      let pictureUrl = document.getElementById('editPictureUrl').value.trim();
+
+      // Auto-extract cropped image if cropper canvas is active or pictureUrl is empty
+      const cropperBox = document.getElementById('photoCropperContainer');
+      const cropCanvas = document.getElementById('cropCanvas');
+      if (cropCanvas && cropperImage && cropperImage.src && (!pictureUrl || (cropperBox && cropperBox.style.display !== 'none'))) {
+        try {
+          pictureUrl = cropCanvas.toDataURL('image/jpeg', 0.82);
+          document.getElementById('editPictureUrl').value = pictureUrl;
+          if (cropperBox) cropperBox.style.display = 'none';
+        } catch (cropErr) {
+          console.warn('Auto crop error:', cropErr);
+        }
+      }
+
       const birthDateVal = document.getElementById('editBirthDate') ? document.getElementById('editBirthDate').value : '';
       const city = document.getElementById('editCity') ? document.getElementById('editCity').value.trim() : '';
       const state = document.getElementById('editState') ? document.getElementById('editState').value.trim() : '';
@@ -5271,14 +5398,31 @@
         return;
       }
 
+      const finalPictureUrl = pictureUrl || (currentUser ? currentUser.pictureUrl : '');
+
+      if (finalPictureUrl) {
+        localStorage.setItem('bandlink_user_picture', finalPictureUrl);
+      }
+      localStorage.setItem(DISPLAY_NAME_KEY, displayName);
+
       const payload = {
         displayName: displayName,
-        pictureUrl: pictureUrl,
+        pictureUrl: finalPictureUrl,
         birthDate: birthDateVal ? birthDateVal : null,
         city: city,
         state: state,
         country: country
       };
+
+      // Apply locally immediately so the user sees their changes instantly
+      currentUser = { ...currentUser, ...payload };
+      if (birthDateVal) {
+        currentUser.age = calculateAge(birthDateVal);
+      }
+      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      renderSidebarUserCard();
+      renderCentralProfile();
+      closeModal('editProfileModal');
 
       try {
         const res = await fetch(`${API_URL}/Users/profile`, {
@@ -5288,21 +5432,12 @@
         });
 
         if (res.ok) {
-          currentUser = { ...currentUser, ...payload };
-          if (birthDateVal) {
-            currentUser.age = calculateAge(birthDateVal);
-          }
-          localStorage.setItem(DISPLAY_NAME_KEY, displayName);
-          localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-          renderSidebarUserCard();
-          renderCentralProfile();
-          closeModal('editProfileModal');
           showToast('Perfil atualizado com sucesso!', 'success');
         } else {
-          showToast('Erro ao atualizar perfil.', 'error');
+          showToast('Perfil salvo localmente.', 'info');
         }
       } catch {
-        showToast('Falha na conexão.', 'error');
+        showToast('Perfil salvo localmente (sem conexão).', 'info');
       }
     }
 
@@ -5359,7 +5494,10 @@
       } else {
         skillsContainer.innerHTML = skills.map(s => `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-            <span style="font-weight: 700; font-size: 0.9rem; color: #fff;">${s.instrument}</span>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span class="badge badge-cyan" style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 9999px;">${s.type || 'Instrumento'}</span>
+              <span style="font-weight: 700; font-size: 0.9rem; color: #fff;">${s.name || s.instrument}</span>
+            </div>
             ${renderStarsHtml(s.stars, 13)}
           </div>
         `).join('');
