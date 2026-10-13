@@ -2012,8 +2012,8 @@
     .project-band-card {
       background: #182234;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 18px 24px 18px 85px;
+      border-radius: 20px;
+      padding: 22px 28px 22px 115px;
       position: relative;
       cursor: pointer;
       transition: all 0.22s ease;
@@ -2026,38 +2026,45 @@
     }
     @media (max-width: 680px) {
       .project-band-card {
-        padding: 55px 16px 18px 16px;
+        padding: 65px 16px 20px 16px;
       }
     }
 
     .project-band-avatar {
       position: absolute;
-      left: -48px;
+      left: -65px;
       top: 50%;
       transform: translateY(-50%);
-      width: 110px;
-      height: 110px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
       background: #cbd5e1;
-      border: 4px solid #101622;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+      border: 5px solid #101622;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      font-size: 2.2rem;
+      font-size: 3.5rem;
       font-weight: 900;
       color: #1e293b;
       z-index: 5;
+      transition: transform 0.2s ease;
+    }
+    .project-band-card:hover .project-band-avatar {
+      transform: translateY(-50%) scale(1.03);
     }
     @media (max-width: 680px) {
       .project-band-avatar {
         left: 50%;
-        top: -45px;
+        top: -50px;
         transform: translateX(-50%);
-        width: 85px;
-        height: 85px;
-        font-size: 1.8rem;
+        width: 100px;
+        height: 100px;
+        font-size: 2.2rem;
+      }
+      .project-band-card:hover .project-band-avatar {
+        transform: translateX(-50%) scale(1.03);
       }
     }
     .project-band-avatar img {
@@ -2069,7 +2076,7 @@
     .project-band-metrics-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
     @media (max-width: 768px) {
       .project-band-metrics-grid {
@@ -2085,14 +2092,14 @@
     .project-metric-box {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      padding: 10px 14px;
+      border-radius: 12px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      transition: background 0.15s;
+      transition: all 0.15s ease;
     }
     .project-band-card:hover .project-metric-box {
       background: rgba(255, 255, 255, 0.07);
@@ -2103,7 +2110,7 @@
       color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .project-metric-lbl {
       font-size: 0.68rem;
@@ -2111,11 +2118,11 @@
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     /* ============================================================== */
-    /* PÁGINA DA BANDA (FIGMA PRINT 1: HERO + TABS L M R F A)         */
+    /* PÁGINA DA BANDA (HERO + TABS COM ÍCONES IGUAL PERFIL)          */
     /* ============================================================== */
     .band-page-hero {
       background: #1e2638;
@@ -2144,7 +2151,7 @@
       color: #1e293b;
       flex-shrink: 0;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      margin-bottom: -45px; /* Overlap down into tabs strip exactly as in print 1 */
+      margin-bottom: -45px;
       z-index: 15;
     }
     .band-page-hero-avatar img {
@@ -2180,6 +2187,14 @@
       font-weight: 800;
       font-size: 0.85rem;
       letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      transition: all 0.15s ease;
+    }
+    .band-page-hero-since-badge:hover {
+      background: rgba(34, 197, 94, 0.2);
     }
     .band-page-hero-location {
       font-size: 0.95rem;
@@ -2194,12 +2209,13 @@
       background: #19202f;
       display: flex;
       align-items: stretch;
+      gap: 6px;
       padding-left: 225px; /* Offset past the 145px avatar */
       padding-right: 40px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       position: relative;
       z-index: 10;
-      min-height: 56px;
+      min-height: 52px;
     }
     @media (max-width: 900px) {
       .band-page-tabs-strip {
@@ -2208,51 +2224,69 @@
       }
       .band-page-hero-avatar {
         margin-bottom: 0;
-        width: 90px;
-        height: 90px;
+        width: 95px;
+        height: 95px;
         font-size: 2rem;
       }
     }
     .band-tab-btn {
       background: transparent;
       border: none;
-      color: #ffffff;
-      font-size: 1.7rem; /* Large letter font as in print 1: L M R F A */
+      color: #94a3b8;
+      font-size: 0.92rem;
       font-weight: 700;
-      padding: 0 28px;
+      padding: 10px 22px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
       position: relative;
       transition: all 0.15s ease;
       user-select: none;
       font-family: inherit;
+      border-top: 3px solid transparent;
+      border-radius: 6px 6px 0 0;
+    }
+    .band-tab-btn .tab-icon {
+      font-size: 1.3rem;
+      color: #94a3b8;
+      transition: color 0.15s;
+    }
+    .band-tab-btn .tab-name-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
     }
     .band-tab-btn:hover {
       background: rgba(255, 255, 255, 0.03);
+      color: #ffffff;
+    }
+    .band-tab-btn:hover .tab-icon {
       color: var(--cyan-light);
     }
     .band-tab-btn.active {
-      background: #161b2c; /* Exact background of content view */
+      background: #161b2c;
       color: #ffffff;
-      box-shadow: inset 0 -3px 0 #38bdf8;
+      border-top-color: #38bdf8;
     }
-    .band-tab-btn .band-tab-full-name {
-      font-size: 0.72rem;
-      margin-left: 8px;
-      opacity: 0.65;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .band-tab-btn#bTabBtn-L.active { border-top-color: #38bdf8; }
+    .band-tab-btn#bTabBtn-L.active .tab-icon { color: #38bdf8; }
+    .band-tab-btn#bTabBtn-M.active { border-top-color: #c084fc; }
+    .band-tab-btn#bTabBtn-M.active .tab-icon { color: #c084fc; }
+    .band-tab-btn#bTabBtn-R.active { border-top-color: #34d399; }
+    .band-tab-btn#bTabBtn-R.active .tab-icon { color: #34d399; }
+    .band-tab-btn#bTabBtn-F.active { border-top-color: #fbbf24; }
+    .band-tab-btn#bTabBtn-F.active .tab-icon { color: #fbbf24; }
+    .band-tab-btn#bTabBtn-A.active { border-top-color: #60a5fa; }
+    .band-tab-btn#bTabBtn-A.active .tab-icon { color: #60a5fa; }
+
     @media (max-width: 768px) {
-      .band-tab-btn .band-tab-full-name {
-        display: none;
-      }
       .band-tab-btn {
-        padding: 0 16px;
-        font-size: 1.4rem;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+      }
+      .band-tab-btn .tab-icon {
+        font-size: 1.2rem;
       }
     }
 
@@ -2277,7 +2311,7 @@
     .projects-container {
       max-width: 980px;
       margin: 0 auto;
-      padding: 30px 24px 60px 65px;
+      padding: 30px 24px 60px 85px;
       display: flex;
       flex-direction: column;
       gap: 36px;
@@ -2294,6 +2328,161 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin: 0 0 14px 0;
+    }
+
+    /* Mobile-Style Agenda Summary 3 Circles */
+    .band-agenda-summary {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 36px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .agenda-circle-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .agenda-circle-wrapper {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .agenda-circle-disc {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.12);
+      border: 2px solid rgba(56, 189, 248, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .agenda-circle-disc:hover {
+      transform: scale(1.05);
+      border-color: var(--cyan);
+    }
+    .agenda-circle-overlap-icon {
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #1e2638;
+      border: 1.5px solid var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--cyan);
+    }
+    .agenda-circle-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Agenda Event Card (Mobile Style) */
+    .agenda-event-card {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .agenda-event-card:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .agenda-date-badge-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .agenda-date-day {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #38bdf8;
+      line-height: 1;
+    }
+    .agenda-date-month {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* Mobile Repertoire Styles */
+    .repertoire-song-card {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .repertoire-song-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      background: #232c40;
+    }
+    .song-dots-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .song-dot-pill {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #64748b;
+    }
+    .song-dot-pill.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
     /* Band Setlist Card */
@@ -3197,14 +3386,19 @@
           </div>
 
           <div class="band-page-hero-inner">
-            <div class="band-page-hero-avatar" id="bHeroAvatar">
+            <div class="band-page-hero-avatar" id="bHeroAvatar" onclick="openEditBandProfileModal()" style="cursor: pointer;" title="Alterar foto da banda">
               <!-- Band Logo or fallback initials -->
             </div>
             <div>
-              <h1 class="band-page-hero-title" id="bHeroName">NOME DA BANDA</h1>
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h1 class="band-page-hero-title" id="bHeroName">NOME DA BANDA</h1>
+                <button class="btn-edit-circle" onclick="openEditBandProfileModal()" title="Editar Perfil da Banda (Nome, Desde, Localização, Foto)">
+                  <ion-icon name="create"></ion-icon>
+                </button>
+              </div>
               <div class="band-page-hero-handle-row">
                 <span class="band-page-hero-handle" id="bHeroHandle">@username</span>
-                <span class="band-page-hero-since-badge" id="bHeroSince">[ DESDE 2018 ]</span>
+                <span class="band-page-hero-since-badge" id="bHeroSince" onclick="openEditBandProfileModal()" style="cursor: pointer;" title="Clique para editar ano de fundação">[ DESDE 2018 ]</span>
               </div>
               <div class="band-page-hero-location" id="bHeroLocation">
                 <ion-icon name="location-outline"></ion-icon>
@@ -3214,27 +3408,27 @@
           </div>
         </div>
 
-        <!-- 5 TABS STRIP (L M R F A) -->
+        <!-- 5 TABS STRIP (COM ÍCONES IGUAL PERFIL) -->
         <div class="band-page-tabs-strip">
-          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Linha do Tempo de Alterações">
-            <span>L</span>
-            <span class="band-tab-full-name">Histórico</span>
+          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Histórico e Linha do Tempo">
+            <ion-icon name="time-outline" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Histórico</span>
           </button>
           <button class="band-tab-btn" id="bTabBtn-M" onclick="switchBandPageTab('M')" title="Integrantes e Membros">
-            <span>M</span>
-            <span class="band-tab-full-name">Membros</span>
+            <ion-icon name="people-outline" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Membros</span>
           </button>
-          <button class="band-tab-btn active" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Estatísticas do Repertório & Setlists">
-            <span>R</span>
-            <span class="band-tab-full-name">Repertório</span>
+          <button class="band-tab-btn active" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Repertório da Banda">
+            <ion-icon name="musical-notes-outline" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Repertório</span>
           </button>
-          <button class="band-tab-btn" id="bTabBtn-F" onclick="switchBandPageTab('F')" title="Finanças & Cachês">
-            <span>F</span>
-            <span class="band-tab-full-name">Finanças</span>
+          <button class="band-tab-btn" id="bTabBtn-F" onclick="switchBandPageTab('F')" title="Finanças e Lançamentos">
+            <ion-icon name="wallet-outline" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Finanças</span>
           </button>
           <button class="band-tab-btn" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda de Shows e Ensaios">
-            <span>A</span>
-            <span class="band-tab-full-name">Agenda</span>
+            <ion-icon name="calendar-outline" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Agenda</span>
           </button>
         </div>
 
@@ -3827,6 +4021,183 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('createAnnouncementModal')">Cancelar</button>
           <button type="submit" class="btn btn-primary">Publicar no Mural</button>
+        </div>
+      </form>
+    </div>
+  <!-- EDIT BAND PROFILE MODAL (NOME, DESDE, GÊNERO, LOCALIZAÇÃO, FOTO, DESCRIÇÃO) -->
+  <div class="modal-overlay" id="editBandProfileModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="create-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Editar Perfil da Banda</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('editBandProfileModal')">&times;</button>
+      </div>
+      <form onsubmit="handleSaveBandProfile(event)">
+        <!-- Foto / Logo da Banda -->
+        <div class="form-group">
+          <label>Logo / Foto da Banda</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="editBandImageUri" class="form-input" placeholder="URL da foto ou envie um arquivo" style="flex: 1;" oninput="updateBandPhotoPreview()">
+            <label class="btn btn-sm btn-outline" style="cursor: pointer; white-space: nowrap;">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+              <span>Carregar Foto</span>
+              <input type="file" id="editBandImageFile" accept="image/*" style="display: none;" onchange="handleBandPhotoUpload(event)">
+            </label>
+          </div>
+          <div style="margin-top: 10px; display: flex; align-items: center; gap: 14px;">
+            <div id="bandPhotoPreviewBox" style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; background: #121824; border: 2px solid var(--cyan); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span id="bandPhotoPreviewFallback" style="font-weight: 800; font-size: 1.4rem; color: #fff;">BD</span>
+              <img id="bandPhotoPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Logo / Avatar</div>
+              <span style="font-size: 0.78rem; color: var(--text-dim);">A imagem aparecerá no card e na página oficial da banda.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nome da Banda *</label>
+          <input type="text" id="editBandName" class="form-input" placeholder="Ex: Bad Badgers" required maxlength="100">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Ano de Fundação (Desde) *</label>
+            <input type="text" id="editBandSinceYear" class="form-input" placeholder="Ex: 2018" required maxlength="10">
+          </div>
+          <div class="form-group">
+            <label>Gênero Musical</label>
+            <input type="text" id="editBandGenre" class="form-input" placeholder="Ex: Rock, Hard Rock" maxlength="100">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Localização (Cidade, UF, País)</label>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px;">
+            <input type="text" id="editBandCity" class="form-input" placeholder="Cidade (Ex: Franca)" maxlength="100">
+            <input type="text" id="editBandState" class="form-input" placeholder="UF (Ex: SP)" maxlength="50">
+            <input type="text" id="editBandCountry" class="form-input" placeholder="País (Ex: Brasil)" maxlength="100">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descrição / Apresentação da Banda</label>
+          <textarea id="editBandDescription" class="form-input" rows="3" placeholder="História da banda, influências, proposta de repertório..." maxlength="500"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editBandProfileModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Perfil da Banda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT EVENT & PLAYLIST MODAL (IGUAL APP MOBILE) -->
+  <div class="modal-overlay" id="editEventPlaylistModal">
+    <div class="modal-card large" style="max-width: 780px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div id="mEventHeaderBadge" class="badge badge-emerald" style="font-size: 0.8rem; font-weight: 800; padding: 4px 10px;">SHOW</div>
+          <h3 class="modal-title" id="mEventModalTitle">Editar Evento & Playlist</h3>
+        </div>
+        <button class="modal-close" onclick="closeModal('editEventPlaylistModal')">&times;</button>
+      </div>
+
+      <!-- Abas internas: Detalhes do Evento vs Gerenciar Playlist -->
+      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
+        <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')">
+          <ion-icon name="information-circle-outline"></ion-icon> Detalhes do Evento
+        </button>
+        <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')">
+          <ion-icon name="musical-notes-outline"></ion-icon> Playlist / Músicas Escaladas (<span id="mEventSongsCount">0</span>)
+        </button>
+      </div>
+
+      <!-- ABA 1: DETALHES DO EVENTO -->
+      <form id="mEventForm" onsubmit="handleSaveEventPlaylistModal(event)">
+        <div id="mEventDetailsView">
+          <div class="form-group">
+            <label>Nome do Evento / Show / Ensaio *</label>
+            <input type="text" id="mEventName" class="form-input" placeholder="Ex: Barteco 07/11" required maxlength="200">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label>Tipo de Evento</label>
+              <select id="mEventType" class="form-input" onchange="updateEventModalTypeBadge()">
+                <option value="show">Show / Apresentação</option>
+                <option value="rehearsal">Ensaio</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Data *</label>
+              <input type="date" id="mEventDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label>Horário</label>
+              <input type="time" id="mEventTime" class="form-input">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label>Local / Casa de Show</label>
+              <input type="text" id="mEventLocal" class="form-input" placeholder="Ex: Barteco, Franca/SP" maxlength="200">
+            </div>
+            <div class="form-group">
+              <label>Cachê Estimado</label>
+              <input type="text" id="mEventCache" class="form-input" placeholder="Ex: R$ 1.100,00" maxlength="30">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Observações & Anotações</label>
+            <textarea id="mEventNotes" class="form-input" rows="3" placeholder="Informações de som, horário de passagem, contato da casa..." maxlength="500"></textarea>
+          </div>
+        </div>
+
+        <!-- ABA 2: PLAYLIST / MÚSICAS ESCALADAS (REORDENAR, ADICIONAR, REMOVER) -->
+        <div id="mEventPlaylistView" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Músicas neste Setlist:</span>
+              <span style="font-size: 0.8rem; color: #94a3b8; margin-left: 8px;" id="mEventTotalDuration">Duração Total: --:--</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker()">
+                <ion-icon name="add-circle-outline"></ion-icon> Adicionar Música do Repertório
+              </button>
+            </div>
+          </div>
+
+          <!-- SELETOR DE MÚSICA DO REPERTÓRIO PARA ADICIONAR -->
+          <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: var(--cyan); margin-bottom: 8px;">Selecione uma música do repertório para adicionar à playlist:</div>
+            <div style="display: flex; gap: 8px;">
+              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1;"></select>
+              <button type="button" class="btn btn-sm btn-primary" onclick="addSelectedSongToCurrentPlaylist()">Adicionar</button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)">Fechar</button>
+            </div>
+          </div>
+
+          <!-- LISTA DE MÚSICAS ESCALADAS -->
+          <div id="mEventPlaylistItemsList" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+            <!-- Músicas renderizadas dinamicamente com botões subir/descer/remover -->
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+          <button type="button" class="btn btn-danger btn-sm" id="btnDeleteEventFromModal" onclick="handleDeleteCurrentEvent()">
+            <ion-icon name="trash-outline"></ion-icon> Excluir Evento
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('editEventPlaylistModal')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          </div>
         </div>
       </form>
     </div>
@@ -5711,27 +6082,27 @@
               </div>
               <div class="project-band-metrics-grid">
                 <div class="project-metric-box">
-                  <div class="project-metric-val">${m.repertoireCount}</div>
+                  <div class="project-metric-val"><ion-icon name="musical-notes-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.repertoireCount}</div>
                   <div class="project-metric-lbl">Músicas no Repertório</div>
                 </div>
                 <div class="project-metric-box">
-                  <div class="project-metric-val">${m.membersCount}</div>
+                  <div class="project-metric-val"><ion-icon name="people-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.membersCount}</div>
                   <div class="project-metric-lbl">Membros</div>
                 </div>
                 <div class="project-metric-box">
-                  <div class="project-metric-val">${m.showsCount}</div>
+                  <div class="project-metric-val"><ion-icon name="mic-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.showsCount}</div>
                   <div class="project-metric-lbl">Shows no Ano</div>
                 </div>
                 <div class="project-metric-box">
-                  <div class="project-metric-val">${m.rehearsalsCount}</div>
+                  <div class="project-metric-val"><ion-icon name="headset-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.rehearsalsCount}</div>
                   <div class="project-metric-lbl">Ensaios no Ano</div>
                 </div>
                 <div class="project-metric-box">
-                  <div class="project-metric-val" style="color: #4ade80;">R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div class="project-metric-val" style="color: #4ade80;"><ion-icon name="person-outline" style="color: #4ade80; margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                   <div class="project-metric-lbl">Renda Individual no Ano Acumulado</div>
                 </div>
                 <div class="project-metric-box">
-                  <div class="project-metric-val" style="color: #38bdf8;">R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div class="project-metric-val" style="color: #38bdf8;"><ion-icon name="cash-outline" style="color: #38bdf8; margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                   <div class="project-metric-lbl">Renda Total da Banda no Ano</div>
                 </div>
               </div>
@@ -5834,6 +6205,138 @@
       if (tabKey === 'R') renderBandRepertoireTab(currentBandData, currentBandSyncData);
       if (tabKey === 'F') renderBandFinancesTab(currentBandData, currentBandSyncData);
       if (tabKey === 'A') renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
+    // ==============================================================
+    // EDITOR DE PERFIL DA BANDA (DESDE, NOME, GÊNERO, LOCAL, FOTO)
+    // ==============================================================
+    function openEditBandProfileModal() {
+      if (!currentBandData) return;
+      document.getElementById('editBandName').value = currentBandData.name || '';
+      document.getElementById('editBandSinceYear').value = currentBandData.sinceYear || (currentBandData.createdAt ? new Date(currentBandData.createdAt).getFullYear() : '2018');
+      document.getElementById('editBandGenre').value = currentBandData.genre || '';
+      document.getElementById('editBandCity').value = currentBandData.city || 'Franca';
+      document.getElementById('editBandState').value = currentBandData.state || 'SP';
+      document.getElementById('editBandCountry').value = currentBandData.country || 'Brasil';
+      document.getElementById('editBandDescription').value = currentBandData.description || '';
+      document.getElementById('editBandImageUri').value = currentBandData.imageUri || '';
+      updateBandPhotoPreview();
+      openModal('editBandProfileModal');
+    }
+
+    function updateBandPhotoPreview() {
+      const uri = document.getElementById('editBandImageUri')?.value.trim();
+      const img = document.getElementById('bandPhotoPreviewImg');
+      const fallback = document.getElementById('bandPhotoPreviewFallback');
+      const name = document.getElementById('editBandName')?.value.trim() || 'BD';
+      const initials = name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'BD';
+      if (fallback) fallback.textContent = initials;
+      if (img) {
+        if (uri) {
+          img.src = normalizeImageUri(uri);
+          img.style.display = 'block';
+          if (fallback) fallback.style.display = 'none';
+          img.onerror = () => {
+            img.style.display = 'none';
+            if (fallback) fallback.style.display = 'flex';
+          };
+        } else {
+          img.style.display = 'none';
+          if (fallback) fallback.style.display = 'flex';
+        }
+      }
+    }
+
+    function handleBandPhotoUpload(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('A imagem da banda deve ter até 2MB.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const input = document.getElementById('editBandImageUri');
+        if (input) {
+          input.value = evt.target.result;
+          updateBandPhotoPreview();
+        }
+        showToast('Foto da banda carregada!', 'info');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleSaveBandProfile(e) {
+      e.preventDefault();
+      if (!currentBandData) return;
+
+      const updatedName = document.getElementById('editBandName').value.trim();
+      const updatedSince = document.getElementById('editBandSinceYear').value.trim() || '2018';
+      const updatedGenre = document.getElementById('editBandGenre').value.trim();
+      const updatedCity = document.getElementById('editBandCity').value.trim();
+      const updatedState = document.getElementById('editBandState').value.trim();
+      const updatedCountry = document.getElementById('editBandCountry').value.trim();
+      const updatedDesc = document.getElementById('editBandDescription').value.trim();
+      const updatedImg = document.getElementById('editBandImageUri').value.trim();
+
+      currentBandData.name = updatedName;
+      currentBandData.sinceYear = updatedSince;
+      currentBandData.genre = updatedGenre;
+      currentBandData.city = updatedCity;
+      currentBandData.state = updatedState;
+      currentBandData.country = updatedCountry;
+      currentBandData.description = updatedDesc;
+      currentBandData.imageUri = updatedImg;
+
+      // Atualizar o Hero Header da banda na tela
+      const initials = (updatedName || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+      const normImg = normalizeImageUri(updatedImg);
+      const heroAvatar = document.getElementById('bHeroAvatar');
+      if (heroAvatar) {
+        heroAvatar.innerHTML = normImg
+          ? `<img src="${normImg}" alt="${updatedName}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
+          : `<span>${initials}</span>`;
+      }
+      const hName = document.getElementById('bHeroName');
+      if (hName) hName.textContent = updatedName.toUpperCase();
+      const hSince = document.getElementById('bHeroSince');
+      if (hSince) hSince.textContent = `[ DESDE ${updatedSince} ]`;
+      const hLoc = document.getElementById('bHeroLocation');
+      if (hLoc) hLoc.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${updatedCity}, ${updatedState}, ${updatedCountry}</span>`;
+
+      // Atualizar no array local myBands
+      const idx = (myBands || []).findIndex(b => b.id === currentBandData.id);
+      if (idx !== -1) {
+        myBands[idx] = { ...myBands[idx], ...currentBandData };
+      }
+      if (currentBandData.id === 2) {
+        localStorage.setItem('bandlink_band_2_profile', JSON.stringify(currentBandData));
+      }
+
+      // Tentar persistir na API
+      try {
+        await fetch(`${API_URL}/Bands/${currentBandData.id}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            id: currentBandData.id,
+            name: updatedName,
+            sinceYear: updatedSince,
+            genre: updatedGenre,
+            city: updatedCity,
+            state: updatedState,
+            country: updatedCountry,
+            description: updatedDesc,
+            imageUri: updatedImg
+          })
+        });
+      } catch (err) {
+        console.warn('API update band profile:', err);
+      }
+
+      closeModal('editBandProfileModal');
+      showToast('Perfil da banda salvo com sucesso!', 'success');
+      renderProjectsMainView();
     }
 
     function toggleSetlistAccordion(idx) {
@@ -5976,115 +6479,317 @@
       sub.innerHTML = html;
     }
 
-    // SUBVIEW R: REPERTÓRIO & SETLISTS
+    // ==============================================================
+    // SUBVIEW R: REPERTÓRIO OFICIAL DA BANDA (PADRÃO MOBILE)
+    // ==============================================================
+    let bandRepertoireSearch = '';
+    let bandRepertoireSelectedTags = [];
+    let bandRepertoireShowTags = false;
+    let bandRepertoireSort = 'band'; // 'band' | 'name'
+
+    function toggleBandRepertoireTagFilter(tag) {
+      if (!tag) {
+        bandRepertoireSelectedTags = [];
+      } else {
+        const idx = bandRepertoireSelectedTags.indexOf(tag);
+        if (idx !== -1) {
+          bandRepertoireSelectedTags.splice(idx, 1);
+        } else {
+          bandRepertoireSelectedTags.push(tag);
+        }
+      }
+      renderBandRepertoireTab(currentBandData, currentBandSyncData);
+    }
+
+    function toggleBandRepertoireTagsVisibility() {
+      bandRepertoireShowTags = !bandRepertoireShowTags;
+      renderBandRepertoireTab(currentBandData, currentBandSyncData);
+    }
+
+    function toggleBandRepertoireSort() {
+      bandRepertoireSort = (bandRepertoireSort === 'band') ? 'name' : 'band';
+      renderBandRepertoireTab(currentBandData, currentBandSyncData);
+    }
+
+    function handleBandRepertoireSearch(val) {
+      bandRepertoireSearch = (val || '').trim();
+      renderBandRepertoireTab(currentBandData, currentBandSyncData);
+    }
+
+    function toggleBandSongFavorite(songId, event) {
+      if (event) event.stopPropagation();
+      if (!currentBandSyncData || !currentBandSyncData.songs) return;
+      const s = currentBandSyncData.songs.find(x => String(x.id) === String(songId));
+      if (s) {
+        s.isFavorite = !s.isFavorite;
+        if (currentBandData.id === 2) {
+          localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
+        }
+        renderBandRepertoireTab(currentBandData, currentBandSyncData);
+      }
+    }
+
+    function openSongFromBandRepertoire(song) {
+      if (!song) return;
+      publicViewSong = song;
+      const titleEl = document.getElementById('songModalTitle');
+      if (titleEl) titleEl.textContent = song.name || 'Música';
+      const bandEl = document.getElementById('songModalBand');
+      if (bandEl) bandEl.textContent = song.originalBand ? `Banda / Artista: ${song.originalBand}` : '';
+      openModal('songModal');
+      switchSongModalTab('lyrics');
+    }
+
     function renderBandRepertoireTab(band, syncData) {
       const sub = document.getElementById('bSubview-R');
       if (!sub) return;
 
       const m = getBandMetrics(band);
-      const setlists = m.setlists;
-      const totalSongs = m.repertoireCount;
+      const setlists = m.setlists || [];
+      let songs = syncData?.songs || [];
+
+      if (songs.length === 0 && (band.id === 2 || (band.name && band.name.toLowerCase().includes('badger')))) {
+        const cached = localStorage.getItem('bandlink_band_2_sync');
+        if (cached) {
+          const parsed = parseJsonSafe(cached);
+          if (parsed?.songs) songs = parsed.songs;
+        }
+      }
+
+      // Estilos únicos de repertório
+      const allStylesSet = new Set();
+      songs.forEach(s => {
+        if (s.style) {
+          s.style.split(',').forEach(st => {
+            const clean = st.trim();
+            if (clean) allStylesSet.add(clean);
+          });
+        }
+      });
+      const uniqueStyles = Array.from(allStylesSet).sort();
+
+      // Filtros de busca e tags
+      let filteredSongs = [...songs];
+      if (bandRepertoireSearch) {
+        const q = bandRepertoireSearch.toLowerCase();
+        filteredSongs = filteredSongs.filter(s =>
+          (s.name && s.name.toLowerCase().includes(q)) ||
+          (s.originalBand && s.originalBand.toLowerCase().includes(q)) ||
+          (s.style && s.style.toLowerCase().includes(q))
+        );
+      }
+
+      if (bandRepertoireSelectedTags.length > 0) {
+        filteredSongs = filteredSongs.filter(s => {
+          if (!s.style) return false;
+          const sTags = s.style.toLowerCase();
+          return bandRepertoireSelectedTags.some(sel => sTags.includes(sel.toLowerCase()));
+        });
+      }
+
+      // Ordenação
+      if (bandRepertoireSort === 'name') {
+        filteredSongs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      } else {
+        filteredSongs.sort((a, b) => (a.originalBand || '').localeCompare(b.originalBand || '') || (a.name || '').localeCompare(b.name || ''));
+      }
 
       let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
           <div>
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
-              <span>Estatísticas do Repertório & Setlists</span>
+              <span>Repertório Oficial da Banda</span>
+              <span class="badge badge-cyan">${songs.length} Músicas</span>
             </h2>
-            <p style="color: #94a3b8; font-size: 0.88rem;">Visão consolidada de todas as músicas cadastradas e os ${setlists.length} setlists da banda.</p>
+            <p style="color: #94a3b8; font-size: 0.88rem;">Catálogo consolidado de músicas, letras, cifras e tablaturas da banda.</p>
           </div>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <span class="badge badge-cyan" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700;">
-              <ion-icon name="disc-outline"></ion-icon> ${totalSongs} Músicas no Catálogo
+            <span class="badge badge-cyan" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
+              <ion-icon name="disc-outline"></ion-icon> ${songs.length} Músicas no Catálogo
             </span>
-            <span class="badge badge-emerald" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700;">
+            <span class="badge badge-emerald" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
               <ion-icon name="list-outline"></ion-icon> ${setlists.length} Setlists Gravados
             </span>
           </div>
         </div>
+
+        <!-- TOOLBAR DE BUSCA, TAGS E ORDENAÇÃO (PADRÃO MOBILE) -->
+        <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+          <div style="flex: 1; display: flex; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; height: 42px;">
+            <ion-icon name="search-outline" style="font-size: 1.15rem; color: #94a3b8; margin-right: 8px;"></ion-icon>
+            <input type="text" placeholder="Buscar no repertório por música ou artista..." value="${escapeHtml(bandRepertoireSearch)}" oninput="handleBandRepertoireSearch(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none;">
+            ${bandRepertoireSearch ? `<button type="button" onclick="handleBandRepertoireSearch('')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer;"><ion-icon name="close-circle" style="font-size: 1.1rem;"></ion-icon></button>` : ''}
+          </div>
+
+          <!-- Botão Redondo de Etiquetas / Tags -->
+          <button type="button" onclick="toggleBandRepertoireTagsVisibility()" title="Filtrar por estilo/tags" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid ${bandRepertoireShowTags ? 'var(--cyan)' : 'rgba(255,255,255,0.15)'}; background: ${bandRepertoireShowTags ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255,255,255,0.03)'}; color: ${bandRepertoireShowTags ? 'var(--cyan)' : '#cbd5e1'}; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+            <ion-icon name="pricetag-outline" style="font-size: 1.15rem;"></ion-icon>
+          </button>
+
+          <!-- Botão Redondo de Ordenação -->
+          <button type="button" onclick="toggleBandRepertoireSort()" title="Ordenar por ${bandRepertoireSort === 'band' ? 'Banda' : 'Música'}" style="width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); color: var(--cyan); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+            <ion-icon name="swap-vertical" style="font-size: 1.25rem;"></ion-icon>
+          </button>
+        </div>
+
+        <!-- CONTAINER DE TAGS DE ESTILO EXPANDÍVEL -->
+        ${bandRepertoireShowTags && uniqueStyles.length > 0 ? `
+          <div style="background: #182030; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+            <button type="button" onclick="toggleBandRepertoireTagFilter('')" class="badge" style="cursor: pointer; padding: 5px 12px; font-size: 0.78rem; font-weight: 700; border-radius: 20px; border: 1px solid ${bandRepertoireSelectedTags.length === 0 ? 'var(--cyan)' : 'rgba(255,255,255,0.1)'}; background: ${bandRepertoireSelectedTags.length === 0 ? 'rgba(56, 189, 248, 0.2)' : 'transparent'}; color: ${bandRepertoireSelectedTags.length === 0 ? 'var(--cyan)' : '#94a3b8'};">
+              Todas (${songs.length})
+            </button>
+            ${uniqueStyles.map(st => {
+              const isSel = bandRepertoireSelectedTags.includes(st);
+              return `
+                <button type="button" onclick="toggleBandRepertoireTagFilter('${st}')" class="badge" style="cursor: pointer; padding: 5px 12px; font-size: 0.78rem; font-weight: 700; border-radius: 20px; border: 1px solid ${isSel ? 'var(--cyan)' : 'rgba(255,255,255,0.1)'}; background: ${isSel ? 'rgba(56, 189, 248, 0.2)' : 'transparent'}; color: ${isSel ? 'var(--cyan)' : '#cbd5e1'};">
+                  ${st}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+
+        <!-- LISTA DE CARDS DE MÚSICAS NO REPERTÓRIO (PADRÃO MOBILE COM PONTINHOS L, C, T) -->
+        <div style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+              Exibindo ${filteredSongs.length} de ${songs.length} músicas (${bandRepertoireSort === 'band' ? 'Agrupado por Banda/Artista' : 'Ordem Alfabética de Músicas'})
+            </span>
+          </div>
       `;
 
-      if (!setlists || setlists.length === 0) {
+      if (filteredSongs.length === 0) {
         html += `
-          <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
-            <ion-icon name="musical-notes-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <p style="color: #94a3b8; font-size: 0.9rem;">Nenhum setlist registrado para esta banda ainda.</p>
+          <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="disc-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música encontrada</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem;">Tente ajustar os filtros de busca ou etiquetas de estilo.</p>
           </div>
         `;
-        sub.innerHTML = html;
-        return;
+      } else {
+        html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+        filteredSongs.forEach(song => {
+          const tags = song.style ? song.style.split(',').map(s => s.trim()).filter(Boolean) : [];
+          const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+          const hasChords = !!(song.chords && song.chords.trim());
+          const hasTabs = !!(song.tabs && song.tabs.trim());
+          const isFav = !!song.isFavorite;
+
+          html += `
+            <div class="repertoire-song-card" onclick="openSongFromBandRepertoire(${JSON.stringify(song).replace(/"/g, '&quot;')})" title="Clique para ver letra, cifra e tablatura">
+              <!-- Left: Favorite Star & Title -->
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 250px;">
+                <button type="button" onclick="toggleBandSongFavorite('${song.id}', event)" style="background: transparent; border: none; cursor: pointer; color: ${isFav ? '#eab308' : '#64748b'}; padding: 4px; display: flex; align-items: center;">
+                  <ion-icon name="${isFav ? 'star' : 'star-outline'}" style="font-size: 1.15rem;"></ion-icon>
+                </button>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.98rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    ${bandRepertoireSort === 'name' ? `
+                      <span style="color: #fff;">${escapeHtml(song.name || 'Sem título')}</span>
+                      <span style="color: #64748b; margin: 0 4px;">-</span>
+                      <span style="color: var(--cyan); font-weight: 600;">${escapeHtml(song.originalBand || 'Banda')}</span>
+                    ` : `
+                      <span style="color: var(--cyan); font-weight: 700;">${escapeHtml(song.originalBand || 'Banda')}</span>
+                      <span style="color: #64748b; margin: 0 4px;">-</span>
+                      <span style="color: #fff;">${escapeHtml(song.name || 'Sem título')}</span>
+                    `}
+                  </div>
+                  <!-- Tags compactas abaixo -->
+                  ${tags.length > 0 ? `
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                      ${tags.map(t => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(t)}</span>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- Right: Duração + Pontinhos Indicadores (L, C, T) + Status -->
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <span style="color: #94a3b8; font-size: 0.82rem; font-family: var(--font-mono);">${song.duration || '--:--'}</span>
+
+                <!-- 3 Pontinhos Indicadores Mobile: Letra (Azul), Cifra (Verde), Tablatura (Roxo) -->
+                <div class="song-dots-row" title="Conteúdo disponível: ${hasLyrics ? '[Letra] ' : ''}${hasChords ? '[Cifra] ' : ''}${hasTabs ? '[Tablatura]' : ''}">
+                  <span class="song-dot-pill ${hasLyrics ? 'active' : ''}" style="${hasLyrics ? 'background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);' : ''}">L</span>
+                  <span class="song-dot-pill ${hasChords ? 'active' : ''}" style="${hasChords ? 'background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);' : ''}">C</span>
+                  <span class="song-dot-pill ${hasTabs ? 'active' : ''}" style="${hasTabs ? 'background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);' : ''}">T</span>
+                </div>
+
+                <span class="badge ${song.status === 'rehearsal' ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.68rem; font-weight: 800; padding: 3px 8px;">
+                  ${song.status === 'rehearsal' ? 'REPERTÓRIO' : 'PRONTA'}
+                </span>
+              </div>
+            </div>
+          `;
+        });
+        html += `</div>`;
       }
 
-      html += `<div style="display: flex; flex-direction: column; gap: 14px;">`;
-
-      setlists.forEach((sl, idx) => {
-        const sName = sl.name || `Setlist #${idx + 1}`;
-        const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
-        const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-        const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
-        const songsList = sl.songs || [];
-
-        let songsHtml = '';
-        if (songsList.length === 0) {
-          songsHtml = `<p style="color: #94a3b8; font-size: 0.85rem; padding: 12px 0; text-align: center;">Nenhuma música inserida neste setlist.</p>`;
-        } else {
-          songsHtml = `
-            <table class="band-setlist-songs-table">
-              <thead>
-                <tr>
-                  <th style="width: 45px;">#</th>
-                  <th>Título da Música</th>
-                  <th>Banda / Artista</th>
-                  <th>Estilo</th>
-                  <th style="width: 80px; text-align: right;">Duração</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${songsList.map((song, sIdx) => {
-                  const styles = song.style ? song.style.split(',').map(st => `<span class="badge badge-cyan" style="font-size: 0.68rem; padding: 2px 7px; margin-right: 4px;">${st.trim()}</span>`).join('') : '<span style="color: #64748b;">-</span>';
-                  return `
-                    <tr class="band-song-row">
-                      <td style="color: #64748b; font-weight: 700;">${sIdx + 1}</td>
-                      <td style="font-weight: 700; color: #fff;">${song.name || 'Sem título'}</td>
-                      <td style="color: #94a3b8;">${song.originalBand || '-'}</td>
-                      <td>${styles}</td>
-                      <td style="text-align: right; color: #94a3b8; font-family: var(--font-mono);">${song.duration || '--:--'}</td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          `;
-        }
-
-        html += `
-          <div class="band-setlist-card" id="setlistCard-${idx}">
-            <div class="band-setlist-header" onclick="toggleSetlistAccordion(${idx})">
-              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.75rem; font-weight: 800; padding: 4px 10px;">
-                  ${isRehearsal ? 'ENSAIO' : 'SHOW'}
-                </span>
-                <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">${sName}</h4>
-                <span style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
-                  <ion-icon name="calendar-outline"></ion-icon> ${formatDateDisplay(sl.date)}
-                </span>
-                ${sl.local ? `<span style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="location-outline"></ion-icon> ${sl.local}</span>` : ''}
-              </div>
-              <div style="display: flex; align-items: center; gap: 16px;">
-                ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">Cachê: R$ ${cacheNum.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>` : ''}
-                <span class="badge badge-cyan" style="font-size: 0.8rem; font-weight: 700;">${songsList.length} músicas</span>
-                <ion-icon name="chevron-down-outline" class="setlist-acc-icon" id="setlistAccIcon-${idx}" style="font-size: 1.25rem; color: #94a3b8; transition: transform 0.2s;"></ion-icon>
-              </div>
-            </div>
-            <div class="band-setlist-body" id="setlistBody-${idx}" style="display: none;">
-              ${songsHtml}
-            </div>
-          </div>
-        `;
-      });
-
       html += `</div>`;
+
+      // SEÇÃO ADICIONAL: SETLISTS GRAVADOS COM ACCORDION
+      if (setlists && setlists.length > 0) {
+        html += `
+          <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 2px;">Setlists Gravados da Banda</h3>
+                <p style="color: #94a3b8; font-size: 0.82rem;">Playlists escaladas para shows e ensaios.</p>
+              </div>
+              <span class="badge badge-emerald">${setlists.length} Setlists</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+        `;
+
+        setlists.forEach((sl, idx) => {
+          const sName = sl.name || `Setlist #${idx + 1}`;
+          const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+          const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
+          const songsList = sl.songs || [];
+
+          html += `
+            <div class="band-setlist-card" id="setlistCard-${idx}">
+              <div class="band-setlist-header" onclick="toggleSetlistAccordion(${idx})">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                  <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.72rem; font-weight: 800;">
+                    ${isRehearsal ? 'ENSAIO' : 'SHOW'}
+                  </span>
+                  <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0;">${sName}</h4>
+                  <span style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
+                    <ion-icon name="calendar-outline"></ion-icon> ${formatDateDisplay(sl.date)}
+                  </span>
+                  ${sl.local ? `<span style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="location-outline"></ion-icon> ${sl.local}</span>` : ''}
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  ${cacheNum ? `<span style="font-size: 0.9rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>` : ''}
+                  <span class="badge badge-cyan" style="font-size: 0.78rem;">${songsList.length} músicas</span>
+                  <ion-icon name="chevron-down-outline" class="setlist-acc-icon" id="setlistAccIcon-${idx}" style="font-size: 1.15rem; color: #94a3b8; transition: transform 0.2s;"></ion-icon>
+                </div>
+              </div>
+              <div class="band-setlist-body" id="setlistBody-${idx}" style="display: none; padding: 12px 18px; background: rgba(0,0,0,0.2);">
+                ${songsList.length === 0 ? '<p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">Nenhuma música escalada.</p>' : `
+                  <table class="band-setlist-songs-table" style="width: 100%; border-collapse: collapse;">
+                    <tbody>
+                      ${songsList.map((s, sIdx) => `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                          <td style="padding: 6px 8px; width: 35px; color: #64748b; font-weight: 700; font-size: 0.82rem;">#${sIdx + 1}</td>
+                          <td style="padding: 6px 8px; font-weight: 700; color: #fff; font-size: 0.88rem;">${s.name || 'Sem título'}</td>
+                          <td style="padding: 6px 8px; color: #94a3b8; font-size: 0.82rem;">${s.originalBand || '-'}</td>
+                          <td style="padding: 6px 8px; text-align: right; color: #94a3b8; font-size: 0.82rem; font-family: var(--font-mono);">${s.duration || '--:--'}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                `}
+              </div>
+            </div>
+          `;
+        });
+
+        html += `</div></div>`;
+      }
+
       sub.innerHTML = html;
     }
 
@@ -6169,61 +6874,463 @@
       sub.innerHTML = html;
     }
 
-    // SUBVIEW A: AGENDA
+    // ==============================================================
+    // SUBVIEW A: AGENDA DA BANDA (PADRÃO MOBILE COM 3 CÍRCULOS E PLAYLIST)
+    // ==============================================================
+    let selectedAgendaYear = 2026;
+    let editingEventIndex = null;
+    let editingEventPlaylist = [];
+
+    function cycleAgendaYear(delta) {
+      selectedAgendaYear = selectedAgendaYear + delta;
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
+    function getFormattedDateBadge(d) {
+      if (!d) return { day: '--', month: '---' };
+      const str = String(d).trim();
+      const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length >= 2) {
+          const day = parts[0].padStart(2, '0');
+          const mIdx = parseInt(parts[1], 10) - 1;
+          return { day, month: months[mIdx] || '---' };
+        }
+      } else if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3) {
+          const day = parts[2].padStart(2, '0');
+          const mIdx = parseInt(parts[1], 10) - 1;
+          return { day, month: months[mIdx] || '---' };
+        }
+      }
+      return { day: '01', month: 'JAN' };
+    }
+
     function renderBandAgendaTab(band, syncData) {
       const sub = document.getElementById('bSubview-A');
       if (!sub) return;
 
       const m = getBandMetrics(band);
-      const setlists = m.setlists;
+      const setlists = m.setlists || [];
+
+      // Filtra eventos pelo ano selecionado
+      const yearEvents = setlists.filter(sl => {
+        if (!sl.date) return true;
+        const str = String(sl.date).trim();
+        return str.includes(String(selectedAgendaYear));
+      });
+
+      const showCount = yearEvents.filter(sl => {
+        const isRehearsal = sl.type === 'rehearsal' || (sl.name || '').toLowerCase().includes('ensaio') || (sl.name || '').toLowerCase().includes('all songs');
+        return !isRehearsal;
+      }).length;
+
+      const rehearsalCount = yearEvents.filter(sl => {
+        const isRehearsal = sl.type === 'rehearsal' || (sl.name || '').toLowerCase().includes('ensaio') || (sl.name || '').toLowerCase().includes('all songs');
+        return isRehearsal;
+      }).length;
 
       let html = `
-        <div style="margin-bottom: 24px;">
-          <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-            <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
-            <span>Agenda de Shows & Ensaios</span>
-            <span class="badge badge-cyan">${setlists.length} Eventos</span>
-          </h2>
-          <p style="color: #94a3b8; font-size: 0.88rem;">Cronograma completo de datas, locais e apresentações da banda.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
+              <span>Agenda de Shows & Ensaios</span>
+              <span class="badge badge-cyan">${yearEvents.length} Eventos em ${selectedAgendaYear}</span>
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.88rem;">Cronograma completo de datas, locais, cachês e playlists da banda.</p>
+          </div>
+          <button type="button" class="btn btn-cyan btn-sm" onclick="openEditEventPlaylistModal(-1)">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            <span>Novo Evento</span>
+          </button>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          ${setlists.map(sl => {
-            const sName = sl.name || 'Evento';
-            const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
-            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-            const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
-
-            return `
-              <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-                  <div style="width: 50px; height: 50px; border-radius: 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--cyan); text-transform: uppercase;">DATA</span>
-                    <span style="font-size: 0.85rem; font-weight: 900; color: #fff;">${formatDateDisplay(sl.date).slice(0, 5)}</span>
-                  </div>
-                  <div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                      <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.7rem; font-weight: 800;">${isRehearsal ? 'ENSAIO' : 'SHOW'}</span>
-                      <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">${sName}</h4>
-                    </div>
-                    <div style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 12px;">
-                      <span><ion-icon name="calendar-outline"></ion-icon> ${formatDateDisplay(sl.date)}</span>
-                      ${sl.local ? `<span><ion-icon name="location-outline"></ion-icon> ${sl.local}</span>` : ''}
-                      <span><ion-icon name="musical-notes-outline"></ion-icon> ${sl.songs ? sl.songs.length : 0} músicas</span>
-                    </div>
-                  </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
-                  <span class="badge badge-cyan" style="font-size: 0.75rem;">Concluído</span>
+        <!-- RESUMO DE 3 CÍRCULOS (ANO, SHOWS, ENSAIOS COM ÍCONES SOBREPOSTOS IGUAL APP MOBILE) -->
+        <div class="band-agenda-summary">
+          <!-- Círculo 1: Ano com flechas de navegação -->
+          <div class="agenda-circle-col">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" onclick="cycleAgendaYear(-1)" title="Ano anterior" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+                <ion-icon name="chevron-back-outline" style="font-size: 1.2rem;"></ion-icon>
+              </button>
+              <div class="agenda-circle-wrapper">
+                <div class="agenda-circle-disc" title="Ano selecionado: ${selectedAgendaYear}">
+                  ${selectedAgendaYear}
                 </div>
               </div>
-            `;
-          }).join('')}
+              <button type="button" onclick="cycleAgendaYear(1)" title="Próximo ano" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+                <ion-icon name="chevron-forward-outline" style="font-size: 1.2rem;"></ion-icon>
+              </button>
+            </div>
+            <div class="agenda-circle-label">Ano</div>
+          </div>
+
+          <!-- Círculo 2: Shows com ícone de calendário sobreposto à esquerda -->
+          <div class="agenda-circle-col">
+            <div class="agenda-circle-wrapper">
+              <div class="agenda-circle-disc" style="padding-left: 10px;">
+                ${showCount}
+              </div>
+              <div class="agenda-circle-overlap-icon" title="Shows">
+                <ion-icon name="calendar-outline"></ion-icon>
+              </div>
+            </div>
+            <div class="agenda-circle-label">${showCount === 1 ? 'Show' : 'Shows'}</div>
+          </div>
+
+          <!-- Círculo 3: Ensaios com ícone de fone sobreposto à esquerda -->
+          <div class="agenda-circle-col">
+            <div class="agenda-circle-wrapper">
+              <div class="agenda-circle-disc" style="padding-left: 10px;">
+                ${rehearsalCount}
+              </div>
+              <div class="agenda-circle-overlap-icon" title="Ensaios">
+                <ion-icon name="headset-outline"></ion-icon>
+              </div>
+            </div>
+            <div class="agenda-circle-label">${rehearsalCount === 1 ? 'Ensaio' : 'Ensaios'}</div>
+          </div>
         </div>
+
+        <!-- LISTA DE CARDS DE EVENTO (PADRÃO MOBILE COM BADGE QUADRADO DIA/MÊS) -->
+        <div style="display: flex; flex-direction: column; gap: 12px;">
       `;
 
+      if (yearEvents.length === 0) {
+        html += `
+          <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado em ${selectedAgendaYear}</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione novos shows ou ensaios para montar o cronograma.</p>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openEditEventPlaylistModal(-1)">Adicionar Evento</button>
+          </div>
+        `;
+      } else {
+        yearEvents.forEach(sl => {
+          const originalIdx = setlists.indexOf(sl);
+          const sName = sl.name || 'Evento';
+          const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+          const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
+          const dateBadge = getFormattedDateBadge(sl.date);
+          const songsCount = (sl.songs || []).length;
+
+          html += `
+            <div class="agenda-event-card" onclick="openEditEventPlaylistModal(${originalIdx})" title="Clique para editar evento e playlist">
+              <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 250px;">
+                <!-- Badge Quadrado Dia/Mês -->
+                <div class="agenda-date-badge-box">
+                  <span class="agenda-date-day">${dateBadge.day}</span>
+                  <span class="agenda-date-month">${dateBadge.month}</span>
+                </div>
+
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                    <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-rose'}" style="font-size: 0.7rem; font-weight: 800; padding: 2px 8px; ${isRehearsal ? '' : 'background: rgba(239,68,68,0.18); color: #f87171; border: 1px solid rgba(239,68,68,0.3);'}">
+                      ${isRehearsal ? 'ENSAIO' : 'SHOW'}
+                    </span>
+                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">${escapeHtml(sName)}</h4>
+                  </div>
+                  <div style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                    ${sl.local ? `<span><ion-icon name="location-outline" style="color: #64748b; vertical-align: middle;"></ion-icon> ${escapeHtml(sl.local)}</span>` : ''}
+                    ${sl.time ? `<span><ion-icon name="time-outline" style="color: var(--cyan); vertical-align: middle;"></ion-icon> ${escapeHtml(sl.time)}</span>` : ''}
+                    <span><ion-icon name="musical-notes-outline" style="color: var(--cyan); vertical-align: middle;"></ion-icon> ${songsCount} músicas</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lado direito: Cachê e Ação -->
+              <div style="display: flex; align-items: center; gap: 14px;">
+                ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
+                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openEditEventPlaylistModal(${originalIdx})">
+                  <ion-icon name="create-outline"></ion-icon> Editar Playlist
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      html += `</div>`;
       sub.innerHTML = html;
+    }
+
+    // ==============================================================
+    // HANDLERS DO MODAL DE EVENTO & PLAYLIST (EDIT EVENT & PLAYLIST)
+    // ==============================================================
+    function openEditEventPlaylistModal(idx) {
+      editingEventIndex = idx;
+      const modal = document.getElementById('editEventPlaylistModal');
+      if (!modal) return;
+
+      const setlists = currentBandSyncData?.setlists || [];
+      const isNew = idx < 0 || idx >= setlists.length;
+
+      const titleEl = document.getElementById('mEventModalTitle');
+      const badgeEl = document.getElementById('mEventHeaderBadge');
+      const deleteBtn = document.getElementById('btnDeleteEventFromModal');
+
+      if (isNew) {
+        if (titleEl) titleEl.textContent = 'Novo Evento / Show';
+        if (badgeEl) {
+          badgeEl.textContent = 'NOVO';
+          badgeEl.className = 'badge badge-cyan';
+        }
+        if (deleteBtn) deleteBtn.style.display = 'none';
+
+        document.getElementById('mEventName').value = '';
+        document.getElementById('mEventType').value = 'show';
+        document.getElementById('mEventDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('mEventTime').value = '21:00';
+        document.getElementById('mEventLocal').value = '';
+        document.getElementById('mEventCache').value = '';
+        document.getElementById('mEventNotes').value = '';
+        editingEventPlaylist = [];
+      } else {
+        const ev = setlists[idx];
+        const isRehearsal = ev.type === 'rehearsal' || (ev.name || '').toLowerCase().includes('ensaio');
+
+        if (titleEl) titleEl.textContent = `Editar: ${ev.name || 'Evento'}`;
+        if (badgeEl) {
+          badgeEl.textContent = isRehearsal ? 'ENSAIO' : 'SHOW';
+          badgeEl.className = isRehearsal ? 'badge badge-amber' : 'badge badge-rose';
+        }
+        if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+
+        document.getElementById('mEventName').value = ev.name || '';
+        document.getElementById('mEventType').value = isRehearsal ? 'rehearsal' : 'show';
+        document.getElementById('mEventDate').value = normalizeDateStr(ev.date) || '';
+        document.getElementById('mEventTime').value = ev.time || '';
+        document.getElementById('mEventLocal').value = ev.local || '';
+        document.getElementById('mEventCache').value = ev['cachê'] ?? ev.cache ?? '';
+        document.getElementById('mEventNotes').value = ev.notes || '';
+        editingEventPlaylist = [...(ev.songs || [])];
+      }
+
+      switchEventModalTab('details');
+      renderCurrentEventPlaylistSongs();
+      openModal('editEventPlaylistModal');
+    }
+
+    function updateEventModalTypeBadge() {
+      const type = document.getElementById('mEventType')?.value;
+      const badgeEl = document.getElementById('mEventHeaderBadge');
+      if (badgeEl) {
+        if (type === 'rehearsal') {
+          badgeEl.textContent = 'ENSAIO';
+          badgeEl.className = 'badge badge-amber';
+        } else {
+          badgeEl.textContent = 'SHOW';
+          badgeEl.className = 'badge badge-rose';
+        }
+      }
+    }
+
+    function switchEventModalTab(tab) {
+      const isDetails = tab === 'details';
+      const detailsView = document.getElementById('mEventDetailsView');
+      const playlistView = document.getElementById('mEventPlaylistView');
+      const tabDetailsBtn = document.getElementById('mEventSubTabDetails');
+      const tabPlaylistBtn = document.getElementById('mEventSubTabPlaylist');
+
+      if (detailsView) detailsView.style.display = isDetails ? 'block' : 'none';
+      if (playlistView) playlistView.style.display = isDetails ? 'none' : 'block';
+      if (tabDetailsBtn) tabDetailsBtn.classList.toggle('active', isDetails);
+      if (tabPlaylistBtn) tabPlaylistBtn.classList.toggle('active', !isDetails);
+
+      if (!isDetails) {
+        renderCurrentEventPlaylistSongs();
+      }
+    }
+
+    function toggleAddSongToPlaylistPicker(force) {
+      const picker = document.getElementById('mEventAddSongPicker');
+      if (!picker) return;
+      const shouldShow = typeof force === 'boolean' ? force : (picker.style.display === 'none');
+      picker.style.display = shouldShow ? 'block' : 'none';
+      if (shouldShow) {
+        populateEventSongCatalogSelect();
+      }
+    }
+
+    function populateEventSongCatalogSelect() {
+      const select = document.getElementById('mEventSongCatalogSelect');
+      if (!select) return;
+      const catalog = currentBandSyncData?.songs || [];
+      if (catalog.length === 0) {
+        select.innerHTML = '<option value="">Nenhuma música no repertório da banda</option>';
+        return;
+      }
+      select.innerHTML = catalog.map(s => `
+        <option value="${s.id}">${escapeHtml(s.originalBand || 'Banda')} - ${escapeHtml(s.name || 'Música')} (${s.duration || '--:--'})</option>
+      `).join('');
+    }
+
+    function addSelectedSongToCurrentPlaylist() {
+      const select = document.getElementById('mEventSongCatalogSelect');
+      if (!select || !select.value) return;
+      const songId = select.value;
+      const catalog = currentBandSyncData?.songs || [];
+      const song = catalog.find(s => String(s.id) === String(songId));
+      if (!song) return;
+
+      editingEventPlaylist.push({ ...song });
+      renderCurrentEventPlaylistSongs();
+      showToast(`"${song.name}" adicionada à playlist!`, 'success');
+    }
+
+    function moveSongInPlaylist(idx, delta) {
+      const targetIdx = idx + delta;
+      if (targetIdx < 0 || targetIdx >= editingEventPlaylist.length) return;
+      const tmp = editingEventPlaylist[idx];
+      editingEventPlaylist[idx] = editingEventPlaylist[targetIdx];
+      editingEventPlaylist[targetIdx] = tmp;
+      renderCurrentEventPlaylistSongs();
+    }
+
+    function removeSongFromPlaylist(idx) {
+      if (idx < 0 || idx >= editingEventPlaylist.length) return;
+      const removed = editingEventPlaylist.splice(idx, 1);
+      renderCurrentEventPlaylistSongs();
+      if (removed[0]) {
+        showToast(`"${removed[0].name}" removida da playlist.`, 'info');
+      }
+    }
+
+    function renderCurrentEventPlaylistSongs() {
+      const listContainer = document.getElementById('mEventPlaylistItemsList');
+      const countEl = document.getElementById('mEventSongsCount');
+      const durEl = document.getElementById('mEventTotalDuration');
+
+      if (countEl) countEl.textContent = editingEventPlaylist.length;
+
+      let totalSeconds = 0;
+      editingEventPlaylist.forEach(s => {
+        if (s.duration) {
+          const parts = s.duration.split(':').map(n => parseInt(n, 10) || 0);
+          if (parts.length === 2) {
+            totalSeconds += (parts[0] * 60) + parts[1];
+          } else if (parts.length === 3) {
+            totalSeconds += (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+          }
+        }
+      });
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
+      if (durEl) durEl.textContent = `Duração Total: ${durStr}`;
+
+      if (!listContainer) return;
+
+      if (editingEventPlaylist.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 32px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="musical-notes-outline" style="font-size: 2rem; color: #64748b; margin-bottom: 6px;"></ion-icon>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 10px 0;">Nenhuma música escalada para este evento ainda.</p>
+            <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker(true)">Adicionar do Repertório</button>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = editingEventPlaylist.map((song, idx) => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #1a2233; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-bottom: 6px; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+            <span style="font-size: 0.82rem; font-weight: 800; color: #64748b; width: 28px;">#${idx + 1}</span>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 0.9rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${escapeHtml(song.name || 'Sem título')}
+              </div>
+              <div style="font-size: 0.75rem; color: var(--cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${escapeHtml(song.originalBand || 'Banda')}
+              </div>
+            </div>
+            <span style="font-size: 0.78rem; color: #94a3b8; font-family: var(--font-mono); margin-right: 6px;">
+              ${song.duration || '--:--'}
+            </span>
+          </div>
+
+          <!-- Botões Reordenar (▲ / ▼) e Remover -->
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <button type="button" onclick="moveSongInPlaylist(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: ${idx === 0 ? '#475569' : '#fff'}; cursor: ${idx === 0 ? 'default' : 'pointer'}; display: flex; align-items: center; justify-content: center;">
+              ▲
+            </button>
+            <button type="button" onclick="moveSongInPlaylist(${idx}, 1)" ${idx === editingEventPlaylist.length - 1 ? 'disabled' : ''} style="width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: ${idx === editingEventPlaylist.length - 1 ? '#475569' : '#fff'}; cursor: ${idx === editingEventPlaylist.length - 1 ? 'default' : 'pointer'}; display: flex; align-items: center; justify-content: center;">
+              ▼
+            </button>
+            <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 4px;">
+              <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleSaveEventPlaylistModal(e) {
+      e.preventDefault();
+      if (!currentBandSyncData) currentBandSyncData = { setlists: [], songs: [] };
+      if (!currentBandSyncData.setlists) currentBandSyncData.setlists = [];
+
+      const name = document.getElementById('mEventName').value.trim();
+      const type = document.getElementById('mEventType').value;
+      const date = document.getElementById('mEventDate').value;
+      const time = document.getElementById('mEventTime').value;
+      const local = document.getElementById('mEventLocal').value.trim();
+      const cache = document.getElementById('mEventCache').value.trim();
+      const notes = document.getElementById('mEventNotes').value.trim();
+
+      const eventData = {
+        id: editingEventIndex >= 0 ? currentBandSyncData.setlists[editingEventIndex].id : `setlist_${Date.now()}`,
+        name,
+        type,
+        date,
+        time,
+        local,
+        cache,
+        'cachê': cache,
+        notes,
+        songs: [...editingEventPlaylist]
+      };
+
+      if (editingEventIndex >= 0 && editingEventIndex < currentBandSyncData.setlists.length) {
+        currentBandSyncData.setlists[editingEventIndex] = eventData;
+      } else {
+        currentBandSyncData.setlists.unshift(eventData);
+      }
+
+      currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+
+      if (currentBandData.id === 2) {
+        localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
+      }
+
+      closeModal('editEventPlaylistModal');
+      showToast('Evento e playlist salvos com sucesso!', 'success');
+
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
+    }
+
+    function handleDeleteCurrentEvent() {
+      if (editingEventIndex === null || editingEventIndex < 0) return;
+      if (!confirm('Deseja realmente excluir este evento da agenda?')) return;
+
+      if (currentBandSyncData?.setlists) {
+        currentBandSyncData.setlists.splice(editingEventIndex, 1);
+        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+        if (currentBandData.id === 2) {
+          localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
+        }
+      }
+
+      closeModal('editEventPlaylistModal');
+      showToast('Evento excluído da agenda.', 'info');
+
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
     }
 
     function openCreateBandModal() {
