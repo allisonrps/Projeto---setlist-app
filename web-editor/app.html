@@ -1494,6 +1494,70 @@
       if (tabId === 'agenda') renderAgenda();
     }
 
+    // Helpers to clean JSON strings from database / mobile app
+    function parseJsonSafe(val, fallback = null) {
+      if (!val) return fallback;
+      if (typeof val === 'object') return val;
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+          try {
+            return JSON.parse(trimmed);
+          } catch (e) {
+            return fallback;
+          }
+        }
+      }
+      return fallback;
+    }
+
+    function formatInstrumentsList(raw) {
+      if (!raw) return 'Nenhum instrumento adicionado';
+      const parsed = parseJsonSafe(raw);
+      if (Array.isArray(parsed)) {
+        const names = parsed.map(item => {
+          if (typeof item === 'string') return item;
+          return item.instrument || item.name || '';
+        }).filter(Boolean);
+        if (names.length > 0) return names.join(' • ');
+      }
+      if (typeof raw === 'string') {
+        // Remove braces or quotes if corrupt JSON string
+        const cleaned = raw.replace(/[\[\]{}"']/g, '').replace(/instrument:/g, '').replace(/stars:\d+/g, '').replace(/isPrimary:\w+/g, '').replace(/id:\w+/g, '').replace(/,\s*,/g, ',').trim();
+        return cleaned || raw;
+      }
+      return 'Nenhum instrumento adicionado';
+    }
+
+    function formatInfluencesList(raw) {
+      if (!raw) return 'Nenhuma influência informada';
+      const parsed = parseJsonSafe(raw);
+      if (Array.isArray(parsed)) {
+        const names = parsed.map(item => {
+          if (typeof item === 'string') return item.replace(/^#+/, '').trim();
+          return (item.name || item.tag || '').replace(/^#+/, '').trim();
+        }).filter(Boolean);
+        if (names.length > 0) return names.join(' • ');
+      }
+      if (typeof raw === 'string') {
+        const cleaned = raw.replace(/[\[\]{}"']/g, '').replace(/name:/g, '').replace(/stars:\d+/g, '').replace(/id:\w+/g, '').trim();
+        return cleaned || raw;
+      }
+      return 'Nenhuma influência informada';
+    }
+
+    function formatGenresList(rawGenre, rawGenresJson) {
+      const parsed = parseJsonSafe(rawGenresJson) || parseJsonSafe(rawGenre);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(Boolean).join(' • ');
+      }
+      if (typeof rawGenre === 'string' && rawGenre.trim()) {
+        const cleaned = rawGenre.replace(/[\[\]{}"']/g, '').trim();
+        return cleaned || rawGenre;
+      }
+      return 'Variado';
+    }
+
     function renderUserProfile() {
       if (!currentUser) return;
 
@@ -1518,9 +1582,15 @@
       document.getElementById('profLocation').innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${locationParts.join(', ') || 'Localização não informada'}</span>`;
 
       document.getElementById('profBio').textContent = currentUser.bio || 'Adicione uma biografia contando sobre sua trajetória musical, projetos e experiências.';
-      document.getElementById('profInstruments').textContent = currentUser.instruments || 'Nenhum instrumento adicionado';
-      document.getElementById('profInfluences').textContent = currentUser.influences || 'Nenhuma influência informada';
-      document.getElementById('profAvailability').textContent = currentUser.availability || 'Disponível para projetos';
+      document.getElementById('profInstruments').textContent = formatInstrumentsList(currentUser.instruments);
+      document.getElementById('profInfluences').textContent = formatInfluencesList(currentUser.influences);
+      
+      let avail = currentUser.availability || 'Disponível';
+      if (typeof avail === 'string' && (avail.startsWith('[') || avail.startsWith('{'))) {
+        const parsed = parseJsonSafe(avail);
+        if (Array.isArray(parsed)) avail = parsed.join(', ');
+      }
+      document.getElementById('profAvailability').textContent = avail;
 
       const socialRow = document.getElementById('profSocialRow');
       socialRow.innerHTML = '';
@@ -1535,8 +1605,8 @@
     function openEditProfileModal() {
       if (!currentUser) return;
       document.getElementById('editBio').value = currentUser.bio || '';
-      document.getElementById('editInstruments').value = currentUser.instruments || '';
-      document.getElementById('editInfluences').value = currentUser.influences || '';
+      document.getElementById('editInstruments').value = formatInstrumentsList(currentUser.instruments);
+      document.getElementById('editInfluences').value = formatInfluencesList(currentUser.influences);
       document.getElementById('editCity').value = currentUser.city || '';
       document.getElementById('editState').value = currentUser.state || '';
       document.getElementById('editInstagram').value = currentUser.instagram || '';
@@ -1740,7 +1810,7 @@
               <span class="badge badge-emerald">${band.membersCount || 1} Integrante(s)</span>
             </div>
             <h4 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${band.name}</h4>
-            <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${band.genre || 'Gênero musical variado'}</p>
+            <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${formatGenresList(band.genre, band.genresJson)}</p>
             <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">${band.description || 'Sem descrição informada.'}</p>
           </div>
           <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
@@ -2009,7 +2079,7 @@
                 ${(u.username || 'M')[0].toUpperCase()}
               </div>
               <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff;">@${u.username}</h4>
-              <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">${u.instruments || 'Músico'}</p>
+              <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">${formatInstrumentsList(u.instruments)}</p>
               <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 12px;">${[u.city, u.state].filter(Boolean).join(', ') || 'Brasil'}</p>
               <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; max-height: 60px; overflow: hidden; margin-bottom: 14px;">${u.bio || 'Sem biografia informada.'}</p>
               ${u.instagram ? `<a href="https://instagram.com/${u.instagram.replace('@','')}" target="_blank" class="btn btn-sm btn-outline" style="width: 100%;"><ion-icon name="logo-instagram"></ion-icon> Instagram</a>` : ''}
@@ -2043,7 +2113,7 @@
                   <span class="badge badge-emerald">${b.membersCount || 1} Membros</span>
                 </div>
                 <h4 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${b.name}</h4>
-                <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">${b.genre || 'Variado'}</p>
+                <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">${formatGenresList(b.genre, b.genresJson)}</p>
                 <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 10px;">${[b.city, b.state].filter(Boolean).join(', ') || 'Brasil'}</p>
                 <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">${b.description || 'Sem descrição.'}</p>
               </div>

@@ -219,17 +219,28 @@
 
       // Genres
       let genres = [];
-      try {
-        genres = typeof band.genresJson === 'string' ? JSON.parse(band.genresJson) : (band.genre ? [band.genre] : []);
-      } catch {
-        genres = band.genre ? [band.genre] : [];
-      }
+      const tryParse = (val) => {
+        if (!val) return null;
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') {
+          const t = val.trim();
+          if (t.startsWith('[') && t.endsWith(']')) {
+            try { return JSON.parse(t); } catch (e) {}
+          }
+          return t.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        return null;
+      };
+
+      genres = tryParse(band.genresJson) || tryParse(band.genre) || [];
       const genresContainer = document.getElementById('bandGenres');
       genresContainer.innerHTML = '';
       genres.forEach(g => {
+        const cleanTag = String(g).replace(/[\[\]{}"']/g, '').trim();
+        if (!cleanTag) return;
         const span = document.createElement('span');
         span.className = 'px-2.5 py-0.5 rounded-lg text-xs font-medium bg-zinc-800/80 text-zinc-300 border border-zinc-700/60';
-        span.textContent = g;
+        span.textContent = cleanTag;
         genresContainer.appendChild(span);
       });
 
