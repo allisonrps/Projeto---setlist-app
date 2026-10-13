@@ -577,12 +577,15 @@
       gap: 20px;
       align-items: stretch;
       min-height: 720px;
+      height: calc(100vh - 120px);
+      max-height: calc(100vh - 120px);
       margin-top: 6px;
     }
 
     /* 1. Lateral Sidebar */
     .sb-sidebar {
       width: 340px;
+      height: 100%;
       background: #121826;
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -759,93 +762,57 @@
       font-weight: 700;
     }
 
-    /* Layout Wrapper (Régua Alfabética + Lista de Músicas) */
-    .sb-list-layout-wrapper {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .sb-sidebar.collapsed .sb-list-layout-wrapper {
-      display: none !important;
-    }
-
-    /* Régua Alfabética Lateral Discreta (A . . . B . . . C) */
-    .sb-alphabet-ruler {
-      width: 22px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 6px 0;
-      user-select: none;
-      border-right: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(0, 0, 0, 0.18);
-      overflow-y: auto;
-      scrollbar-width: none;
-      flex-shrink: 0;
-    }
-    .sb-alphabet-ruler::-webkit-scrollbar {
-      display: none;
-    }
-    .sb-ruler-letter {
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #64748b;
-      cursor: pointer;
-      padding: 2px 0;
-      text-align: center;
-      width: 100%;
-      transition: all 0.12s;
-      line-height: 1;
-    }
-    .sb-ruler-letter:hover, .sb-ruler-letter.active {
-      color: #34d399;
-      font-weight: 900;
-      transform: scale(1.25);
-      text-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
-    }
-    .sb-ruler-dot {
-      font-size: 0.6rem;
-      color: #334155;
-      line-height: 0.7;
-      padding: 1px 0;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    /* Divisor de Letras no meio da Lista */
-    .sb-letter-divider {
+    /* Cabeçalho de Letra com Marcador Circular Maior (A, B, C...) */
+    .sb-letter-group-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 8px 2px 8px;
+      gap: 10px;
+      padding: 14px 4px 6px 4px;
       margin-top: 4px;
     }
-    .sb-letter-char {
-      font-size: 0.72rem;
+    .sb-letter-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(52, 211, 153, 0.22), rgba(56, 189, 248, 0.22));
+      border: 2px solid #34d399;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
       font-weight: 900;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.1);
-      padding: 1px 6px;
-      border-radius: 4px;
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.35);
+      flex-shrink: 0;
+      text-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
     }
     .sb-letter-line {
       flex: 1;
       height: 1px;
+      background: linear-gradient(90deg, rgba(52, 211, 153, 0.35), rgba(255, 255, 255, 0.05));
+    }
+    .sb-letter-count {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
       background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 1px 7px;
+      border-radius: 10px;
     }
 
-    /* Lista Compacta de Músicas com Letras Menores */
+    /* Lista Normal de Músicas com Scroll Completo no Menu */
     .sb-song-list {
       flex: 1;
       overflow-y: auto;
-      padding: 4px 6px 16px 6px;
+      padding: 6px 10px 24px 10px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      max-height: calc(100vh - 360px);
+      gap: 4px;
+      min-height: 0;
+    }
+    .sb-sidebar.collapsed .sb-song-list {
+      display: none !important;
     }
 
     .sb-song-item {
@@ -2282,7 +2249,7 @@
                 </button>
               </div>
 
-              <!-- Barra de Ordenação A-Z / Z-A (Estilo App Mobile) -->
+              <!-- Barra de Ordenação A-Z / Z-A (Estilo App Mobile) + Botão Mostrar/Ocultar Tags -->
               <div class="sb-sort-row">
                 <span class="sb-filter-label">Ordenar:</span>
                 <button type="button" class="sb-sort-chip active" id="sbSortChip-band" onclick="toggleSongbookSort('band')" title="Ordenar por Nome da Banda / Artista">
@@ -2293,27 +2260,24 @@
                   <span>Música</span>
                   <span class="sb-sort-dir" id="sbSortDir-name">A-Z</span>
                 </button>
+                <button type="button" class="sb-sort-chip" id="btnToggleTags" onclick="toggleSongbookTags()" title="Mostrar ou ocultar tags de estilo">
+                  <ion-icon name="pricetag-outline"></ion-icon>
+                  <span>Tags</span>
+                  <ion-icon name="chevron-down-outline" id="iconToggleTags" style="font-size: 0.75rem; transition: transform 0.2s;"></ion-icon>
+                </button>
               </div>
 
-              <!-- Tags / Estilos Clicáveis (Scroll Horizontal) -->
-              <div class="sb-tags-container">
+              <!-- Tags / Estilos Clicáveis (Ocultável pelo botão acima) -->
+              <div class="sb-tags-container" id="sbTagsContainer" style="display: none;">
                 <div class="sb-tags-scroll" id="sbStylePillsRow">
                   <!-- Gerado dinamicamente: Todos, Rock, Pop, etc. -->
                 </div>
               </div>
             </div>
 
-            <!-- Wrapper da Lista com Régua Lateral Alfabética Discreta -->
-            <div class="sb-list-layout-wrapper">
-              <!-- Régua Lateral Discreta (A . . . B . . . C . . .) -->
-              <div class="sb-alphabet-ruler" id="sbAlphabetRuler" title="Navegar por letra inicial">
-                <!-- Letras e marcadores gerados dinamicamente -->
-              </div>
-
-              <!-- Lista Rolável de Músicas -->
-              <div class="sb-song-list" id="sbSongList">
-                <!-- Itens compactos agrupados por letra -->
-              </div>
+            <!-- Lista Normal de Músicas com Scroll Direto no Menu -->
+            <div class="sb-song-list" id="sbSongList">
+              <!-- Itens gerados dinamicamente com marcadores circulares grandes para cada letra -->
             </div>
           </aside>
 
@@ -2336,7 +2300,7 @@
                 <div class="sb-song-header-info">
                   <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <h2 id="sbSongTitle" class="sb-song-title">Nome da Música</h2>
-                    <span class="sb-pill-genre" id="sbSongStyle">Geral</span>
+                    <div id="sbSongStylesContainer" style="display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center;"></div>
                     <button class="btn-favorite-star" id="sbBtnFav" onclick="toggleCurrentSongFavorite()" title="Favoritar">
                       <ion-icon name="star-outline"></ion-icon>
                     </button>
@@ -5076,6 +5040,25 @@
       filterSongbookList();
     }
 
+    let sbShowTags = false;
+
+    function toggleSongbookTags() {
+      sbShowTags = !sbShowTags;
+      const tagsContainer = document.getElementById('sbTagsContainer');
+      const btn = document.getElementById('btnToggleTags');
+      const icon = document.getElementById('iconToggleTags');
+
+      if (tagsContainer) {
+        tagsContainer.style.display = sbShowTags ? 'block' : 'none';
+      }
+      if (btn) {
+        btn.classList.toggle('active', sbShowTags || !!sbSelectedTag);
+      }
+      if (icon) {
+        icon.style.transform = sbShowTags ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    }
+
     function updateSongbookSortButtons() {
       const btnBand = document.getElementById('sbSortChip-band');
       const btnName = document.getElementById('sbSortChip-name');
@@ -5126,6 +5109,9 @@
       });
 
       container.innerHTML = html;
+
+      const btn = document.getElementById('btnToggleTags');
+      if (btn) btn.classList.toggle('active', sbShowTags || !!sbSelectedTag);
     }
 
     function selectSongbookTag(tag) {
@@ -5173,8 +5159,6 @@
             </div>
           `;
         }
-        const ruler = document.getElementById('sbAlphabetRuler');
-        if (ruler) ruler.innerHTML = '';
         if (emptyState) emptyState.style.display = 'block';
         if (editorWrapper) editorWrapper.style.display = 'none';
         selectedSong = null;
@@ -5210,7 +5194,6 @@
       if (clearBtn) clearBtn.style.display = search ? 'block' : 'none';
 
       const sidebarList = document.getElementById('sbSongList');
-      const ruler = document.getElementById('sbAlphabetRuler');
       if (!sidebarList) return;
 
       const filtered = mySongs.filter(s => {
@@ -5222,11 +5205,10 @@
 
       if (filtered.length === 0) {
         sidebarList.innerHTML = `
-          <div style="text-align: center; padding: 24px 12px; color: var(--text-dim); font-size: 0.82rem;">
+          <div style="text-align: center; padding: 28px 14px; color: var(--text-dim); font-size: 0.85rem;">
             Nenhuma música encontrada para a busca ou filtro selecionado.
           </div>
         `;
-        if (ruler) ruler.innerHTML = '';
         return;
       }
 
@@ -5257,36 +5239,26 @@
         groups[letter].push(song);
       });
 
-      // Render Discrete Alphabetical Ruler on the left (A . . . B . . . C)
-      if (ruler) {
-        let rulerHtml = '';
-        letterOrder.forEach((letter, idx) => {
-          rulerHtml += `<span class="sb-ruler-letter" onclick="scrollToLetter('${letter}')" title="Ir para ${letter}">${letter}</span>`;
-          if (idx < letterOrder.length - 1) {
-            rulerHtml += `
-              <span class="sb-ruler-dot">·</span>
-              <span class="sb-ruler-dot">·</span>
-              <span class="sb-ruler-dot">·</span>
-            `;
-          }
-        });
-        ruler.innerHTML = rulerHtml;
-      }
-
-      // Render Song List with Letter Dividers and Compact Items (Nome da Musica - Artista)
+      // Render Song List with Prominent Circular Letter Badges and Compact Items
       let listHtml = '';
       letterOrder.forEach(letter => {
         listHtml += `
-          <div class="sb-letter-divider" id="sb-letter-group-${letter}">
-            <span class="sb-letter-char">${letter}</span>
+          <div class="sb-letter-group-header" id="sb-letter-group-${letter}">
+            <div class="sb-letter-circle">${letter}</div>
             <div class="sb-letter-line"></div>
+            <span class="sb-letter-count">${groups[letter].length}</span>
           </div>
         `;
 
         groups[letter].forEach(song => {
           const isSelected = selectedSong && String(selectedSong.id) === String(song.id);
           const activeClass = isSelected ? 'active' : '';
-          const primaryTag = song.style ? song.style.split(',')[0].trim() : '';
+
+          // Preserve and show ALL registered tags individually
+          const songTags = song.style
+            ? song.style.split(',').map(t => t.trim()).filter(Boolean)
+            : [];
+          const tagsHtml = songTags.map(t => `<span class="sb-song-row-tag">${escapeHtml(t)}</span>`).join('');
 
           listHtml += `
             <div class="sb-song-item ${activeClass}" onclick="selectSongbookItem('${song.id}')" id="sbItem-${song.id}">
@@ -5296,7 +5268,7 @@
                 <span class="sb-song-row-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
               </div>
               <div class="sb-song-row-meta">
-                ${primaryTag ? `<span class="sb-song-row-tag">${escapeHtml(primaryTag)}</span>` : ''}
+                ${tagsHtml}
                 ${song.key ? `<span class="sb-song-row-key">${escapeHtml(song.key)}</span>` : ''}
                 ${song.bpm ? `<span class="sb-song-row-bpm">${song.bpm} BPM</span>` : ''}
                 ${song.isFavorite ? `<ion-icon name="star" class="sb-song-row-fav"></ion-icon>` : ''}
@@ -5341,7 +5313,7 @@
       // Header info
       const titleEl = document.getElementById('sbSongTitle');
       const artistEl = document.getElementById('sbSongArtist');
-      const styleEl = document.getElementById('sbSongStyle');
+      const stylesContainer = document.getElementById('sbSongStylesContainer');
       const keyEl = document.getElementById('sbSongKey');
       const bpmEl = document.getElementById('sbSongBpm');
       const durationEl = document.getElementById('sbSongDuration');
@@ -5349,7 +5321,17 @@
 
       if (titleEl) titleEl.textContent = song.name || 'Música Sem Título';
       if (artistEl) artistEl.textContent = song.originalBand || 'Artista Desconhecido';
-      if (styleEl) styleEl.textContent = song.style || 'Geral';
+      
+      // Separate pill for EACH tag
+      if (stylesContainer) {
+        const stylesList = song.style
+          ? song.style.split(',').map(s => s.trim()).filter(Boolean)
+          : ['Geral'];
+        stylesContainer.innerHTML = stylesList.map(st => `
+          <span class="sb-pill-genre">${escapeHtml(st)}</span>
+        `).join('');
+      }
+
       if (keyEl) keyEl.textContent = song.key ? `Tom: ${song.key}` : 'Tom: --';
       if (bpmEl) bpmEl.textContent = song.bpm ? `BPM: ${song.bpm}` : 'BPM: --';
       if (durationEl) durationEl.textContent = song.duration ? `Duração: ${song.duration}` : 'Duração: --';
