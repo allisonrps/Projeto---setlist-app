@@ -2015,244 +2015,32 @@
             </div>
           </div>
 
-          <!-- ── TAB S: SONGBOOK NA PÁGINA DO PERFIL (SPLIT-VIEW EDITOR COM SIDEBAR LATERAL OCULTÁVEL) ── -->
+          <!-- ── TAB S: SONGBOOK NA PÁGINA DO PERFIL (VISUALIZAÇÃO PÚBLICA SOMENTE LEITURA) ── -->
           <div class="profile-subview" id="subview-songbook_p">
-            <div class="sb-workspace-container" id="sbWorkspaceContainer">
-              
-              <!-- 1. MENU LATERAL DE MÚSICAS (PODE SER OCULTO EM BARRA MENOR) -->
-              <aside class="sb-sidebar" id="sbSidebar">
-                <!-- Header Expandido -->
-                <div class="sb-sidebar-header">
-                  <div class="sb-sidebar-header-expanded">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <ion-icon name="musical-notes" style="color: #34d399; font-size: 1.25rem;"></ion-icon>
-                      <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">Músicas</span>
-                      <span class="sb-badge-count" id="sbSongsCount">0</span>
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                      <button class="btn-icon-square" onclick="openAddSongModal()" title="Nova Música">
-                        <ion-icon name="add-outline"></ion-icon>
-                      </button>
-                      <button class="btn-icon-square" onclick="toggleSongbookSidebar()" id="btnCollapseSidebar" title="Ocultar lista (barra menor)">
-                        <ion-icon name="chevron-back-outline"></ion-icon>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <!-- Header Recolhido (Barra Menor) -->
-                  <div class="sb-sidebar-header-collapsed">
-                    <button class="btn-icon-square" onclick="toggleSongbookSidebar()" title="Expandir lista de músicas">
-                      <ion-icon name="chevron-forward-outline"></ion-icon>
-                    </button>
-                    <button class="btn-icon-square" onclick="expandAndFocusSearch()" title="Pesquisar">
-                      <ion-icon name="search-outline"></ion-icon>
-                    </button>
-                    <button class="btn-icon-square" onclick="openAddSongModal()" title="Nova Música">
-                      <ion-icon name="add-outline"></ion-icon>
-                    </button>
-                    <div class="sb-collapsed-counter" id="sbCollapsedCounter" title="Total de Músicas">0</div>
-                  </div>
+            <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <ion-icon name="musical-notes-outline" style="color: #34d399;"></ion-icon>
+                    <span>Repertório & Músicas</span>
+                  </h3>
+                  <p style="color: #94a3b8; font-size: 0.85rem;">Catálogo e repertório de músicas do perfil para visualização.</p>
                 </div>
-
-                <!-- Busca e Filtros -->
-                <div class="sb-search-box" id="sbSearchBox">
-                  <div class="sb-search-input-wrapper">
-                    <ion-icon name="search-outline"></ion-icon>
-                    <input type="text" id="sbSearchInput" placeholder="Buscar música ou artista..." oninput="filterSongbookList()">
-                  </div>
-                  <div class="sb-filters-row">
-                    <select id="sbStyleFilter" onchange="filterSongbookList()">
-                      <option value="">Todos os Estilos</option>
-                      <option value="Rock">Rock</option>
-                      <option value="Pop">Pop</option>
-                      <option value="Indie">Indie</option>
-                      <option value="Metal">Metal</option>
-                      <option value="Hardcore">Hardcore</option>
-                      <option value="Nacional">Nacional</option>
-                      <option value="Grunge">Grunge</option>
-                    </select>
-                  </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <button class="btn btn-outline btn-sm" onclick="switchMainView('songbook')" title="Abrir editor completo de cifras e letras">
+                    <ion-icon name="create-outline"></ion-icon>
+                    <span>Abrir Editor Completo</span>
+                  </button>
                 </div>
+              </div>
 
-                <!-- Lista Rolável de Músicas -->
-                <div class="sb-song-list" id="sbSongList">
-                  <!-- Itens gerados dinamicamente -->
-                </div>
-              </aside>
+              <!-- Busca rápida de visualização -->
+              <div style="margin-bottom: 20px;">
+                <input type="text" id="profileSongSearchInput" class="form-input" placeholder="Buscar música no repertório..." oninput="filterProfileSongbookList()">
+              </div>
 
-              <!-- 2. JANELA DE CONTEÚDO MAIOR (EDITOR COM ABAS LETRAS, CIFRAS E TABLATURAS) -->
-              <main class="sb-main-panel" id="sbMainPanel">
-                
-                <!-- Estado vazio quando não há músicas -->
-                <div id="sbEmptyState" style="display: none;" class="sb-empty-card">
-                  <ion-icon name="musical-notes-outline"></ion-icon>
-                  <h3>Nenhuma música selecionada</h3>
-                  <p>Adicione ou selecione uma música no menu lateral para visualizar e editar letras, cifras e tablaturas.</p>
-                  <button class="btn btn-primary btn-sm" onclick="openAddSongModal()">Adicionar Nova Música</button>
-                </div>
-
-                <!-- Card Principal do Editor -->
-                <div id="sbEditorWrapper" class="sb-editor-card">
-                  
-                  <!-- Topo da Música: Título, Artista, Tom, Botão Editar Detalhes e Salvar -->
-                  <div class="sb-song-header">
-                    <div class="sb-song-header-info">
-                      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <h2 id="sbSongTitle" class="sb-song-title">Nome da Música</h2>
-                        <span class="sb-pill-genre" id="sbSongStyle">Geral</span>
-                        <button class="btn-favorite-star" id="sbBtnFav" onclick="toggleCurrentSongFavorite()" title="Favoritar">
-                          <ion-icon name="star-outline"></ion-icon>
-                        </button>
-                      </div>
-                      <div class="sb-song-meta-row">
-                        <span id="sbSongArtist" class="sb-song-artist">Artista Original</span>
-                        <span class="sb-meta-dot">•</span>
-                        <span id="sbSongKey" class="sb-meta-item">Tom: --</span>
-                        <span class="sb-meta-dot">•</span>
-                        <span id="sbSongBpm" class="sb-meta-item">BPM: --</span>
-                        <span class="sb-meta-dot">•</span>
-                        <span id="sbSongDuration" class="sb-meta-item">Duração: --</span>
-                      </div>
-                    </div>
-
-                    <div class="sb-song-header-actions">
-                      <!-- OPÇÕES PARA EDITAR DETALHES DA MÚSICA -->
-                      <button class="btn btn-outline btn-sm" id="btnToggleSongDetails" onclick="toggleSongDetailsDrawer()" title="Editar dados da música (Título, Artista, Tom, BPM...)">
-                        <ion-icon name="create-outline"></ion-icon>
-                        <span>Editar Detalhes</span>
-                      </button>
-
-                      <!-- SALVAR NA NUVEM -->
-                      <button class="btn btn-primary btn-sm" onclick="saveCurrentSongContent()" id="btnSaveSong">
-                        <ion-icon name="cloud-upload-outline"></ion-icon>
-                        <span>Salvar Música</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- PAINEL DESDOBRÁVEL: OPÇÕES PARA EDITAR DETALHES DA MÚSICA -->
-                  <div id="sbDetailsDrawer" class="sb-details-drawer" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                      <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
-                        <ion-icon name="options-outline" style="color: #38bdf8;"></ion-icon>
-                        <span>Detalhes da Música</span>
-                      </h4>
-                      <button class="btn-close-sm" onclick="toggleSongDetailsDrawer(false)">&times;</button>
-                    </div>
-
-                    <div class="sb-details-grid">
-                      <div>
-                        <label class="form-label">Nome da Música</label>
-                        <input type="text" id="sbEditName" class="form-input" placeholder="Título da música">
-                      </div>
-                      <div>
-                        <label class="form-label">Banda / Artista Original</label>
-                        <input type="text" id="sbEditArtist" class="form-input" placeholder="Nome do artista ou banda">
-                      </div>
-                      <div>
-                        <label class="form-label">Estilo / Gênero</label>
-                        <input type="text" id="sbEditStyle" class="form-input" placeholder="Ex: Rock, Nacional, Grunge">
-                      </div>
-                      <div>
-                        <label class="form-label">Tom Principal</label>
-                        <input type="text" id="sbEditKey" class="form-input" placeholder="Ex: G, Am, D">
-                      </div>
-                      <div>
-                        <label class="form-label">BPM</label>
-                        <input type="number" id="sbEditBpm" class="form-input" placeholder="120">
-                      </div>
-                      <div>
-                        <label class="form-label">Duração</label>
-                        <input type="text" id="sbEditDuration" class="form-input" placeholder="Ex: 4:15">
-                      </div>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 10px;">
-                      <button class="btn btn-danger btn-sm" onclick="deleteCurrentSong()" type="button">
-                        <ion-icon name="trash-outline"></ion-icon>
-                        <span>Excluir Música</span>
-                      </button>
-                      <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-outline btn-sm" onclick="toggleSongDetailsDrawer(false)" type="button">Cancelar</button>
-                        <button class="btn btn-primary btn-sm" onclick="saveSongDetailsOnly()" type="button">
-                          <ion-icon name="checkmark-outline"></ion-icon>
-                          <span>Salvar Detalhes</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- BARRA DE ABAS: LETRAS, CIFRAS E TABLATURAS -->
-                  <div class="sb-tabs-toolbar">
-                    <div class="sb-editor-tabs">
-                      <button class="sb-editor-tab-btn" id="sbTabBtn-lyrics" onclick="switchEditorTab('lyrics')">
-                        <ion-icon name="document-text-outline"></ion-icon>
-                        <span>Letras</span>
-                      </button>
-                      <button class="sb-editor-tab-btn active" id="sbTabBtn-chords" onclick="switchEditorTab('chords')">
-                        <ion-icon name="musical-notes-outline"></ion-icon>
-                        <span>Cifras</span>
-                      </button>
-                      <button class="sb-editor-tab-btn" id="sbTabBtn-tabs" onclick="switchEditorTab('tabs')">
-                        <ion-icon name="grid-outline"></ion-icon>
-                        <span>Tablaturas</span>
-                      </button>
-                    </div>
-
-                    <!-- FERRAMENTAS: TRANSPOSIÇÃO, ZOOM DA FONTE, AUTO-SCROLL, COPIAR -->
-                    <div class="sb-editor-tools">
-                      <!-- Transposição (visível na aba de Cifras) -->
-                      <div class="sb-tool-group" id="sbTransposeGroup">
-                        <span class="sb-tool-label">Tom:</span>
-                        <button class="sb-tool-btn" onclick="transposeCurrentSong(-1)" title="Diminuir 1 semitom">-1</button>
-                        <span class="sb-transpose-val" id="sbTransposeOffset">0</span>
-                        <button class="sb-tool-btn" onclick="transposeCurrentSong(1)" title="Aumentar 1 semitom">+1</button>
-                        <button class="sb-tool-btn" onclick="resetTranspose()" title="Restaurar tom original">Orig</button>
-                      </div>
-
-                      <!-- Tamanho da Fonte -->
-                      <div class="sb-tool-group">
-                        <button class="sb-tool-btn" onclick="adjustEditorFontSize(-1)" title="Diminuir fonte">A-</button>
-                        <span class="sb-font-val" id="sbFontSizeLabel">14</span>
-                        <button class="sb-tool-btn" onclick="adjustEditorFontSize(1)" title="Aumentar fonte">A+</button>
-                      </div>
-
-                      <!-- Auto Scroll -->
-                      <button class="sb-tool-btn" id="btnAutoScroll" onclick="toggleAutoScroll()" title="Rolagem automática para ensaio">
-                        <ion-icon name="play-outline"></ion-icon>
-                        <span id="autoScrollLabel">Rolar</span>
-                      </button>
-
-                      <!-- Copiar Texto -->
-                      <button class="sb-tool-btn" onclick="copyCurrentTabContent()" title="Copiar conteúdo da aba atual">
-                        <ion-icon name="copy-outline"></ion-icon>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- ÁREA DO EDITOR DE TEXTO -->
-                  <div class="sb-editor-body">
-                    <textarea id="sbEditorTextarea" class="sb-editor-textarea" spellcheck="false" placeholder="Digite ou cole aqui a letra, cifra ou tablatura da música..." oninput="onEditorContentChanged()"></textarea>
-                  </div>
-
-                  <!-- RODAPÉ DO EDITOR -->
-                  <div class="sb-editor-footer">
-                    <div id="sbSaveStatus" class="sb-save-status">
-                      <ion-icon name="cloud-done-outline" style="color: #34d399;"></ion-icon>
-                      <span>Sincronizado na nuvem (Supabase)</span>
-                    </div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                      <span style="font-size: 0.78rem; color: #64748b;">Alterações sincronizam com o App Mobile</span>
-                      <button class="btn btn-primary btn-sm" onclick="saveCurrentSongContent()">
-                        <ion-icon name="checkmark-circle-outline"></ion-icon>
-                        <span>Salvar Música</span>
-                      </button>
-                    </div>
-                  </div>
-
-                </div>
-              </main>
-
+              <!-- Grid de músicas pública (apenas leitura / modal de visualização) -->
+              <div class="grid-cards" id="profileSongbookGrid"></div>
             </div>
           </div>
 
@@ -2296,39 +2084,246 @@
       </section>
 
       <!-- ============================================================== -->
-      <!-- MAIN VIEW 2: SONGBOOK ONLINE DA CONTA                          -->
+      <!-- MAIN VIEW 2: SONGBOOK DEDICADO (SPLIT-VIEW EDITOR COM SIDEBAR LATERAL OCULTÁVEL) -->
       <!-- ============================================================== -->
-      <section class="main-view" id="view-songbook">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-          <div>
-            <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px;">
-              <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
-              <span>Meu Songbook</span>
-            </h1>
-            <p style="color: var(--text-muted); font-size: 0.88rem;">Coleção online de cifras, acordes, letras e tablaturas vinculadas à sua conta.</p>
-          </div>
-          <button class="btn btn-primary" onclick="openAddSongModal()">
-            <ion-icon name="add-circle-outline"></ion-icon>
-            <span>Nova Música</span>
-          </button>
-        </div>
+      <section class="main-view" id="view-songbook" style="padding: 0;">
+        <div class="sb-workspace-container" id="sbWorkspaceContainer">
+          
+          <!-- 1. MENU LATERAL DE MÚSICAS (PODE SER OCULTO EM BARRA MENOR) -->
+          <aside class="sb-sidebar" id="sbSidebar">
+            <!-- Header Expandido -->
+            <div class="sb-sidebar-header">
+              <div class="sb-sidebar-header-expanded">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <ion-icon name="musical-notes" style="color: #34d399; font-size: 1.25rem;"></ion-icon>
+                  <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">Músicas</span>
+                  <span class="sb-badge-count" id="sbSongsCount">0</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn-icon-square" onclick="openAddSongModal()" title="Nova Música">
+                    <ion-icon name="add-outline"></ion-icon>
+                  </button>
+                  <button class="btn-icon-square" onclick="toggleSongbookSidebar()" id="btnCollapseSidebar" title="Ocultar lista (barra menor)">
+                    <ion-icon name="chevron-back-outline"></ion-icon>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Header Recolhido (Barra Menor) -->
+              <div class="sb-sidebar-header-collapsed">
+                <button class="btn-icon-square" onclick="toggleSongbookSidebar()" title="Expandir lista de músicas">
+                  <ion-icon name="chevron-forward-outline"></ion-icon>
+                </button>
+                <button class="btn-icon-square" onclick="expandAndFocusSearch()" title="Pesquisar">
+                  <ion-icon name="search-outline"></ion-icon>
+                </button>
+                <button class="btn-icon-square" onclick="openAddSongModal()" title="Nova Música">
+                  <ion-icon name="add-outline"></ion-icon>
+                </button>
+                <div class="sb-collapsed-counter" id="sbCollapsedCounter" title="Total de Músicas">0</div>
+              </div>
+            </div>
 
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
-          <input type="text" id="songSearchInput" class="form-input" style="flex: 1; min-width: 240px;" placeholder="Buscar por título, artista ou estilo..." oninput="filterSongs()">
-          <select id="songStyleFilter" class="form-input" style="width: 190px;" onchange="filterSongs()">
-            <option value="">Todos os Estilos</option>
-            <option value="Rock">Rock</option>
-            <option value="Pop">Pop</option>
-            <option value="Indie">Indie</option>
-            <option value="Metal">Metal</option>
-            <option value="MPB">MPB</option>
-            <option value="Blues">Blues</option>
-            <option value="Jazz">Jazz</option>
-            <option value="Sertanejo">Sertanejo</option>
-          </select>
-        </div>
+            <!-- Busca e Filtros -->
+            <div class="sb-search-box" id="sbSearchBox">
+              <div class="sb-search-input-wrapper">
+                <ion-icon name="search-outline"></ion-icon>
+                <input type="text" id="sbSearchInput" placeholder="Buscar música ou artista..." oninput="filterSongbookList()">
+              </div>
+              <div class="sb-filters-row">
+                <select id="sbStyleFilter" onchange="filterSongbookList()">
+                  <option value="">Todos os Estilos</option>
+                  <option value="Rock">Rock</option>
+                  <option value="Pop">Pop</option>
+                  <option value="Indie">Indie</option>
+                  <option value="Metal">Metal</option>
+                  <option value="Hardcore">Hardcore</option>
+                  <option value="Nacional">Nacional</option>
+                  <option value="Grunge">Grunge</option>
+                </select>
+              </div>
+            </div>
 
-        <div class="grid-cards" id="songbookGrid"></div>
+            <!-- Lista Rolável de Músicas -->
+            <div class="sb-song-list" id="sbSongList">
+              <!-- Itens gerados dinamicamente -->
+            </div>
+          </aside>
+
+          <!-- 2. JANELA DE CONTEÚDO MAIOR (EDITOR COM ABAS LETRAS, CIFRAS E TABLATURAS) -->
+          <main class="sb-main-panel" id="sbMainPanel">
+            
+            <!-- Estado vazio quando não há músicas -->
+            <div id="sbEmptyState" style="display: none;" class="sb-empty-card">
+              <ion-icon name="musical-notes-outline"></ion-icon>
+              <h3>Nenhuma música selecionada</h3>
+              <p>Adicione ou selecione uma música no menu lateral para visualizar e editar letras, cifras e tablaturas.</p>
+              <button class="btn btn-primary btn-sm" onclick="openAddSongModal()">Adicionar Nova Música</button>
+            </div>
+
+            <!-- Card Principal do Editor -->
+            <div id="sbEditorWrapper" class="sb-editor-card">
+              
+              <!-- Topo da Música: Título, Artista, Tom, Botão Editar Detalhes e Salvar -->
+              <div class="sb-song-header">
+                <div class="sb-song-header-info">
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <h2 id="sbSongTitle" class="sb-song-title">Nome da Música</h2>
+                    <span class="sb-pill-genre" id="sbSongStyle">Geral</span>
+                    <button class="btn-favorite-star" id="sbBtnFav" onclick="toggleCurrentSongFavorite()" title="Favoritar">
+                      <ion-icon name="star-outline"></ion-icon>
+                    </button>
+                  </div>
+                  <div class="sb-song-meta-row">
+                    <span id="sbSongArtist" class="sb-song-artist">Artista Original</span>
+                    <span class="sb-meta-dot">•</span>
+                    <span id="sbSongKey" class="sb-meta-item">Tom: --</span>
+                    <span class="sb-meta-dot">•</span>
+                    <span id="sbSongBpm" class="sb-meta-item">BPM: --</span>
+                    <span class="sb-meta-dot">•</span>
+                    <span id="sbSongDuration" class="sb-meta-item">Duração: --</span>
+                  </div>
+                </div>
+
+                <div class="sb-song-header-actions">
+                  <!-- OPÇÕES PARA EDITAR DETALHES DA MÚSICA -->
+                  <button class="btn btn-outline btn-sm" id="btnToggleSongDetails" onclick="toggleSongDetailsDrawer()" title="Editar dados da música (Título, Artista, Tom, BPM...)">
+                    <ion-icon name="create-outline"></ion-icon>
+                    <span>Editar Detalhes</span>
+                  </button>
+
+                  <!-- SALVAR NA NUVEM -->
+                  <button class="btn btn-primary btn-sm" onclick="saveCurrentSongContent()" id="btnSaveSong">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    <span>Salvar Música</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- PAINEL DESDOBRÁVEL: OPÇÕES PARA EDITAR DETALHES DA MÚSICA -->
+              <div id="sbDetailsDrawer" class="sb-details-drawer" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    <ion-icon name="options-outline" style="color: #38bdf8;"></ion-icon>
+                    <span>Detalhes da Música</span>
+                  </h4>
+                  <button class="btn-close-sm" onclick="toggleSongDetailsDrawer(false)">&times;</button>
+                </div>
+
+                <div class="sb-details-grid">
+                  <div>
+                    <label class="form-label">Nome da Música</label>
+                    <input type="text" id="sbEditName" class="form-input" placeholder="Título da música">
+                  </div>
+                  <div>
+                    <label class="form-label">Banda / Artista Original</label>
+                    <input type="text" id="sbEditArtist" class="form-input" placeholder="Nome do artista ou banda">
+                  </div>
+                  <div>
+                    <label class="form-label">Estilo / Gênero</label>
+                    <input type="text" id="sbEditStyle" class="form-input" placeholder="Ex: Rock, Nacional, Grunge">
+                  </div>
+                  <div>
+                    <label class="form-label">Tom Principal</label>
+                    <input type="text" id="sbEditKey" class="form-input" placeholder="Ex: G, Am, D">
+                  </div>
+                  <div>
+                    <label class="form-label">BPM</label>
+                    <input type="number" id="sbEditBpm" class="form-input" placeholder="120">
+                  </div>
+                  <div>
+                    <label class="form-label">Duração</label>
+                    <input type="text" id="sbEditDuration" class="form-input" placeholder="Ex: 4:15">
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 10px;">
+                  <button class="btn btn-danger btn-sm" onclick="deleteCurrentSong()" type="button">
+                    <ion-icon name="trash-outline"></ion-icon>
+                    <span>Excluir Música</span>
+                  </button>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline btn-sm" onclick="toggleSongDetailsDrawer(false)" type="button">Cancelar</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveSongDetailsOnly()" type="button">
+                      <ion-icon name="checkmark-outline"></ion-icon>
+                      <span>Salvar Detalhes</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BARRA DE ABAS: LETRAS, CIFRAS E TABLATURAS -->
+              <div class="sb-tabs-toolbar">
+                <div class="sb-editor-tabs">
+                  <button class="sb-editor-tab-btn" id="sbTabBtn-lyrics" onclick="switchEditorTab('lyrics')">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>Letras</span>
+                  </button>
+                  <button class="sb-editor-tab-btn active" id="sbTabBtn-chords" onclick="switchEditorTab('chords')">
+                    <ion-icon name="musical-notes-outline"></ion-icon>
+                    <span>Cifras</span>
+                  </button>
+                  <button class="sb-editor-tab-btn" id="sbTabBtn-tabs" onclick="switchEditorTab('tabs')">
+                    <ion-icon name="grid-outline"></ion-icon>
+                    <span>Tablaturas</span>
+                  </button>
+                </div>
+
+                <!-- FERRAMENTAS: TRANSPOSIÇÃO, ZOOM DA FONTE, AUTO-SCROLL, COPIAR -->
+                <div class="sb-editor-tools">
+                  <!-- Transposição (visível na aba de Cifras) -->
+                  <div class="sb-tool-group" id="sbTransposeGroup">
+                    <span class="sb-tool-label">Tom:</span>
+                    <button class="sb-tool-btn" onclick="transposeCurrentSong(-1)" title="Diminuir 1 semitom">-1</button>
+                    <span class="sb-transpose-val" id="sbTransposeOffset">0</span>
+                    <button class="sb-tool-btn" onclick="transposeCurrentSong(1)" title="Aumentar 1 semitom">+1</button>
+                    <button class="sb-tool-btn" onclick="resetTranspose()" title="Restaurar tom original">Orig</button>
+                  </div>
+
+                  <!-- Tamanho da Fonte -->
+                  <div class="sb-tool-group">
+                    <button class="sb-tool-btn" onclick="adjustEditorFontSize(-1)" title="Diminuir fonte">A-</button>
+                    <span class="sb-font-val" id="sbFontSizeLabel">14</span>
+                    <button class="sb-tool-btn" onclick="adjustEditorFontSize(1)" title="Aumentar fonte">A+</button>
+                  </div>
+
+                  <!-- Auto Scroll -->
+                  <button class="sb-tool-btn" id="btnAutoScroll" onclick="toggleAutoScroll()" title="Rolagem automática para ensaio">
+                    <ion-icon name="play-outline"></ion-icon>
+                    <span id="autoScrollLabel">Rolar</span>
+                  </button>
+
+                  <!-- Copiar Texto -->
+                  <button class="sb-tool-btn" onclick="copyCurrentTabContent()" title="Copiar conteúdo da aba atual">
+                    <ion-icon name="copy-outline"></ion-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ÁREA DO EDITOR DE TEXTO -->
+              <div class="sb-editor-body">
+                <textarea id="sbEditorTextarea" class="sb-editor-textarea" spellcheck="false" placeholder="Digite ou cole aqui a letra, cifra ou tablatura da música..." oninput="onEditorContentChanged()"></textarea>
+              </div>
+
+              <!-- RODAPÉ DO EDITOR -->
+              <div class="sb-editor-footer">
+                <div id="sbSaveStatus" class="sb-save-status">
+                  <ion-icon name="cloud-done-outline" style="color: #34d399;"></ion-icon>
+                  <span>Sincronizado na nuvem (Supabase)</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <span style="font-size: 0.78rem; color: #64748b;">Alterações sincronizam com o App Mobile</span>
+                  <button class="btn btn-primary btn-sm" onclick="saveCurrentSongContent()">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    <span>Salvar Música</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </main>
+
+        </div>
       </section>
 
       <!-- ============================================================== -->
@@ -2692,8 +2687,9 @@
             <ion-icon name="copy-outline"></ion-icon>
             <span>Copiar</span>
           </button>
-          <button class="btn btn-sm btn-danger" onclick="deleteCurrentSong()" id="btnDeleteSong">
-            <ion-icon name="trash-outline"></ion-icon>
+          <button class="btn btn-sm btn-primary" onclick="openSongInEditorFromModal()">
+            <ion-icon name="create-outline"></ion-icon>
+            <span>Editar no Songbook</span>
           </button>
         </div>
       </div>
@@ -3289,11 +3285,7 @@
       if (window.innerWidth <= 960) toggleMobileSidebar(false);
 
       if (viewId === 'profile') renderCentralProfile();
-      if (viewId === 'songbook') {
-        openCentralProfile();
-        switchProfileTab('songbook_p');
-        return;
-      }
+      if (viewId === 'songbook') renderSongbookSplitView();
       if (viewId === 'social') loadSocialData();
     }
 
@@ -3319,27 +3311,48 @@
     }
 
     function renderProfileSongbookTab() {
+      filterProfileSongbookList();
+    }
+
+    function filterProfileSongbookList() {
+      const search = (document.getElementById('profileSongSearchInput')?.value || '').toLowerCase().trim();
       const grid = document.getElementById('profileSongbookGrid');
       if (!grid) return;
-      if (mySongs.length === 0) {
+
+      const filtered = mySongs.filter(s => {
+        const matchTitle = (s.name || '').toLowerCase().includes(search);
+        const matchArtist = (s.originalBand || '').toLowerCase().includes(search);
+        const matchStyle = (s.style || '').toLowerCase().includes(search);
+        return matchTitle || matchArtist || matchStyle;
+      });
+
+      if (filtered.length === 0) {
         grid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed rgba(255,255,255,0.1);">
             <ion-icon name="musical-notes-outline" style="font-size: 2.5rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
-            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música cadastrada no Songbook</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione cifras e letras ao seu repertório.</p>
-            <button class="btn btn-primary btn-sm" onclick="openAddSongModal()">Adicionar Música</button>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música no repertório</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">As músicas do seu Songbook aparecerão aqui em modo de visualização.</p>
+            <button class="btn btn-primary btn-sm" onclick="switchMainView('songbook')">Ir para o Songbook</button>
           </div>
         `;
         return;
       }
-      grid.innerHTML = mySongs.map(song => `
-        <div class="card clickable-card" onclick="openSongDetailModal(${song.id})" style="background: #1c2336; border-color: rgba(255,255,255,0.08); padding: 18px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <div>
-              <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.2;">${song.name}</h4>
-              <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 2px;">${song.originalBand || 'Artista / Banda'}</p>
+
+      grid.innerHTML = filtered.map(song => `
+        <div class="card clickable-card" onclick="openPublicSongViewer('${song.id}')" style="background: #1c2336; border-color: rgba(255,255,255,0.08); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+              <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.2;">${escapeHtml(song.name)}</h4>
+              <span class="badge badge-cyan" style="font-size: 0.7rem; flex-shrink: 0;">${escapeHtml(song.style ? song.style.split(',')[0].trim() : 'Música')}</span>
             </div>
-            <span class="badge badge-cyan" style="font-size: 0.7rem;">${song.style || 'Geral'}</span>
+            <p style="color: #94a3b8; font-size: 0.84rem; margin: 0;">${escapeHtml(song.originalBand || 'Artista / Banda')}</p>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+            <span>${song.key ? `Tom: ${escapeHtml(song.key)}` : (song.chords ? 'Possui Cifra' : 'Letra')}</span>
+            <div style="display: flex; align-items: center; gap: 4px; color: var(--cyan);">
+              <span>Visualizar</span>
+              <ion-icon name="eye-outline"></ion-icon>
+            </div>
           </div>
         </div>
       `).join('');
@@ -4758,10 +4771,6 @@
     let editorFontSize = 14;
     let autoScrollInterval = null;
 
-    function renderProfileSongbookTab() {
-      renderSongbookSplitView();
-    }
-
     function updateSongbookUI() {
       renderSongbookSplitView();
     }
@@ -5334,10 +5343,69 @@
       showToast('Nova música adicionada com sucesso!', 'success');
     }
 
+    // ==========================================
+    // PUBLIC READ-ONLY VIEWER MODAL (PROFILE SONGBOOK)
+    // ==========================================
+    let publicViewSong = null;
+
+    function openPublicSongViewer(id) {
+      publicViewSong = mySongs.find(s => String(s.id) === String(id));
+      if (!publicViewSong) return;
+
+      const titleEl = document.getElementById('songModalTitle');
+      const artistEl = document.getElementById('songModalArtist');
+      if (titleEl) titleEl.textContent = publicViewSong.name || 'Música';
+      if (artistEl) artistEl.textContent = `${publicViewSong.originalBand || 'Artista'} • ${publicViewSong.style || 'Geral'}${publicViewSong.key ? ' • Tom: ' + publicViewSong.key : ''}`;
+
+      setSongViewMode('chords');
+      openModal('songModal');
+    }
+
+    function setSongViewMode(mode) {
+      const song = publicViewSong || selectedSong;
+      if (!song) return;
+
+      ['btnViewChords', 'btnViewLyrics', 'btnViewTabs'].forEach(btnId => {
+        const b = document.getElementById(btnId);
+        if (b) b.classList.remove('active');
+      });
+
+      const display = document.getElementById('songContentDisplay');
+      if (!display) return;
+
+      if (mode === 'chords') {
+        const b = document.getElementById('btnViewChords');
+        if (b) b.classList.add('active');
+        display.textContent = song.chords || 'Nenhuma cifra cadastrada para esta música.';
+      } else if (mode === 'lyrics') {
+        const b = document.getElementById('btnViewLyrics');
+        if (b) b.classList.add('active');
+        display.textContent = song.lyrics || 'Nenhuma letra cadastrada para esta música.';
+      } else if (mode === 'tabs') {
+        const b = document.getElementById('btnViewTabs');
+        if (b) b.classList.add('active');
+        display.textContent = song.tabs || 'Nenhuma tablatura cadastrada para esta música.';
+      }
+    }
+
+    function copySongText() {
+      const display = document.getElementById('songContentDisplay');
+      if (!display || !display.textContent) return;
+      navigator.clipboard.writeText(display.textContent).then(() => {
+        showToast('Texto copiado para a área de transferência!', 'success');
+      });
+    }
+
+    function openSongInEditorFromModal() {
+      closeModal('songModal');
+      if (publicViewSong) {
+        selectSongbookItem(publicViewSong.id);
+      }
+      switchMainView('songbook');
+    }
+
     function openSongDetailModal(id) {
-      selectSongbookItem(id);
-      openCentralProfile();
-      switchProfileTab('songbook_p');
+      openPublicSongViewer(id);
     }
 
     async function deleteCurrentSong() {
