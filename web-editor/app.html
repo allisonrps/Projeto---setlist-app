@@ -433,11 +433,22 @@
       font-family: var(--font-mono);
     }
     .profile-hero-age-pill {
-      color: #22c55e;
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+      background: rgba(34, 197, 94, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .profile-hero-age-pill:hover {
+      background: rgba(34, 197, 94, 0.24);
+      border-color: #34d399;
     }
     .profile-hero-location {
       font-size: 1.05rem;
@@ -722,24 +733,37 @@
       font-size: 0.68rem;
       opacity: 0.85;
     }
+    .sb-sort-chip.sb-icon-chip {
+      padding: 3px 8px;
+      font-size: 0.95rem;
+      color: #94a3b8;
+    }
+    .sb-sort-chip.sb-icon-chip:hover {
+      color: #fff;
+    }
+    .sb-sort-chip.sb-icon-chip.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+    }
 
-    /* Tags / Estilos Clicáveis (Scroll Horizontal) */
+    /* Tags / Estilos Exibidas em Sequência Ocupando Linhas (Sem Carrossel) */
     .sb-tags-container {
-      overflow: hidden;
-      margin-top: 1px;
+      margin-top: 4px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+      padding-top: 6px;
     }
-    .sb-tags-scroll {
+    .sb-tags-wrap {
       display: flex;
-      gap: 5px;
-      overflow-x: auto;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 140px;
+      overflow-y: auto;
       padding-bottom: 2px;
-      scrollbar-width: none;
-    }
-    .sb-tags-scroll::-webkit-scrollbar {
-      display: none;
     }
     .sb-tag-chip {
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 12px;
       font-size: 0.68rem;
       font-weight: 600;
@@ -749,17 +773,17 @@
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s ease;
-      flex-shrink: 0;
     }
     .sb-tag-chip:hover {
       color: #fff;
       background: rgba(255, 255, 255, 0.08);
     }
     .sb-tag-chip.active {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.18);
       border-color: #38bdf8;
       color: #38bdf8;
-      font-weight: 700;
+      font-weight: 800;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
     }
 
     /* Cabeçalho de Letra com Marcador Circular Maior (A, B, C...) */
@@ -1305,6 +1329,83 @@
       transform: scale(1.08);
     }
 
+    /* NÍVEL DE INTERESSE & DISPONIBILIDADE COM CÍRCULOS FIGMA */
+    .interest-circle-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.18s ease;
+    }
+    .interest-circle-node:hover {
+      transform: translateY(-2px);
+    }
+    .interest-circle-disc {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.05rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 2px solid transparent;
+      background: #cbd5e1;
+      color: #1e293b;
+    }
+    .interest-circle-node.active .interest-circle-disc {
+      background: #38bdf8;
+      color: #0f172a;
+      border-color: #7dd3fc;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.55);
+    }
+    .interest-circle-node:not(.active) .interest-circle-disc {
+      background: rgba(255, 255, 255, 0.08);
+      color: #64748b;
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+    .interest-circle-node:not(.active):hover .interest-circle-disc {
+      background: rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+    }
+    .interest-circle-caption {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-align: center;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+    .interest-circle-node.active .interest-circle-caption {
+      color: #38bdf8;
+      font-weight: 800;
+    }
+    /* Disponível / Indisponível styles */
+    .interest-circle-disc.avail-active {
+      background: #22c55e !important;
+      color: #064e3b !important;
+      border-color: #86efac !important;
+      box-shadow: 0 0 16px rgba(34, 197, 94, 0.5) !important;
+    }
+    .interest-circle-disc.avail-inactive {
+      background: #ef4444 !important;
+      color: #450a0a !important;
+      border-color: #fca5a5 !important;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5) !important;
+    }
+    .interest-circle-node.avail-is-active .interest-circle-caption {
+      color: #34d399;
+      font-weight: 800;
+    }
+    .interest-circle-node.avail-is-inactive .interest-circle-caption {
+      color: #f87171;
+      font-weight: 800;
+    }
+
     /* FIGMA INFLUENCES TABLE ROW */
     .figma-influence-row {
       display: flex;
@@ -1828,8 +1929,11 @@
               
               <!-- USERNAME UNDERNEATH + [PÍLULA DE IDADE] -->
               <div class="profile-hero-handle-row">
-                <span class="profile-hero-handle" id="heroUserHandle">username_</span>
-                <span class="profile-hero-age-pill" id="heroAgeBadge">[ PILULA DE IDADE ]</span>
+                <span class="profile-hero-handle" id="heroUserHandle">@username</span>
+                <span class="profile-hero-age-pill" id="heroAgeBadge" onclick="openEditProfileModal()" style="cursor: pointer;" title="Clique para alterar data de nascimento">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                  <span>-- anos</span>
+                </span>
               </div>
               
               <!-- LOCALIZAÇÃO: Cidade, UF, Pais -->
@@ -1924,59 +2028,33 @@
                   </button>
                 </div>
                 <div class="figma-content-block">
-                  <!-- VIEW MODE -->
-                  <div id="interestViewMode">
-                    <div style="margin-bottom: 14px;">
-                      <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px;">Nível de Interesse:</div>
-                      <div class="pills-row" id="viewInterestPills">
-                        <!-- Rendered dynamically: Hobbie, Profissional, Casual -->
-                      </div>
-                    </div>
-                    <div>
-                      <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px;">Disponibilidade:</div>
-                      <div class="pills-row" id="viewAvailabilityPills">
-                        <!-- Rendered dynamically: Disponível, Indisponível -->
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- EDIT MODE (FORMULÁRIO INLINE) -->
-                  <div id="interestEditMode" style="display: none; background: rgba(255,255,255,0.02); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-                    <div style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 14px;">
-                      Selecione ao menos <strong>1 nível de interesse</strong> e sua <strong>disponibilidade atual</strong>:
-                    </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                      <label class="form-label" style="margin-bottom: 8px;">Nível de Interesse (Múltipla escolha, mín. 1):</label>
-                      <div class="pills-row" id="editInterestPills">
-                        <button type="button" class="interactive-pill" id="pillInterest-Hobbie" onclick="toggleDraftInterest('Hobbie')">Hobbie</button>
-                        <button type="button" class="interactive-pill" id="pillInterest-Profissional" onclick="toggleDraftInterest('Profissional')">Profissional</button>
-                        <button type="button" class="interactive-pill" id="pillInterest-Casual" onclick="toggleDraftInterest('Casual')">Casual</button>
-                      </div>
+                  <!-- CÍRCULOS FIGMA: 3 NÍVEIS DE INTERESSE + ESPAÇO + CÍRCULO ALTERNÁVEL DISPONÍVEL/INDISPONÍVEL -->
+                  <div id="interestViewMode" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 4px 0;">
+                    <!-- 3 CÍRCULOS DE INTERESSE -->
+                    <div class="interest-circle-node" id="circle-Hobbie" onclick="toggleCircleInterest('Hobbie')" title="Clique para alternar: Hobbie">
+                      <div class="interest-circle-disc">H</div>
+                      <span class="interest-circle-caption">Hobbie</span>
                     </div>
 
-                    <div style="margin-bottom: 18px;">
-                      <label class="form-label" style="margin-bottom: 8px;">Disponibilidade para Projetos (Escolha 1):</label>
-                      <div class="pills-row" id="editAvailabilityPills">
-                        <button type="button" class="interactive-pill" id="pillAvail-Disponivel" onclick="setDraftAvailability('Disponível')">
-                          <ion-icon name="checkmark-circle-outline"></ion-icon>
-                          <span>Disponível</span>
-                        </button>
-                        <button type="button" class="interactive-pill" id="pillAvail-Indisponivel" onclick="setDraftAvailability('Indisponível')">
-                          <ion-icon name="close-circle-outline"></ion-icon>
-                          <span>Indisponível</span>
-                        </button>
-                      </div>
+                    <div class="interest-circle-node" id="circle-Profissional" onclick="toggleCircleInterest('Profissional')" title="Clique para alternar: Profissional">
+                      <div class="interest-circle-disc">P</div>
+                      <span class="interest-circle-caption">Profissional</span>
                     </div>
 
-                    <div style="display: flex; gap: 10px;">
-                      <button class="btn btn-primary btn-sm" type="button" onclick="saveInlineInterest()">
-                        <ion-icon name="checkmark-circle-outline"></ion-icon>
-                        <span>Salvar Condições</span>
-                      </button>
-                      <button class="btn btn-outline btn-sm" type="button" onclick="cancelInlineInterest()">
-                        <span>Cancelar</span>
-                      </button>
+                    <div class="interest-circle-node" id="circle-Casual" onclick="toggleCircleInterest('Casual')" title="Clique para alternar: Casual">
+                      <div class="interest-circle-disc">C</div>
+                      <span class="interest-circle-caption">Casual</span>
+                    </div>
+
+                    <!-- PULA UM ESPAÇO (SEPARADOR DISCRETO) -->
+                    <div style="width: 2px; height: 44px; background: rgba(255,255,255,0.12); margin: 0 10px; border-radius: 2px;"></div>
+
+                    <!-- CÍRCULO DISPONÍVEL / INDISPONÍVEL QUE ALTERNA CONFORME CLICA -->
+                    <div class="interest-circle-node" id="circle-Availability" onclick="toggleCircleAvailability()" title="Clique para alternar entre Disponível e Indisponível">
+                      <div class="interest-circle-disc avail-active" id="disc-Availability">
+                        <ion-icon name="checkmark-circle" id="icon-Availability" style="font-size: 1.6rem;"></ion-icon>
+                      </div>
+                      <span class="interest-circle-caption" id="caption-Availability">Disponível</span>
                     </div>
                   </div>
                 </div>
@@ -2260,16 +2338,14 @@
                   <span>Música</span>
                   <span class="sb-sort-dir" id="sbSortDir-name">A-Z</span>
                 </button>
-                <button type="button" class="sb-sort-chip" id="btnToggleTags" onclick="toggleSongbookTags()" title="Mostrar ou ocultar tags de estilo">
-                  <ion-icon name="pricetag-outline"></ion-icon>
-                  <span>Tags</span>
-                  <ion-icon name="chevron-down-outline" id="iconToggleTags" style="font-size: 0.75rem; transition: transform 0.2s;"></ion-icon>
+                <button type="button" class="sb-sort-chip sb-icon-chip" id="btnToggleTags" onclick="toggleSongbookTags()" title="Filtrar por tags de estilo">
+                  <ion-icon name="pricetag-outline" id="iconToggleTags"></ion-icon>
                 </button>
               </div>
 
-              <!-- Tags / Estilos Clicáveis (Ocultável pelo botão acima) -->
+              <!-- Tags / Estilos Clicáveis (Ocultável pelo botão acima, sem carrossel ocupando linhas) -->
               <div class="sb-tags-container" id="sbTagsContainer" style="display: none;">
-                <div class="sb-tags-scroll" id="sbStylePillsRow">
+                <div class="sb-tags-wrap" id="sbStylePillsRow">
                   <!-- Gerado dinamicamente: Todos, Rock, Pop, etc. -->
                 </div>
               </div>
@@ -2706,7 +2782,31 @@
         <div class="form-group">
           <label>Nome de Exibição (Nome Completo / Artístico) *</label>
           <input type="text" id="editDisplayName" class="form-input" placeholder="Ex: Allison Rodrigues" required maxlength="100">
-          <p style="font-size: 0.76rem; color: var(--text-dim); margin-top: 4px;">Demais informações (Bio, Habilidades, Influências, Redes e Disponibilidade) são editadas diretamente nos botões verdes do seu perfil.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" id="editBirthDate" class="form-input">
+          <p style="font-size: 0.76rem; color: var(--text-dim); margin-top: 4px;">Sua idade será calculada automaticamente e exibida na pílula do cabeçalho.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Localização (Formulário Aberto)</label>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 3px; display: block;">Cidade</label>
+              <input type="text" id="editCity" class="form-input" placeholder="Ex: Curitiba" maxlength="100">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 3px; display: block;">Estado (UF)</label>
+              <input type="text" id="editState" class="form-input" placeholder="Ex: PR" maxlength="50">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 3px; display: block;">País</label>
+              <input type="text" id="editCountry" class="form-input" placeholder="Ex: Brasil" maxlength="100">
+            </div>
+          </div>
+          <p style="font-size: 0.76rem; color: var(--text-dim); margin-top: 4px;">Demais seções (Bio, Habilidades, Influências e Redes) são editadas diretamente nos botões verdes do perfil.</p>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
@@ -3717,6 +3817,23 @@
     // ==============================================================
     // CENTRAL PROFILE HERO: DISPLAY NAME ON TOP, @USERNAME UNDERNEATH
     // ==============================================================
+    function calculateAge(birthDateStr) {
+      if (!birthDateStr) return null;
+      try {
+        const birth = new Date(birthDateStr);
+        if (isNaN(birth.getTime())) return null;
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        return (age >= 0 && age < 130) ? age : null;
+      } catch {
+        return null;
+      }
+    }
+
     function renderCentralProfile() {
       if (!currentUser) return;
       const username = currentUser.username || 'musico';
@@ -3725,20 +3842,26 @@
 
       // LINE 1 (TOP): DISPLAY NAME (UPPERCASE FIGMA STYLE)
       document.getElementById('heroDisplayName').textContent = displayName.toUpperCase();
-      // LINE 2 (UNDERNEATH): @USERNAME
-      document.getElementById('heroUserHandle').textContent = `${username}_`;
+      // LINE 2 (UNDERNEATH): @USERNAME (SEM O TRAILING UNDERSCORE)
+      document.getElementById('heroUserHandle').textContent = `@${username.replace(/^@/, '')}`;
 
+      // PÍLULA DE IDADE COM CÁLCULO DINÂMICO
+      const calcAge = currentUser.age || calculateAge(currentUser.birthDate);
       const ageBadge = document.getElementById('heroAgeBadge');
-      if (currentUser.age) {
-        ageBadge.textContent = `[ ${currentUser.age} ANOS ]`;
-        ageBadge.style.display = 'inline-block';
-      } else {
-        ageBadge.textContent = '[ PILULA DE IDADE ]';
-        ageBadge.style.display = 'inline-block';
+      if (ageBadge) {
+        if (calcAge) {
+          ageBadge.innerHTML = `<ion-icon name="calendar-outline" style="font-size: 0.85rem;"></ion-icon><span>${calcAge} anos</span>`;
+        } else {
+          ageBadge.innerHTML = `<ion-icon name="calendar-outline" style="font-size: 0.85rem;"></ion-icon><span>Informar idade</span>`;
+        }
+        ageBadge.onclick = openEditProfileModal;
+        ageBadge.style.cursor = 'pointer';
+        ageBadge.title = 'Clique para alterar data de nascimento';
       }
 
-      const locationParts = [currentUser.city, currentUser.state, currentUser.country || 'Brasil'].filter(Boolean);
-      document.getElementById('heroLocation').innerHTML = `<span>${locationParts.join(', ') || 'Cidade, UF, Pais'}</span>`;
+      // LOCALIZAÇÃO: CIDADE, ESTADO, PAÍS
+      const locationParts = [currentUser.city, currentUser.state, currentUser.country].filter(Boolean);
+      document.getElementById('heroLocation').innerHTML = `<span>${locationParts.join(', ') || 'Informe sua localização'}</span>`;
 
       const heroAvatar = document.getElementById('heroAvatarBox');
       if (heroAvatar) {
@@ -3789,35 +3912,9 @@
         bioEl.textContent = currentUser.bio || 'Adicione uma apresentação sobre você, sua história musical e experiência.';
       }
 
-      // 2. NÍVEL DE INTERESSE & DISPONIBILIDADE (VIEW MODE)
-      const currentInterests = parseUserInterests(currentUser.interestLevel);
-      const viewIntContainer = document.getElementById('viewInterestPills');
-      if (viewIntContainer) {
-        const allInterests = ['Hobbie', 'Profissional', 'Casual'];
-        viewIntContainer.innerHTML = allInterests.map(name => {
-          const isSelected = currentInterests.some(i => String(i).toLowerCase().includes(name.slice(0, 4).toLowerCase()));
-          return `
-            <div class="interactive-pill ${isSelected ? 'active' : ''}" style="${isSelected ? 'background: rgba(14,165,233,0.18); border-color: #38bdf8; color: #38bdf8; font-weight: 800;' : 'opacity: 0.35; border-color: rgba(255,255,255,0.08);'}; pointer-events: none; flex: 1; text-align: center;">
-              ${name}
-            </div>
-          `;
-        }).join('');
-      }
-
-      const viewAvailContainer = document.getElementById('viewAvailabilityPills');
-      if (viewAvailContainer) {
-        const isAvail = (currentUser.availability === 'Disponível' || String(currentUser.availability).toLowerCase() === 'available');
-        viewAvailContainer.innerHTML = `
-          <div class="interactive-pill ${isAvail ? 'active-emerald' : ''}" style="${isAvail ? 'background: rgba(16,185,129,0.18); border-color: #10b981; color: #34d399; font-weight: 800;' : 'opacity: 0.35; border-color: rgba(255,255,255,0.08);'}; pointer-events: none; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <ion-icon name="${isAvail ? 'checkmark-circle' : 'checkmark-circle-outline'}"></ion-icon>
-            <span>Disponível</span>
-          </div>
-          <div class="interactive-pill ${!isAvail ? 'active' : ''}" style="${!isAvail ? 'background: rgba(239,68,68,0.18); border-color: #ef4444; color: #f87171; font-weight: 800;' : 'opacity: 0.35; border-color: rgba(255,255,255,0.08);'}; pointer-events: none; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <ion-icon name="close-circle-outline"></ion-icon>
-            <span>Indisponível</span>
-          </div>
-        `;
-      }
+      // 2. NÍVEL DE INTERESSE & DISPONIBILIDADE (CÍRCULOS FIGMA)
+      updateCircleInterestsUI();
+      updateCircleAvailabilityUI();
 
       // 3. INFLUÊNCIAS MUSICAIS (TABELA COM 5 LINHAS E ESTRELAS)
       const infContainer = document.getElementById('influencesListContainer');
@@ -3910,29 +4007,11 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // 2. INLINE EDIT: NÍVEL DE INTERESSE & DISPONIBILIDADE
+    // 2. CÍRCULOS FIGMA: NÍVEL DE INTERESSE & DISPONIBILIDADE
     // ══════════════════════════════════════════════════════════════
-    let draftInterests = ['Profissional'];
-    let draftAvailability = 'Disponível';
-
-    function toggleInlineInterestEdit() {
-      const viewEl = document.getElementById('interestViewMode');
-      const editEl = document.getElementById('interestEditMode');
-      if (!viewEl || !editEl) return;
-      const isEditing = editEl.style.display !== 'none';
-      if (isEditing) {
-        cancelInlineInterest();
-      } else {
-        draftInterests = [...parseUserInterests(currentUser?.interestLevel)];
-        if (draftInterests.length === 0) draftInterests = ['Profissional'];
-        draftAvailability = currentUser?.availability || 'Disponível';
-        renderDraftInterestPills();
-        viewEl.style.display = 'none';
-        editEl.style.display = 'block';
-      }
-    }
-
-    function toggleDraftInterest(val) {
+    async function toggleCircleInterest(val) {
+      if (!currentUser) return;
+      let current = [...parseUserInterests(currentUser.interestLevel)];
       const isMatching = (item) => {
         const v = String(item || '').toLowerCase();
         const k = String(val).toLowerCase();
@@ -3942,30 +4021,71 @@
         return v === k;
       };
 
-      const exists = draftInterests.some(isMatching);
+      const exists = current.some(isMatching);
       if (exists) {
-        if (draftInterests.length === 1) {
+        if (current.length === 1) {
           showToast('Você deve manter pelo menos 1 nível de interesse selecionado.', 'warning');
           return;
         }
-        draftInterests = draftInterests.filter(x => !isMatching(x));
+        current = current.filter(x => !isMatching(x));
       } else {
-        draftInterests.push(val);
+        current.push(val);
       }
-      renderDraftInterestPills();
+
+      currentUser.interestLevel = current;
+      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      updateCircleInterestsUI();
+
+      try {
+        await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ interestLevel: JSON.stringify(current) })
+        });
+        showToast('Nível de interesse atualizado!', 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Atualizado localmente.', 'info');
+      }
     }
 
-    function setDraftAvailability(val) {
-      draftAvailability = val;
-      renderDraftInterestPills();
+    async function toggleCircleAvailability() {
+      if (!currentUser) return;
+      const currentAvail = currentUser.availability || 'Disponível';
+      const isAvail = (currentAvail === 'Disponível' || String(currentAvail).toLowerCase() === 'available');
+      const nextAvail = isAvail ? 'Indisponível' : 'Disponível';
+
+      currentUser.availability = nextAvail;
+      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      updateCircleAvailabilityUI();
+
+      const statusPill = document.getElementById('sideUserPillStatus');
+      if (statusPill) statusPill.textContent = nextAvail;
+
+      try {
+        await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ availability: nextAvail })
+        });
+        showToast(`Disponibilidade alterada para: ${nextAvail}`, 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Atualizado localmente.', 'info');
+      }
     }
 
-    function renderDraftInterestPills() {
-      const allLevels = ['Hobbie', 'Profissional', 'Casual'];
-      allLevels.forEach(lvl => {
-        const btn = document.getElementById(`pillInterest-${lvl}`);
-        if (!btn) return;
-        const isSelected = draftInterests.some(i => {
+    function toggleInlineInterestEdit() {
+      // Atalho ao clicar no lápis: alterna a disponibilidade
+      toggleCircleAvailability();
+    }
+
+    function updateCircleInterestsUI() {
+      const current = parseUserInterests(currentUser?.interestLevel);
+      ['Hobbie', 'Profissional', 'Casual'].forEach(lvl => {
+        const node = document.getElementById(`circle-${lvl}`);
+        if (!node) return;
+        const isSelected = current.some(i => {
           const v = String(i).toLowerCase();
           const k = lvl.toLowerCase();
           if (k.includes('hobb') && v.includes('hobb')) return true;
@@ -3973,64 +4093,37 @@
           if (k.includes('casu') && (v.includes('casu') || v.includes('ver'))) return true;
           return v === k;
         });
-        if (isSelected) {
-          btn.className = 'interactive-pill active';
-        } else {
-          btn.className = 'interactive-pill';
-        }
+        node.classList.toggle('active', isSelected);
       });
-
-      const btnDisp = document.getElementById('pillAvail-Disponivel');
-      const btnIndisp = document.getElementById('pillAvail-Indisponivel');
-      if (btnDisp) {
-        const isDisp = draftAvailability === 'Disponível' || String(draftAvailability).toLowerCase() === 'available';
-        btnDisp.className = isDisp ? 'interactive-pill active-emerald' : 'interactive-pill';
-      }
-      if (btnIndisp) {
-        const isIndisp = draftAvailability === 'Indisponível' || String(draftAvailability).toLowerCase() === 'unavailable';
-        btnIndisp.className = isIndisp ? 'interactive-pill active' : 'interactive-pill';
-      }
     }
 
-    async function saveInlineInterest() {
-      if (!currentUser) return;
-      if (draftInterests.length === 0) {
-        showToast('Selecione pelo menos um nível de interesse.', 'warning');
-        return;
+    function updateCircleAvailabilityUI() {
+      const currentAvail = currentUser?.availability || 'Disponível';
+      const isAvail = (currentAvail === 'Disponível' || String(currentAvail).toLowerCase() === 'available');
+      const node = document.getElementById('circle-Availability');
+      const disc = document.getElementById('disc-Availability');
+      const icon = document.getElementById('icon-Availability');
+      const caption = document.getElementById('caption-Availability');
+
+      if (!node || !disc) return;
+
+      if (isAvail) {
+        disc.className = 'interest-circle-disc avail-active';
+        if (icon) icon.setAttribute('name', 'checkmark-circle');
+        if (caption) {
+          caption.textContent = 'Disponível';
+          caption.style.color = '#34d399';
+        }
+        node.className = 'interest-circle-node avail-is-active';
+      } else {
+        disc.className = 'interest-circle-disc avail-inactive';
+        if (icon) icon.setAttribute('name', 'close-circle');
+        if (caption) {
+          caption.textContent = 'Indisponível';
+          caption.style.color = '#f87171';
+        }
+        node.className = 'interest-circle-node avail-is-inactive';
       }
-      currentUser.interestLevel = draftInterests;
-      currentUser.availability = draftAvailability;
-
-      // Update hero badge
-      const heroBadge = document.getElementById('heroAvailBadge');
-      if (heroBadge) heroBadge.textContent = draftAvailability;
-      const statusPill = document.getElementById('sideUserPillStatus');
-      if (statusPill) statusPill.textContent = draftAvailability;
-
-      try {
-        await fetch(`${API_URL}/Users/profile`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            interestLevel: JSON.stringify(draftInterests),
-            availability: draftAvailability
-          })
-        });
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-        showToast('Condições e disponibilidade salvas com sucesso!', 'success');
-      } catch (e) {
-        console.error(e);
-        showToast('Salvo localmente.', 'info');
-      }
-      cancelInlineInterest();
-      renderBioTab();
-    }
-
-    function cancelInlineInterest() {
-      const viewEl = document.getElementById('interestViewMode');
-      const editEl = document.getElementById('interestEditMode');
-      if (viewEl) viewEl.style.display = 'block';
-      if (editEl) editEl.style.display = 'none';
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -4744,6 +4837,31 @@
       if (!currentUser) return;
       document.getElementById('editDisplayName').value = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || currentUser.username || '';
       document.getElementById('editPictureUrl').value = currentUser.pictureUrl || '';
+
+      const birthInput = document.getElementById('editBirthDate');
+      if (birthInput) {
+        if (currentUser.birthDate) {
+          try {
+            const d = new Date(currentUser.birthDate);
+            if (!isNaN(d.getTime())) {
+              birthInput.value = d.toISOString().split('T')[0];
+            } else {
+              birthInput.value = (currentUser.birthDate || '').split('T')[0];
+            }
+          } catch {
+            birthInput.value = (currentUser.birthDate || '').split('T')[0];
+          }
+        } else {
+          birthInput.value = '';
+        }
+      }
+
+      const cityInput = document.getElementById('editCity');
+      const stateInput = document.getElementById('editState');
+      const countryInput = document.getElementById('editCountry');
+      if (cityInput) cityInput.value = currentUser.city || '';
+      if (stateInput) stateInput.value = currentUser.state || '';
+      if (countryInput) countryInput.value = currentUser.country || '';
       
       const cropperBox = document.getElementById('photoCropperContainer');
       if (cropperBox) cropperBox.style.display = 'none';
@@ -4880,6 +4998,10 @@
       e.preventDefault();
       const displayName = document.getElementById('editDisplayName').value.trim();
       const pictureUrl = document.getElementById('editPictureUrl').value.trim();
+      const birthDateVal = document.getElementById('editBirthDate') ? document.getElementById('editBirthDate').value : '';
+      const city = document.getElementById('editCity') ? document.getElementById('editCity').value.trim() : '';
+      const state = document.getElementById('editState') ? document.getElementById('editState').value.trim() : '';
+      const country = document.getElementById('editCountry') ? document.getElementById('editCountry').value.trim() : '';
 
       if (!displayName) {
         showToast('O nome de exibição é obrigatório.', 'warning');
@@ -4888,7 +5010,11 @@
 
       const payload = {
         displayName: displayName,
-        pictureUrl: pictureUrl
+        pictureUrl: pictureUrl,
+        birthDate: birthDateVal ? birthDateVal : null,
+        city: city,
+        state: state,
+        country: country
       };
 
       try {
@@ -4900,12 +5026,15 @@
 
         if (res.ok) {
           currentUser = { ...currentUser, ...payload };
+          if (birthDateVal) {
+            currentUser.age = calculateAge(birthDateVal);
+          }
           localStorage.setItem(DISPLAY_NAME_KEY, displayName);
           localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
           renderSidebarUserCard();
           renderCentralProfile();
           closeModal('editProfileModal');
-          showToast('Nome de exibição e foto atualizados com sucesso!', 'success');
+          showToast('Perfil atualizado com sucesso!', 'success');
         } else {
           showToast('Erro ao atualizar perfil.', 'error');
         }
@@ -5047,15 +5176,16 @@
       const tagsContainer = document.getElementById('sbTagsContainer');
       const btn = document.getElementById('btnToggleTags');
       const icon = document.getElementById('iconToggleTags');
+      const isTagActive = sbShowTags || !!sbSelectedTag;
 
       if (tagsContainer) {
         tagsContainer.style.display = sbShowTags ? 'block' : 'none';
       }
       if (btn) {
-        btn.classList.toggle('active', sbShowTags || !!sbSelectedTag);
+        btn.classList.toggle('active', isTagActive);
       }
       if (icon) {
-        icon.style.transform = sbShowTags ? 'rotate(180deg)' : 'rotate(0deg)';
+        icon.setAttribute('name', isTagActive ? 'pricetag' : 'pricetag-outline');
       }
     }
 
@@ -5111,7 +5241,10 @@
       container.innerHTML = html;
 
       const btn = document.getElementById('btnToggleTags');
-      if (btn) btn.classList.toggle('active', sbShowTags || !!sbSelectedTag);
+      const icon = document.getElementById('iconToggleTags');
+      const isTagActive = sbShowTags || !!sbSelectedTag;
+      if (btn) btn.classList.toggle('active', isTagActive);
+      if (icon) icon.setAttribute('name', isTagActive ? 'pricetag' : 'pricetag-outline');
     }
 
     function selectSongbookTag(tag) {
