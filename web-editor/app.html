@@ -947,11 +947,92 @@
     .sb-song-row-tag {
       background: rgba(56, 189, 248, 0.1);
       color: #38bdf8;
-      padding: 1px 5px;
+      padding: 0 4px;
       border-radius: 3px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      line-height: 1.35;
+    }
+
+    /* Estilos da Lista de Músicas no Perfil (1 por linha, tags na frente, sem botão) */
+    .profile-song-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-left: 3px solid transparent;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .profile-song-item:hover {
+      background: rgba(255, 255, 255, 0.045);
+      border-color: rgba(255, 255, 255, 0.08);
+      border-left-color: #34d399;
+      transform: translateX(2px);
+    }
+    .profile-song-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+    .profile-song-tags-lead {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .profile-song-lead-tag {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.62rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .profile-song-item-titles {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.88rem;
+    }
+    .profile-song-item-titles .song-name {
+      font-weight: 700;
+      color: #f8fafc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-song-item-titles .song-sep {
+      color: #475569;
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .profile-song-item-titles .song-band {
+      font-weight: 600;
+      color: #34d399;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-song-item-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
     }
     .sb-song-row-key {
       color: #cbd5e1;
@@ -2252,14 +2333,14 @@
 
           <!-- ── TAB S: SONGBOOK NA PÁGINA DO PERFIL (VISUALIZAÇÃO PÚBLICA SOMENTE LEITURA) ── -->
           <div class="profile-subview" id="subview-songbook_p">
-            <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08); padding: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
                     <ion-icon name="musical-notes-outline" style="color: #34d399;"></ion-icon>
                     <span>Repertório & Músicas</span>
                   </h3>
-                  <p style="color: #94a3b8; font-size: 0.85rem;">Catálogo e repertório de músicas do perfil para visualização.</p>
+                  <p style="color: #94a3b8; font-size: 0.85rem;">Catálogo e repertório de músicas do perfil em visualização corrida.</p>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
                   <button class="btn btn-outline btn-sm" onclick="switchMainView('songbook')" title="Abrir editor completo de cifras e letras">
@@ -2269,13 +2350,34 @@
                 </div>
               </div>
 
-              <!-- Busca rápida de visualização -->
-              <div style="margin-bottom: 20px;">
-                <input type="text" id="profileSongSearchInput" class="form-input" placeholder="Buscar música no repertório..." oninput="filterProfileSongbookList()">
+              <!-- Busca e Ordenadores idênticos aos da lista do Songbook -->
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; background: rgba(0,0,0,0.18); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05);">
+                <!-- Campo de Busca com Botão Limpar -->
+                <div class="sb-search-input-wrapper" style="width: 100%;">
+                  <ion-icon name="search-outline"></ion-icon>
+                  <input type="text" id="profileSongSearchInput" placeholder="Buscar música ou artista no repertório..." oninput="filterProfileSongbookList()">
+                  <button type="button" id="profileSongSearchClearBtn" class="btn-clear-search" onclick="clearProfileSongbookSearch()" style="display: none; background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 4px; font-size: 1rem; line-height: 1;" title="Limpar busca">
+                    <ion-icon name="close-circle"></ion-icon>
+                  </button>
+                </div>
+
+                <!-- Barra de Ordenação A-Z / Z-A (Banda e Música) -->
+                <div class="sb-sort-row">
+                  <span class="sb-filter-label">Ordenar:</span>
+                  <button type="button" class="sb-sort-chip active" id="profileSbSortChip-band" onclick="toggleProfileSongSort('band')" title="Ordenar por Artista / Banda">
+                    <span>Banda</span>
+                    <span class="sb-sort-dir" id="profileSbSortDir-band">▲ A-Z</span>
+                  </button>
+                  <button type="button" class="sb-sort-chip" id="profileSbSortChip-name" onclick="toggleProfileSongSort('name')" title="Ordenar por Nome da Música">
+                    <span>Música</span>
+                    <span class="sb-sort-dir" id="profileSbSortDir-name">A-Z</span>
+                  </button>
+                  <span id="profileSbCountBadge" style="margin-left: auto; font-size: 0.75rem; color: #94a3b8; font-weight: 700;">0 músicas</span>
+                </div>
               </div>
 
-              <!-- Grid de músicas pública (apenas leitura / modal de visualização) -->
-              <div class="grid-cards" id="profileSongbookGrid"></div>
+              <!-- Lista Linear de Músicas com Régua de Letras (um por linha) -->
+              <div id="profileSongbookList" style="display: flex; flex-direction: column; gap: 4px;"></div>
             </div>
           </div>
 
@@ -3579,14 +3681,60 @@
       if (tabName === 'agenda') renderProfileAgenda();
     }
 
+    let profileSongSortBy = 'band'; // 'band' | 'name'
+    let profileSongSortOrder = 'asc'; // 'asc' | 'desc'
+
+    function toggleProfileSongSort(field) {
+      if (profileSongSortBy === field) {
+        profileSongSortOrder = profileSongSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        profileSongSortBy = field;
+        profileSongSortOrder = 'asc';
+      }
+      updateProfileSongSortButtons();
+      filterProfileSongbookList();
+    }
+
+    function updateProfileSongSortButtons() {
+      const btnBand = document.getElementById('profileSbSortChip-band');
+      const btnName = document.getElementById('profileSbSortChip-name');
+      const dirBand = document.getElementById('profileSbSortDir-band');
+      const dirName = document.getElementById('profileSbSortDir-name');
+
+      if (btnBand) {
+        const isBand = profileSongSortBy === 'band';
+        btnBand.className = `sb-sort-chip ${isBand ? 'active' : ''}`;
+        if (dirBand) dirBand.textContent = isBand ? (profileSongSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : 'A-Z';
+      }
+      if (btnName) {
+        const isName = profileSongSortBy === 'name';
+        btnName.className = `sb-sort-chip ${isName ? 'active' : ''}`;
+        if (dirName) dirName.textContent = isName ? (profileSongSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : 'A-Z';
+      }
+    }
+
+    function clearProfileSongbookSearch() {
+      const input = document.getElementById('profileSongSearchInput');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('profileSongSearchClearBtn');
+      if (clearBtn) clearBtn.style.display = 'none';
+      filterProfileSongbookList();
+    }
+
     function renderProfileSongbookTab() {
+      updateProfileSongSortButtons();
       filterProfileSongbookList();
     }
 
     function filterProfileSongbookList() {
-      const search = (document.getElementById('profileSongSearchInput')?.value || '').toLowerCase().trim();
-      const grid = document.getElementById('profileSongbookGrid');
-      if (!grid) return;
+      const searchInput = document.getElementById('profileSongSearchInput');
+      const clearBtn = document.getElementById('profileSongSearchClearBtn');
+      const search = (searchInput?.value || '').toLowerCase().trim();
+      if (clearBtn) clearBtn.style.display = search ? 'block' : 'none';
+
+      const listContainer = document.getElementById('profileSongbookList');
+      const countBadge = document.getElementById('profileSbCountBadge');
+      if (!listContainer) return;
 
       const filtered = mySongs.filter(s => {
         const matchTitle = (s.name || '').toLowerCase().includes(search);
@@ -3595,36 +3743,109 @@
         return matchTitle || matchArtist || matchStyle;
       });
 
+      if (countBadge) {
+        countBadge.textContent = `${filtered.length} ${filtered.length === 1 ? 'música' : 'músicas'}`;
+      }
+
       if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed rgba(255,255,255,0.1);">
-            <ion-icon name="musical-notes-outline" style="font-size: 2.5rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
-            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música no repertório</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">As músicas do seu Songbook aparecerão aqui em modo de visualização.</p>
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed rgba(255,255,255,0.08); color: var(--text-dim);">
+            <ion-icon name="musical-notes-outline" style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.05rem; color: #fff; margin-bottom: 4px;">Nenhuma música encontrada</h4>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 12px;">Tente ajustar a busca ou adicione novas músicas no Songbook.</p>
             <button class="btn btn-primary btn-sm" onclick="switchMainView('songbook')">Ir para o Songbook</button>
           </div>
         `;
         return;
       }
 
-      grid.innerHTML = filtered.map(song => `
-        <div class="card clickable-card" onclick="openPublicSongViewer('${song.id}')" style="background: #1c2336; border-color: rgba(255,255,255,0.08); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-              <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.2;">${escapeHtml(song.name)}</h4>
-              <span class="badge badge-cyan" style="font-size: 0.7rem; flex-shrink: 0;">${escapeHtml(song.style ? song.style.split(',')[0].trim() : 'Música')}</span>
-            </div>
-            <p style="color: #94a3b8; font-size: 0.84rem; margin: 0;">${escapeHtml(song.originalBand || 'Artista / Banda')}</p>
+      // Ordenação Banda ou Música A-Z / Z-A
+      filtered.sort((a, b) => {
+        let valA = '';
+        let valB = '';
+        if (profileSongSortBy === 'band') {
+          valA = (a.originalBand || '').trim().toLowerCase();
+          valB = (b.originalBand || '').trim().toLowerCase();
+        } else {
+          valA = (a.name || '').trim().toLowerCase();
+          valB = (b.name || '').trim().toLowerCase();
+        }
+        const cmp = valA.localeCompare(valB, 'pt-BR', { sensitivity: 'base' });
+        return profileSongSortOrder === 'asc' ? cmp : -cmp;
+      });
+
+      // Agrupamento por letra para a régua de letras
+      const groups = {};
+      const letterOrder = [];
+      filtered.forEach(song => {
+        const raw = (profileSongSortBy === 'band' ? (song.originalBand || song.name) : (song.name || song.originalBand)) || '';
+        const clean = raw.trim();
+        let letter = '#';
+        if (clean) {
+          const char = clean.charAt(0).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          letter = /[A-Z]/.test(char) ? char : '#';
+        }
+        if (!groups[letter]) {
+          groups[letter] = [];
+          letterOrder.push(letter);
+        }
+        groups[letter].push(song);
+      });
+
+      // Renderização com régua de letras e um item por linha
+      let html = '';
+      letterOrder.forEach(letter => {
+        html += `
+          <div class="sb-letter-group-header" style="margin-top: 10px; margin-bottom: 4px;">
+            <div class="sb-letter-circle">${letter}</div>
+            <div class="sb-letter-line"></div>
+            <span class="sb-letter-count">${groups[letter].length}</span>
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-            <span>${song.key ? `Tom: ${escapeHtml(song.key)}` : (song.chords ? 'Possui Cifra' : 'Letra')}</span>
-            <div style="display: flex; align-items: center; gap: 4px; color: var(--cyan);">
-              <span>Visualizar</span>
-              <ion-icon name="eye-outline"></ion-icon>
+        `;
+
+        groups[letter].forEach(song => {
+          // Tags de estilo na frente
+          const tags = song.style
+            ? song.style.split(',').map(t => t.trim()).filter(Boolean)
+            : [];
+          const tagsHtml = tags.map(t => `<span class="profile-song-lead-tag">${escapeHtml(t)}</span>`).join('');
+
+          // Indicadores de conteúdo: Letra, Cifra, Tablatura
+          const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+          const hasChords = !!(song.chords && song.chords.trim());
+          const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
+          const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
+
+          // Formatação: se ordenado por Banda, exibe "Banda - Música", se ordenado por Música, "Música - Banda"
+          const isBandSort = profileSongSortBy === 'band';
+          const primaryText = isBandSort ? (song.originalBand || 'Artista') : (song.name || 'Sem título');
+          const secondaryText = isBandSort ? (song.name || 'Sem título') : (song.originalBand || 'Artista');
+
+          html += `
+            <div class="profile-song-item" onclick="openPublicSongViewer('${song.id}')" title="Clique para abrir e ver a música completa">
+              <div class="profile-song-item-left">
+                ${tags.length > 0 ? `<div class="profile-song-tags-lead">${tagsHtml}</div>` : ''}
+                <div class="profile-song-item-titles">
+                  <span class="${isBandSort ? 'song-band' : 'song-name'}">${escapeHtml(primaryText)}</span>
+                  <span class="song-sep">-</span>
+                  <span class="${isBandSort ? 'song-name' : 'song-band'}">${escapeHtml(secondaryText)}</span>
+                </div>
+              </div>
+              <div class="profile-song-item-right">
+                ${song.key ? `<span style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">${escapeHtml(song.key)}</span>` : ''}
+                ${song.isFavorite ? `<ion-icon name="star" style="color: #fbbf24; font-size: 0.85rem;"></ion-icon>` : ''}
+                <div class="sb-song-content-dots" title="${dotsTooltip}">
+                  <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
+                  <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
+                  <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      `).join('');
+          `;
+        });
+      });
+
+      listContainer.innerHTML = html;
     }
 
     // Modal helpers for green buttons -> Inline editing toggles
