@@ -476,99 +476,80 @@
       }
     }
     .profile-tab-btn {
-      padding: 10px 22px;
+      padding: 12px 18px;
       background: transparent;
       border: none;
-      color: #64748b;
+      color: #94a3b8;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
+      display: inline-flex;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 8px;
       transition: all 0.2s ease;
       position: relative;
-      min-width: 66px;
+      white-space: nowrap;
     }
     .profile-tab-btn .tab-icon {
-      font-size: 1.35rem;
-      color: #64748b;
+      font-size: 1.25rem;
+      color: #94a3b8;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
-    .profile-tab-btn .tab-letter {
-      font-size: 1.15rem;
-      font-weight: 800;
-      line-height: 1;
-      color: #64748b;
-      transition: all 0.2s ease;
-    }
-    .profile-tab-btn .tab-sublabel {
-      font-size: 0.62rem;
+    .profile-tab-btn .tab-name-label {
+      font-size: 0.88rem;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #64748b;
+      letter-spacing: 0.3px;
+      color: #94a3b8;
       transition: all 0.2s ease;
     }
     .profile-tab-btn:hover {
       background: rgba(255, 255, 255, 0.04);
     }
     .profile-tab-btn:hover .tab-icon,
-    .profile-tab-btn:hover .tab-letter,
-    .profile-tab-btn:hover .tab-sublabel {
-      color: #94a3b8;
+    .profile-tab-btn:hover .tab-name-label {
+      color: #e2e8f0;
     }
-    /* CRITICAL REQUIREMENT: Active tab matches background of main content page (#161b2c) and IS COLORFUL */
+    /* Active tab matches background of main content page (#161b2c) and IS COLORFUL */
     .profile-tab-btn.active {
       background: #161b2c;
       box-shadow: none;
-    }
-    .profile-tab-btn.active .tab-icon {
-      color: #38bdf8;
-      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
-    }
-    .profile-tab-btn.active .tab-letter {
-      color: #38bdf8;
-      text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-    }
-    .profile-tab-btn.active .tab-sublabel {
-      color: #38bdf8;
-      font-weight: 800;
+      border-top: 2px solid transparent;
     }
     /* Distinct colorful accents for active tabs */
+    .profile-tab-btn#pTab-bio.active { border-top-color: #38bdf8; }
     .profile-tab-btn#pTab-bio.active .tab-icon,
-    .profile-tab-btn#pTab-bio.active .tab-letter,
-    .profile-tab-btn#pTab-bio.active .tab-sublabel {
+    .profile-tab-btn#pTab-bio.active .tab-name-label {
       color: #38bdf8;
       filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
     }
+    .profile-tab-btn#pTab-skills.active { border-top-color: #fbbf24; }
     .profile-tab-btn#pTab-skills.active .tab-icon,
-    .profile-tab-btn#pTab-skills.active .tab-letter,
-    .profile-tab-btn#pTab-skills.active .tab-sublabel {
+    .profile-tab-btn#pTab-skills.active .tab-name-label {
       color: #fbbf24;
       filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6));
     }
+    .profile-tab-btn#pTab-gear.active { border-top-color: #c084fc; }
     .profile-tab-btn#pTab-gear.active .tab-icon,
-    .profile-tab-btn#pTab-gear.active .tab-letter,
-    .profile-tab-btn#pTab-gear.active .tab-sublabel {
+    .profile-tab-btn#pTab-gear.active .tab-name-label {
       color: #c084fc;
       filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.6));
     }
+    .profile-tab-btn#pTab-songbook_p.active { border-top-color: #34d399; }
     .profile-tab-btn#pTab-songbook_p.active .tab-icon,
-    .profile-tab-btn#pTab-songbook_p.active .tab-letter,
-    .profile-tab-btn#pTab-songbook_p.active .tab-sublabel {
+    .profile-tab-btn#pTab-songbook_p.active .tab-name-label {
       color: #34d399;
       filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.6));
     }
+    .profile-tab-btn#pTab-bands.active { border-top-color: #f472b6; }
     .profile-tab-btn#pTab-bands.active .tab-icon,
-    .profile-tab-btn#pTab-bands.active .tab-letter,
-    .profile-tab-btn#pTab-bands.active .tab-sublabel {
+    .profile-tab-btn#pTab-bands.active .tab-name-label {
       color: #f472b6;
       filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.6));
     }
+    .profile-tab-btn#pTab-agenda.active { border-top-color: #60a5fa; }
     .profile-tab-btn#pTab-agenda.active .tab-icon,
-    .profile-tab-btn#pTab-agenda.active .tab-letter,
-    .profile-tab-btn#pTab-agenda.active .tab-sublabel {
+    .profile-tab-btn#pTab-agenda.active .tab-name-label {
       color: #60a5fa;
       filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
     }
@@ -601,7 +582,7 @@
 
     /* 1. Lateral Sidebar */
     .sb-sidebar {
-      width: 320px;
+      width: 340px;
       background: #121826;
       border-radius: var(--radius-lg);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -661,7 +642,7 @@
     }
 
     .sb-search-box {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       display: flex;
       flex-direction: column;
@@ -684,102 +665,273 @@
       background: transparent;
       border: none;
       color: #fff;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       width: 100%;
       outline: none;
     }
     .sb-search-input-wrapper ion-icon {
       color: #94a3b8;
-      font-size: 1rem;
+      font-size: 0.95rem;
+    }
+    .btn-clear-search:hover {
+      color: #fff !important;
     }
 
-    .sb-filters-row select {
-      width: 100%;
+    /* Barra de Ordenação (Estilo App Mobile: Banda / Música A-Z Z-A) */
+    .sb-sort-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sb-filter-label {
+      color: #64748b;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sb-sort-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .sb-sort-chip:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+    }
+    .sb-sort-chip.active {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: #34d399;
+      color: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.2);
+    }
+    .sb-sort-dir {
+      font-size: 0.68rem;
+      opacity: 0.85;
+    }
+
+    /* Tags / Estilos Clicáveis (Scroll Horizontal) */
+    .sb-tags-container {
+      overflow: hidden;
+      margin-top: 1px;
+    }
+    .sb-tags-scroll {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .sb-tags-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .sb-tag-chip {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 600;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-sm);
-      color: #cbd5e1;
-      padding: 5px 8px;
-      font-size: 0.8rem;
-      outline: none;
+      color: #94a3b8;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .sb-tag-chip:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .sb-tag-chip.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      font-weight: 700;
     }
 
-    .sb-song-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
+    /* Layout Wrapper (Régua Alfabética + Lista de Músicas) */
+    .sb-list-layout-wrapper {
       display: flex;
-      flex-direction: column;
-      gap: 5px;
-      max-height: calc(100vh - 360px);
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
     }
-    .sb-sidebar.collapsed .sb-song-list {
+    .sb-sidebar.collapsed .sb-list-layout-wrapper {
       display: none !important;
     }
 
-    .sb-song-item {
-      padding: 10px 12px;
-      border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.18s ease;
+    /* Régua Alfabética Lateral Discreta (A . . . B . . . C) */
+    .sb-alphabet-ruler {
+      width: 22px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 6px 0;
+      user-select: none;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.18);
+      overflow-y: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .sb-alphabet-ruler::-webkit-scrollbar {
+      display: none;
+    }
+    .sb-ruler-letter {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #64748b;
+      cursor: pointer;
+      padding: 2px 0;
+      text-align: center;
+      width: 100%;
+      transition: all 0.12s;
+      line-height: 1;
+    }
+    .sb-ruler-letter:hover, .sb-ruler-letter.active {
+      color: #34d399;
+      font-weight: 900;
+      transform: scale(1.25);
+      text-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+    }
+    .sb-ruler-dot {
+      font-size: 0.6rem;
+      color: #334155;
+      line-height: 0.7;
+      padding: 1px 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Divisor de Letras no meio da Lista */
+    .sb-letter-divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px 2px 8px;
+      margin-top: 4px;
+    }
+    .sb-letter-char {
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .sb-letter-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Lista Compacta de Músicas com Letras Menores */
+    .sb-song-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 6px 16px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-height: calc(100vh - 360px);
+    }
+
+    .sb-song-item {
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .sb-song-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+      border-left-color: rgba(56, 189, 248, 0.5);
       transform: translateX(2px);
     }
     .sb-song-item.active {
-      background: rgba(52, 211, 153, 0.12);
-      border-color: rgba(52, 211, 153, 0.45);
+      background: rgba(52, 211, 153, 0.09);
+      border-color: rgba(52, 211, 153, 0.28);
+      border-left-color: #34d399;
     }
-    .sb-song-item.active .sb-item-name {
-      color: #34d399;
-      font-weight: 800;
-    }
-
-    .sb-item-header {
+    .sb-song-row-main {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.82rem;
+      line-height: 1.3;
     }
-    .sb-item-name {
-      font-size: 0.92rem;
+    .sb-song-row-title {
       font-weight: 700;
       color: #f1f5f9;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 210px;
     }
-    .sb-item-artist {
-      font-size: 0.78rem;
+    .sb-song-item.active .sb-song-row-title {
+      color: #34d399;
+    }
+    .sb-song-row-sep {
+      color: #475569;
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .sb-song-row-artist {
       color: #94a3b8;
-      white-space: nowrap;
+      font-weight: 500;
+      font-size: 0.78rem;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex-shrink: 1;
     }
-    .sb-item-tags {
+    .sb-song-row-meta {
       display: flex;
-      gap: 4px;
       align-items: center;
-      margin-top: 2px;
-    }
-    .sb-tag-pill {
+      gap: 6px;
       font-size: 0.65rem;
+      color: #64748b;
+      margin-top: 1px;
+    }
+    .sb-song-row-tag {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
       padding: 1px 5px;
-      border-radius: 4px;
-      font-weight: 800;
+      border-radius: 3px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
-    .sb-tag-cifra { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-    .sb-tag-letra { background: rgba(52, 211, 153, 0.15); color: #34d399; }
-    .sb-tag-tab { background: rgba(192, 132, 252, 0.15); color: #c084fc; }
+    .sb-song-row-key {
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .sb-song-row-bpm {
+      color: #94a3b8;
+    }
+    .sb-song-row-fav {
+      color: #fbbf24;
+      font-size: 0.75rem;
+      margin-left: auto;
+    }
 
     /* 2. Main Editor Panel */
     .sb-main-panel {
@@ -1117,6 +1269,9 @@
       background: #16a34a;
       transform: scale(1.1);
       box-shadow: 0 0 18px rgba(34, 197, 94, 0.65);
+    }
+    .btn-edit-circle * {
+      pointer-events: none;
     }
 
     /* FIGMA BIO TWO-COLUMN LAYOUT */
@@ -1726,38 +1881,31 @@
 
         <!-- FIGMA 6 TABS: B - H - E - S - P - A -->
         <!-- ACTIVE TAB HAS THE SAME BACKGROUND COLOR AS THE MAIN CONTENT PAGE (#161b2c) -->
-        <!-- FIGMA 6 TABS: B - H - E - S - P - A COM ÍCONES E CORES -->
-        <!-- ACTIVE TAB HAS THE SAME BACKGROUND COLOR AS THE MAIN CONTENT PAGE (#161b2c) -->
+        <!-- FIGMA 6 TABS: ÍCONE + NOME NA FRENTE (RESPONSIVOS) -->
         <div class="profile-tabs-strip">
           <button class="profile-tab-btn active" onclick="switchProfileTab('bio')" id="pTab-bio" title="Bio">
             <ion-icon name="document-text-outline" class="tab-icon"></ion-icon>
-            <span class="tab-letter">B</span>
-            <span class="tab-sublabel">Bio</span>
+            <span class="tab-name-label">Bio</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('skills')" id="pTab-skills" title="Habilidades">
             <ion-icon name="flash-outline" class="tab-icon"></ion-icon>
-            <span class="tab-letter">H</span>
-            <span class="tab-sublabel">Habilidade</span>
+            <span class="tab-name-label">Habilidade</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('gear')" id="pTab-gear" title="Equipamentos (Gear)">
             <ion-icon name="hardware-chip-outline" class="tab-icon"></ion-icon>
-            <span class="tab-letter">E</span>
-            <span class="tab-sublabel">Equipamentos</span>
+            <span class="tab-name-label">Equipamentos</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('songbook_p')" id="pTab-songbook_p" title="Songbook">
             <ion-icon name="musical-notes-outline" class="tab-icon"></ion-icon>
-            <span class="tab-letter">S</span>
-            <span class="tab-sublabel">Songbook</span>
+            <span class="tab-name-label">Songbook</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('bands')" id="pTab-bands" title="Bandas e Projetos">
             <ion-icon name="people-outline" class="tab-icon"></ion-icon>
-            <span class="tab-letter">P</span>
-            <span class="tab-sublabel">Projetos</span>
+            <span class="tab-name-label">Projetos</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('agenda')" id="pTab-agenda" title="Agenda">
             <ion-icon name="calendar-outline" class="tab-icon"></ion-icon>
-            <span class="tab-letter">A</span>
-            <span class="tab-sublabel">Agenda</span>
+            <span class="tab-name-label">Agenda</span>
           </button>
         </div>
 
@@ -1872,7 +2020,7 @@
                 <div class="figma-label-block">
                   <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">influencias<br>musicais</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
-                  <button class="btn-edit-circle" onclick="toggleInlineInfluencesEdit()" id="btnEditInfluences" title="Editar Influências Musicais">
+                  <button class="btn-edit-circle" type="button" onclick="toggleInlineInfluencesEdit()" id="btnEditInfluences" title="Editar Influências Musicais">
                     <ion-icon name="create"></ion-icon>
                   </button>
                 </div>
@@ -2124,29 +2272,48 @@
               </div>
             </div>
 
-            <!-- Busca e Filtros -->
+            <!-- Busca e Filtros (Tags Clicáveis e Ordenação Banda / Música A-Z Z-A) -->
             <div class="sb-search-box" id="sbSearchBox">
               <div class="sb-search-input-wrapper">
                 <ion-icon name="search-outline"></ion-icon>
                 <input type="text" id="sbSearchInput" placeholder="Buscar música ou artista..." oninput="filterSongbookList()">
+                <button type="button" id="sbSearchClearBtn" class="btn-clear-search" onclick="clearSongbookSearch()" style="display: none; background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 4px; font-size: 1rem; line-height: 1;" title="Limpar busca">
+                  <ion-icon name="close-circle"></ion-icon>
+                </button>
               </div>
-              <div class="sb-filters-row">
-                <select id="sbStyleFilter" onchange="filterSongbookList()">
-                  <option value="">Todos os Estilos</option>
-                  <option value="Rock">Rock</option>
-                  <option value="Pop">Pop</option>
-                  <option value="Indie">Indie</option>
-                  <option value="Metal">Metal</option>
-                  <option value="Hardcore">Hardcore</option>
-                  <option value="Nacional">Nacional</option>
-                  <option value="Grunge">Grunge</option>
-                </select>
+
+              <!-- Barra de Ordenação A-Z / Z-A (Estilo App Mobile) -->
+              <div class="sb-sort-row">
+                <span class="sb-filter-label">Ordenar:</span>
+                <button type="button" class="sb-sort-chip active" id="sbSortChip-band" onclick="toggleSongbookSort('band')" title="Ordenar por Nome da Banda / Artista">
+                  <span>Banda</span>
+                  <span class="sb-sort-dir" id="sbSortDir-band">▲ A-Z</span>
+                </button>
+                <button type="button" class="sb-sort-chip" id="sbSortChip-name" onclick="toggleSongbookSort('name')" title="Ordenar por Nome da Música">
+                  <span>Música</span>
+                  <span class="sb-sort-dir" id="sbSortDir-name">A-Z</span>
+                </button>
+              </div>
+
+              <!-- Tags / Estilos Clicáveis (Scroll Horizontal) -->
+              <div class="sb-tags-container">
+                <div class="sb-tags-scroll" id="sbStylePillsRow">
+                  <!-- Gerado dinamicamente: Todos, Rock, Pop, etc. -->
+                </div>
               </div>
             </div>
 
-            <!-- Lista Rolável de Músicas -->
-            <div class="sb-song-list" id="sbSongList">
-              <!-- Itens gerados dinamicamente -->
+            <!-- Wrapper da Lista com Régua Lateral Alfabética Discreta -->
+            <div class="sb-list-layout-wrapper">
+              <!-- Régua Lateral Discreta (A . . . B . . . C . . .) -->
+              <div class="sb-alphabet-ruler" id="sbAlphabetRuler" title="Navegar por letra inicial">
+                <!-- Letras e marcadores gerados dinamicamente -->
+              </div>
+
+              <!-- Lista Rolável de Músicas -->
+              <div class="sb-song-list" id="sbSongList">
+                <!-- Itens compactos agrupados por letra -->
+              </div>
             </div>
           </aside>
 
@@ -2543,48 +2710,44 @@
               <input type="file" id="editPictureFile" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
             </label>
           </div>
-          <div id="photoPreviewRow" style="margin-top: 10px; display: flex; align-items: center; gap: 12px;">
-            <div id="photoPreviewBox" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: #121824; border: 2px solid var(--cyan); display: flex; align-items: center; justify-content: center;">
-              <span id="photoPreviewFallback" style="font-weight: 800; color: #fff;">M</span>
+          <div id="photoPreviewRow" style="margin-top: 10px; display: flex; align-items: center; gap: 14px;">
+            <div id="photoPreviewBox" style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; background: #121824; border: 2px solid var(--cyan); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span id="photoPreviewFallback" style="font-weight: 800; font-size: 1.4rem; color: #fff;">M</span>
               <img id="photoPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
             </div>
-            <span style="font-size: 0.8rem; color: var(--text-dim);">Prévia da sua foto no perfil.</span>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Foto de Perfil</div>
+              <span style="font-size: 0.78rem; color: var(--text-dim);">Carregue uma imagem do seu computador ou informe a URL.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ferramenta de Ajuste e Recorte (Crop / Zoom / Posicionamento) -->
+        <div id="photoCropperContainer" style="display: none; background: #121824; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 0.82rem; font-weight: 800; color: var(--cyan); text-transform: uppercase;">Ajustar e Recortar Foto</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">Arraste para posicionar</span>
+          </div>
+          <div style="position: relative; width: 100%; height: 220px; background: #0b0f17; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <canvas id="cropCanvas" width="220" height="220" style="border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0,0,0,0.65); border: 2px solid var(--cyan); cursor: grab;"></canvas>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
+            <ion-icon name="remove-circle-outline" style="color: var(--text-dim); font-size: 1.2rem; cursor: pointer;" onclick="adjustCropZoom(-0.1)"></ion-icon>
+            <input type="range" id="cropZoomSlider" min="1" max="3" step="0.05" value="1" style="flex: 1;" oninput="onCropZoomChanged(this.value)">
+            <ion-icon name="add-circle-outline" style="color: var(--text-dim); font-size: 1.2rem; cursor: pointer;" onclick="adjustCropZoom(0.1)"></ion-icon>
+            <button type="button" class="btn btn-sm btn-outline" onclick="applyCroppedImage()">Aplicar Recorte</button>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Nome de Exibição (Nome Completo / Artístico)</label>
-          <input type="text" id="editDisplayName" class="form-input" placeholder="Ex: Allison Rodrigues" required>
+          <label>Nome de Exibição (Nome Completo / Artístico) *</label>
+          <input type="text" id="editDisplayName" class="form-input" placeholder="Ex: Allison Rodrigues" required maxlength="100">
+          <p style="font-size: 0.76rem; color: var(--text-dim); margin-top: 4px;">Demais informações (Bio, Habilidades, Influências, Redes e Disponibilidade) são editadas diretamente nos botões verdes do seu perfil.</p>
         </div>
-        <div class="form-group">
-          <label>Biografia / Sobre mim</label>
-          <textarea id="editBio" class="form-input" placeholder="Fale sobre sua experiência, estilo, trajetória musical..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Influências Musicais (separadas por vírgula)</label>
-          <input type="text" id="editInfluences" class="form-input" placeholder="Ex: Pink Floyd, Iron Maiden, Rush, Foo Fighters">
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label>Cidade</label>
-            <input type="text" id="editCity" class="form-input" placeholder="Ex: Curitiba">
-          </div>
-          <div class="form-group">
-            <label>Estado (UF)</label>
-            <input type="text" id="editState" class="form-input" placeholder="Ex: PR">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Instagram (@)</label>
-          <input type="text" id="editInstagram" class="form-input" placeholder="usuario_rock">
-        </div>
-        <div class="form-group">
-          <label>YouTube / Canal</label>
-          <input type="text" id="editYoutube" class="form-input" placeholder="https://youtube.com/@seu_canal">
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('editProfileModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          <button type="submit" class="btn btn-primary">Salvar Perfil</button>
         </div>
       </form>
     </div>
@@ -3465,6 +3628,41 @@
       return [];
     }
 
+    function parseInfluencesList(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) {
+        return raw.map((item, idx) => {
+          if (typeof item === 'string') {
+            return { id: idx + 1, name: item.replace(/^#/, '').trim(), stars: 5 };
+          }
+          return {
+            id: item.id || (idx + 1),
+            name: (item.name || item.instrument || '').replace(/^#/, '').trim(),
+            stars: typeof item.stars === 'number' ? Math.max(1, Math.min(5, item.stars)) : 5
+          };
+        }).filter(x => x.name);
+      }
+      if (typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+          try {
+            const json = JSON.parse(trimmed);
+            if (Array.isArray(json)) return parseInfluencesList(json);
+          } catch (e) {
+            try {
+              const fixed = trimmed.replace(/'/g, '"');
+              const json = JSON.parse(fixed);
+              if (Array.isArray(json)) return parseInfluencesList(json);
+            } catch (e2) {}
+          }
+        }
+        return trimmed.split(',')
+          .map((s, idx) => ({ id: idx + 1, name: s.replace(/^#/, '').trim(), stars: 5 }))
+          .filter(x => x.name.length > 0);
+      }
+      return [];
+    }
+
     function normalizeDateStr(d) {
       if (!d) return '2026-01-01';
       const clean = String(d).trim();
@@ -3659,7 +3857,7 @@
 
       // 3. INFLUÊNCIAS MUSICAIS (TABELA COM 5 LINHAS E ESTRELAS)
       const infContainer = document.getElementById('influencesListContainer');
-      const infList = parseInstrumentsList(currentUser.influences);
+      const infList = parseInfluencesList(currentUser?.influences);
 
       let rowsHtml = '';
       for (let i = 0; i < 5; i++) {
@@ -3884,9 +4082,9 @@
       if (isEditing) {
         cancelInlineInfluences();
       } else {
-        const currentList = parseInstrumentsList(currentUser?.influences);
-        draftInfluences = currentList.length > 0
-          ? currentList.map(x => ({ id: x.id || Date.now(), name: x.name, stars: x.stars || 3 }))
+        const currentList = parseInfluencesList(currentUser?.influences);
+        draftInfluences = (Array.isArray(currentList) && currentList.length > 0)
+          ? currentList.map((x, i) => ({ id: x.id || (i + 1), name: x.name || '', stars: Number(x.stars) || 5 }))
           : [
               { id: 1, name: '', stars: 5 },
               { id: 2, name: '', stars: 4 },
@@ -4570,17 +4768,22 @@
     // ==========================================
     // EDIT PROFILE & PHOTO
     // ==========================================
+    let cropperImage = new Image();
+    let cropZoom = 1;
+    let cropPanX = 0;
+    let cropPanY = 0;
+    let isDraggingCrop = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
     function openEditProfileModal() {
       if (!currentUser) return;
       document.getElementById('editDisplayName').value = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || currentUser.username || '';
-      document.getElementById('editBio').value = currentUser.bio || '';
-      document.getElementById('editInfluences').value = parseInstrumentsList(currentUser.influences).map(x => x.name).join(', ');
-      document.getElementById('editCity').value = currentUser.city || '';
-      document.getElementById('editState').value = currentUser.state || '';
-      document.getElementById('editInstagram').value = currentUser.instagram || '';
-      document.getElementById('editYoutube').value = currentUser.youtube || '';
       document.getElementById('editPictureUrl').value = currentUser.pictureUrl || '';
       
+      const cropperBox = document.getElementById('photoCropperContainer');
+      if (cropperBox) cropperBox.style.display = 'none';
+
       updateProfilePhotoPreview();
       openModal('editProfileModal');
     }
@@ -4590,38 +4793,123 @@
       const previewImg = document.getElementById('photoPreviewImg');
       const fallback = document.getElementById('photoPreviewFallback');
       const initial = (currentUser?.displayName || currentUser?.username || 'M').charAt(0).toUpperCase();
-      fallback.textContent = initial;
+      if (fallback) fallback.textContent = initial;
 
       const norm = normalizeImageUri(url);
       if (norm) {
-        previewImg.src = norm;
-        previewImg.style.display = 'block';
-        fallback.style.display = 'none';
-        previewImg.onerror = () => {
-          previewImg.style.display = 'none';
-          fallback.style.display = 'block';
-        };
+        if (previewImg) {
+          previewImg.src = norm;
+          previewImg.style.display = 'block';
+          previewImg.onerror = () => {
+            previewImg.style.display = 'none';
+            if (fallback) fallback.style.display = 'block';
+          };
+        }
+        if (fallback) fallback.style.display = 'none';
       } else {
-        previewImg.style.display = 'none';
-        fallback.style.display = 'block';
+        if (previewImg) previewImg.style.display = 'none';
+        if (fallback) fallback.style.display = 'block';
       }
     }
 
     function handleProfilePhotoUpload(e) {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('A imagem deve ter até 2MB.', 'error');
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('A imagem deve ter até 5MB.', 'error');
         return;
       }
       const reader = new FileReader();
       reader.onload = function(evt) {
-        const base64 = evt.target.result;
-        document.getElementById('editPictureUrl').value = base64;
-        updateProfilePhotoPreview();
-        showToast('Foto carregada! Clique em salvar alterações.', 'info');
+        initImageCropper(evt.target.result);
       };
       reader.readAsDataURL(file);
+    }
+
+    function initImageCropper(imageSrc) {
+      const cropperBox = document.getElementById('photoCropperContainer');
+      if (cropperBox) cropperBox.style.display = 'block';
+
+      cropperImage = new Image();
+      cropperImage.onload = function() {
+        cropZoom = 1;
+        cropPanX = 0;
+        cropPanY = 0;
+        const slider = document.getElementById('cropZoomSlider');
+        if (slider) slider.value = 1;
+        drawCropperCanvas();
+        setupCropperEvents();
+        showToast('Ajuste o enquadramento e clique em Aplicar Recorte.', 'info');
+      };
+      cropperImage.src = imageSrc;
+    }
+
+    function setupCropperEvents() {
+      const canvas = document.getElementById('cropCanvas');
+      if (!canvas || canvas.dataset.hasEvents) return;
+      canvas.dataset.hasEvents = 'true';
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDraggingCrop = true;
+        dragStartX = e.clientX - cropPanX;
+        dragStartY = e.clientY - cropPanY;
+        canvas.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingCrop) return;
+        cropPanX = e.clientX - dragStartX;
+        cropPanY = e.clientY - dragStartY;
+        drawCropperCanvas();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDraggingCrop) {
+          isDraggingCrop = false;
+          if (canvas) canvas.style.cursor = 'grab';
+        }
+      });
+    }
+
+    function drawCropperCanvas() {
+      const canvas = document.getElementById('cropCanvas');
+      if (!canvas || !cropperImage.src) return;
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      ctx.clearRect(0, 0, size, size);
+
+      // Calculate aspect fill
+      const scale = Math.max(size / cropperImage.width, size / cropperImage.height) * cropZoom;
+      const w = cropperImage.width * scale;
+      const h = cropperImage.height * scale;
+      const x = (size - w) / 2 + cropPanX;
+      const y = (size - h) / 2 + cropPanY;
+
+      ctx.drawImage(cropperImage, x, y, w, h);
+    }
+
+    function adjustCropZoom(delta) {
+      const slider = document.getElementById('cropZoomSlider');
+      if (!slider) return;
+      const next = Math.max(1, Math.min(3, parseFloat(slider.value) + delta));
+      slider.value = next;
+      onCropZoomChanged(next);
+    }
+
+    function onCropZoomChanged(val) {
+      cropZoom = parseFloat(val);
+      drawCropperCanvas();
+    }
+
+    function applyCroppedImage() {
+      const canvas = document.getElementById('cropCanvas');
+      if (!canvas) return;
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.88);
+      document.getElementById('editPictureUrl').value = croppedBase64;
+      updateProfilePhotoPreview();
+      const cropperBox = document.getElementById('photoCropperContainer');
+      if (cropperBox) cropperBox.style.display = 'none';
+      showToast('Recorte aplicado com sucesso! Salve para concluir.', 'success');
     }
 
     async function handleSaveProfile(e) {
@@ -4629,14 +4917,13 @@
       const displayName = document.getElementById('editDisplayName').value.trim();
       const pictureUrl = document.getElementById('editPictureUrl').value.trim();
 
+      if (!displayName) {
+        showToast('O nome de exibição é obrigatório.', 'warning');
+        return;
+      }
+
       const payload = {
         displayName: displayName,
-        bio: document.getElementById('editBio').value.trim(),
-        influences: document.getElementById('editInfluences').value.trim(),
-        city: document.getElementById('editCity').value.trim(),
-        state: document.getElementById('editState').value.trim(),
-        instagram: document.getElementById('editInstagram').value.trim(),
-        youtube: document.getElementById('editYoutube').value.trim(),
         pictureUrl: pictureUrl
       };
 
@@ -4654,7 +4941,7 @@
           renderSidebarUserCard();
           renderCentralProfile();
           closeModal('editProfileModal');
-          showToast('Perfil e foto atualizados com sucesso!', 'success');
+          showToast('Nome de exibição e foto atualizados com sucesso!', 'success');
         } else {
           showToast('Erro ao atualizar perfil.', 'error');
         }
@@ -4770,9 +5057,100 @@
     let currentTransposeOffset = 0;
     let editorFontSize = 14;
     let autoScrollInterval = null;
+    let sbSongSortBy = 'band'; // 'band' | 'name'
+    let sbSongSortOrder = 'asc'; // 'asc' | 'desc'
+    let sbSelectedTag = '';
 
     function updateSongbookUI() {
       renderSongbookSplitView();
+    }
+
+    function toggleSongbookSort(field) {
+      if (sbSongSortBy === field) {
+        sbSongSortOrder = sbSongSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        sbSongSortBy = field;
+        sbSongSortOrder = 'asc';
+      }
+      updateSongbookSortButtons();
+      filterSongbookList();
+    }
+
+    function updateSongbookSortButtons() {
+      const btnBand = document.getElementById('sbSortChip-band');
+      const btnName = document.getElementById('sbSortChip-name');
+      const dirBand = document.getElementById('sbSortDir-band');
+      const dirName = document.getElementById('sbSortDir-name');
+
+      if (btnBand) {
+        const isBand = sbSongSortBy === 'band';
+        btnBand.className = `sb-sort-chip ${isBand ? 'active' : ''}`;
+        if (dirBand) dirBand.textContent = isBand ? (sbSongSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : 'A-Z';
+      }
+      if (btnName) {
+        const isName = sbSongSortBy === 'name';
+        btnName.className = `sb-sort-chip ${isName ? 'active' : ''}`;
+        if (dirName) dirName.textContent = isName ? (sbSongSortOrder === 'asc' ? '▲ A-Z' : '▼ Z-A') : 'A-Z';
+      }
+    }
+
+    function renderSongbookStylePills() {
+      const container = document.getElementById('sbStylePillsRow');
+      if (!container) return;
+
+      const tagCounts = {};
+      mySongs.forEach(s => {
+        if (s.style) {
+          s.style.split(',').forEach(tag => {
+            const clean = tag.trim();
+            if (clean) tagCounts[clean] = (tagCounts[clean] || 0) + 1;
+          });
+        }
+      });
+
+      const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+
+      let html = `
+        <button type="button" class="sb-tag-chip ${!sbSelectedTag ? 'active' : ''}" onclick="selectSongbookTag('')">
+          Todos
+        </button>
+      `;
+
+      sortedTags.forEach(tag => {
+        const isActive = sbSelectedTag.toLowerCase() === tag.toLowerCase();
+        html += `
+          <button type="button" class="sb-tag-chip ${isActive ? 'active' : ''}" onclick="selectSongbookTag('${escapeHtml(tag)}')">
+            ${escapeHtml(tag)}
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function selectSongbookTag(tag) {
+      if (sbSelectedTag.toLowerCase() === tag.toLowerCase()) {
+        sbSelectedTag = '';
+      } else {
+        sbSelectedTag = tag;
+      }
+      renderSongbookStylePills();
+      filterSongbookList();
+    }
+
+    function clearSongbookSearch() {
+      const input = document.getElementById('sbSearchInput');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('sbSearchClearBtn');
+      if (clearBtn) clearBtn.style.display = 'none';
+      filterSongbookList();
+    }
+
+    function scrollToLetter(letter) {
+      const target = document.getElementById(`sb-letter-group-${letter}`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     function renderSongbookSplitView() {
@@ -4795,6 +5173,8 @@
             </div>
           `;
         }
+        const ruler = document.getElementById('sbAlphabetRuler');
+        if (ruler) ruler.innerHTML = '';
         if (emptyState) emptyState.style.display = 'block';
         if (editorWrapper) editorWrapper.style.display = 'none';
         selectedSong = null;
@@ -4809,51 +5189,124 @@
         selectedSong = mySongs[0];
       }
 
+      updateSongbookSortButtons();
+      renderSongbookStylePills();
       filterSongbookList();
       populateSongbookEditor(selectedSong);
     }
 
+    function getSongInitialLetter(song) {
+      const raw = (sbSongSortBy === 'band' ? (song.originalBand || song.name) : (song.name || song.originalBand)) || '';
+      const clean = raw.trim();
+      if (!clean) return '#';
+      const char = clean.charAt(0).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return /[A-Z]/.test(char) ? char : '#';
+    }
+
     function filterSongbookList() {
-      const search = (document.getElementById('sbSearchInput')?.value || '').toLowerCase().trim();
-      const styleFilter = (document.getElementById('sbStyleFilter')?.value || '').toLowerCase().trim();
+      const searchInput = document.getElementById('sbSearchInput');
+      const clearBtn = document.getElementById('sbSearchClearBtn');
+      const search = (searchInput?.value || '').toLowerCase().trim();
+      if (clearBtn) clearBtn.style.display = search ? 'block' : 'none';
+
       const sidebarList = document.getElementById('sbSongList');
+      const ruler = document.getElementById('sbAlphabetRuler');
       if (!sidebarList) return;
 
       const filtered = mySongs.filter(s => {
         const matchTitle = (s.name || '').toLowerCase().includes(search);
         const matchArtist = (s.originalBand || '').toLowerCase().includes(search);
-        const matchStyle = !styleFilter || (s.style || '').toLowerCase().includes(styleFilter);
+        const matchStyle = !sbSelectedTag || (s.style || '').toLowerCase().includes(sbSelectedTag.toLowerCase());
         return (matchTitle || matchArtist) && matchStyle;
       });
 
       if (filtered.length === 0) {
         sidebarList.innerHTML = `
           <div style="text-align: center; padding: 24px 12px; color: var(--text-dim); font-size: 0.82rem;">
-            Nenhuma música encontrada para a busca.
+            Nenhuma música encontrada para a busca ou filtro selecionado.
           </div>
         `;
+        if (ruler) ruler.innerHTML = '';
         return;
       }
 
-      sidebarList.innerHTML = filtered.map(song => {
-        const isSelected = selectedSong && String(selectedSong.id) === String(song.id);
-        const activeClass = isSelected ? 'active' : '';
-        const initial = (song.name || 'M').charAt(0).toUpperCase();
-        const primaryTag = song.style ? song.style.split(',')[0].trim() : (song.key ? `Tom: ${song.key}` : 'Cifra');
+      // Sort
+      filtered.sort((a, b) => {
+        let valA = '';
+        let valB = '';
+        if (sbSongSortBy === 'band') {
+          valA = (a.originalBand || '').trim().toLowerCase();
+          valB = (b.originalBand || '').trim().toLowerCase();
+        } else {
+          valA = (a.name || '').trim().toLowerCase();
+          valB = (b.name || '').trim().toLowerCase();
+        }
+        const cmp = valA.localeCompare(valB, 'pt-BR', { sensitivity: 'base' });
+        return sbSongSortOrder === 'asc' ? cmp : -cmp;
+      });
 
-        return `
-          <div class="sb-song-item ${activeClass}" onclick="selectSongbookItem('${song.id}')" id="sbItem-${song.id}">
-            <div class="sb-song-item-avatar">${initial}</div>
-            <div class="sb-song-item-info">
-              <div class="sb-song-item-title">${escapeHtml(song.name || 'Sem título')}</div>
-              <div class="sb-song-item-sub">
-                <span class="sb-song-item-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
-                <span class="sb-song-item-tag">${escapeHtml(primaryTag)}</span>
-              </div>
-            </div>
+      // Group songs by letter
+      const groups = {};
+      const letterOrder = [];
+      filtered.forEach(song => {
+        const letter = getSongInitialLetter(song);
+        if (!groups[letter]) {
+          groups[letter] = [];
+          letterOrder.push(letter);
+        }
+        groups[letter].push(song);
+      });
+
+      // Render Discrete Alphabetical Ruler on the left (A . . . B . . . C)
+      if (ruler) {
+        let rulerHtml = '';
+        letterOrder.forEach((letter, idx) => {
+          rulerHtml += `<span class="sb-ruler-letter" onclick="scrollToLetter('${letter}')" title="Ir para ${letter}">${letter}</span>`;
+          if (idx < letterOrder.length - 1) {
+            rulerHtml += `
+              <span class="sb-ruler-dot">·</span>
+              <span class="sb-ruler-dot">·</span>
+              <span class="sb-ruler-dot">·</span>
+            `;
+          }
+        });
+        ruler.innerHTML = rulerHtml;
+      }
+
+      // Render Song List with Letter Dividers and Compact Items (Nome da Musica - Artista)
+      let listHtml = '';
+      letterOrder.forEach(letter => {
+        listHtml += `
+          <div class="sb-letter-divider" id="sb-letter-group-${letter}">
+            <span class="sb-letter-char">${letter}</span>
+            <div class="sb-letter-line"></div>
           </div>
         `;
-      }).join('');
+
+        groups[letter].forEach(song => {
+          const isSelected = selectedSong && String(selectedSong.id) === String(song.id);
+          const activeClass = isSelected ? 'active' : '';
+          const primaryTag = song.style ? song.style.split(',')[0].trim() : '';
+
+          listHtml += `
+            <div class="sb-song-item ${activeClass}" onclick="selectSongbookItem('${song.id}')" id="sbItem-${song.id}">
+              <div class="sb-song-row-main">
+                <span class="sb-song-row-title">${escapeHtml(song.name || 'Sem título')}</span>
+                <span class="sb-song-row-sep">-</span>
+                <span class="sb-song-row-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
+              </div>
+              <div class="sb-song-row-meta">
+                ${primaryTag ? `<span class="sb-song-row-tag">${escapeHtml(primaryTag)}</span>` : ''}
+                ${song.key ? `<span class="sb-song-row-key">${escapeHtml(song.key)}</span>` : ''}
+                ${song.bpm ? `<span class="sb-song-row-bpm">${song.bpm} BPM</span>` : ''}
+                ${song.isFavorite ? `<ion-icon name="star" class="sb-song-row-fav"></ion-icon>` : ''}
+              </div>
+            </div>
+          `;
+        });
+      });
+
+      sidebarList.innerHTML = listHtml;
     }
 
     function selectSongbookItem(songId) {
