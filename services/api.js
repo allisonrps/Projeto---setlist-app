@@ -541,5 +541,101 @@ export const api = {
       throw new Error(errMsg);
     }
     return response.json();
+  },
+
+  // ── Online Songbook (Supabase PostgreSQL) ──
+  getSongs: async (search = '', style = '') => {
+    const headers = await getHeaders();
+    let url = `${API_URL}/Songs`;
+    const params = [];
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (style) params.push(`style=${encodeURIComponent(style)}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+
+    const response = await fetchWithTimeout(url, { headers });
+    if (!response.ok) return [];
+    return response.json();
+  },
+
+  getSongById: async (id) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Songs/${id}`, { headers });
+    if (!response.ok) throw new Error('Música não encontrada.');
+    return response.json();
+  },
+
+  createSong: async (songData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Songs`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(songData)
+    });
+    if (!response.ok) throw new Error('Erro ao salvar música na nuvem.');
+    return response.json();
+  },
+
+  updateSong: async (id, songData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Songs/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(songData)
+    });
+    if (!response.ok) throw new Error('Erro ao atualizar música na nuvem.');
+    return response.json();
+  },
+
+  deleteSong: async (id) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Songs/${id}`, {
+      method: "DELETE",
+      headers
+    });
+    if (!response.ok) throw new Error('Erro ao excluir música da nuvem.');
+    return response.json();
+  },
+
+  // ── Online Events / Agenda (Supabase PostgreSQL) ──
+  getEvents: async (filter = '') => {
+    const headers = await getHeaders();
+    let url = `${API_URL}/Events`;
+    if (filter) url += `?filter=${encodeURIComponent(filter)}`;
+
+    const response = await fetchWithTimeout(url, { headers });
+    if (!response.ok) return [];
+    return response.json();
+  },
+
+  createEvent: async (eventData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Events`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(eventData)
+    });
+    if (!response.ok) throw new Error('Erro ao salvar evento na agenda.');
+    return response.json();
+  },
+
+  updateEvent: async (id, eventData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Events/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(eventData)
+    });
+    if (!response.ok) throw new Error('Erro ao atualizar evento na agenda.');
+    return response.json();
+  },
+
+  deleteEvent: async (id) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Events/${id}`, {
+      method: "DELETE",
+      headers
+    });
+    if (!response.ok) throw new Error('Erro ao excluir evento da agenda.');
+    return response.json();
   }
 };
