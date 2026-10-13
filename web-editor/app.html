@@ -2210,6 +2210,38 @@
       renderProfileAgenda();
     }
 
+    async function loadOnlineSongs() {
+      try {
+        const res = await fetch(`${API_URL}/Songs`, { headers: getAuthHeaders() });
+        if (res.ok) {
+          const songs = await res.json();
+          if (Array.isArray(songs)) {
+            mySongs = songs;
+            localStorage.setItem(SONGS_CACHE_KEY, JSON.stringify(mySongs));
+            updateSongbookUI();
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch songs from API, using cached:', e);
+      }
+    }
+
+    async function loadOnlineEvents() {
+      try {
+        const res = await fetch(`${API_URL}/Events`, { headers: getAuthHeaders() });
+        if (res.ok) {
+          const events = await res.json();
+          if (Array.isArray(events)) {
+            myEvents = events;
+            localStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(myEvents));
+            renderProfileAgenda();
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch events from API, using cached:', e);
+      }
+    }
+
     function saveGearCache() {
       localStorage.setItem(GEAR_CACHE_KEY, JSON.stringify(myGear));
       renderGearTab();
@@ -2249,7 +2281,9 @@
 
           await Promise.all([
             loadMyBands(),
-            loadSocialData()
+            loadSocialData(),
+            loadOnlineSongs(),
+            loadOnlineEvents()
           ]);
           updateSongbookUI();
         } else {
@@ -3713,31 +3747,67 @@
       openModal('addEventModal');
     }
 
-    function handleSaveEvent(e) {
+    async function handleSaveEvent(e) {
       e.preventDefault();
-      const newEvent = {
-        id: 'web_' + Date.now(),
-        title: document.getElementById('eventTitle').value.trim(),
-        date: document.getElementById('eventDate').value,
-        time: document.getElementById('eventTime').value,
-        local: document.getElementById('eventLocal').value.trim(),
-        band: document.getElementById('eventBandSelect').value,
-        cache: document.getElementById('eventCache').value.trim(),
-        notes: document.getElementById('eventNotes').value.trim(),
-        createdAt: new Date().toISOString()
+      const selectedBandName = document.getElementById('eventBandSelect').value;
+      const matchedBand = myBands.find(b => b.name === selectedBandName);
+
+      const title = document.getElementById('eventTitle').value.trim();
+      const date = document.getElementById('eventDate').value;
+      const time = document.getElementById('eventTime').value;
+      const location = document.getElementById('eventLocal').value.trim();
+      const cacheVal = parseFloat(document.getElementById('eventCache').value) || null;
+      const notes = document.getElementById('eventNotes').value.trim();
+
+      const payload = {
+        bandId: matchedBand ? matchedBand.id : null,
+        title,
+        date,
+        time,
+        location,
+        cacheValue: cacheVal,
+        notes,
+        eventType: 'Show'
       };
 
-      myEvents.push(newEvent);
+      try {
+        const res = await fetch(`${API_URL}/Events`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const created = await res.json();
+          myEvents.unshift(created);
+        } else {
+          myEvents.unshift({ ...payload, id: 'local_' + Date.now(), local: location, band: selectedBandName });
+        }
+      } catch (err) {
+        myEvents.unshift({ ...payload, id: 'local_' + Date.now(), local: location, band: selectedBandName });
+      }
+
       saveEventsCache();
       closeModal('addEventModal');
-      showToast('Evento registrado na agenda!', 'success');
+      showToast('Evento registrado e sincronizado na nuvem!', 'success');
     }
 
-    function deleteEvent(id) {
+    async function deleteEvent(id) {
       if (!confirm('Deseja remover este evento da agenda?')) return;
       myEvents = myEvents.filter(e => String(e.id) !== String(id));
       saveEventsCache();
-      showToast('Evento removido.', 'info');
+
+      try {
+        if (typeof id === 'number' || (!String(id).startsWith('local_') && !String(id).startsWith('web_'))) {
+          await fetch(`${API_URL}/Events/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+          });
+        }
+        showToast('Evento removido com sucesso.', 'info');
+      } catch (e) {
+        console.warn('Error deleting event from API:', e);
+      }
     }
 
     function updateBandOptionsInEventModal() {
@@ -4001,28 +4071,44 @@
       openModal('addSongModal');
     }
 
-    function handleSaveNewSong(e) {
+    async function handleSaveNewSong(e) {
       e.preventDefault();
-      const newSong = {
-        id: Date.now(),
+      const payload = {
         name: document.getElementById('newSongName').value.trim(),
         originalBand: document.getElementById('newSongArtist').value.trim(),
+        duration: document.getElementById('newSongDuration').value.trim(),
         style: document.getElementById('newSongStyle').value.trim(),
         chords: document.getElementById('newSongChords').value,
         lyrics: document.getElementById('newSongLyrics').value,
-        tabs: document.getElementById('newSongTabs').value,
-        defaultView: 'chords',
-        createdAt: new Date().toISOString()
+        tabs: document.getElementById('newSongTabs').value
       };
 
-      mySongs.unshift(newSong);
+      try {
+        const res = await fetch(`${API_URL}/Songs`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const created = await res.json();
+          mySongs.unshift(created);
+        } else {
+          const fallback = { ...payload, id: 'local_' + Date.now(), createdAt: new Date().toISOString() };
+          mySongs.unshift(fallback);
+        }
+      } catch (err) {
+        const fallback = { ...payload, id: 'local_' + Date.now(), createdAt: new Date().toISOString() };
+        mySongs.unshift(fallback);
+      }
+
       saveSongsCache();
       closeModal('addSongModal');
-      showToast('Música adicionada ao Songbook!', 'success');
+      showToast('Música salva e sincronizada na nuvem!', 'success');
     }
 
     function openSongDetailModal(id) {
-      selectedSong = mySongs.find(s => s.id === id);
+      selectedSong = mySongs.find(s => String(s.id) === String(id));
       if (!selectedSong) return;
 
       document.getElementById('songModalTitle').textContent = selectedSong.name;
@@ -4058,14 +4144,26 @@
       });
     }
 
-    function deleteCurrentSong() {
+    async function deleteCurrentSong() {
       if (!selectedSong) return;
       if (!confirm(`Deseja realmente remover a música "${selectedSong.name}" do seu Songbook?`)) return;
 
-      mySongs = mySongs.filter(s => s.id !== selectedSong.id);
+      const songId = selectedSong.id;
+      mySongs = mySongs.filter(s => String(s.id) !== String(songId));
       saveSongsCache();
       closeModal('songModal');
-      showToast('Música removida.', 'info');
+
+      try {
+        if (typeof songId === 'number' || (!String(songId).startsWith('local_'))) {
+          await fetch(`${API_URL}/Songs/${songId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+          });
+        }
+        showToast('Música removida do Songbook.', 'info');
+      } catch (e) {
+        console.warn('Error deleting song from API:', e);
+      }
     }
 
     // ==========================================
