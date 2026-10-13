@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BandLink • A Rede Social e Plataforma para Músicos e Bandas</title>
+  
+  <meta name="description" content="Rede social, Songbook, Bandas, Agenda e Palco para músicos e bandas. Conecte-se online!">
+  <meta name="theme-color" content="#06080d">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BandLink Web • Rede Musical">
+  <meta property="og:description" content="Songbook, Bandas, Agenda e Rede Social para Músicos.">
+  <meta property="og:image" content="assets/bandlink_logo_black_full.jpg">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #06080d;
+      --bg-surface: #0c1018;
+      --bg-surface-elevated: #121824;
+      --bg-card: rgba(14, 20, 32, 0.75);
+      --bg-card-hover: rgba(22, 32, 50, 0.9);
+      --bg-glass: rgba(12, 16, 24, 0.85);
+
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.14);
+      --border-focus: #0ea5e9;
+
+      --cyan: #0ea5e9;
+      --cyan-light: #38bdf8;
+      --cyan-glow: rgba(14, 165, 233, 0.4);
+
+      --violet: #8b5cf6;
+      --violet-light: #a78bfa;
+      --violet-glow: rgba(139, 92, 246, 0.4);
+
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.35);
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.6);
+
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html, body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.18;
+    }
+    .glow-1 { top: -10%; left: 10%; width: 550px; height: 550px; background: var(--cyan); }
+    .glow-2 { bottom: -10%; right: 15%; width: 650px; height: 650px; background: var(--violet); }
+    .glow-3 { top: 40%; right: 5%; width: 450px; height: 450px; background: #0284c7; }
+
+    .app-layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 24px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .topbar-logo {
+      height: 38px;
+      object-fit: contain;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 6px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+    .nav-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-tab-btn ion-icon {
+      font-size: 1.15rem;
+    }
+    .nav-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-tab-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(139, 92, 246, 0.3));
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      box-shadow: 0 2px 12px var(--cyan-glow);
+    }
+
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 4px 12px 4px 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .user-pill:hover {
+      border-color: var(--border-medium);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .user-pill-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .user-pill-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover {
+      border-color: var(--rose);
+      color: var(--rose);
+      background: rgba(244, 63, 94, 0.1);
+    }
+
+    .main-content {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .tab-view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-view.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .card:hover {
+      border-color: var(--border-medium);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan) 0%, #0284c7 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--cyan-glow);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--cyan-light) 0%, var(--cyan) 100%);
+      transform: translateY(-1px);
+    }
+    .btn-violet {
+      background: linear-gradient(135deg, var(--violet) 0%, #7c3aed 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--violet-glow);
+    }
+    .btn-violet:hover {
+      background: linear-gradient(135deg, var(--violet-light) 0%, var(--violet) 100%);
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--border-medium);
+    }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      border-radius: var(--radius-sm);
+    }
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid var(--rose);
+      color: #fda4af;
+    }
+    .btn-danger:hover {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-input {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    }
+    textarea.form-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      max-width: 500px;
+      width: 100%;
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: all 0.25s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-card.large {
+      max-width: 800px;
+    }
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .modal-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .modal-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-surface-elevated);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-subtle);
+    }
+    .auth-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .auth-tab-btn.active {
+      background: var(--cyan);
+      color: #fff;
+      box-shadow: 0 2px 10px var(--cyan-glow);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-cyan { background: rgba(14, 165, 233, 0.15); color: var(--cyan-light); border: 1px solid rgba(14, 165, 233, 0.3); }
+    .badge-violet { background: rgba(139, 92, 246, 0.15); color: var(--violet-light); border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-medium);
+      color: var(--text-main);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.88rem;
+      animation: toastSlide 0.3s ease;
+      min-width: 280px;
+      backdrop-filter: blur(12px);
+    }
+    .toast.success { border-color: var(--emerald); color: #a7f3d0; }
+    .toast.error { border-color: var(--rose); color: #fecdd3; }
+    .toast.info { border-color: var(--cyan); color: #bae6fd; }
+    @keyframes toastSlide {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .chord-pro-display {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      background: #05070a;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      color: #e2e8f0;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .topbar { padding: 10px 16px; }
+      .nav-tab-btn span { display: none; }
+      .nav-tab-btn { padding: 8px 12px; }
+      .main-content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg">
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+  </div>
+
+  <div class="app-layout">
+    
+    <header class="topbar">
+      <a href="/" class="topbar-brand" title="BandLink Home">
+        <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="topbar-logo">
+      </a>
+
+      <nav class="nav-tabs" id="mainNavTabs">
+        <button class="nav-tab-btn active" onclick="switchTab('profile')" id="navTab-profile">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>Perfil</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('songbook')" id="navTab-songbook">
+          <ion-icon name="musical-notes-outline"></ion-icon>
+          <span>Songbook</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('bands')" id="navTab-bands">
+          <ion-icon name="people-outline"></ion-icon>
+          <span>Bandas</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('agenda')" id="navTab-agenda">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>Agenda</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('social')" id="navTab-social">
+          <ion-icon name="planet-outline"></ion-icon>
+          <span>Social / Rede</span>
+        </button>
+      </nav>
+
+      <div class="topbar-user" id="topbarUserBlock">
+        <div class="user-pill" onclick="switchTab('profile')" title="Meu Perfil">
+          <div class="user-pill-avatar" id="topbarAvatar">M</div>
+          <span class="user-pill-name" id="topbarUsername">Carregando...</span>
+        </div>
+        <button class="btn-logout" onclick="executeLogout()" title="Sair da Conta">
+          <ion-icon name="log-out-outline"></ion-icon>
+          <span style="font-size:0.8rem;">Sair</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      
+      <!-- TAB 1: PERFIL DO MÚSICO -->
+      <section class="tab-view active" id="tab-profile">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <div class="card" style="position: relative; overflow: hidden;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;">
+              <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <div id="profAvatarBig" style="width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--violet)); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; border: 3px solid rgba(255,255,255,0.15); box-shadow: 0 0 25px var(--cyan-glow); overflow: hidden;">
+                  M
+                </div>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                    <h2 id="profUsername" style="font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px;">Músico</h2>
+                    <span class="badge badge-cyan" id="profAgeBadge">-- anos</span>
+                  </div>
+                  <p id="profEmail" style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 6px;">email@exemplo.com</p>
+                  <p id="profLocation" style="color: var(--text-dim); font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <ion-icon name="location-outline"></ion-icon>
+                    <span>Brasil</span>
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <button class="btn btn-outline" onclick="openEditProfileModal()">
+                  <ion-icon name="create-outline"></ion-icon>
+                  <span>Editar Perfil</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border-subtle);">
+              <h4 style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.5px;">Biografia</h4>
+              <p id="profBio" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">Nenhuma biografia informada ainda.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px;">
+              <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 6px;">Instrumentos</div>
+                <div id="profInstruments" style="font-size: 0.92rem; font-weight: 600; color: var(--cyan-light);">--</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 6px;">Influências</div>
+                <div id="profInfluences" style="font-size: 0.92rem; font-weight: 600; color: var(--violet-light);">--</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 6px;">Disponibilidade</div>
+                <div id="profAvailability" style="font-size: 0.92rem; font-weight: 600; color: var(--emerald);">Disponível</div>
+              </div>
+            </div>
+
+            <div id="profSocialRow" style="display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="card" style="text-align: center; padding: 20px;">
+              <div style="font-size: 2rem; font-weight: 900; color: var(--cyan);" id="statSongsCount">0</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-top: 4px;">Músicas no Songbook</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 20px;">
+              <div style="font-size: 2rem; font-weight: 900; color: var(--violet);" id="statBandsCount">0</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-top: 4px;">Bandas Vinculadas</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 20px;">
+              <div style="font-size: 2rem; font-weight: 900; color: var(--emerald);" id="statEventsCount">0</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-top: 4px;">Próximos Shows / Eventos</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 2: SONGBOOK -->
+      <section class="tab-view" id="tab-songbook">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+              <h2 style="font-size: 1.5rem; font-weight: 800;">Meu Songbook</h2>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">Coleção online de cifras, letras, acordes e tablaturas.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary" onclick="openAddSongModal()">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                <span>Nova Música</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" id="songSearchInput" class="form-input" style="flex: 1; min-width: 240px;" placeholder="Buscar por título, artista ou tag..." oninput="filterSongs()">
+            <select id="songStyleFilter" class="form-input" style="width: 180px;" onchange="filterSongs()">
+              <option value="">Todos os Estilos</option>
+              <option value="Rock">Rock</option>
+              <option value="Pop">Pop</option>
+              <option value="Indie">Indie</option>
+              <option value="Metal">Metal</option>
+              <option value="MPB">MPB</option>
+              <option value="Blues">Blues</option>
+              <option value="Jazz">Jazz</option>
+            </select>
+          </div>
+
+          <div class="grid-cards" id="songbookGrid">
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 3: BANDAS -->
+      <section class="tab-view" id="tab-bands">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+              <h2 style="font-size: 1.5rem; font-weight: 800;">Minhas Bandas</h2>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">Grupos musicais que você participa ou lidera na nuvem BandLink.</p>
+            </div>
+            <button class="btn btn-violet" onclick="openCreateBandModal()">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              <span>Criar Nova Banda</span>
+            </button>
+          </div>
+
+          <div class="grid-cards" id="myBandsGrid">
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 4: AGENDA -->
+      <section class="tab-view" id="tab-agenda">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+              <h2 style="font-size: 1.5rem; font-weight: 800;">Agenda de Shows e Ensaios</h2>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">Compromissos musicais, ensaios e apresentações ao vivo.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddEventModal()">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              <span>Novo Evento</span>
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-outline active" id="agendaFilterAll" onclick="filterAgenda('all')">Todos</button>
+            <button class="btn btn-sm btn-outline" id="agendaFilterUpcoming" onclick="filterAgenda('upcoming')">Próximos Shows</button>
+            <button class="btn btn-sm btn-outline" id="agendaFilterPast" onclick="filterAgenda('past')">Passados</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;" id="agendaList">
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 5: SOCIAL / REDE BANDLINK -->
+      <section class="tab-view" id="tab-social">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div>
+              <h2 style="font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                <span>Rede BandLink</span>
+                <span class="badge badge-cyan">Ao Vivo</span>
+              </h2>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">Mural de vagas musicais, busca de músicos e bandas ativas na comunidade.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateAnnouncementModal()">
+              <ion-icon name="megaphone-outline"></ion-icon>
+              <span>Criar Anúncio</span>
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+            <button class="btn btn-sm btn-outline active" id="socialSubAnn" onclick="switchSocialSub('ann')">Mural de Anúncios</button>
+            <button class="btn btn-sm btn-outline" id="socialSubMus" onclick="switchSocialSub('mus')">Músicos na Rede</button>
+            <button class="btn btn-sm btn-outline" id="socialSubBands" onclick="switchSocialSub('bands')">Bandas Públicas</button>
+          </div>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" id="socialSearchInput" class="form-input" style="flex: 1; min-width: 220px;" placeholder="Buscar por termo, instrumento ou cidade..." oninput="triggerSocialSearch()">
+            <button class="btn btn-outline" onclick="triggerSocialSearch()">
+              <ion-icon name="search-outline"></ion-icon>
+              <span>Buscar</span>
+            </button>
+          </div>
+
+          <div id="socialViewAnn" class="grid-cards">
+          </div>
+
+          <div id="socialViewMus" class="grid-cards" style="display: none;">
+          </div>
+
+          <div id="socialViewBands" class="grid-cards" style="display: none;">
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" style="height: 48px; margin-bottom: 8px;">
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff;">A Rede Musical Definitiva</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Faça login para sincronizar seu perfil, songbook, bandas e agenda.</p>
+      </div>
+
+      <div class="auth-tabs" id="authModeTabs">
+        <button class="auth-tab-btn active" id="authTabLogin" onclick="setAuthMode('login')">Entrar</button>
+        <button class="auth-tab-btn" id="authTabRegister" onclick="setAuthMode('register')">Cadastrar</button>
+      </div>
+
+      <!-- Form Login -->
+      <form id="formLogin" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="seu-email@dominio.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+          <a href="javascript:void(0)" onclick="setAuthMode('forgot')" style="color: var(--cyan-light); font-size: 0.82rem; text-decoration: none;">Esqueci minha senha</a>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Entrar na Rede</button>
+      </form>
+
+      <!-- Form Cadastro -->
+      <form id="formRegister" onsubmit="handleRegister(event)" style="display: none;">
+        <div class="form-group">
+          <label>Nome de Usuário (@handle)</label>
+          <input type="text" id="regUsername" class="form-input" placeholder="ex: lucas_rock" maxlength="30" required>
+        </div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="regEmail" class="form-input" placeholder="seu-email@dominio.com" required>
+        </div>
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" id="regBirthDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Senha (mínimo 8 caracteres)</label>
+          <input type="password" id="regPassword" class="form-input" placeholder="••••••••" minlength="8" required>
+        </div>
+        <button type="submit" class="btn btn-violet" style="width: 100%; padding: 12px; margin-top: 8px;">Criar Conta Gratuita</button>
+      </form>
+
+      <!-- Form Confirmar Código -->
+      <form id="formConfirm" onsubmit="handleConfirmEmail(event)" style="display: none;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Enviamos um código de confirmação de 6 dígitos para o seu e-mail: <strong id="confirmEmailDisplay" style="color: #fff;"></strong>.
+        </p>
+        <div class="form-group">
+          <label>Código de Confirmação (6 dígitos)</label>
+          <input type="text" id="confirmCode" class="form-input" placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.4rem; letter-spacing: 4px; font-weight: 800;" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;">Confirmar e Entrar</button>
+        <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="handleResendCode()">Reenviar Código</button>
+      </form>
+
+      <!-- Form Esqueci a Senha -->
+      <form id="formForgot" onsubmit="handleForgotPassword(event)" style="display: none;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Digite seu e-mail cadastrado para receber o código de redefinição de senha.
+        </p>
+        <div class="form-group">
+          <label>E-mail Cadastrado</label>
+          <input type="email" id="forgotEmail" class="form-input" placeholder="seu-email@dominio.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;">Enviar Código de Recuperação</button>
+        <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="setAuthMode('login')">Voltar ao Login</button>
+      </form>
+
+      <!-- Form Redefinir Senha -->
+      <form id="formReset" onsubmit="handleResetPassword(event)" style="display: none;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Digite o código recebido por e-mail e a sua nova senha.
+        </p>
+        <div class="form-group">
+          <label>Código de 6 Dígitos</label>
+          <input type="text" id="resetCode" class="form-input" placeholder="123456" maxlength="6" required>
+        </div>
+        <div class="form-group">
+          <label>Nova Senha</label>
+          <input type="password" id="resetPassword" class="form-input" placeholder="••••••••" minlength="8" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;">Redefinir e Entrar</button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE MODAL -->
+  <div class="modal-overlay" id="editProfileModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="create-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Editar Perfil</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('editProfileModal')">&times;</button>
+      </div>
+      <form onsubmit="handleSaveProfile(event)">
+        <div class="form-group">
+          <label>Biografia</label>
+          <textarea id="editBio" class="form-input" placeholder="Fale sobre sua experiência, estilo, etc."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Instrumentos (separados por vírgula)</label>
+          <input type="text" id="editInstruments" class="form-input" placeholder="Ex: Guitarra, Vocal, Baixo">
+        </div>
+        <div class="form-group">
+          <label>Influências Musicais</label>
+          <input type="text" id="editInfluences" class="form-input" placeholder="Ex: Pink Floyd, Rush, Iron Maiden">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Cidade</label>
+            <input type="text" id="editCity" class="form-input" placeholder="Ex: São Paulo">
+          </div>
+          <div class="form-group">
+            <label>Estado (UF)</label>
+            <input type="text" id="editState" class="form-input" placeholder="Ex: SP">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Instagram (@)</label>
+          <input type="text" id="editInstagram" class="form-input" placeholder="usuario">
+        </div>
+        <div class="form-group">
+          <label>YouTube / Canal</label>
+          <input type="text" id="editYoutube" class="form-input" placeholder="https://youtube.com/@seu_canal">
+        </div>
+        <div class="form-group">
+          <label>Disponibilidade</label>
+          <select id="editAvailability" class="form-input">
+            <option value="Disponível">Disponível para projetos e shows</option>
+            <option value="Apenas Bandas Atuais">Apenas nas bandas atuais</option>
+            <option value="Indisponível">Indisponível no momento</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editProfileModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SONG DETAIL MODAL -->
+  <div class="modal-overlay" id="songModal">
+    <div class="modal-card large">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="songModalTitle">Título da Música</h3>
+          <p id="songModalArtist" style="color: var(--text-muted); font-size: 0.88rem; margin-top: 2px;">Artista / Banda</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('songModal')">&times;</button>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Visualização:</span>
+          <button class="btn btn-sm btn-outline active" id="btnViewChords" onclick="setSongViewMode('chords')">Cifra</button>
+          <button class="btn btn-sm btn-outline" id="btnViewLyrics" onclick="setSongViewMode('lyrics')">Letra</button>
+          <button class="btn btn-sm btn-outline" id="btnViewTabs" onclick="setSongViewMode('tabs')">Tablatura</button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-sm btn-outline" onclick="copySongText()">
+            <ion-icon name="copy-outline"></ion-icon>
+            <span>Copiar</span>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCurrentSong()" id="btnDeleteSong">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <pre class="chord-pro-display" id="songContentDisplay"></pre>
+
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeModal('songModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD SONG MODAL -->
+  <div class="modal-overlay" id="addSongModal">
+    <div class="modal-card large">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="musical-notes-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Adicionar Nova Música</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('addSongModal')">&times;</button>
+      </div>
+      <form onsubmit="handleSaveNewSong(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label>Nome da Música *</label>
+            <input type="text" id="newSongName" class="form-input" placeholder="Ex: Tempo Perdido" required>
+          </div>
+          <div class="form-group">
+            <label>Banda / Artista Original *</label>
+            <input type="text" id="newSongArtist" class="form-input" placeholder="Ex: Legião Urbana" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Estilo / Gênero / Tags</label>
+          <input type="text" id="newSongStyle" class="form-input" placeholder="Ex: Rock Nacional, 80s, Acústico">
+        </div>
+        <div class="form-group">
+          <label>Cifra com Acordes</label>
+          <textarea id="newSongChords" class="form-input" style="min-height: 140px; font-family: var(--font-mono);" placeholder="C     G     Am    F..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Letra Completa</label>
+          <textarea id="newSongLyrics" class="form-input" style="min-height: 100px;" placeholder="Todos os dias quando acordo..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tablatura (Opcional)</label>
+          <textarea id="newSongTabs" class="form-input" style="min-height: 80px; font-family: var(--font-mono);" placeholder="e|---0---1---3---|..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('addSongModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar no Songbook</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CREATE BAND MODAL -->
+  <div class="modal-overlay" id="createBandModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="people-outline" style="color: var(--violet);"></ion-icon>
+          <span>Criar Banda na Nuvem</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('createBandModal')">&times;</button>
+      </div>
+      <form onsubmit="handleCreateBand(event)">
+        <div class="form-group">
+          <label>Nome da Banda *</label>
+          <input type="text" id="bandName" class="form-input" placeholder="Ex: Os Valentes" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>Gênero Musical Principal</label>
+          <input type="text" id="bandGenre" class="form-input" placeholder="Ex: Classic Rock, Pop Rock" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>Descrição / Release</label>
+          <textarea id="bandDescription" class="form-input" placeholder="Apresentação da banda..." maxlength="500"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('createBandModal')">Cancelar</button>
+          <button type="submit" class="btn btn-violet">Criar Banda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD EVENT MODAL -->
+  <div class="modal-overlay" id="addEventModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="calendar-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Novo Evento na Agenda</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('addEventModal')">&times;</button>
+      </div>
+      <form onsubmit="handleSaveEvent(event)">
+        <div class="form-group">
+          <label>Título do Evento *</label>
+          <input type="text" id="eventTitle" class="form-input" placeholder="Ex: Show no Bar do Rock" required maxlength="200">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Data *</label>
+            <input type="date" id="eventDate" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Horário</label>
+            <input type="time" id="eventTime" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Local / Casa de Show</label>
+          <input type="text" id="eventLocal" class="form-input" placeholder="Ex: Audio Club, São Paulo" maxlength="200">
+        </div>
+        <div class="form-group">
+          <label>Vincular a uma Banda (Opcional)</label>
+          <select id="eventBandSelect" class="form-input">
+            <option value="">Apresentação Solo / Sem Banda</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cachê Estimado (Opcional)</label>
+          <input type="text" id="eventCache" class="form-input" placeholder="Ex: R$ 1.500,00" maxlength="30">
+        </div>
+        <div class="form-group">
+          <label>Observações</label>
+          <textarea id="eventNotes" class="form-input" placeholder="Repertório escolhido, passagem de som..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('addEventModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Evento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CREATE ANNOUNCEMENT MODAL -->
+  <div class="modal-overlay" id="createAnnouncementModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="megaphone-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Publicar no Mural</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('createAnnouncementModal')">&times;</button>
+      </div>
+      <form onsubmit="handleCreateAnnouncement(event)">
+        <div class="form-group">
+          <label>Título do Anúncio *</label>
+          <input type="text" id="annTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" required maxlength="200">
+        </div>
+        <div class="form-group">
+          <label>Instrumento / Função Procurada *</label>
+          <input type="text" id="annInstrument" class="form-input" placeholder="Ex: Baixista, Vocalista, Baterista" required maxlength="100">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Cidade</label>
+            <input type="text" id="annCity" class="form-input" placeholder="Ex: Curitiba" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>Estado (UF)</label>
+            <input type="text" id="annState" class="form-input" placeholder="Ex: PR" maxlength="50">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descrição Detalhada *</label>
+          <textarea id="annDescription" class="form-input" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('createAnnouncementModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Publicar no Mural</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const API_URL = "https://bandlink-api.azurewebsites.net/api";
+
+    let currentUser = null;
+    let mySongs = [];
+    let myBands = [];
+    let myEvents = [];
+    let selectedSong = null;
+    let currentSocialSub = 'ann';
+    let agendaFilterMode = 'all';
+
+    const TOKEN_KEY = "jwt_token";
+    const USER_KEY = "user_info";
+    const SONGS_CACHE_KEY = "bandlink_web_songs";
+    const EVENTS_CACHE_KEY = "bandlink_web_events";
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      loadCachedData();
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        showAuthModal('login');
+      } else {
+        await verifySessionAndLoadData();
+      }
+    });
+
+    function loadCachedData() {
+      try {
+        const storedSongs = localStorage.getItem(SONGS_CACHE_KEY);
+        if (storedSongs) mySongs = JSON.parse(storedSongs);
+        const storedEvents = localStorage.getItem(EVENTS_CACHE_KEY);
+        if (storedEvents) myEvents = JSON.parse(storedEvents);
+      } catch (e) {
+        console.error('Error loading local cache:', e);
+      }
+    }
+
+    function saveSongsCache() {
+      localStorage.setItem(SONGS_CACHE_KEY, JSON.stringify(mySongs));
+      updateSongbookUI();
+      updateStats();
+    }
+
+    function saveEventsCache() {
+      localStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(myEvents));
+      renderAgenda();
+      updateStats();
+    }
+
+    function getAuthHeaders() {
+      const token = localStorage.getItem(TOKEN_KEY);
+      return {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      };
+    }
+
+    async function verifySessionAndLoadData() {
+      try {
+        const res = await fetch(`${API_URL}/Users/me`, {
+          headers: getAuthHeaders()
+        });
+
+        if (res.status === 401) {
+          executeLogout();
+          return;
+        }
+
+        if (res.ok) {
+          currentUser = await res.json();
+          localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+          hideAuthModal();
+          renderUserProfile();
+          await Promise.all([
+            loadMyBands(),
+            loadSocialData()
+          ]);
+          updateSongbookUI();
+          renderAgenda();
+          updateStats();
+        } else {
+          showAuthModal('login');
+        }
+      } catch (err) {
+        console.warn('Network issue:', err);
+        const cachedUser = localStorage.getItem(USER_KEY);
+        if (cachedUser) {
+          currentUser = JSON.parse(cachedUser);
+          hideAuthModal();
+          renderUserProfile();
+        } else {
+          showAuthModal('login');
+        }
+      }
+    }
+
+    function showAuthModal(mode = 'login') {
+      setAuthMode(mode);
+      document.getElementById('authModal').classList.add('active');
+    }
+
+    function hideAuthModal() {
+      document.getElementById('authModal').classList.remove('active');
+    }
+
+    function setAuthMode(mode) {
+      const forms = ['formLogin', 'formRegister', 'formConfirm', 'formForgot', 'formReset'];
+      forms.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+      const tabs = document.getElementById('authModeTabs');
+      const tabLogin = document.getElementById('authTabLogin');
+      const tabRegister = document.getElementById('authTabRegister');
+
+      if (mode === 'login') {
+        document.getElementById('formLogin').style.display = 'block';
+        tabs.style.display = 'flex';
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+      } else if (mode === 'register') {
+        document.getElementById('formRegister').style.display = 'block';
+        tabs.style.display = 'flex';
+        tabLogin.classList.remove('active');
+        tabRegister.classList.add('active');
+      } else if (mode === 'confirm') {
+        document.getElementById('formConfirm').style.display = 'block';
+        tabs.style.display = 'none';
+      } else if (mode === 'forgot') {
+        document.getElementById('formForgot').style.display = 'block';
+        tabs.style.display = 'none';
+      } else if (mode === 'reset') {
+        document.getElementById('formReset').style.display = 'block';
+        tabs.style.display = 'none';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch(`${API_URL}/Auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (res.status === 403) {
+          sessionStorage.setItem('pending_confirm_email', email);
+          document.getElementById('confirmEmailDisplay').textContent = email;
+          setAuthMode('confirm');
+          showToast('Confirme seu e-mail com o código de 6 dígitos.', 'info');
+          return;
+        }
+
+        if (!res.ok) {
+          let errorMsg = 'E-mail ou senha incorretos.';
+          try {
+            const text = await res.text();
+            if (text && text.trim() && !text.includes("<") && text.length < 200) {
+              errorMsg = text.trim();
+            }
+          } catch {}
+          showToast(errorMsg, 'error');
+          return;
+        }
+
+        const data = await res.json();
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data));
+        showToast('Login realizado com sucesso! Bem-vindo.', 'success');
+        await verifySessionAndLoadData();
+      } catch (err) {
+        showToast('Erro ao conectar ao servidor. Tente novamente.', 'error');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const password = document.getElementById('regPassword').value;
+      const birthDate = document.getElementById('regBirthDate').value;
+
+      try {
+        const payload = { username, email, password };
+        if (birthDate) payload.birthDate = birthDate;
+
+        const res = await fetch(`${API_URL}/Auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          let errorMsg = 'Erro ao criar conta. Verifique os dados.';
+          try {
+            const text = await res.text();
+            try {
+              const json = JSON.parse(text);
+              if (json?.errors) {
+                const first = Object.keys(json.errors)[0];
+                if (first && json.errors[first]?.length) errorMsg = json.errors[first][0];
+              } else if (json?.message) {
+                errorMsg = json.message;
+              }
+            } catch {
+              if (text && text.trim() && !text.includes("<") && text.length < 200) errorMsg = text.trim();
+            }
+          } catch {}
+          showToast(errorMsg, 'error');
+          return;
+        }
+
+        sessionStorage.setItem('pending_confirm_email', email);
+        document.getElementById('confirmEmailDisplay').textContent = email;
+        setAuthMode('confirm');
+        showToast('Conta criada! Insira o código enviado por e-mail.', 'success');
+      } catch (err) {
+        showToast('Erro ao criar conta.', 'error');
+      }
+    }
+
+    async function handleConfirmEmail(e) {
+      e.preventDefault();
+      const email = sessionStorage.getItem('pending_confirm_email') || document.getElementById('loginEmail').value.trim();
+      const code = document.getElementById('confirmCode').value.trim();
+
+      try {
+        const res = await fetch(`${API_URL}/Auth/confirm-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code })
+        });
+
+        if (!res.ok) {
+          let errorMsg = 'Código inválido ou expirado.';
+          try {
+            const text = await res.text();
+            if (text && text.trim() && !text.includes("<") && text.length < 200) errorMsg = text.trim();
+          } catch {}
+          showToast(errorMsg, 'error');
+          return;
+        }
+
+        const data = await res.json();
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data));
+        showToast('E-mail confirmado com sucesso!', 'success');
+        await verifySessionAndLoadData();
+      } catch (err) {
+        showToast('Erro ao confirmar e-mail.', 'error');
+      }
+    }
+
+    async function handleResendCode() {
+      const email = sessionStorage.getItem('pending_confirm_email') || document.getElementById('loginEmail').value.trim();
+      if (!email) return;
+
+      try {
+        const res = await fetch(`${API_URL}/Auth/resend-code`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        if (res.ok) {
+          showToast('Código reenviado para o seu e-mail!', 'success');
+        } else {
+          showToast('Erro ao reenviar código.', 'error');
+        }
+      } catch {
+        showToast('Falha na conexão.', 'error');
+      }
+    }
+
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+      try {
+        const res = await fetch(`${API_URL}/Auth/forgot-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        if (res.ok) {
+          sessionStorage.setItem('pending_reset_email', email);
+          setAuthMode('reset');
+          showToast('Código enviado para seu e-mail!', 'success');
+        } else {
+          showToast('Não foi possível solicitar recuperação.', 'error');
+        }
+      } catch {
+        showToast('Falha de conexão.', 'error');
+      }
+    }
+
+    async function handleResetPassword(e) {
+      e.preventDefault();
+      const email = sessionStorage.getItem('pending_reset_email');
+      const code = document.getElementById('resetCode').value.trim();
+      const newPassword = document.getElementById('resetPassword').value;
+
+      try {
+        const res = await fetch(`${API_URL}/Auth/reset-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code, newPassword })
+        });
+        if (res.ok) {
+          showToast('Senha alterada com sucesso! Faça login.', 'success');
+          setAuthMode('login');
+        } else {
+          showToast('Código de recuperação inválido ou expirado.', 'error');
+        }
+      } catch {
+        showToast('Erro ao redefinir senha.', 'error');
+      }
+    }
+
+    function executeLogout() {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      currentUser = null;
+      showToast('Sessão encerrada.', 'info');
+      showAuthModal('login');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+
+      const activeBtn = document.getElementById(`navTab-${tabId}`);
+      const activeView = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activeView) activeView.classList.add('active');
+
+      if (tabId === 'social') loadSocialData();
+      if (tabId === 'bands') loadMyBands();
+      if (tabId === 'songbook') updateSongbookUI();
+      if (tabId === 'agenda') renderAgenda();
+    }
+
+    function renderUserProfile() {
+      if (!currentUser) return;
+
+      const username = currentUser.username || 'Músico';
+      const initial = username.charAt(0).toUpperCase();
+
+      document.getElementById('topbarUsername').textContent = `@${username}`;
+      document.getElementById('topbarAvatar').textContent = initial;
+
+      document.getElementById('profUsername').textContent = `@${username}`;
+      document.getElementById('profAvatarBig').textContent = initial;
+      document.getElementById('profEmail').textContent = currentUser.email || '';
+
+      if (currentUser.age) {
+        document.getElementById('profAgeBadge').textContent = `${currentUser.age} anos`;
+        document.getElementById('profAgeBadge').style.display = 'inline-flex';
+      } else {
+        document.getElementById('profAgeBadge').style.display = 'none';
+      }
+
+      const locationParts = [currentUser.city, currentUser.state, currentUser.country || 'Brasil'].filter(Boolean);
+      document.getElementById('profLocation').innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${locationParts.join(', ') || 'Localização não informada'}</span>`;
+
+      document.getElementById('profBio').textContent = currentUser.bio || 'Adicione uma biografia contando sobre sua trajetória musical, projetos e experiências.';
+      document.getElementById('profInstruments').textContent = currentUser.instruments || 'Nenhum instrumento adicionado';
+      document.getElementById('profInfluences').textContent = currentUser.influences || 'Nenhuma influência informada';
+      document.getElementById('profAvailability').textContent = currentUser.availability || 'Disponível para projetos';
+
+      const socialRow = document.getElementById('profSocialRow');
+      socialRow.innerHTML = '';
+      if (currentUser.instagram) {
+        socialRow.innerHTML += `<a href="https://instagram.com/${currentUser.instagram.replace('@','')}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="logo-instagram"></ion-icon> @${currentUser.instagram.replace('@','')}</a>`;
+      }
+      if (currentUser.youtube) {
+        socialRow.innerHTML += `<a href="${currentUser.youtube}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="logo-youtube"></ion-icon> YouTube</a>`;
+      }
+    }
+
+    function openEditProfileModal() {
+      if (!currentUser) return;
+      document.getElementById('editBio').value = currentUser.bio || '';
+      document.getElementById('editInstruments').value = currentUser.instruments || '';
+      document.getElementById('editInfluences').value = currentUser.influences || '';
+      document.getElementById('editCity').value = currentUser.city || '';
+      document.getElementById('editState').value = currentUser.state || '';
+      document.getElementById('editInstagram').value = currentUser.instagram || '';
+      document.getElementById('editYoutube').value = currentUser.youtube || '';
+      if (currentUser.availability) {
+        document.getElementById('editAvailability').value = currentUser.availability;
+      }
+      openModal('editProfileModal');
+    }
+
+    async function handleSaveProfile(e) {
+      e.preventDefault();
+      const payload = {
+        bio: document.getElementById('editBio').value.trim(),
+        instruments: document.getElementById('editInstruments').value.trim(),
+        influences: document.getElementById('editInfluences').value.trim(),
+        city: document.getElementById('editCity').value.trim(),
+        state: document.getElementById('editState').value.trim(),
+        instagram: document.getElementById('editInstagram').value.trim(),
+        youtube: document.getElementById('editYoutube').value.trim(),
+        availability: document.getElementById('editAvailability').value
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          currentUser = { ...currentUser, ...payload };
+          localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+          renderUserProfile();
+          closeModal('editProfileModal');
+          showToast('Perfil atualizado com sucesso!', 'success');
+        } else {
+          showToast('Erro ao atualizar perfil.', 'error');
+        }
+      } catch {
+        showToast('Falha na conexão.', 'error');
+      }
+    }
+
+    function updateSongbookUI() {
+      filterSongs();
+      updateStats();
+    }
+
+    function filterSongs() {
+      const search = (document.getElementById('songSearchInput')?.value || '').toLowerCase().trim();
+      const styleFilter = (document.getElementById('songStyleFilter')?.value || '').toLowerCase().trim();
+      const grid = document.getElementById('songbookGrid');
+
+      const filtered = mySongs.filter(s => {
+        const matchTitle = (s.name || '').toLowerCase().includes(search);
+        const matchArtist = (s.originalBand || '').toLowerCase().includes(search);
+        const matchStyle = !styleFilter || (s.style || '').toLowerCase().includes(styleFilter);
+        return (matchTitle || matchArtist) && matchStyle;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
+            <ion-icon name="musical-notes-outline" style="font-size: 2.5rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música encontrada</h4>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Adicione cifras e letras ao seu Songbook pessoal.</p>
+            <button class="btn btn-primary btn-sm" onclick="openAddSongModal()">Adicionar Música</button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(song => `
+        <div class="card" onclick="openSongDetailModal(${song.id})" style="cursor: pointer;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff;">${song.name}</h4>
+            <span class="badge badge-cyan">${song.style ? song.style.split(',')[0].trim() : 'Música'}</span>
+          </div>
+          <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 12px;">${song.originalBand || 'Artista'}</p>
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-dim);">
+            <span>${song.chords ? 'Possui Cifra' : 'Apenas Letra'}</span>
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddSongModal() {
+      document.getElementById('newSongName').value = '';
+      document.getElementById('newSongArtist').value = '';
+      document.getElementById('newSongStyle').value = '';
+      document.getElementById('newSongChords').value = '';
+      document.getElementById('newSongLyrics').value = '';
+      document.getElementById('newSongTabs').value = '';
+      openModal('addSongModal');
+    }
+
+    function handleSaveNewSong(e) {
+      e.preventDefault();
+      const newSong = {
+        id: Date.now(),
+        name: document.getElementById('newSongName').value.trim(),
+        originalBand: document.getElementById('newSongArtist').value.trim(),
+        style: document.getElementById('newSongStyle').value.trim(),
+        chords: document.getElementById('newSongChords').value,
+        lyrics: document.getElementById('newSongLyrics').value,
+        tabs: document.getElementById('newSongTabs').value,
+        defaultView: 'chords',
+        createdAt: new Date().toISOString()
+      };
+
+      mySongs.unshift(newSong);
+      saveSongsCache();
+      closeModal('addSongModal');
+      showToast('Música adicionada ao Songbook!', 'success');
+    }
+
+    function openSongDetailModal(id) {
+      selectedSong = mySongs.find(s => s.id === id);
+      if (!selectedSong) return;
+
+      document.getElementById('songModalTitle').textContent = selectedSong.name;
+      document.getElementById('songModalArtist').textContent = selectedSong.originalBand || 'Artista Desconhecido';
+      setSongViewMode(selectedSong.defaultView || 'chords');
+      openModal('songModal');
+    }
+
+    function setSongViewMode(mode) {
+      if (!selectedSong) return;
+      ['btnViewChords', 'btnViewLyrics', 'btnViewTabs'].forEach(btnId => {
+        const b = document.getElementById(btnId);
+        if (b) b.classList.remove('active');
+      });
+
+      const display = document.getElementById('songContentDisplay');
+      if (mode === 'chords') {
+        document.getElementById('btnViewChords').classList.add('active');
+        display.textContent = selectedSong.chords || 'Nenhuma cifra cadastrada para esta música.';
+      } else if (mode === 'lyrics') {
+        document.getElementById('btnViewLyrics').classList.add('active');
+        display.textContent = selectedSong.lyrics || 'Nenhuma letra cadastrada para esta música.';
+      } else if (mode === 'tabs') {
+        document.getElementById('btnViewTabs').classList.add('active');
+        display.textContent = selectedSong.tabs || 'Nenhuma tablatura cadastrada para esta música.';
+      }
+    }
+
+    function copySongText() {
+      const display = document.getElementById('songContentDisplay');
+      navigator.clipboard.writeText(display.textContent).then(() => {
+        showToast('Texto copiado para a área de transferência!', 'success');
+      });
+    }
+
+    function deleteCurrentSong() {
+      if (!selectedSong) return;
+      if (!confirm(`Deseja realmente remover a música "${selectedSong.name}" do seu Songbook?`)) return;
+
+      mySongs = mySongs.filter(s => s.id !== selectedSong.id);
+      saveSongsCache();
+      closeModal('songModal');
+      showToast('Música removida.', 'info');
+    }
+
+    async function loadMyBands() {
+      try {
+        const res = await fetch(`${API_URL}/Bands/my-bands`, {
+          headers: getAuthHeaders()
+        });
+        if (res.ok) {
+          myBands = await res.json();
+          renderMyBands();
+          updateBandOptionsInEventModal();
+          updateStats();
+        }
+      } catch (err) {
+        console.error('Error loading bands:', err);
+      }
+    }
+
+    function renderMyBands() {
+      const grid = document.getElementById('myBandsGrid');
+      if (!myBands || myBands.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
+            <ion-icon name="people-outline" style="font-size: 2.5rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma banda vinculada</h4>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Crie uma banda para sincronizar repertório e ensaios com os integrantes.</p>
+            <button class="btn btn-violet btn-sm" onclick="openCreateBandModal()">Criar Banda</button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = myBands.map(band => `
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span class="badge ${band.isLeader ? 'badge-violet' : 'badge-cyan'}">${band.role || 'Membro'}</span>
+              <span class="badge badge-emerald">${band.membersCount || 1} Integrante(s)</span>
+            </div>
+            <h4 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${band.name}</h4>
+            <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${band.genre || 'Gênero musical variado'}</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">${band.description || 'Sem descrição informada.'}</p>
+          </div>
+          <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+            <a href="/banda?id=${band.id}" target="_blank" class="btn btn-outline btn-sm" style="flex: 1;">
+              <ion-icon name="open-outline"></ion-icon>
+              <span>Ver Página</span>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openCreateBandModal() {
+      document.getElementById('bandName').value = '';
+      document.getElementById('bandGenre').value = '';
+      document.getElementById('bandDescription').value = '';
+      openModal('createBandModal');
+    }
+
+    async function handleCreateBand(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('bandName').value.trim(),
+        genre: document.getElementById('bandGenre').value.trim(),
+        description: document.getElementById('bandDescription').value.trim()
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/Bands`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('Banda criada com sucesso!', 'success');
+          closeModal('createBandModal');
+          await loadMyBands();
+        } else {
+          showToast('Erro ao criar banda.', 'error');
+        }
+      } catch {
+        showToast('Falha na conexão.', 'error');
+      }
+    }
+
+    function updateBandOptionsInEventModal() {
+      const select = document.getElementById('eventBandSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">Apresentação Solo / Sem Banda</option>';
+      myBands.forEach(b => {
+        select.innerHTML += `<option value="${b.name}">${b.name}</option>`;
+      });
+    }
+
+    function renderAgenda() {
+      const list = document.getElementById('agendaList');
+      const now = new Date();
+      now.setHours(0,0,0,0);
+
+      let events = [...myEvents];
+
+      if (agendaFilterMode === 'upcoming') {
+        events = events.filter(e => new Date(e.date) >= now);
+      } else if (agendaFilterMode === 'past') {
+        events = events.filter(e => new Date(e.date) < now);
+      }
+
+      events.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      if (events.length === 0) {
+        list.innerHTML = `
+          <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
+            <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado</h4>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Registre ensaios e shows na sua agenda.</p>
+            <button class="btn btn-primary btn-sm" onclick="openAddEventModal()">Adicionar Evento</button>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = events.map(ev => {
+        const isUpcoming = new Date(ev.date) >= now;
+        const [year, month, day] = (ev.date || '2026-01-01').split('-');
+        const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+        const monthLabel = months[parseInt(month, 10) - 1] || '---';
+
+        return `
+          <div class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 18px;">
+              <div style="width: 58px; height: 58px; background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span style="font-size: 1.3rem; font-weight: 900; color: #fff; line-height: 1;">${day}</span>
+                <span style="font-size: 0.68rem; font-weight: 800; color: var(--cyan-light); text-transform: uppercase;">${monthLabel}</span>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff;">${ev.title}</h4>
+                  <span class="badge ${isUpcoming ? 'badge-emerald' : 'badge-amber'}">${isUpcoming ? 'Confirmado' : 'Encerrado'}</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span><ion-icon name="location-outline"></ion-icon> ${ev.local || 'Local não informado'}</span>
+                  ${ev.band ? `<span>• Banda: <strong>${ev.band}</strong></span>` : ''}
+                  ${ev.time ? `<span>• Horário: <strong>${ev.time}</strong></span>` : ''}
+                  ${ev.cache ? `<span style="color: var(--emerald);">• Cachê: <strong>${ev.cache}</strong></span>` : ''}
+                </p>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-danger" onclick="deleteEvent(${ev.id})" title="Excluir Evento">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAgenda(mode) {
+      agendaFilterMode = mode;
+      ['agendaFilterAll', 'agendaFilterUpcoming', 'agendaFilterPast'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.classList.remove('active');
+      });
+      if (mode === 'all') document.getElementById('agendaFilterAll').classList.add('active');
+      if (mode === 'upcoming') document.getElementById('agendaFilterUpcoming').classList.add('active');
+      if (mode === 'past') document.getElementById('agendaFilterPast').classList.add('active');
+      renderAgenda();
+    }
+
+    function openAddEventModal() {
+      document.getElementById('eventTitle').value = '';
+      document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('eventTime').value = '21:00';
+      document.getElementById('eventLocal').value = '';
+      document.getElementById('eventCache').value = '';
+      document.getElementById('eventNotes').value = '';
+      updateBandOptionsInEventModal();
+      openModal('addEventModal');
+    }
+
+    function handleSaveEvent(e) {
+      e.preventDefault();
+      const newEvent = {
+        id: Date.now(),
+        title: document.getElementById('eventTitle').value.trim(),
+        date: document.getElementById('eventDate').value,
+        time: document.getElementById('eventTime').value,
+        local: document.getElementById('eventLocal').value.trim(),
+        band: document.getElementById('eventBandSelect').value,
+        cache: document.getElementById('eventCache').value.trim(),
+        notes: document.getElementById('eventNotes').value.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      myEvents.push(newEvent);
+      saveEventsCache();
+      closeModal('addEventModal');
+      showToast('Evento registrado na agenda!', 'success');
+    }
+
+    function deleteEvent(id) {
+      if (!confirm('Deseja remover este evento da agenda?')) return;
+      myEvents = myEvents.filter(e => e.id !== id);
+      saveEventsCache();
+      showToast('Evento removido.', 'info');
+    }
+
+    async function loadSocialData() {
+      if (currentSocialSub === 'ann') {
+        await loadAnnouncements();
+      } else if (currentSocialSub === 'mus') {
+        await loadMusiciansNetwork();
+      } else if (currentSocialSub === 'bands') {
+        await loadPublicBands();
+      }
+    }
+
+    function switchSocialSub(sub) {
+      currentSocialSub = sub;
+      ['socialSubAnn', 'socialSubMus', 'socialSubBands'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.classList.remove('active');
+      });
+
+      ['socialViewAnn', 'socialViewMus', 'socialViewBands'].forEach(id => {
+        const v = document.getElementById(id);
+        if (v) v.style.display = 'none';
+      });
+
+      if (sub === 'ann') {
+        document.getElementById('socialSubAnn').classList.add('active');
+        document.getElementById('socialViewAnn').style.display = 'grid';
+      } else if (sub === 'mus') {
+        document.getElementById('socialSubMus').classList.add('active');
+        document.getElementById('socialViewMus').style.display = 'grid';
+      } else if (sub === 'bands') {
+        document.getElementById('socialSubBands').classList.add('active');
+        document.getElementById('socialViewBands').style.display = 'grid';
+      }
+      loadSocialData();
+    }
+
+    function triggerSocialSearch() {
+      loadSocialData();
+    }
+
+    async function loadAnnouncements() {
+      const search = document.getElementById('socialSearchInput')?.value.trim() || '';
+      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const container = document.getElementById('socialViewAnn');
+
+      try {
+        const res = await fetch(`${API_URL}/Announcements${qs}`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = data.data || [];
+
+          if (items.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhum anúncio encontrado.</div>`;
+            return;
+          }
+
+          container.innerHTML = items.map(ann => `
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span class="badge badge-cyan">${ann.instrument || 'Geral'}</span>
+                  <span style="font-size: 0.75rem; color: var(--text-dim);">${new Date(ann.createdAt).toLocaleDateString()}</span>
+                </div>
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">${ann.title}</h4>
+                <p style="color: var(--text-dim); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; margin-bottom: 10px;">
+                  <ion-icon name="location-outline"></ion-icon> ${ann.city || 'Brasil'} ${ann.state ? '- ' + ann.state : ''}
+                </p>
+                <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; white-space: pre-line;">${ann.description}</p>
+              </div>
+              <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700;">@${ann.creator?.username || 'músico'}</span>
+                <a href="mailto:${ann.creator?.email || ''}" class="btn btn-sm btn-outline">Contatar</a>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error fetching announcements:', err);
+      }
+    }
+
+    async function loadMusiciansNetwork() {
+      const search = document.getElementById('socialSearchInput')?.value.trim() || '';
+      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const container = document.getElementById('socialViewMus');
+
+      try {
+        const res = await fetch(`${API_URL}/Users${qs}`, {
+          headers: getAuthHeaders()
+        });
+        if (res.ok) {
+          const users = await res.json();
+          if (users.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhum músico encontrado.</div>`;
+            return;
+          }
+
+          container.innerHTML = users.map(u => `
+            <div class="card" style="text-align: center;">
+              <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--violet)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; margin: 0 auto 12px auto;">
+                ${(u.username || 'M')[0].toUpperCase()}
+              </div>
+              <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff;">@${u.username}</h4>
+              <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">${u.instruments || 'Músico'}</p>
+              <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 12px;">${[u.city, u.state].filter(Boolean).join(', ') || 'Brasil'}</p>
+              <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; max-height: 60px; overflow: hidden; margin-bottom: 14px;">${u.bio || 'Sem biografia informada.'}</p>
+              ${u.instagram ? `<a href="https://instagram.com/${u.instagram.replace('@','')}" target="_blank" class="btn btn-sm btn-outline" style="width: 100%;"><ion-icon name="logo-instagram"></ion-icon> Instagram</a>` : ''}
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error fetching musicians:', err);
+      }
+    }
+
+    async function loadPublicBands() {
+      const search = document.getElementById('socialSearchInput')?.value.trim() || '';
+      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const container = document.getElementById('socialViewBands');
+
+      try {
+        const res = await fetch(`${API_URL}/Bands/public${qs}`);
+        if (res.ok) {
+          const bands = await res.json();
+          if (bands.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhuma banda pública encontrada.</div>`;
+            return;
+          }
+
+          container.innerHTML = bands.map(b => `
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span class="badge badge-cyan">${b.bandType || 'Banda'}</span>
+                  <span class="badge badge-emerald">${b.membersCount || 1} Membros</span>
+                </div>
+                <h4 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${b.name}</h4>
+                <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">${b.genre || 'Variado'}</p>
+                <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 10px;">${[b.city, b.state].filter(Boolean).join(', ') || 'Brasil'}</p>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">${b.description || 'Sem descrição.'}</p>
+              </div>
+              <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+                <a href="/banda?id=${b.id}" target="_blank" class="btn btn-outline btn-sm" style="width: 100%;">Ver Perfil Público</a>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error loading public bands:', err);
+      }
+    }
+
+    function openCreateAnnouncementModal() {
+      document.getElementById('annTitle').value = '';
+      document.getElementById('annInstrument').value = '';
+      document.getElementById('annCity').value = currentUser?.city || '';
+      document.getElementById('annState').value = currentUser?.state || '';
+      document.getElementById('annDescription').value = '';
+      openModal('createAnnouncementModal');
+    }
+
+    async function handleCreateAnnouncement(e) {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('annTitle').value.trim(),
+        instrument: document.getElementById('annInstrument').value.trim(),
+        city: document.getElementById('annCity').value.trim(),
+        state: document.getElementById('annState').value.trim(),
+        description: document.getElementById('annDescription').value.trim()
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/Announcements`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('Anúncio publicado no Mural!', 'success');
+          closeModal('createAnnouncementModal');
+          await loadAnnouncements();
+        } else {
+          showToast('Erro ao publicar anúncio.', 'error');
+        }
+      } catch {
+        showToast('Falha na conexão.', 'error');
+      }
+    }
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('active');
+    }
+
+    function updateStats() {
+      const sSongs = document.getElementById('statSongsCount');
+      const sBands = document.getElementById('statBandsCount');
+      const sEvents = document.getElementById('statEventsCount');
+
+      if (sSongs) sSongs.textContent = mySongs.length;
+      if (sBands) sBands.textContent = myBands.length;
+      if (sEvents) {
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const upcoming = myEvents.filter(e => new Date(e.date) >= now).length;
+        sEvents.textContent = upcoming;
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <ion-icon name="${type === 'success' ? 'checkmark-circle' : type === 'error' ? 'alert-circle' : 'information-circle'}"></ion-icon>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
