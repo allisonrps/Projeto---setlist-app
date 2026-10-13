@@ -29,6 +29,18 @@
       "rewrite": "/band.html"
     },
     {
+      "route": "/musico",
+      "rewrite": "/musico.html"
+    },
+    {
+      "route": "/musico/*",
+      "rewrite": "/musico.html"
+    },
+    {
+      "route": "/musico.html",
+      "rewrite": "/musico.html"
+    },
+    {
       "route": "/privacidade",
       "rewrite": "/privacy.html"
     },

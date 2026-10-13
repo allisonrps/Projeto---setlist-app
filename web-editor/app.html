@@ -189,19 +189,26 @@
       flex: 1;
       min-width: 0;
     }
+    /* DISPLAY NAME ON TOP */
     .sidebar-user-name {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.2;
     }
+    /* USERNAME UNDERNEATH */
     .sidebar-user-handle {
       font-size: 0.8rem;
       font-weight: 600;
       color: var(--cyan-light);
-      margin-bottom: 3px;
+      margin-top: 2px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .sidebar-user-location {
       font-size: 0.75rem;
@@ -329,7 +336,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* PROFILE VIEW HEADER */
+    /* PROFILE VIEW HERO (DISPLAY NAME ON TOP, USERNAME UNDERNEATH) */
     .profile-hero {
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(139, 92, 246, 0.14));
       border: 1px solid var(--border-medium);
@@ -373,19 +380,18 @@
       color: #fff;
     }
     .profile-hero-name {
-      font-size: 1.6rem;
+      font-size: 1.8rem;
       font-weight: 900;
       letter-spacing: -0.5px;
       color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      line-height: 1.15;
     }
     .profile-hero-handle {
       color: var(--cyan-light);
       font-size: 0.95rem;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-top: 3px;
+      margin-bottom: 6px;
     }
     .profile-hero-meta {
       display: flex;
@@ -396,7 +402,7 @@
       flex-wrap: wrap;
     }
 
-    /* 5 PROFILE TABS (LIKE MOBILE APP) */
+    /* 5 PROFILE TABS */
     .profile-tabs-nav {
       display: flex;
       background: var(--bg-surface-elevated);
@@ -455,6 +461,14 @@
       border-color: var(--border-medium);
       transform: translateY(-2px);
       box-shadow: var(--shadow-md);
+    }
+
+    .clickable-card {
+      cursor: pointer;
+    }
+    .clickable-card:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 8px 28px rgba(14, 165, 233, 0.2);
     }
 
     .section-banner {
@@ -518,15 +532,22 @@
       gap: 18px;
     }
 
-    /* BAND CARD WITH IMAGE THUMBNAIL */
+    /* BAND CARD */
     .band-card {
       display: flex;
       flex-direction: column;
       overflow: hidden;
       padding: 0;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .band-card:hover {
+      border-color: var(--cyan);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(14, 165, 233, 0.2);
     }
     .band-card-cover {
-      height: 120px;
+      height: 130px;
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3));
       position: relative;
       overflow: hidden;
@@ -541,12 +562,12 @@
       display: block;
     }
     .band-card-fallback-avatar {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--cyan), var(--violet));
       color: #fff;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 900;
       display: flex;
       align-items: center;
@@ -857,7 +878,9 @@
           <span class="sidebar-avatar-fallback" id="sideAvatarInitials">M</span>
         </div>
         <div class="sidebar-user-info">
+          <!-- DISPLAY NAME ON TOP -->
           <div class="sidebar-user-name" id="sideDisplayName">Músico</div>
+          <!-- USERNAME UNDERNEATH -->
           <div class="sidebar-user-handle" id="sideUserHandle">@carregando</div>
           <div class="sidebar-user-location" id="sideUserLocation">
             <ion-icon name="location-outline"></ion-icon>
@@ -914,21 +937,24 @@
       <!-- ============================================================== -->
       <section class="main-view active" id="view-profile">
         
-        <!-- Profile Hero Header -->
+        <!-- Profile Hero Header: DISPLAY NAME ON TOP, USERNAME UNDERNEATH -->
         <div class="profile-hero">
           <div class="profile-hero-left">
             <div class="profile-hero-avatar" id="heroAvatarBox">
               <span class="profile-hero-initials" id="heroAvatarInitials">M</span>
             </div>
             <div>
-              <div class="profile-hero-name">
-                <span id="heroDisplayName">Músico</span>
+              <!-- LINHA 1 (TOPO): NOME DE EXIBIÇÃO -->
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px; flex-wrap: wrap;">
+                <h1 id="heroDisplayName" class="profile-hero-name">Nome de Exibição</h1>
                 <span class="badge badge-cyan" id="heroAgeBadge" style="display: none;">-- anos</span>
+                <span class="badge badge-emerald" id="heroAvailBadge">Disponível</span>
               </div>
+              <!-- LINHA 2 (EMBAIXO): NOME DE USUÁRIO @HANDLE -->
               <div class="profile-hero-handle" id="heroUserHandle">@username</div>
+              <!-- LINHA 3: LOCALIZAÇÃO -->
               <div class="profile-hero-meta">
                 <span id="heroLocation"><ion-icon name="location-outline"></ion-icon> Brasil</span>
-                <span class="badge badge-emerald" id="heroAvailBadge">Disponível</span>
               </div>
             </div>
           </div>
@@ -1032,20 +1058,46 @@
           </div>
         </div>
 
-        <!-- SUBVIEW 3: INSTRUMENTOS (GEAR / EQUIPAMENTOS) -->
+        <!-- SUBVIEW 3: INSTRUMENTOS (INSTRUMENTOS DO MÚSICO + EQUIPAMENTOS/GEAR) -->
         <div class="profile-subview" id="subview-instruments">
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <div>
-                <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff;">Meus Equipamentos</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem;">Guitarras, baixos, amplificadores, pedais e microfones.</p>
+          <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- SEÇÃO A: INSTRUMENTOS QUE O MÚSICO TOCA -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <ion-icon name="musical-notes-outline" style="color: var(--cyan);"></ion-icon>
+                    <span>Instrumentos que Toco</span>
+                  </h3>
+                  <p style="color: var(--text-muted); font-size: 0.82rem;">Instrumentos cadastrados no seu perfil musical.</p>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="openAddSkillModal()">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                  <span>Novo Instrumento</span>
+                </button>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="openAddGearModal()">
-                <ion-icon name="add-circle-outline"></ion-icon>
-                <span>Adicionar Equipamento</span>
-              </button>
+              <div id="instrumentsProfileListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
-            <div id="gearListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+
+            <!-- SEÇÃO B: EQUIPAMENTOS / GEAR -->
+            <div style="padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <ion-icon name="hardware-chip-outline" style="color: var(--violet);"></ion-icon>
+                    <span>Meus Equipamentos (Gear)</span>
+                  </h3>
+                  <p style="color: var(--text-muted); font-size: 0.82rem;">Guitarras, baixos, amplificadores, pedais e microfones.</p>
+                </div>
+                <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                  <span>Adicionar Equipamento</span>
+                </button>
+              </div>
+              <div id="gearListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+
           </div>
         </div>
 
@@ -1054,7 +1106,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
             <div>
               <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff;">Bandas e Projetos</h2>
-              <p style="color: var(--text-muted); font-size: 0.85rem;">Grupos musicais vinculados ao seu perfil na nuvem BandLink.</p>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Clique em qualquer banda para abrir o perfil público.</p>
             </div>
             <button class="btn btn-violet" onclick="openCreateBandModal()">
               <ion-icon name="add-circle-outline"></ion-icon>
@@ -1069,7 +1121,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
             <div>
               <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff;">Agenda de Shows e Ensaios</h2>
-              <p style="color: var(--text-muted); font-size: 0.85rem;">Apresentações, passagens de som e datas marcadas.</p>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Compromissos, apresentações e passagens de som sincronizadas.</p>
             </div>
             <button class="btn btn-primary" onclick="openAddEventModal()">
               <ion-icon name="add-circle-outline"></ion-icon>
@@ -1133,7 +1185,7 @@
               <span>Rede Musical BandLink</span>
               <span class="badge badge-cyan" style="font-size: 0.75rem;">Comunidade</span>
             </h1>
-            <p style="color: var(--text-muted); font-size: 0.88rem;">Mural de vagas, busca de músicos e bandas ativas na comunidade.</p>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Mural de vagas, busca de músicos e catálogo de bandas públicas.</p>
           </div>
           <button class="btn btn-primary" onclick="openCreateAnnouncementModal()">
             <ion-icon name="megaphone-outline"></ion-icon>
@@ -1163,7 +1215,64 @@
     </main>
   </div>
 
-  <!-- AUTH MODAL (OBRIGATÓRIO AO ENTRAR) -->
+  <!-- PUBLIC MUSICIAN PROFILE MODAL (CLICK ON ANY MUSICIAN CARD) -->
+  <div class="modal-overlay" id="publicMusicianModal">
+    <div class="modal-card large">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="person-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Perfil do Músico</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('publicMusicianModal')">&times;</button>
+      </div>
+
+      <div id="publicMusicianContent" style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+          <div id="pubMusAvatarBox" style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, var(--cyan), var(--violet)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid var(--cyan);">
+            <span style="font-size: 2rem; font-weight: 900; color: #fff;" id="pubMusInitials">M</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 id="pubMusDisplayName" style="font-size: 1.5rem; font-weight: 900; color: #fff;">Músico</h2>
+              <span class="badge badge-cyan" id="pubMusAgeBadge" style="display: none;">-- anos</span>
+              <span class="badge badge-emerald" id="pubMusAvailBadge">Disponível</span>
+            </div>
+            <div id="pubMusHandle" style="font-size: 0.92rem; font-weight: 700; color: var(--cyan-light); margin: 2px 0 4px 0;">@handle</div>
+            <div id="pubMusLocation" style="font-size: 0.85rem; color: var(--text-dim); display: flex; align-items: center; gap: 4px;">
+              <ion-icon name="location-outline"></ion-icon> <span>Brasil</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 6px;">Sobre o Músico</div>
+          <p id="pubMusBio" style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; white-space: pre-line;">Sem biografia informada.</p>
+        </div>
+
+        <div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 8px;">Instrumentos & Habilidades</div>
+          <div id="pubMusSkills" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 8px;">Bandas do Músico</div>
+          <div id="pubMusBands" class="grid-cards"></div>
+        </div>
+
+        <div id="pubMusSocialsRow" style="display: flex; gap: 10px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-subtle);"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+          <a id="pubMusExternalLink" href="#" target="_blank" class="btn btn-outline btn-sm">
+            <ion-icon name="open-outline"></ion-icon>
+            <span>Abrir Página Externa</span>
+          </a>
+          <button class="btn btn-primary" onclick="closeModal('publicMusicianModal')">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
   <div class="modal-overlay" id="authModal">
     <div class="modal-card">
       <div style="text-align: center; margin-bottom: 24px;">
@@ -1259,7 +1368,7 @@
     </div>
   </div>
 
-  <!-- EDIT PROFILE MODAL (WITH PHOTO UPLOAD) -->
+  <!-- EDIT PROFILE MODAL -->
   <div class="modal-overlay" id="editProfileModal">
     <div class="modal-card">
       <div class="modal-header">
@@ -1292,8 +1401,8 @@
         </div>
 
         <div class="form-group">
-          <label>Nome de Exibição</label>
-          <input type="text" id="editDisplayName" class="form-input" placeholder="Seu nome artístico ou apelido">
+          <label>Nome de Exibição (Nome Completo / Artístico)</label>
+          <input type="text" id="editDisplayName" class="form-input" placeholder="Ex: Allison Rodrigues" required>
         </div>
         <div class="form-group">
           <label>Biografia / Sobre mim</label>
@@ -1335,13 +1444,13 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="flash-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Adicionar Habilidade / Instrumento</span>
+          <span>Adicionar Instrumento / Habilidade</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addSkillModal')">&times;</button>
       </div>
       <form onsubmit="handleSaveSkill(event)">
         <div class="form-group">
-          <label>Instrumento / Habilidade *</label>
+          <label>Nome do Instrumento / Habilidade *</label>
           <input type="text" id="skillNameInput" class="form-input" placeholder="Ex: Guitarra Solo, Vocal, Bateria, Baixo" required>
         </div>
         <div class="form-group">
@@ -1356,7 +1465,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('addSkillModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Habilidade</button>
+          <button type="submit" class="btn btn-primary">Salvar Instrumento</button>
         </div>
       </form>
     </div>
@@ -1393,7 +1502,7 @@
         </div>
         <div class="form-group">
           <label>Detalhes Adicionais (Opcional)</label>
-          <textarea id="gearDetailsInput" class="form-input" placeholder="Ano, captação, modificações, regulagem..."></textarea>
+          <textarea id="gearDetailsInput" class="form-input" placeholder="Ano, captação, regulagem, notas..."></textarea>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('addGearModal')">Cancelar</button>
@@ -1640,6 +1749,7 @@
     const SONGS_CACHE_KEY = "bandlink_web_songs";
     const EVENTS_CACHE_KEY = "bandlink_web_events";
     const GEAR_CACHE_KEY = "bandlink_user_gear";
+    const DISPLAY_NAME_KEY = "user_display_name";
 
     window.addEventListener('DOMContentLoaded', async () => {
       loadCachedData();
@@ -1700,6 +1810,10 @@
 
         if (res.ok) {
           currentUser = await res.json();
+          // Restore saved display name from local storage if not provided by backend
+          const savedDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
+          if (savedDisplayName) currentUser.displayName = savedDisplayName;
+
           localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
           hideAuthModal();
           
@@ -1732,7 +1846,7 @@
 
     function parseUserSkillsAndGear() {
       if (!currentUser) return;
-      mySkills = getArrayFromJsonOrComma(currentUser.instruments || currentUser.skillsJson);
+      mySkills = parseInstrumentsList(currentUser.instruments || currentUser.skillsJson);
     }
 
     function showAuthModal(mode = 'login') {
@@ -2003,7 +2117,7 @@
 
       if (tabName === 'bio') renderBioTab();
       if (tabName === 'skills') renderSkillsTab();
-      if (tabName === 'instruments') renderGearTab();
+      if (tabName === 'instruments') renderInstrumentsTab();
       if (tabName === 'bands') renderProfileBandsTab();
       if (tabName === 'agenda') renderProfileAgenda();
     }
@@ -2021,7 +2135,7 @@
     }
 
     // ==========================================
-    // HELPERS FOR PARSING JSON / LISTS / IMAGES
+    // ROBUST DATA PARSERS & HELPERS
     // ==========================================
     function parseJsonSafe(val, fallback = null) {
       if (!val) return fallback;
@@ -2032,36 +2146,103 @@
           try {
             return JSON.parse(trimmed);
           } catch (e) {
-            return fallback;
+            try {
+              return JSON.parse(trimmed.replace(/'/g, '"'));
+            } catch (e2) {
+              return fallback;
+            }
           }
         }
       }
       return fallback;
     }
 
-    function getArrayFromJsonOrComma(raw) {
+    function normalizeImageUri(uri) {
+      if (!uri || typeof uri !== 'string') return '';
+      const t = uri.trim();
+      if (t.length < 5) return '';
+      if (t.startsWith('data:image/') || t.startsWith('http://') || t.startsWith('https://') || t.startsWith('blob:')) {
+        return t;
+      }
+      if (t.startsWith('/9j/') || t.startsWith('iVBORw') || t.startsWith('R0lGOD') || t.startsWith('UklGR')) {
+        return `data:image/jpeg;base64,${t}`;
+      }
+      return t;
+    }
+
+    function parseInstrumentsList(raw) {
       if (!raw) return [];
-      const parsed = parseJsonSafe(raw);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item, idx) => {
-          if (typeof item === 'string') return { id: idx, instrument: item, name: item, stars: 3 };
-          return { id: item.id || idx, instrument: item.instrument || item.name || '', name: item.name || item.instrument || '', stars: item.stars || 3 };
+      if (Array.isArray(raw)) {
+        return raw.map((item, idx) => {
+          if (typeof item === 'string') return { id: idx, instrument: item, name: item, stars: 3, isPrimary: false };
+          return {
+            id: item.id || idx,
+            instrument: item.instrument || item.name || '',
+            name: item.name || item.instrument || '',
+            stars: item.stars || 3,
+            isPrimary: Boolean(item.isPrimary)
+          };
         }).filter(x => x.instrument || x.name);
       }
       if (typeof raw === 'string') {
-        const cleaned = raw.replace(/[\[\]{}"']/g, '').replace(/instrument:/g, '').replace(/name:/g, '').replace(/stars:\d+/g, '').replace(/id:\w+/g, '').trim();
+        const trimmed = raw.trim();
+        if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+          try {
+            const json = JSON.parse(trimmed);
+            if (Array.isArray(json)) return parseInstrumentsList(json);
+          } catch (e) {
+            try {
+              const fixed = trimmed.replace(/'/g, '"');
+              const json = JSON.parse(fixed);
+              if (Array.isArray(json)) return parseInstrumentsList(json);
+            } catch (e2) {}
+          }
+        }
+        const cleaned = trimmed
+          .replace(/[\[\]{}"']/g, '')
+          .replace(/instrument:/gi, '')
+          .replace(/name:/gi, '')
+          .replace(/stars:\d+/gi, '')
+          .replace(/isPrimary:\w+/gi, '')
+          .replace(/id:\w+/gi, '')
+          .trim();
         if (!cleaned) return [];
-        return cleaned.split(',').map((s, idx) => ({ id: idx, instrument: s.trim(), name: s.trim(), stars: 3 })).filter(x => x.instrument);
+        return cleaned.split(',').map((s, idx) => {
+          const cleanName = s.trim();
+          return { id: idx, instrument: cleanName, name: cleanName, stars: 3, isPrimary: false };
+        }).filter(x => x.instrument && x.instrument.length > 0);
       }
       return [];
     }
 
+    function normalizeDateStr(d) {
+      if (!d) return '2026-01-01';
+      const clean = String(d).trim();
+      const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+      if (dmy) {
+        const day = dmy[1].padStart(2, '0');
+        const month = dmy[2].padStart(2, '0');
+        let year = dmy[3];
+        if (year.length === 2) year = '20' + year;
+        return `${year}-${month}-${day}`;
+      }
+      const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+      if (ymd) {
+        const year = ymd[1];
+        const month = ymd[2].padStart(2, '0');
+        const day = ymd[3].padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+      return clean.slice(0, 10);
+    }
+
     function renderAvatarHtml(imgUrl, username, size = 60) {
       const initial = (username || 'M').charAt(0).toUpperCase();
-      if (imgUrl && String(imgUrl).trim().length > 5) {
+      const norm = normalizeImageUri(imgUrl);
+      if (norm) {
         return `
           <div style="width: ${size}px; height: ${size}px; border-radius: 50%; overflow: hidden; background: #121824; border: 2px solid rgba(255,255,255,0.12); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative;">
-            <img src="${imgUrl}" alt="${username}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\\'font-weight:800;font-size:${Math.round(size*0.42)}px;color:#fff;\\'>${initial}</span>';">
+            <img src="${norm}" alt="${username}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\\'font-weight:800;font-size:${Math.round(size*0.42)}px;color:#fff;\\'>${initial}</span>';">
           </div>
         `;
       }
@@ -2081,16 +2262,18 @@
       return `<div style="display: inline-flex; align-items: center; gap: 2px;">${stars}</div>`;
     }
 
-    // ==========================================
-    // SIDEBAR RENDERING (FOTO, NOME, USERNAME, CIDADE)
-    // ==========================================
+    // ==============================================================
+    // SIDEBAR RENDERING: DISPLAY NAME ON TOP, @USERNAME UNDERNEATH
+    // ==============================================================
     function renderSidebarUserCard() {
       if (!currentUser) return;
       const username = currentUser.username || 'musico';
-      const displayName = currentUser.displayName || username;
+      const displayName = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || username;
       const initial = displayName.charAt(0).toUpperCase();
 
+      // LINE 1 (TOP): DISPLAY NAME
       document.getElementById('sideDisplayName').textContent = displayName;
+      // LINE 2 (UNDERNEATH): @USERNAME
       document.getElementById('sideUserHandle').textContent = `@${username}`;
 
       const locationParts = [currentUser.city, currentUser.state].filter(Boolean);
@@ -2098,8 +2281,9 @@
 
       const avatarBox = document.getElementById('sideAvatarBox');
       if (avatarBox) {
-        if (currentUser.pictureUrl && currentUser.pictureUrl.trim().length > 5) {
-          avatarBox.innerHTML = `<img src="${currentUser.pictureUrl}" alt="${displayName}" class="sidebar-avatar-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'sidebar-avatar-fallback\\'>${initial}</span>';">`;
+        const normPic = normalizeImageUri(currentUser.pictureUrl);
+        if (normPic) {
+          avatarBox.innerHTML = `<img src="${normPic}" alt="${displayName}" class="sidebar-avatar-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'sidebar-avatar-fallback\\'>${initial}</span>';">`;
         } else {
           avatarBox.innerHTML = `<span class="sidebar-avatar-fallback">${initial}</span>`;
         }
@@ -2108,25 +2292,27 @@
       // Mobile topbar avatar
       const mobileThumb = document.getElementById('mobileAvatarThumb');
       if (mobileThumb) {
-        if (currentUser.pictureUrl && currentUser.pictureUrl.trim().length > 5) {
-          mobileThumb.innerHTML = `<img src="${currentUser.pictureUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        const normPic = normalizeImageUri(currentUser.pictureUrl);
+        if (normPic) {
+          mobileThumb.innerHTML = `<img src="${normPic}" style="width: 100%; height: 100%; object-fit: cover;">`;
         } else {
           mobileThumb.textContent = initial;
         }
       }
     }
 
-    // ==========================================
-    // CENTRAL PROFILE RENDERING (HERO + 5 ABAS)
-    // ==========================================
+    // ==============================================================
+    // CENTRAL PROFILE HERO: DISPLAY NAME ON TOP, @USERNAME UNDERNEATH
+    // ==============================================================
     function renderCentralProfile() {
       if (!currentUser) return;
       const username = currentUser.username || 'musico';
-      const displayName = currentUser.displayName || username;
+      const displayName = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || username;
       const initial = displayName.charAt(0).toUpperCase();
 
-      // Hero
+      // LINE 1 (TOP): DISPLAY NAME
       document.getElementById('heroDisplayName').textContent = displayName;
+      // LINE 2 (UNDERNEATH): @USERNAME
       document.getElementById('heroUserHandle').textContent = `@${username}`;
 
       const ageBadge = document.getElementById('heroAgeBadge');
@@ -2142,18 +2328,17 @@
 
       const heroAvatar = document.getElementById('heroAvatarBox');
       if (heroAvatar) {
-        if (currentUser.pictureUrl && currentUser.pictureUrl.trim().length > 5) {
-          heroAvatar.innerHTML = `<img src="${currentUser.pictureUrl}" alt="${displayName}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'profile-hero-initials\\'>${initial}</span>';">`;
+        const normPic = normalizeImageUri(currentUser.pictureUrl);
+        if (normPic) {
+          heroAvatar.innerHTML = `<img src="${normPic}" alt="${displayName}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'profile-hero-initials\\'>${initial}</span>';">`;
         } else {
           heroAvatar.innerHTML = `<span class="profile-hero-initials">${initial}</span>`;
         }
       }
 
-      // Active availability
       const avail = currentUser.availability || 'Disponível';
       document.getElementById('heroAvailBadge').textContent = avail;
 
-      // Render Active Tab Subview
       renderBioTab();
     }
 
@@ -2161,7 +2346,6 @@
     function renderBioTab() {
       if (!currentUser) return;
 
-      // Interest Pills
       const interest = String(currentUser.interestLevel || 'Profissional').toLowerCase();
       ['pillInterestHobby', 'pillInterestProf', 'pillInterestCasual'].forEach(id => {
         const p = document.getElementById(id);
@@ -2171,7 +2355,6 @@
       else if (interest.includes('prof')) document.getElementById('pillInterestProf')?.classList.add('active');
       else if (interest.includes('casual')) document.getElementById('pillInterestCasual')?.classList.add('active');
 
-      // Availability Pills
       const avail = String(currentUser.availability || 'Disponível').toLowerCase();
       const pAvailYes = document.getElementById('pillAvailYes');
       const pAvailNo = document.getElementById('pillAvailNo');
@@ -2185,12 +2368,10 @@
         }
       }
 
-      // Bio text
       document.getElementById('bioText').textContent = currentUser.bio || 'Adicione uma apresentação sobre você, sua história musical e experiência.';
 
-      // Influences list
       const infContainer = document.getElementById('influencesListContainer');
-      const infList = getArrayFromJsonOrComma(currentUser.influences);
+      const infList = parseInstrumentsList(currentUser.influences);
       document.getElementById('influencesBannerTitle').textContent = `Influências Musicais (${infList.length}/5)`;
 
       if (infList.length === 0) {
@@ -2207,7 +2388,6 @@
         `).join('');
       }
 
-      // External links
       const linksContainer = document.getElementById('externalLinksContainer');
       linksContainer.innerHTML = '';
       const links = [
@@ -2305,6 +2485,75 @@
       `).join('');
     }
 
+    // ── 3. INSTRUMENTOS TAB (EXIBE INSTRUMENTOS DO PERFIL + EQUIPAMENTOS GEAR) ──
+    function renderInstrumentsTab() {
+      // 1. Render Profile Instruments List
+      const instBox = document.getElementById('instrumentsProfileListContainer');
+      if (mySkills.length === 0) {
+        instBox.innerHTML = `
+          <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">Nenhum instrumento adicionado no perfil ainda.</p>
+            <button class="btn btn-outline btn-sm" onclick="openAddSkillModal()">Cadastrar Instrumento</button>
+          </div>
+        `;
+      } else {
+        instBox.innerHTML = mySkills.map((s, idx) => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan-light);">
+                <ion-icon name="musical-notes-outline" style="font-size: 1.2rem;"></ion-icon>
+              </div>
+              <div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">${s.instrument}</div>
+                <div style="margin-top: 2px;">${renderStarsHtml(s.stars, 13)}</div>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-danger" onclick="removeSkill(${idx})" title="Remover">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </div>
+        `).join('');
+      }
+
+      // 2. Render Gear Tab
+      renderGearTab();
+    }
+
+    function renderGearTab() {
+      const container = document.getElementById('gearListContainer');
+      if (myGear.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 28px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+            <ion-icon name="hardware-chip-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
+            <h4 style="color: #fff; font-size: 0.95rem;">Nenhum equipamento cadastrado</h4>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
+            <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">Adicionar Equipamento</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = myGear.map((item, idx) => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(139,92,246,0.12); border: 1px solid var(--violet); display: flex; align-items: center; justify-content: center; color: var(--violet-light);">
+              <ion-icon name="hardware-chip-outline" style="font-size: 1.2rem;"></ion-icon>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.95rem; font-weight: 800; color: #fff;">${item.name}</span>
+                <span class="badge badge-violet" style="font-size: 0.65rem;">${item.category}</span>
+              </div>
+              ${item.details ? `<p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">${item.details}</p>` : ''}
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="removeGear(${idx})" title="Remover equipamento">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+      `).join('');
+    }
+
     function openAddSkillModal() {
       document.getElementById('skillNameInput').value = '';
       document.getElementById('skillStarsInput').value = '3';
@@ -2320,6 +2569,7 @@
       mySkills.push({ id: Date.now(), instrument, name: instrument, stars });
       closeModal('addSkillModal');
       renderSkillsTab();
+      renderInstrumentsTab();
 
       try {
         await fetch(`${API_URL}/Users/profile`, {
@@ -2329,16 +2579,17 @@
         });
         if (currentUser) currentUser.instruments = JSON.stringify(mySkills);
         localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-        showToast('Habilidade adicionada ao perfil!', 'success');
+        showToast('Instrumento adicionado ao perfil!', 'success');
       } catch (err) {
         console.error(err);
       }
     }
 
     async function removeSkill(idx) {
-      if (!confirm('Deseja remover esta habilidade?')) return;
+      if (!confirm('Deseja remover este instrumento/habilidade?')) return;
       mySkills.splice(idx, 1);
       renderSkillsTab();
+      renderInstrumentsTab();
       try {
         await fetch(`${API_URL}/Users/profile`, {
           method: "PUT",
@@ -2347,46 +2598,10 @@
         });
         if (currentUser) currentUser.instruments = JSON.stringify(mySkills);
         localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-        showToast('Habilidade removida.', 'info');
+        showToast('Instrumento removido.', 'info');
       } catch (err) {
         console.error(err);
       }
-    }
-
-    // ── 3. INSTRUMENTOS (GEAR / EQUIPAMENTOS) TAB ──
-    function renderGearTab() {
-      const container = document.getElementById('gearListContainer');
-      if (myGear.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 36px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-            <ion-icon name="hardware-chip-outline" style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 6px;"></ion-icon>
-            <h4 style="color: #fff; font-size: 1rem;">Nenhum equipamento cadastrado</h4>
-            <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 12px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
-            <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">Adicionar Equipamento</button>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = myGear.map((item, idx) => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(139,92,246,0.12); border: 1px solid var(--violet); display: flex; align-items: center; justify-content: center; color: var(--violet-light);">
-              <ion-icon name="musical-notes-outline" style="font-size: 1.3rem;"></ion-icon>
-            </div>
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1rem; font-weight: 800; color: #fff;">${item.name}</span>
-                <span class="badge badge-violet" style="font-size: 0.65rem;">${item.category}</span>
-              </div>
-              ${item.details ? `<p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">${item.details}</p>` : ''}
-            </div>
-          </div>
-          <button class="btn btn-sm btn-danger" onclick="removeGear(${idx})" title="Remover equipamento">
-            <ion-icon name="trash-outline"></ion-icon>
-          </button>
-        </div>
-      `).join('');
     }
 
     function openAddGearModal() {
@@ -2416,7 +2631,9 @@
       showToast('Equipamento removido.', 'info');
     }
 
-    // ── 4. BANDAS TAB ──
+    // ==============================================================
+    // 4. BANDAS TAB (ENTIRE CARD IS CLICKABLE TO PUBLIC PAGE)
+    // ==============================================================
     async function loadMyBands() {
       try {
         const res = await fetch(`${API_URL}/Bands/my-bands`, {
@@ -2424,7 +2641,54 @@
         });
         if (res.ok) {
           myBands = await res.json();
+          
+          // PULL CLOUD SETLISTS / EVENTS TO AUTO-POPULATE THE AGENDA
+          const cloudEvents = [];
+          for (const band of myBands) {
+            let syncData = parseJsonSafe(band.syncDataJson);
+            if (!syncData && band.id) {
+              try {
+                const pullRes = await fetch(`${API_URL}/Bands/${band.id}/pull-sync`, { headers: getAuthHeaders() });
+                if (pullRes.ok) {
+                  const pullData = await pullRes.json();
+                  syncData = parseJsonSafe(pullData.syncDataJson);
+                }
+              } catch (e) {}
+            }
+
+            if (syncData) {
+              const bandSetlists = syncData.setlists || syncData.events || [];
+              bandSetlists.forEach(s => {
+                if ((s.date && String(s.date).trim()) || (s.local && String(s.local).trim())) {
+                  cloudEvents.push({
+                    id: s.id || `setlist_${band.id}_${Math.random()}`,
+                    title: s.name || s.title || `Show - ${band.name}`,
+                    date: normalizeDateStr(s.date),
+                    time: s.time || '',
+                    local: s.local || '',
+                    band: band.name,
+                    cache: s.cache || '',
+                    notes: s.notes || '',
+                    fromCloud: true
+                  });
+                }
+              });
+            }
+          }
+
+          if (cloudEvents.length > 0) {
+            const merged = [...cloudEvents];
+            myEvents.forEach(localEv => {
+              if (!merged.some(m => m.id === localEv.id || (m.title === localEv.title && m.date === localEv.date))) {
+                merged.push(localEv);
+              }
+            });
+            myEvents = merged;
+            saveEventsCache();
+          }
+
           renderProfileBandsTab();
+          renderProfileAgenda();
           updateBandOptionsInEventModal();
         }
       } catch (err) {
@@ -2448,13 +2712,13 @@
 
       grid.innerHTML = myBands.map(band => {
         const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-        const hasImg = band.imageUri && String(band.imageUri).trim().length > 5;
+        const normImg = normalizeImageUri(band.imageUri);
 
         return `
-          <div class="card band-card">
+          <div class="card band-card" onclick="window.open('/banda?id=${band.id}', '_blank')" title="Clique para abrir a página pública de ${band.name}">
             <div class="band-card-cover">
-              ${hasImg ? `
-                <img src="${band.imageUri}" alt="${band.name}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              ${normImg ? `
+                <img src="${normImg}" alt="${band.name}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="band-card-fallback-avatar" style="display: none;">${initials}</div>
               ` : `
                 <div class="band-card-fallback-avatar">${initials}</div>
@@ -2470,11 +2734,11 @@
                 <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${band.genre || 'Variado'}</p>
                 <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">${band.description || 'Sem descrição informada.'}</p>
               </div>
-              <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
-                <a href="/banda?id=${band.id}" target="_blank" class="btn btn-outline btn-sm" style="flex: 1;">
-                  <ion-icon name="open-outline"></ion-icon>
-                  <span>Ver Página Pública</span>
-                </a>
+              <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                  <ion-icon name="open-outline"></ion-icon> Ver Perfil Público
+                </span>
+                <ion-icon name="chevron-forward-outline" style="color: var(--text-dim);"></ion-icon>
               </div>
             </div>
           </div>
@@ -2533,7 +2797,9 @@
       }
     }
 
-    // ── 5. AGENDA TAB ──
+    // ==============================================================
+    // 5. AGENDA TAB (SHOWS E ENSAIOS CARREGADOS DA NUVEM)
+    // ==============================================================
     function renderProfileAgenda() {
       const list = document.getElementById('profileAgendaList');
       const now = new Date();
@@ -2578,6 +2844,7 @@
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                   <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff;">${ev.title}</h4>
                   <span class="badge ${isUpcoming ? 'badge-emerald' : 'badge-amber'}">${isUpcoming ? 'Confirmado' : 'Encerrado'}</span>
+                  ${ev.fromCloud ? '<span class="badge badge-cyan" style="font-size:0.65rem;">Nuvem</span>' : ''}
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                   <span><ion-icon name="location-outline"></ion-icon> ${ev.local || 'Local não informado'}</span>
@@ -2587,7 +2854,7 @@
                 </p>
               </div>
             </div>
-            <button class="btn btn-sm btn-danger" onclick="deleteEvent(${ev.id})" title="Excluir Evento">
+            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${ev.id}')" title="Excluir Evento">
               <ion-icon name="trash-outline"></ion-icon>
             </button>
           </div>
@@ -2621,7 +2888,7 @@
     function handleSaveEvent(e) {
       e.preventDefault();
       const newEvent = {
-        id: Date.now(),
+        id: 'web_' + Date.now(),
         title: document.getElementById('eventTitle').value.trim(),
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
@@ -2640,7 +2907,7 @@
 
     function deleteEvent(id) {
       if (!confirm('Deseja remover este evento da agenda?')) return;
-      myEvents = myEvents.filter(e => e.id !== id);
+      myEvents = myEvents.filter(e => String(e.id) !== String(id));
       saveEventsCache();
       showToast('Evento removido.', 'info');
     }
@@ -2659,9 +2926,9 @@
     // ==========================================
     function openEditProfileModal() {
       if (!currentUser) return;
-      document.getElementById('editDisplayName').value = currentUser.displayName || currentUser.username || '';
+      document.getElementById('editDisplayName').value = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || currentUser.username || '';
       document.getElementById('editBio').value = currentUser.bio || '';
-      document.getElementById('editInfluences').value = getArrayFromJsonOrComma(currentUser.influences).map(x => x.name).join(', ');
+      document.getElementById('editInfluences').value = parseInstrumentsList(currentUser.influences).map(x => x.name).join(', ');
       document.getElementById('editCity').value = currentUser.city || '';
       document.getElementById('editState').value = currentUser.state || '';
       document.getElementById('editInstagram').value = currentUser.instagram || '';
@@ -2679,8 +2946,9 @@
       const initial = (currentUser?.displayName || currentUser?.username || 'M').charAt(0).toUpperCase();
       fallback.textContent = initial;
 
-      if (url && url.length > 5) {
-        previewImg.src = url;
+      const norm = normalizeImageUri(url);
+      if (norm) {
+        previewImg.src = norm;
         previewImg.style.display = 'block';
         fallback.style.display = 'none';
         previewImg.onerror = () => {
@@ -2712,15 +2980,18 @@
 
     async function handleSaveProfile(e) {
       e.preventDefault();
+      const displayName = document.getElementById('editDisplayName').value.trim();
+      const pictureUrl = document.getElementById('editPictureUrl').value.trim();
+
       const payload = {
-        displayName: document.getElementById('editDisplayName').value.trim(),
+        displayName: displayName,
         bio: document.getElementById('editBio').value.trim(),
         influences: document.getElementById('editInfluences').value.trim(),
         city: document.getElementById('editCity').value.trim(),
         state: document.getElementById('editState').value.trim(),
         instagram: document.getElementById('editInstagram').value.trim(),
         youtube: document.getElementById('editYoutube').value.trim(),
-        pictureUrl: document.getElementById('editPictureUrl').value.trim()
+        pictureUrl: pictureUrl
       };
 
       try {
@@ -2732,6 +3003,7 @@
 
         if (res.ok) {
           currentUser = { ...currentUser, ...payload };
+          localStorage.setItem(DISPLAY_NAME_KEY, displayName);
           localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
           renderSidebarUserCard();
           renderCentralProfile();
@@ -2743,6 +3015,106 @@
       } catch {
         showToast('Falha na conexão.', 'error');
       }
+    }
+
+    // ==========================================
+    // PUBLIC MUSICIAN PROFILE MODAL
+    // ==========================================
+    async function openPublicMusicianProfile(username) {
+      const clean = (username || '').replace('@', '').trim();
+      if (!clean) return;
+
+      try {
+        const res = await fetch(`${API_URL}/Users/${encodeURIComponent(clean)}`, {
+          headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Músico não encontrado');
+        const user = await res.json();
+        renderPublicMusicianModal(user);
+        openModal('publicMusicianModal');
+      } catch (err) {
+        showToast('Não foi possível carregar o perfil deste músico.', 'error');
+      }
+    }
+
+    function renderPublicMusicianModal(user) {
+      const initial = (user.username || 'M')[0].toUpperCase();
+      document.getElementById('pubMusDisplayName').textContent = user.username || 'Músico';
+      document.getElementById('pubMusHandle').textContent = `@${user.username}`;
+      document.getElementById('pubMusBio').textContent = user.bio || 'Sem biografia informada.';
+
+      const normPic = normalizeImageUri(user.pictureUrl);
+      const avatarBox = document.getElementById('pubMusAvatarBox');
+      if (normPic) {
+        avatarBox.innerHTML = `<img src="${normPic}" style="width: 100%; height: 100%; object-fit: cover;">`;
+      } else {
+        avatarBox.innerHTML = `<span style="font-size: 2rem; font-weight: 900; color: #fff;">${initial}</span>`;
+      }
+
+      if (user.age) {
+        document.getElementById('pubMusAgeBadge').textContent = `${user.age} anos`;
+        document.getElementById('pubMusAgeBadge').style.display = 'inline-flex';
+      } else {
+        document.getElementById('pubMusAgeBadge').style.display = 'none';
+      }
+
+      document.getElementById('pubMusAvailBadge').textContent = user.availability || 'Disponível';
+      const loc = [user.city, user.state, user.country || 'Brasil'].filter(Boolean).join(', ');
+      document.getElementById('pubMusLocation').innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${loc || 'Brasil'}</span>`;
+
+      // Skills
+      const skillsContainer = document.getElementById('pubMusSkills');
+      const skills = parseInstrumentsList(user.instruments);
+      if (skills.length === 0) {
+        skillsContainer.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-dim);">Nenhum instrumento adicionado.</span>';
+      } else {
+        skillsContainer.innerHTML = skills.map(s => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <span style="font-weight: 700; font-size: 0.9rem; color: #fff;">${s.instrument}</span>
+            ${renderStarsHtml(s.stars, 13)}
+          </div>
+        `).join('');
+      }
+
+      // Bands
+      const bandsContainer = document.getElementById('pubMusBands');
+      const bands = user.bands || [];
+      if (bands.length === 0) {
+        bandsContainer.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-dim); grid-column: 1/-1;">Nenhuma banda vinculada publicamente.</span>';
+      } else {
+        bandsContainer.innerHTML = bands.map(b => {
+          const bImg = normalizeImageUri(b.imageUri);
+          const bInit = (b.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+          return `
+            <div class="card clickable-card" onclick="window.open('/banda?id=${b.id}', '_blank')" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #121824; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex-shrink: 0;">
+                ${bImg ? `<img src="${bImg}" style="width: 100%; height: 100%; object-fit: cover;">` : bInit}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 800; font-size: 0.95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.name}</div>
+                <div style="font-size: 0.78rem; color: var(--cyan-light);">${b.genre || 'Variado'}</div>
+              </div>
+              <ion-icon name="open-outline" style="color: var(--text-dim);"></ion-icon>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Socials
+      const socialsBox = document.getElementById('pubMusSocialsRow');
+      socialsBox.innerHTML = '';
+      if (user.instagram) {
+        socialsBox.innerHTML += `<a href="https://instagram.com/${user.instagram.replace('@','')}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="logo-instagram"></ion-icon> Instagram</a>`;
+      }
+      if (user.youtube) {
+        socialsBox.innerHTML += `<a href="${user.youtube}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="logo-youtube"></ion-icon> YouTube</a>`;
+      }
+      if (user.spotify) {
+        socialsBox.innerHTML += `<a href="${user.spotify}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="musical-notes-outline"></ion-icon> Spotify</a>`;
+      }
+
+      // External link
+      document.getElementById('pubMusExternalLink').href = `/musico?u=${encodeURIComponent(user.username)}`;
     }
 
     // ==========================================
@@ -2777,7 +3149,7 @@
       }
 
       grid.innerHTML = filtered.map(song => `
-        <div class="card" onclick="openSongDetailModal(${song.id})" style="cursor: pointer;">
+        <div class="card clickable-card" onclick="openSongDetailModal(${song.id})">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
             <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff;">${song.name}</h4>
             <span class="badge badge-cyan">${song.style ? song.style.split(',')[0].trim() : 'Música'}</span>
@@ -2943,8 +3315,8 @@
                   <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; white-space: pre-line;">${ann.description}</p>
                 </div>
                 <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    ${renderAvatarHtml(creatorPic, creatorUsername, 28)}
+                  <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="openPublicMusicianProfile('${creatorUsername}')" title="Ver perfil de @${creatorUsername}">
+                    ${renderAvatarHtml(creatorPic, creatorUsername, 30)}
                     <span style="font-size: 0.82rem; color: var(--cyan-light); font-weight: 700;">@${creatorUsername}</span>
                   </div>
                   <a href="mailto:${ann.creator?.email || ''}" class="btn btn-sm btn-outline">Contatar</a>
@@ -2958,6 +3330,7 @@
       }
     }
 
+    // CLICKABLE MUSICIAN CARDS IN "MÚSICOS NA REDE"
     async function loadMusiciansNetwork() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
       const qs = search ? `?search=${encodeURIComponent(search)}` : '';
@@ -2975,18 +3348,19 @@
           }
 
           container.innerHTML = users.map(u => `
-            <div class="card" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="card clickable-card" onclick="openPublicMusicianProfile('${u.username}')" title="Clique para ver o perfil público de @${u.username}" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
               <div>
                 <div style="margin: 0 auto 12px auto; display: inline-block;">
                   ${renderAvatarHtml(u.pictureUrl, u.username, 76)}
                 </div>
                 <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff;">@${u.username}</h4>
-                <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">${getArrayFromJsonOrComma(u.instruments).map(x => x.name).join(' • ') || 'Músico'}</p>
+                <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">${parseInstrumentsList(u.instruments).map(x => x.name).join(' • ') || 'Músico'}</p>
                 <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 12px;">${[u.city, u.state].filter(Boolean).join(', ') || 'Brasil'}</p>
                 <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; max-height: 60px; overflow: hidden; margin-bottom: 14px;">${u.bio || 'Sem biografia informada.'}</p>
               </div>
-              <div>
-                ${u.instagram ? `<a href="https://instagram.com/${u.instagram.replace('@','')}" target="_blank" class="btn btn-sm btn-outline" style="width: 100%;"><ion-icon name="logo-instagram"></ion-icon> Instagram</a>` : ''}
+              <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700;">Ver Perfil Completo</span>
+                <ion-icon name="chevron-forward-outline" style="color: var(--cyan);"></ion-icon>
               </div>
             </div>
           `).join('');
@@ -2996,6 +3370,7 @@
       }
     }
 
+    // CLICKABLE BAND CARDS IN "BANDAS PÚBLICAS"
     async function loadPublicBands() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
       const qs = search ? `?search=${encodeURIComponent(search)}` : '';
@@ -3012,13 +3387,13 @@
 
           container.innerHTML = bands.map(b => {
             const initials = (b.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-            const hasImg = b.imageUri && String(b.imageUri).trim().length > 5;
+            const normImg = normalizeImageUri(b.imageUri);
 
             return `
-              <div class="card band-card">
+              <div class="card band-card" onclick="window.open('/banda?id=${b.id}', '_blank')" title="Clique para ver o perfil público de ${b.name}">
                 <div class="band-card-cover">
-                  ${hasImg ? `
-                    <img src="${b.imageUri}" alt="${b.name}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  ${normImg ? `
+                    <img src="${normImg}" alt="${b.name}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="band-card-fallback-avatar" style="display: none;">${initials}</div>
                   ` : `
                     <div class="band-card-fallback-avatar">${initials}</div>
@@ -3035,8 +3410,11 @@
                     <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 10px;">${[b.city, b.state].filter(Boolean).join(', ') || 'Brasil'}</p>
                     <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">${b.description || 'Sem descrição.'}</p>
                   </div>
-                  <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
-                    <a href="/banda?id=${b.id}" target="_blank" class="btn btn-outline btn-sm" style="width: 100%;">Ver Perfil Público</a>
+                  <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                      <ion-icon name="open-outline"></ion-icon> Ver Perfil Público
+                    </span>
+                    <ion-icon name="chevron-forward-outline" style="color: var(--text-dim);"></ion-icon>
                   </div>
                 </div>
               </div>

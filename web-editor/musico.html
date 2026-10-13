@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil do Músico | BandLink</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #06080d;
+      color: #f4f4f5;
+    }
+    .glass-card {
+      background: rgba(18, 24, 36, 0.7);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Navbar -->
+  <header class="border-b border-zinc-800/80 bg-zinc-950/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-music text-white text-base"></i>
+        </div>
+        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">BandLink</span>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <button id="btnShare" class="px-3.5 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 flex items-center gap-2 transition-all">
+          <i class="fa-solid fa-share-nodes text-blue-400"></i>
+          <span>Compartilhar</span>
+        </button>
+        <a href="/app" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Entrar no App</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
+
+    <!-- Loading State -->
+    <div id="loadingState" class="py-24 text-center">
+      <div class="inline-block w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-zinc-400 text-sm font-medium">Carregando perfil do músico na nuvem...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden py-20 text-center max-w-md mx-auto">
+      <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-4 text-zinc-500 text-2xl">
+        <i class="fa-solid fa-user-xmark text-rose-500"></i>
+      </div>
+      <h2 class="text-xl font-bold text-white mb-2">Músico Não Encontrado</h2>
+      <p class="text-zinc-400 text-sm mb-6 leading-relaxed">Não encontramos nenhum perfil ativo com este nome de usuário na comunidade BandLink.</p>
+      <a href="/app" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-600/20">
+        <i class="fa-solid fa-users"></i>
+        <span>Explorar Músicos na Rede</span>
+      </a>
+    </div>
+
+    <!-- Musician Profile Content -->
+    <div id="profileContent" class="hidden space-y-8">
+      
+      <!-- Profile Header Hero -->
+      <div class="glass-card rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 border border-zinc-800/80 shadow-2xl relative overflow-hidden">
+        
+        <!-- Avatar -->
+        <div class="relative flex-shrink-0">
+          <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-blue-500/30 overflow-hidden bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-xl">
+            <img id="userImg" src="" alt="Avatar" class="w-full h-full object-cover hidden">
+            <span id="userInitials" class="text-3xl sm:text-4xl font-black text-white">M</span>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1 text-center sm:text-left space-y-3">
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+            <h1 id="userDisplayName" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Músico</h1>
+            <span id="userAgeBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">-- anos</span>
+            <span id="userAvailBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Disponível</span>
+          </div>
+
+          <p id="userHandle" class="text-sm font-semibold text-blue-400">@usuario</p>
+
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-zinc-400">
+            <div id="userLocation" class="flex items-center gap-1.5">
+              <i class="fa-solid fa-location-dot text-zinc-500"></i>
+              <span>Brasil</span>
+            </div>
+          </div>
+
+          <!-- Socials -->
+          <div id="userSocials" class="flex items-center justify-center sm:justify-start gap-2 pt-1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid: Bio, Skills & Bands -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Column 1: Bio & Influences -->
+        <div class="space-y-6">
+          
+          <!-- Bio -->
+          <div class="glass-card rounded-2xl p-6 border border-zinc-800/80 space-y-3">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <i class="fa-solid fa-align-left text-blue-400"></i>
+              <span>Sobre o Músico</span>
+            </h2>
+            <p id="userBio" class="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">Nenhuma biografia informada.</p>
+          </div>
+
+          <!-- Influences -->
+          <div class="glass-card rounded-2xl p-6 border border-zinc-800/80 space-y-3">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <i class="fa-solid fa-compact-disc text-violet-400"></i>
+              <span>Influências Musicais</span>
+            </h2>
+            <div id="userInfluences" class="flex flex-wrap gap-2 pt-1">
+              <span class="text-xs text-zinc-500">Nenhuma influência informada.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Column 2 & 3: Instruments, Skills & Bands -->
+        <div class="md:col-span-2 space-y-6">
+
+          <!-- Instruments / Skills -->
+          <div class="glass-card rounded-2xl p-6 border border-zinc-800/80 space-y-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <i class="fa-solid fa-guitar text-blue-400"></i>
+              <span>Instrumentos & Habilidades</span>
+            </h2>
+            <div id="userSkillsList" class="space-y-2.5">
+            </div>
+          </div>
+
+          <!-- Bands -->
+          <div class="glass-card rounded-2xl p-6 border border-zinc-800/80 space-y-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <i class="fa-solid fa-people-group text-blue-400"></i>
+              <span>Bandas & Projetos</span>
+            </h2>
+            <div id="userBandsList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-zinc-800/80 py-8 text-center text-xs text-zinc-500 space-y-2">
+    <p>Perfil sincronizado via <strong class="text-zinc-300">BandLink Cloud</strong></p>
+    <p>© 2026 BandLink Pro • A Rede Social Definitiva para Músicos</p>
+  </footer>
+
+  <script>
+    const API_BASE = 'https://bandlink-api.azurewebsites.net/api';
+
+    function getParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function normalizeImageUri(uri) {
+      if (!uri || typeof uri !== 'string') return '';
+      const t = uri.trim();
+      if (t.length < 5) return '';
+      if (t.startsWith('data:image/') || t.startsWith('http://') || t.startsWith('https://')) return t;
+      if (t.startsWith('/9j/') || t.startsWith('iVBORw')) return `data:image/jpeg;base64,${t}`;
+      return t;
+    }
+
+    function renderStars(count = 3) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += `<i class="fa-${i <= count ? 'solid' : 'regular'} fa-star text-amber-400 text-xs"></i>`;
+      }
+      return `<div class="flex items-center gap-1">${stars}</div>`;
+    }
+
+    function parseInstruments(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw;
+      if (typeof raw === 'string') {
+        const t = raw.trim();
+        if ((t.startsWith('[') && t.endsWith(']')) || (t.startsWith('{') && t.endsWith('}'))) {
+          try { return JSON.parse(t); } catch (e) {}
+        }
+        const cleaned = t.replace(/[\[\]{}"']/g, '').replace(/instrument:/gi, '').replace(/name:/gi, '').replace(/stars:\d+/gi, '').trim();
+        if (!cleaned) return [];
+        return cleaned.split(',').map((s, idx) => ({ id: idx, instrument: s.trim(), stars: 3 })).filter(x => x.instrument);
+      }
+      return [];
+    }
+
+    async function loadMusicianProfile() {
+      const username = getParam('u') || getParam('username') || window.location.pathname.split('/').filter(Boolean).pop();
+      if (!username || username === 'musico' || username === 'musico.html') {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/Users/${encodeURIComponent(username)}`);
+        if (!res.ok) throw new Error('Not found');
+        const user = await res.json();
+        renderMusician(user);
+      } catch (err) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function renderMusician(user) {
+      document.title = `@${user.username} | BandLink`;
+
+      const initial = (user.username || 'M')[0].toUpperCase();
+      document.getElementById('userInitials').textContent = initial;
+
+      const normPic = normalizeImageUri(user.pictureUrl);
+      if (normPic) {
+        const img = document.getElementById('userImg');
+        img.src = normPic;
+        img.classList.remove('hidden');
+        document.getElementById('userInitials').classList.add('hidden');
+      }
+
+      document.getElementById('userDisplayName').textContent = user.username || 'Músico';
+      document.getElementById('userHandle').textContent = `@${user.username}`;
+
+      if (user.age) {
+        document.getElementById('userAgeBadge').textContent = `${user.age} anos`;
+        document.getElementById('userAgeBadge').classList.remove('hidden');
+      }
+
+      if (user.availability) {
+        document.getElementById('userAvailBadge').textContent = user.availability;
+      }
+
+      const loc = [user.city, user.state, user.country || 'Brasil'].filter(Boolean).join(', ');
+      document.getElementById('userLocation').querySelector('span').textContent = loc || 'Brasil';
+
+      if (user.bio && user.bio.trim()) {
+        document.getElementById('userBio').textContent = user.bio;
+      }
+
+      // Socials
+      const socials = document.getElementById('userSocials');
+      socials.innerHTML = '';
+      if (user.instagram) {
+        socials.innerHTML += `<a href="https://instagram.com/${user.instagram.replace('@','')}" target="_blank" class="w-8 h-8 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 border border-pink-500/20 flex items-center justify-center transition-colors"><i class="fa-brands fa-instagram"></i></a>`;
+      }
+      if (user.youtube) {
+        socials.innerHTML += `<a href="${user.youtube}" target="_blank" class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 flex items-center justify-center transition-colors"><i class="fa-brands fa-youtube"></i></a>`;
+      }
+      if (user.spotify) {
+        socials.innerHTML += `<a href="${user.spotify}" target="_blank" class="w-8 h-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 flex items-center justify-center transition-colors"><i class="fa-brands fa-spotify"></i></a>`;
+      }
+
+      // Influences
+      const infBox = document.getElementById('userInfluences');
+      infBox.innerHTML = '';
+      const infList = parseInstruments(user.influences);
+      if (infList.length === 0) {
+        infBox.innerHTML = '<span class="text-xs text-zinc-500">Nenhuma influência informada.</span>';
+      } else {
+        infList.forEach(inf => {
+          const name = typeof inf === 'string' ? inf : (inf.name || inf.instrument || '');
+          if (!name) return;
+          infBox.innerHTML += `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">${name}</span>`;
+        });
+      }
+
+      // Skills / Instruments
+      const skillsBox = document.getElementById('userSkillsList');
+      skillsBox.innerHTML = '';
+      const skillsList = parseInstruments(user.instruments);
+      if (skillsList.length === 0) {
+        skillsBox.innerHTML = '<div class="text-xs text-zinc-500 py-3">Nenhum instrumento adicionado.</div>';
+      } else {
+        skillsList.forEach(s => {
+          const instName = typeof s === 'string' ? s : (s.instrument || s.name || '');
+          const stars = typeof s === 'object' ? (s.stars || 3) : 3;
+          if (!instName) return;
+          skillsBox.innerHTML += `
+            <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between">
+              <span class="font-bold text-sm text-white">${instName}</span>
+              ${renderStars(stars)}
+            </div>
+          `;
+        });
+      }
+
+      // Bands
+      const bandsBox = document.getElementById('userBandsList');
+      bandsBox.innerHTML = '';
+      const bands = user.bands || [];
+      if (bands.length === 0) {
+        bandsBox.innerHTML = '<div class="col-span-2 text-xs text-zinc-500 py-3">Nenhuma banda vinculada publicamente.</div>';
+      } else {
+        bands.forEach(b => {
+          const bImg = normalizeImageUri(b.imageUri);
+          const bInit = (b.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+          bandsBox.innerHTML += `
+            <a href="/banda?id=${b.id}" class="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 flex items-center gap-3 transition-colors group">
+              <div class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-300 flex-shrink-0">
+                ${bImg ? `<img src="${bImg}" class="w-full h-full object-cover">` : bInit}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-sm text-white truncate group-hover:text-blue-400 transition-colors">${b.name}</div>
+                <div class="text-xs text-zinc-400 truncate">${b.genre || 'Variado'}</div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs text-zinc-500 group-hover:text-zinc-300"></i>
+            </a>
+          `;
+        });
+      }
+
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('profileContent').classList.remove('hidden');
+    }
+
+    document.getElementById('btnShare').addEventListener('click', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: document.title,
+            url: window.location.href
+          });
+        } catch (e) {}
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copiado para a área de transferência!');
+      }
+    });
+
+    loadMusicianProfile();
+  </script>
+</body>
+</html>
