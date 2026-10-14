@@ -1007,6 +1007,18 @@
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.88rem;
+      flex: 1;
+    }
+    .profile-song-item-titles .song-band {
+      font-weight: 700;
+      color: #34d399;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-song-item-titles .song-sep {
+      color: #64748b;
+      font-size: 0.75rem;
+      flex-shrink: 0;
     }
     .profile-song-item-titles .song-name {
       font-weight: 700;
@@ -1014,16 +1026,18 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .profile-song-item-titles .song-sep {
-      color: #475569;
-      font-size: 0.72rem;
+    .profile-song-tags-inline {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-left: 6px;
       flex-shrink: 0;
     }
-    .profile-song-item-titles .song-band {
+    .profile-song-tag-badge {
+      font-size: 0.72rem;
+      color: #38bdf8;
       font-weight: 600;
-      color: #34d399;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .profile-song-item-right {
       display: flex;
@@ -2709,38 +2723,61 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(10, 15, 26, 0.92);
+      background: rgba(10, 15, 26, 0.94);
       border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 12px;
-      padding: 10px 14px;
-      margin-top: 10px;
-      gap: 12px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      gap: 10px;
+    }
+    .flyer-brand-box {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .flyer-footer-center {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
     }
     .flyer-footer-brand {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.3;
+      font-size: 0.52rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.25;
+      text-align: center;
     }
     .flyer-footer-link {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: #38bdf8;
       font-weight: 800;
-      margin-top: 3px;
+      margin-top: 2px;
+      letter-spacing: 0.3px;
+      text-align: center;
     }
     .flyer-qr-box {
       background: #fff;
-      padding: 6px;
+      width: 50px;
+      height: 50px;
+      padding: 3px;
       border-radius: 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-    }
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     /* BandLink Global Loader */
@@ -3385,9 +3422,8 @@
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
                     <ion-icon name="musical-notes-outline" style="color: #34d399;"></ion-icon>
-                    <span>Repertório & Músicas</span>
+                    <span>Songbook</span>
                   </h3>
-                  <p style="color: #94a3b8; font-size: 0.85rem;">Catálogo e repertório de músicas do perfil em visualização corrida.</p>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
                   <button class="btn btn-outline btn-sm" onclick="switchMainView('songbook')" title="Abrir editor completo de cifras e letras">
@@ -3408,7 +3444,7 @@
                   </button>
                 </div>
 
-                <!-- Barra de Ordenação A-Z / Z-A (Banda e Música) -->
+                <!-- Barra de Ordenação A-Z / Z-A (Banda e Música) + Botão de Tags -->
                 <div class="sb-sort-row">
                   <span class="sb-filter-label">Ordenar:</span>
                   <button type="button" class="sb-sort-chip active" id="profileSbSortChip-band" onclick="toggleProfileSongSort('band')" title="Ordenar por Artista / Banda">
@@ -3419,7 +3455,15 @@
                     <span>Música</span>
                     <span class="sb-sort-dir" id="profileSbSortDir-name">A-Z</span>
                   </button>
+                  <button type="button" class="sb-sort-chip sb-icon-chip" id="btnProfileToggleTags" onclick="toggleProfileSongTags()" title="Filtrar por tags de estilo">
+                    <ion-icon name="pricetag-outline" id="iconProfileToggleTags"></ion-icon>
+                  </button>
                   <span id="profileSbCountBadge" style="margin-left: auto; font-size: 0.75rem; color: #94a3b8; font-weight: 700;">0 músicas</span>
+                </div>
+
+                <!-- Container de Tags (Oculto por Padrão) -->
+                <div id="profileSbTagsContainer" style="display: none; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
+                  <div id="profileSbStylePillsRow" class="sb-tags-pills-row"></div>
                 </div>
               </div>
 
@@ -4713,20 +4757,22 @@
               </div>
             </div>
 
-            <!-- Rodapé Oficial BandLink: Logo, Chamada, Link www.bandlink.pro e QR Code -->
+            <!-- Rodapé Oficial BandLink: Logo Quadrado à Esquerda, Texto no Meio, QR Code à Direita -->
             <div class="flyer-footer">
-              <div style="flex: 1; min-width: 0;">
-                <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" style="height: 18px; object-fit: contain; margin-bottom: 4px; display: block;" onerror="this.src='assets/logo.png'">
+              <div class="flyer-brand-box" title="BandLink">
+                <img src="assets/bandlink_logo_black_full.jpg" alt="BandLink" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" onerror="this.src='assets/logo.png'">
+              </div>
+              <div class="flyer-footer-center">
                 <div class="flyer-footer-brand">
-                  Crie seu perfil, gerencie setlists e cifras com rolagem e sincronização offline.
+                  Gerencie sua banda, playlists, cifras. Crie seu perfil e divulgue novos projetos para encontrar novos músicos.
                 </div>
                 <div class="flyer-footer-link">
-                  🌐 www.bandlink.pro
+                  www.bandlink.pro
                 </div>
               </div>
               <div class="flyer-qr-box" title="Acesse o app e site www.bandlink.pro">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://www.bandlink.pro" alt="QR" style="width: 46px; height: 46px; display: block;" onerror="this.style.display='none'">
-                <span style="font-size: 0.52rem; font-weight: 900; color: #000; margin-top: 2px;">ESCANEAR</span>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://www.bandlink.pro" alt="QR" style="width: 38px; height: 38px; display: block;" onerror="this.style.display='none'">
+                <span style="font-size: 0.44rem; font-weight: 900; color: #000; margin-top: 1px; line-height: 1;">ESCANEAR</span>
               </div>
             </div>
           </div>
@@ -4853,7 +4899,7 @@
       <div class="loader-progress-track">
         <div class="loader-progress-bar"></div>
       </div>
-      <span id="globalLoaderText" class="loader-message">Carregando BandLink...</span>
+      <span id="bandlinkGlobalLoaderText" class="loader-message">Carregando BandLink...</span>
     </div>
   </div>
 
@@ -5408,8 +5454,79 @@
       filterProfileSongbookList();
     }
 
+    let profileSbShowTags = false;
+    let profileSbSelectedTag = '';
+
+    function toggleProfileSongTags() {
+      profileSbShowTags = !profileSbShowTags;
+      const tagsContainer = document.getElementById('profileSbTagsContainer');
+      const btn = document.getElementById('btnProfileToggleTags');
+      const icon = document.getElementById('iconProfileToggleTags');
+      const isTagActive = profileSbShowTags || !!profileSbSelectedTag;
+
+      if (tagsContainer) {
+        tagsContainer.style.display = profileSbShowTags ? 'block' : 'none';
+      }
+      if (btn) btn.classList.toggle('active', isTagActive);
+      if (icon) icon.setAttribute('name', isTagActive ? 'pricetag' : 'pricetag-outline');
+      if (profileSbShowTags) {
+        renderProfileSongStylePills();
+      }
+    }
+
+    function renderProfileSongStylePills() {
+      const container = document.getElementById('profileSbStylePillsRow');
+      if (!container) return;
+
+      const tagCounts = {};
+      mySongs.forEach(s => {
+        if (s.style) {
+          s.style.split(',').forEach(tag => {
+            const clean = tag.trim();
+            if (clean) tagCounts[clean] = (tagCounts[clean] || 0) + 1;
+          });
+        }
+      });
+
+      const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+
+      let html = `
+        <button type="button" class="sb-tag-chip ${!profileSbSelectedTag ? 'active' : ''}" onclick="selectProfileSongTag('')">
+          Todos
+        </button>
+      `;
+
+      sortedTags.forEach(tag => {
+        const isActive = profileSbSelectedTag.toLowerCase() === tag.toLowerCase();
+        html += `
+          <button type="button" class="sb-tag-chip ${isActive ? 'active' : ''}" onclick="selectProfileSongTag('${escapeHtml(tag)}')">
+            ${escapeHtml(tag)}
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      const btn = document.getElementById('btnProfileToggleTags');
+      const icon = document.getElementById('iconProfileToggleTags');
+      const isTagActive = profileSbShowTags || !!profileSbSelectedTag;
+      if (btn) btn.classList.toggle('active', isTagActive);
+      if (icon) icon.setAttribute('name', isTagActive ? 'pricetag' : 'pricetag-outline');
+    }
+
+    function selectProfileSongTag(tag) {
+      if (profileSbSelectedTag.toLowerCase() === tag.toLowerCase()) {
+        profileSbSelectedTag = '';
+      } else {
+        profileSbSelectedTag = tag;
+      }
+      renderProfileSongStylePills();
+      filterProfileSongbookList();
+    }
+
     function renderProfileSongbookTab() {
       updateProfileSongSortButtons();
+      renderProfileSongStylePills();
       filterProfileSongbookList();
     }
 
@@ -5427,7 +5544,15 @@
         const matchTitle = (s.name || '').toLowerCase().includes(search);
         const matchArtist = (s.originalBand || '').toLowerCase().includes(search);
         const matchStyle = (s.style || '').toLowerCase().includes(search);
-        return matchTitle || matchArtist || matchStyle;
+        const matchesSearch = matchTitle || matchArtist || matchStyle;
+
+        let matchesTag = true;
+        if (profileSbSelectedTag) {
+          const songTags = (s.style || '').split(',').map(t => t.trim().toLowerCase());
+          matchesTag = songTags.includes(profileSbSelectedTag.toLowerCase());
+        }
+
+        return matchesSearch && matchesTag;
       });
 
       if (countBadge) {
@@ -5479,7 +5604,7 @@
         groups[letter].push(song);
       });
 
-      // Renderização com régua de letras e um item por linha
+      // Renderização com régua de letras e padrão: BANDA - NOME DA MUSICA (tags) (tags)...
       let html = '';
       letterOrder.forEach(letter => {
         html += `
@@ -5491,11 +5616,11 @@
         `;
 
         groups[letter].forEach(song => {
-          // Tags de estilo na frente
+          // Tags de estilo inline
           const tags = song.style
             ? song.style.split(',').map(t => t.trim()).filter(Boolean)
             : [];
-          const tagsHtml = tags.map(t => `<span class="profile-song-lead-tag">${escapeHtml(t)}</span>`).join('');
+          const tagsInlineHtml = tags.map(t => `<span class="profile-song-tag-badge">(${escapeHtml(t)})</span>`).join(' ');
 
           // Indicadores de conteúdo: Letra, Cifra, Tablatura
           const hasLyrics = !!(song.lyrics && song.lyrics.trim());
@@ -5503,19 +5628,17 @@
           const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
           const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
 
-          // Formatação: se ordenado por Banda, exibe "Banda - Música", se ordenado por Música, "Música - Banda"
-          const isBandSort = profileSongSortBy === 'band';
-          const primaryText = isBandSort ? (song.originalBand || 'Artista') : (song.name || 'Sem título');
-          const secondaryText = isBandSort ? (song.name || 'Sem título') : (song.originalBand || 'Artista');
+          const bandName = song.originalBand || 'Artista';
+          const songName = song.name || 'Sem título';
 
           html += `
             <div class="profile-song-item" onclick="openPublicSongViewer('${song.id}')" title="Clique para abrir e ver a música completa">
               <div class="profile-song-item-left">
-                ${tags.length > 0 ? `<div class="profile-song-tags-lead">${tagsHtml}</div>` : ''}
                 <div class="profile-song-item-titles">
-                  <span class="${isBandSort ? 'song-band' : 'song-name'}">${escapeHtml(primaryText)}</span>
+                  <span class="song-band">${escapeHtml(bandName)}</span>
                   <span class="song-sep">-</span>
-                  <span class="${isBandSort ? 'song-name' : 'song-band'}">${escapeHtml(secondaryText)}</span>
+                  <span class="song-name">${escapeHtml(songName)}</span>
+                  ${tags.length > 0 ? `<span class="profile-song-tags-inline">${tagsInlineHtml}</span>` : ''}
                 </div>
               </div>
               <div class="profile-song-item-right">
@@ -7639,33 +7762,23 @@
 
       const avgCache = showsWithCache.length > 0 ? (m.totalCache / showsWithCache.length) : 0;
 
-      // Separação cronológica: Futuros ascendentes, Passados descendentes
-      const upcomingShows = showsWithCache
-        .filter(s => isFutureDate(s.date))
-        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+      // Agrupamento unificado por mês cronológico
+      const now = new Date();
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-      const pastShows = showsWithCache
-        .filter(s => !isFutureDate(s.date))
-        .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+      const financeMonthMap = {};
+      showsWithCache.forEach(sl => {
+        const info = getEventMonthInfo(sl.date);
+        if (!financeMonthMap[info.key]) {
+          financeMonthMap[info.key] = { key: info.key, title: info.title, list: [], total: 0 };
+        }
+        const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+        const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        financeMonthMap[info.key].list.push(sl);
+        financeMonthMap[info.key].total += num;
+      });
 
-      // Agrupa por mês
-      const groupShowsByMonth = (list) => {
-        const groups = {};
-        list.forEach(sl => {
-          const info = getEventMonthInfo(sl.date);
-          if (!groups[info.key]) {
-            groups[info.key] = { key: info.key, title: info.title, list: [], total: 0 };
-          }
-          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-          const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-          groups[info.key].list.push(sl);
-          groups[info.key].total += num;
-        });
-        return groups;
-      };
-
-      const upcomingGroups = groupShowsByMonth(upcomingShows);
-      const pastGroups = groupShowsByMonth(pastShows);
+      const allMonthKeys = Object.keys(financeMonthMap).sort();
 
       let html = `
         <div style="margin-bottom: 24px;">
@@ -7788,13 +7901,14 @@
           </div>
         `;
 
-        // Renderiza cada mês (futuros e passados) com sua própria linha expansível igual ao mobile
-        const allMonthKeys = [...Object.keys(upcomingGroups), ...Object.keys(pastGroups)];
-        const allGroups = { ...upcomingGroups, ...pastGroups };
-
+        // Renderiza cada mês cronológico com linha expansível (meses passados ocultos por padrão)
         allMonthKeys.forEach(k => {
-          const g = allGroups[k];
-          const isExpanded = expandedFinanceMonths[k] !== undefined ? expandedFinanceMonths[k] : true;
+          const g = financeMonthMap[k];
+          g.list.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+          const isPastMonth = k < currentMonthKey;
+          const defaultExpanded = !isPastMonth;
+          const isExpanded = expandedFinanceMonths[k] !== undefined ? expandedFinanceMonths[k] : defaultExpanded;
           const mShows = g.list.length;
           const mGross = g.total;
           
@@ -7899,30 +8013,20 @@
         return isRehearsal;
       }).length;
 
-      // Separa em próximos (cronológico crescente) e anteriores (cronológico decrescente)
-      const upcomingEvents = yearEvents
-        .filter(s => isFutureDate(s.date))
-        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+      // Agrupamento unificado por mês cronológico
+      const now = new Date();
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-      const pastEvents = yearEvents
-        .filter(s => !isFutureDate(s.date))
-        .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+      const agendaMonthMap = {};
+      yearEvents.forEach(sl => {
+        const info = getEventMonthInfo(sl.date);
+        if (!agendaMonthMap[info.key]) {
+          agendaMonthMap[info.key] = { key: info.key, title: info.title, list: [] };
+        }
+        agendaMonthMap[info.key].list.push(sl);
+      });
 
-      // Agrupamento por mês
-      const groupEventsByMonth = (list) => {
-        const groups = {};
-        list.forEach(sl => {
-          const info = getEventMonthInfo(sl.date);
-          if (!groups[info.key]) {
-            groups[info.key] = { key: info.key, title: info.title, list: [] };
-          }
-          groups[info.key].list.push(sl);
-        });
-        return groups;
-      };
-
-      const upcomingGroups = groupEventsByMonth(upcomingEvents);
-      const pastGroups = groupEventsByMonth(pastEvents);
+      const allAgendaMonthKeys = Object.keys(agendaMonthMap).sort();
 
       let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
@@ -7939,7 +8043,7 @@
               <ion-icon name="share-social-outline"></ion-icon>
               <span>Compartilhar Agenda</span>
             </button>
-            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditEventPlaylistModal(-1)">
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditEventPlaylistModal(-1, 'details')">
               <ion-icon name="add-circle-outline"></ion-icon>
               <span>Novo Evento</span>
             </button>
@@ -8003,12 +8107,13 @@
             <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
             <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado em ${selectedAgendaYear}</h4>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione novos shows ou ensaios para montar o cronograma.</p>
-            <button type="button" class="btn btn-primary btn-sm" onclick="openEditEventPlaylistModal(-1)">Adicionar Evento</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openEditEventPlaylistModal(-1, 'details')">Adicionar Evento</button>
           </div>
         `;
       } else {
         const renderEventCardHtml = (sl) => {
           const originalIdx = setlists.indexOf(sl);
+          const evIdentifier = sl.id !== undefined && sl.id !== null ? String(sl.id) : String(originalIdx);
           const sName = sl.name || 'Evento';
           const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
           const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
@@ -8017,7 +8122,7 @@
           const songsCount = (sl.songs || []).length;
 
           return `
-            <div class="agenda-event-card" onclick="openEditEventPlaylistModal(${originalIdx})" title="Clique para editar evento e playlist">
+            <div class="agenda-event-card" onclick="openEditEventPlaylistModal('${escapeHtml(evIdentifier)}', 'details')" title="Clique para editar evento e playlist">
               <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 250px;">
                 <!-- Badge Quadrado Dia/Mês -->
                 <div class="agenda-date-badge-box">
@@ -8043,7 +8148,7 @@
               <!-- Lado direito: Cachê e Ação -->
               <div style="display: flex; align-items: center; gap: 14px;">
                 ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
-                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openEditEventPlaylistModal(${originalIdx})">
+                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openEditEventPlaylistModal('${escapeHtml(evIdentifier)}', 'playlist')">
                   <ion-icon name="create-outline"></ion-icon> Editar Playlist
                 </button>
               </div>
@@ -8051,13 +8156,14 @@
           `;
         };
 
-        // Renderiza cada mês (futuros e passados) com sua própria linha expansível igual ao mobile
-        const allAgendaMonthKeys = [...Object.keys(upcomingGroups), ...Object.keys(pastGroups)];
-        const allAgendaGroups = { ...upcomingGroups, ...pastGroups };
-
+        // Renderiza cada mês cronológico com linha expansível (meses passados ocultos por padrão)
         allAgendaMonthKeys.forEach(k => {
-          const g = allAgendaGroups[k];
-          const isExpanded = expandedAgendaMonths[k] !== undefined ? expandedAgendaMonths[k] : true;
+          const g = agendaMonthMap[k];
+          g.list.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+          const isPastMonth = k < currentMonthKey;
+          const defaultExpanded = !isPastMonth;
+          const isExpanded = expandedAgendaMonths[k] !== undefined ? expandedAgendaMonths[k] : defaultExpanded;
           const mShows = g.list.filter(s => s.type !== 'rehearsal' && !(s.name || '').toLowerCase().includes('ensaio')).length;
           const mReh = g.list.length - mShows;
 
@@ -8108,9 +8214,8 @@
     // ==============================================================
     // HANDLERS DO MODAL DE EVENTO & PLAYLIST (EDIT EVENT & PLAYLIST)
     // ==============================================================
-    function openEditEventPlaylistModal(idx) {
+    function openEditEventPlaylistModal(identifier, initialTab = 'details') {
       try {
-        editingEventIndex = idx;
         const modal = document.getElementById('editEventPlaylistModal');
         if (!modal) return;
 
@@ -8126,6 +8231,23 @@
         if (!currentBandSyncData.songs) currentBandSyncData.songs = [];
 
         const setlists = currentBandSyncData.setlists;
+        let idx = -1;
+
+        if (identifier === -1 || identifier === '-1') {
+          idx = -1;
+        } else if (typeof identifier === 'number') {
+          idx = identifier;
+        } else if (typeof identifier === 'string') {
+          const foundIdx = setlists.findIndex(s => String(s.id) === String(identifier));
+          if (foundIdx >= 0) {
+            idx = foundIdx;
+          } else {
+            const parsed = parseInt(identifier, 10);
+            idx = !isNaN(parsed) && parsed >= 0 && parsed < setlists.length ? parsed : -1;
+          }
+        }
+
+        editingEventIndex = idx;
         const isNew = idx < 0 || idx >= setlists.length;
 
         const titleEl = document.getElementById('mEventModalTitle');
@@ -8166,11 +8288,41 @@
           const locEl = document.getElementById('mEventLocal'); if (locEl) locEl.value = ev.local || '';
           const cacheEl = document.getElementById('mEventCache'); if (cacheEl) cacheEl.value = ev['cachê'] ?? ev.cache ?? '';
           const notesEl = document.getElementById('mEventNotes'); if (notesEl) notesEl.value = ev.notes || '';
-          editingEventPlaylist = Array.isArray(ev.songs) ? [...ev.songs] : [];
+
+          // Normalização segura e resiliente da playlist
+          let rawSongs = ev.songs;
+          if (typeof rawSongs === 'string') {
+            try { rawSongs = JSON.parse(rawSongs); } catch { rawSongs = []; }
+          }
+          if (!Array.isArray(rawSongs)) rawSongs = [];
+
+          editingEventPlaylist = rawSongs.map(item => {
+            if (typeof item === 'object' && item !== null) {
+              return {
+                id: item.id || item.songId || `song_${Math.random()}`,
+                name: item.name || item.title || 'Sem título',
+                originalBand: item.originalBand || item.artist || item.band || 'Banda',
+                duration: item.duration || item.customDuration || '--:--',
+                style: item.style || ''
+              };
+            }
+            const found = (currentBandSyncData?.songs || []).find(s => String(s.id) === String(item)) ||
+                          (mySongs || []).find(s => String(s.id) === String(item));
+            if (found) {
+              return {
+                id: found.id,
+                name: found.name || 'Sem título',
+                originalBand: found.originalBand || 'Banda',
+                duration: found.duration || '--:--',
+                style: found.style || ''
+              };
+            }
+            return { id: item, name: `Música #${item}`, originalBand: 'Banda', duration: '--:--' };
+          });
         }
 
-        switchEventModalTab('details');
         renderCurrentEventPlaylistSongs();
+        switchEventModalTab(initialTab);
         openModal('editEventPlaylistModal');
       } catch (err) {
         console.error('Erro ao abrir modal de evento:', err);
@@ -8449,7 +8601,9 @@
         if (sortedShows.length === 0) {
           listEl.innerHTML = '<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">Nenhum show cadastrado para incluir no flyer.</div>';
         } else {
-          listEl.innerHTML = sortedShows.map(s => {
+          // Inverte ordem de exibição na lista de checkboxes para mostrar eventos mais recentes/atuais no topo
+          const checklistShows = [...sortedShows].reverse();
+          listEl.innerHTML = checklistShows.map(s => {
             const sIdStr = String(s.id);
             const isChecked = selectedFlyerEventIds.some(id => String(id) === sIdStr);
             const dtBadge = getFormattedDateBadge(s.date);
@@ -8732,13 +8886,13 @@
         logoImg.src = normImg;
       });
 
-      // 3. Carrega Logo BandLink para o Rodapé
+      // 3. Carrega Logo Quadrado BandLink para o Rodapé
       const brandPromise = new Promise(resolve => {
         const brandImg = new Image();
         brandImg.crossOrigin = 'anonymous';
         brandImg.onload = () => resolve(brandImg);
         brandImg.onerror = () => resolve(null);
-        brandImg.src = 'assets/bandlink_logo_transparent_wide.png';
+        brandImg.src = 'assets/bandlink_logo_black_full.jpg';
       });
 
       // 4. Carrega Imagem do QR Code oficial
@@ -8849,7 +9003,7 @@
         
         // Altura natural do card para não inflar desproporcionalmente
         const maxFittingCardH = Math.floor((availableHeight - (rowGap * (showCount - 1))) / showCount);
-        const baseCardH = Math.round(112 * flyerCardScale);
+        const baseCardH = Math.round(124 * flyerCardScale);
         const cardH = Math.min(baseCardH, Math.max(56, maxFittingCardH));
         const totalHeight = (cardH * showCount) + (rowGap * (showCount - 1));
         const startY = 320 + Math.max(0, Math.floor((availableHeight - totalHeight) / 2));
@@ -8865,7 +9019,7 @@
           roundRect(ctx, 80, y, 920, cardH, Math.max(8, Math.round(14 * flyerCardScale)), true, true);
 
           // Badge Retangular Dia/Mês na Lateral Esquerda (Centralizado verticalmente)
-          const badgeW = Math.max(130, Math.round(160 * flyerCardScale));
+          const badgeW = Math.max(150, Math.round(185 * flyerCardScale));
           const badgeH = cardH - Math.max(10, Math.round(14 * flyerCardScale));
           const badgeX = 95;
           const badgeY = y + Math.floor((cardH - badgeH) / 2);
@@ -8877,8 +9031,8 @@
           roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeR, true, true);
 
           // Fontes e alinhamento do Badge
-          const dateFontSize = Math.max(18, Math.round(27 * flyerCardScale));
-          const weekdayFontSize = Math.max(10, Math.round(14 * flyerCardScale));
+          const dateFontSize = Math.max(22, Math.round(42 * flyerCardScale));
+          const weekdayFontSize = Math.max(12, Math.round(22 * flyerCardScale));
           const dateGapY = Math.max(2, Math.round(4 * flyerCardScale));
           const totalBadgeContentH = dateFontSize + dateGapY + weekdayFontSize;
           const badgeContentTop = badgeY + Math.floor((badgeH - totalBadgeContentH) / 2);
@@ -8909,12 +9063,12 @@
           ctx.fillText((dt.weekDayFull || dt.weekDay).toUpperCase(), badgeX + (badgeW / 2), badgeContentTop + dateFontSize + dateGapY);
 
           // Conteúdo à direita do Badge: Título e Local/Horário (Centralizados em bloco verticalmente)
-          const titleFontSize = Math.max(16, Math.round(27 * flyerCardScale));
-          const metaFontSize = Math.max(12, Math.round(17 * flyerCardScale));
-          const gapBetweenTitleAndMeta = Math.max(4, Math.round(7 * flyerCardScale));
+          const titleFontSize = Math.max(20, Math.round(40 * flyerCardScale));
+          const metaFontSize = Math.max(14, Math.round(28 * flyerCardScale));
+          const gapBetweenTitleAndMeta = Math.max(6, Math.round(10 * flyerCardScale));
           const totalInfoH = titleFontSize + gapBetweenTitleAndMeta + metaFontSize;
           const infoTopY = y + Math.floor((cardH - totalInfoH) / 2);
-          const infoX = badgeX + badgeW + Math.round(22 * flyerCardScale);
+          const infoX = badgeX + badgeW + Math.round(24 * flyerCardScale);
 
           // Título do Show à Direita
           ctx.fillStyle = '#ffffff';
@@ -8928,19 +9082,19 @@
           let curMetaX = infoX;
 
           if (show.local) {
-            drawPinIcon(ctx, curMetaX, metaY, Math.round(16 * flyerCardScale), '#f87171');
-            curMetaX += Math.round(20 * flyerCardScale);
+            drawPinIcon(ctx, curMetaX, metaY, Math.round(24 * flyerCardScale), '#f87171');
+            curMetaX += Math.round(28 * flyerCardScale);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
             ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             ctx.fillText(show.local, curMetaX, metaY);
-            curMetaX += ctx.measureText(show.local).width + Math.round(22 * flyerCardScale);
+            curMetaX += ctx.measureText(show.local).width + Math.round(26 * flyerCardScale);
           }
 
           if (show.time) {
-            drawClockIcon(ctx, curMetaX, metaY, Math.round(16 * flyerCardScale), '#f59e0b');
-            curMetaX += Math.round(20 * flyerCardScale);
+            drawClockIcon(ctx, curMetaX, metaY, Math.round(24 * flyerCardScale), '#f59e0b');
+            curMetaX += Math.round(28 * flyerCardScale);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
             ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
             ctx.textAlign = 'left';
@@ -8970,53 +9124,70 @@
         ctx.textBaseline = 'middle';
         ctx.fillText(contactText, 540, contactY + 35);
 
-        // 5. Rodapé Oficial BandLink com Chamada e QR Code (Idêntico ao Live Preview)
+        // 5. Rodapé Oficial BandLink: Logo Quadrado à Esquerda, Texto no Meio, QR Code à Direita (Idêntico ao Live Preview)
         const footerY = 1680;
         ctx.fillStyle = 'rgba(10, 15, 26, 0.94)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
         ctx.lineWidth = 2;
         roundRect(ctx, 80, footerY, 920, 180, 20, true, true);
 
-        // Alinhamento rigoroso à esquerda para textos do rodapé
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-
-        // Logo BandLink
+        // Logo Quadrado BandLink à Esquerda (mesmo tamanho do QR Code: 144x144)
+        const logoBoxSize = 144;
+        const logoBoxX = 100;
+        const logoBoxY = footerY + 18;
+        ctx.save();
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, logoBoxX, logoBoxY, logoBoxSize, logoBoxSize, 14, true, true);
         if (loadedBrand) {
-          ctx.drawImage(loadedBrand, 120, footerY + 24, 210, 38);
+          ctx.beginPath();
+          roundRect(ctx, logoBoxX, logoBoxY, logoBoxSize, logoBoxSize, 14, false, false);
+          ctx.clip();
+          ctx.drawImage(loadedBrand, logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
         } else {
           ctx.fillStyle = '#ffffff';
-          ctx.font = '900 32px system-ui, -apple-system, sans-serif';
-          ctx.fillText('BandLink', 120, footerY + 28);
+          ctx.font = '900 24px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('BandLink', logoBoxX + (logoBoxSize / 2), logoBoxY + (logoBoxSize / 2));
         }
+        ctx.restore();
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-        ctx.font = '500 20px system-ui, -apple-system, sans-serif';
-        ctx.fillText('Crie seu perfil, gerencie setlists e cifras com rolagem e sincronização offline.', 120, footerY + 74);
+        // Texto no Meio: Gerencie sua banda, playlists, cifras... + www.bandlink.pro
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+        ctx.font = '600 21px system-ui, -apple-system, sans-serif';
+        ctx.fillText('Gerencie sua banda, playlists, cifras.', 540, footerY + 32);
+        ctx.fillText('Crie seu perfil e divulgue novos projetos', 540, footerY + 60);
+        ctx.fillText('para encontrar novos músicos.', 540, footerY + 88);
 
         ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
-        ctx.fillText('🌐 www.bandlink.pro', 120, footerY + 115);
+        ctx.font = '800 25px system-ui, -apple-system, sans-serif';
+        ctx.fillText('www.bandlink.pro', 540, footerY + 122);
+        ctx.restore();
 
-        // Caixa Branca Oficial do QR Code (idêntica ao live preview)
-        const qrBoxW = 140;
-        const qrBoxH = 144;
-        const qrBoxX = 840;
+        // Caixa Branca do QR Code à Direita (144x144, na extremidade oposta)
+        const qrBoxSize = 144;
+        const qrBoxX = 836;
         const qrBoxY = footerY + 18;
         ctx.fillStyle = '#ffffff';
-        roundRect(ctx, qrBoxX, qrBoxY, qrBoxW, qrBoxH, 14, true, false);
+        roundRect(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 14, true, false);
 
         if (loadedQr) {
-          ctx.drawImage(loadedQr, qrBoxX + 16, qrBoxY + 10, 108, 108);
+          ctx.drawImage(loadedQr, qrBoxX + 18, qrBoxY + 10, 108, 108);
         } else {
-          drawQrCodeFallback(ctx, qrBoxX + 16, qrBoxY + 10, 108);
+          drawQrCodeFallback(ctx, qrBoxX + 18, qrBoxY + 10, 108);
         }
 
         ctx.fillStyle = '#000000';
         ctx.font = '900 13px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillText('ESCANEAR', qrBoxX + (qrBoxW / 2), qrBoxY + 122);
+        ctx.fillText('ESCANEAR', qrBoxX + (qrBoxSize / 2), qrBoxY + 122);
 
         // Dispara download
         setTimeout(() => {
