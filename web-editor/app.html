@@ -2447,6 +2447,302 @@
       margin-top: 3px;
     }
 
+    /* Month separator header for Agenda and Finances */
+    .month-separator-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0 12px 0;
+      padding: 0 4px;
+    }
+    .month-separator-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--cyan);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .month-separator-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.12);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 2px 8px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    .month-separator-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
+    }
+    .past-months-toggle-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      margin: 20px 0 14px 0;
+      transition: all 0.2s;
+    }
+    .past-months-toggle-box:hover {
+      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    /* Flyer Visual Generator Preview */
+    .flyer-card-preview {
+      width: 310px;
+      min-height: 470px;
+      border-radius: 18px;
+      padding: 22px 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.3s;
+    }
+    .flyer-theme-rock {
+      background: linear-gradient(145deg, #0d0f18 0%, #171c2b 50%, #0a0c14 100%);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .flyer-theme-synth {
+      background: linear-gradient(145deg, #1f082e 0%, #350b44 50%, #0d0722 100%);
+      border-color: rgba(244, 63, 94, 0.5);
+    }
+    .flyer-theme-acoustic {
+      background: linear-gradient(145deg, #24160c 0%, #382414 50%, #150d06 100%);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+    .flyer-theme-edm {
+      background: linear-gradient(145deg, #05192d 0%, #082d4f 50%, #031020 100%);
+      border-color: rgba(6, 182, 212, 0.5);
+    }
+    .flyer-theme-dark {
+      background: #090c12;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .flyer-theme-gold {
+      background: linear-gradient(145deg, #1c1606 0%, #2e2409 50%, #120e03 100%);
+      border-color: rgba(234, 179, 8, 0.6);
+    }
+    .flyer-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .flyer-brandlink-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .flyer-bandlink-logo {
+      height: 14px;
+      object-fit: contain;
+    }
+    .flyer-band-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      line-height: 1.1;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+    .flyer-subtitle {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 1.2px;
+      margin-top: 4px;
+    }
+    .flyer-shows-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+    .flyer-show-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .flyer-date-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .flyer-date-day {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+    }
+    .flyer-date-month {
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+    }
+    .flyer-show-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .flyer-show-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .flyer-show-meta {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .flyer-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 10px;
+      margin-top: 12px;
+    }
+    .flyer-footer-contact {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .flyer-footer-brand {
+      font-size: 0.62rem;
+      color: #64748b;
+    }
+    .flyer-qr-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* BandLink Global Loader */
+    .global-loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 14, 23, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .global-loader-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .global-loader-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 40px;
+      background: rgba(23, 30, 46, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.15);
+      animation: loaderPulseBox 2s infinite ease-in-out;
+    }
+    @keyframes loaderPulseBox {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    .loader-logo-ring-wrapper {
+      position: relative;
+      width: 140px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .loader-logo-img {
+      max-width: 130px;
+      max-height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.5));
+    }
+    .loader-progress-track {
+      width: 180px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .loader-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 45%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #38bdf8);
+      border-radius: 4px;
+      animation: loaderIndeterminate 1.2s infinite ease-in-out;
+    }
+    @keyframes loaderIndeterminate {
+      0% { left: -50%; width: 30%; }
+      50% { left: 30%; width: 55%; }
+      100% { left: 100%; width: 30%; }
+    }
+    .loader-message {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+
     /* Mobile Repertoire Styles */
     .repertoire-song-card {
       background: #1e2638;
@@ -4024,6 +4320,8 @@
         </div>
       </form>
     </div>
+  </div>
+
   <!-- EDIT BAND PROFILE MODAL (NOME, DESDE, GÊNERO, LOCALIZAÇÃO, FOTO, DESCRIÇÃO) -->
   <div class="modal-overlay" id="editBandProfileModal">
     <div class="modal-card">
@@ -4200,6 +4498,209 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL COMPARTILHAR AGENDA / GERADOR DE ARTE (FLYER BANDLINK) -->
+  <div class="modal-overlay" id="shareAgendaModal">
+    <div class="modal-card large" style="max-width: 960px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <ion-icon name="share-social-outline" style="font-size: 1.5rem; color: var(--cyan);"></ion-icon>
+          <div>
+            <h3 class="modal-title" style="margin: 0;">Compartilhar Agenda de Shows</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;">Gerador oficial de arte para redes sociais e WhatsApp</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('shareAgendaModal')">&times;</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; overflow-y: auto; padding: 4px; flex: 1;">
+        <!-- COLUNA ESQUERDA: CONTROLES E SELEÇÃO DE SHOWS -->
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Escolha de Tema Visual -->
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: block;">1. Estilo Visual do Flyer</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;" id="flyerThemeSelector">
+              <button type="button" class="btn btn-sm btn-outline active flyer-theme-btn" data-theme="rock" onclick="setFlyerTheme('rock')">
+                <ion-icon name="skull-outline"></ion-icon> Rock
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="synth" onclick="setFlyerTheme('synth')">
+                <ion-icon name="flash-outline"></ion-icon> Synthwave
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="acoustic" onclick="setFlyerTheme('acoustic')">
+                <ion-icon name="leaf-outline"></ion-icon> Acústico
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="edm" onclick="setFlyerTheme('edm')">
+                <ion-icon name="headset-outline"></ion-icon> Eletrônica
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="dark" onclick="setFlyerTheme('dark')">
+                <ion-icon name="moon-outline"></ion-icon> Dark
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="gold" onclick="setFlyerTheme('gold')">
+                <ion-icon name="sparkles-outline"></ion-icon> Gold
+              </button>
+            </div>
+          </div>
+
+          <!-- Seleção de Shows para Incluir na Arte (Max 6) -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0;">2. Selecionar Shows na Arte (<span id="flyerSelectedCount">0</span>/6)</label>
+              <button type="button" class="btn btn-sm" style="font-size: 0.75rem; color: var(--cyan); background: transparent; padding: 2px 6px;" onclick="selectAllUpcomingForFlyer()">Selecionar Próximos</button>
+            </div>
+            <div id="flyerEventsList" style="max-height: 200px; overflow-y: auto; background: #131a28; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+              <!-- Checkboxes de shows -->
+            </div>
+          </div>
+
+          <!-- Campo de Rodapé / Contato -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">3. Contato para Shows / Redes Sociais</label>
+            <input type="text" id="flyerContactInput" class="form-input" placeholder="Ex: Contato: (16) 99115-3733 • @badbadgersoficial" oninput="updateFlyerPreview()">
+          </div>
+
+          <!-- Botões de Ação -->
+          <div style="display: flex; gap: 10px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="downloadFlyerImage()">
+              <ion-icon name="download-outline" style="font-size: 1.15rem;"></ion-icon>
+              <span>Baixar Arte (PNG)</span>
+            </button>
+            <button type="button" class="btn btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="copyFlyerText()" title="Copiar texto formatado para WhatsApp">
+              <ion-icon name="copy-outline"></ion-icon>
+              <span>Copiar Texto</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- COLUNA DIREITA: LIVE PREVIEW DA ARTE DO FLYER -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+          <div id="flyerPreviewCard" class="flyer-card-preview flyer-theme-rock">
+            <!-- Header do Flyer -->
+            <div class="flyer-header">
+              <div class="flyer-brandlink-badge">
+                <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="flyer-bandlink-logo" onerror="this.style.display='none'">
+                <span>AGENDA OFICIAL</span>
+              </div>
+              <div class="flyer-band-title" id="flyerBandTitle">BAD BADGERS</div>
+              <div class="flyer-subtitle">AGENDA DE APRESENTAÇÕES • 2026</div>
+            </div>
+
+            <!-- Lista de Shows no Flyer -->
+            <div class="flyer-shows-container" id="flyerShowsContainer">
+              <!-- Renderizado dinamicamente -->
+            </div>
+
+            <!-- Footer do Flyer com Logo e QR Code -->
+            <div class="flyer-footer">
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span class="flyer-footer-contact" id="flyerFooterContact">Contato para Shows</span>
+                <span class="flyer-footer-brand">BandLink • Setlist & Agenda Manager</span>
+              </div>
+              <div class="flyer-qr-box" title="Acesse a página da banda">
+                <ion-icon name="qr-code-outline" style="font-size: 2.2rem; color: #fff;"></ion-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE DIVISÃO DE CACHÊ (CACHE SPLIT POR INTEGRANTE E SUBSTITUTOS) -->
+  <div class="modal-overlay" id="cacheSplitModal">
+    <div class="modal-card large" style="max-width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); display: flex; align-items: center; justify-content: center; color: #4ade80;">
+            <ion-icon name="pie-chart-outline" style="font-size: 1.3rem;"></ion-icon>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0;" id="cacheSplitModalTitle">Divisão de Cachê</h3>
+            <span style="font-size: 0.8rem; color: #94a3b8;" id="cacheSplitModalSubtitle">Show • Data • Local</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('cacheSplitModal')">&times;</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 4px; flex: 1;">
+        <!-- Header Financeiro do Show -->
+        <div style="background: #141c2c; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Cachê Total Bruto</span>
+            <div style="font-size: 1.6rem; font-weight: 900; color: #4ade80;" id="cacheSplitTotalGrossDisplay">R$ 0,00</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div>
+              <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 4px;">Status do Pagamento</span>
+              <select id="cacheSplitStatusSelect" class="form-input" style="padding: 4px 10px; font-size: 0.82rem; height: 34px;">
+                <option value="paid">Pago / Recebido</option>
+                <option value="pending">Pendente</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-sm btn-cyan" onclick="splitCacheEquallyAmongMembers()" style="height: 34px; margin-top: 16px;">
+              <ion-icon name="git-branch-outline"></ion-icon> Dividir Igualmente
+            </button>
+          </div>
+        </div>
+
+        <!-- Seção: Integrantes da Banda -->
+        <div style="margin-bottom: 18px;">
+          <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+            <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
+            <span>Cota dos Integrantes Oficiais</span>
+          </h4>
+          <div id="cacheSplitMembersList" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Linhas de membros -->
+          </div>
+        </div>
+
+        <!-- Seção: Substitutos / Músicos Convidados -->
+        <div style="margin-bottom: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+              <ion-icon name="person-add" style="color: #fbbf24;"></ion-icon>
+              <span>Substitutos & Músicos Convidados</span>
+            </h4>
+            <button type="button" class="btn btn-sm btn-outline" onclick="addSubstituteToCacheSplit()" style="font-size: 0.78rem; padding: 4px 10px;">
+              <ion-icon name="add-outline"></ion-icon> Adicionar Substituto
+            </button>
+          </div>
+          <div id="cacheSplitSubstitutesList" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Linhas de substitutos -->
+          </div>
+        </div>
+
+        <!-- Resumo Contábil da Divisão -->
+        <div style="background: #101624; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Total Distribuído</span>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #38bdf8;" id="cacheSplitTotalDistributed">R$ 0,00</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Fundo da Banda / Saldo</span>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #4ade80;" id="cacheSplitBandFund">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <button type="button" class="btn btn-outline" onclick="closeModal('cacheSplitModal')">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveCacheSplitModal()">Salvar Divisão de Cachê</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANDLINK GLOBAL LOADER OVERLAY -->
+  <div id="bandlinkGlobalLoader" class="global-loader-overlay" style="display: none;">
+    <div class="global-loader-box">
+      <div class="loader-logo-ring-wrapper">
+        <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="loader-logo-img" onerror="this.src='assets/logo.png'">
+      </div>
+      <div class="loader-progress-track">
+        <div class="loader-progress-bar"></div>
+      </div>
+      <span id="globalLoaderText" class="loader-message">Carregando BandLink...</span>
     </div>
   </div>
 
@@ -4628,9 +5129,44 @@
     }
 
     // ==========================================
+    // GLOBAL LOADER (BANDLINK LOGO)
+    // ==========================================
+    function showLoading(text = 'Carregando...') {
+      const loader = document.getElementById('bandlinkGlobalLoader');
+      const textEl = document.getElementById('bandlinkGlobalLoaderText');
+      if (textEl) textEl.textContent = text;
+      if (loader) {
+        loader.style.display = 'flex';
+        void loader.offsetWidth;
+        loader.classList.add('active');
+      }
+    }
+
+    function hideLoading() {
+      const loader = document.getElementById('bandlinkGlobalLoader');
+      if (loader) {
+        loader.classList.remove('active');
+        setTimeout(() => {
+          if (!loader.classList.contains('active')) {
+            loader.style.display = 'none';
+          }
+        }, 280);
+      }
+    }
+
+    // ==========================================
     // NAVIGATION (MAIN VIEWS & PROFILE TABS)
     // ==========================================
     function switchMainView(viewId) {
+      const viewNames = {
+        'profile': 'Perfil do Músico...',
+        'songbook': 'Songbook & Cifras...',
+        'projects': 'Projetos & Bandas...',
+        'band-profile': 'Página da Banda...',
+        'social': 'Rede & Comunidade...'
+      };
+      showLoading(`Carregando ${viewNames[viewId] || 'Página...'}`);
+
       document.querySelectorAll('.sidebar-nav-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
 
@@ -4652,6 +5188,10 @@
         }
       }
       if (viewId === 'social') loadSocialData();
+
+      setTimeout(() => {
+        hideLoading();
+      }, 260);
     }
 
     function openCentralProfile() {
@@ -6116,6 +6656,7 @@
     // PÁGINA DA BANDA (FIGMA PRINT 1: L M R F A)
     // ==============================================================
     async function openBandProfileView(bandId) {
+      showLoading('Carregando informações da banda...');
       currentActiveBandId = bandId;
       let band = (myBands || []).find(b => b.id === bandId);
 
@@ -6187,6 +6728,7 @@
 
       // Default to tab R as in Print 1!
       switchBandPageTab('R');
+      setTimeout(() => hideLoading(), 260);
     }
 
     function switchBandPageTab(tabKey) {
@@ -6793,19 +7335,131 @@
       sub.innerHTML = html;
     }
 
-    // SUBVIEW F: FINANÇAS
+    // ==============================================================
+    // HELPERS DE DATA, ORDENAÇÃO E AGRUPAMENTO POR MÊS
+    // ==============================================================
+    let showPastAgendaMonths = false;
+    let showPastFinanceMonths = false;
+
+    function togglePastAgendaMonths() {
+      showPastAgendaMonths = !showPastAgendaMonths;
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
+    function togglePastFinanceMonths() {
+      showPastFinanceMonths = !showPastFinanceMonths;
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+    }
+
+    function parseDateForSort(d) {
+      if (!d) return new Date(0);
+      const str = String(d).trim();
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length >= 3) {
+          return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        }
+      } else if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3) {
+          return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+      }
+      const dt = new Date(str);
+      return isNaN(dt.getTime()) ? new Date(0) : dt;
+    }
+
+    function isFutureDate(d) {
+      if (!d) return false;
+      const dt = parseDateForSort(d);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return dt >= now;
+    }
+
+    const MONTH_NAMES_BR = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    function getEventMonthInfo(d) {
+      const dt = parseDateForSort(d);
+      const mIdx = dt.getMonth();
+      const yr = dt.getFullYear();
+      return {
+        key: `${yr}-${String(mIdx + 1).padStart(2, '0')}`,
+        monthName: MONTH_NAMES_BR[mIdx] || 'Mês',
+        year: yr,
+        title: `${MONTH_NAMES_BR[mIdx] || 'Mês'} ${yr}`,
+        dateObj: dt
+      };
+    }
+
+    function getBandMembersList(band, syncData) {
+      const rawMembers = syncData?.members || band?.members || [];
+      if (rawMembers.length > 0) {
+        return rawMembers.map((m, idx) => ({
+          id: m.id || m.userId || `m_${idx}`,
+          name: m.name || m.username || `Membro ${idx + 1}`,
+          role: m.role || 'Instrumento',
+          phone: m.phone || '',
+          isLeader: m.isLeader === 1 || m.role?.toLowerCase()?.includes('líder') || m.role?.toLowerCase()?.includes('admin'),
+          username: m.username || ''
+        }));
+      }
+      if (!band || band.id === 2 || band.name?.toLowerCase().includes('badger')) {
+        return [
+          { id: 'm_0', name: "Allison", role: "Baixo", isLeader: true, phone: "16991153733", startDate: "01/07/2026", username: "allison_xd" },
+          { id: 'm_1', name: "André", role: "Guitarra, Vocal", isLeader: false, phone: "", startDate: "", username: "" },
+          { id: 'm_2', name: "Caixa", role: "Caixa", isLeader: false, phone: "", startDate: "", username: "" },
+          { id: 'm_3', name: "Danilo", role: "Bateria", isLeader: false, phone: "", startDate: "", username: "" },
+          { id: 'm_4', name: "Salatiel", role: "Vocal, Guitarra", isLeader: false, phone: "", startDate: "", username: "" }
+        ];
+      }
+      return [{ id: 'm_0', name: band?.ownerUsername || 'Líder', role: 'Vocal / Líder', isLeader: true }];
+    }
+
+    // ==============================================================
+    // SUBVIEW F: FINANÇAS & DIVISÃO DE CACHÊS (PADRÃO MOBILE COM MESES)
+    // ==============================================================
     function renderBandFinancesTab(band, syncData) {
       const sub = document.getElementById('bSubview-F');
       if (!sub) return;
 
       const m = getBandMetrics(band);
-      const setlists = m.setlists;
+      const setlists = m.setlists || [];
       const showsWithCache = setlists.filter(sl => {
         const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
         return rawC && parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) > 0;
       });
 
       const avgCache = showsWithCache.length > 0 ? (m.totalCache / showsWithCache.length) : 0;
+
+      // Separação cronológica: Futuros ascendentes, Passados descendentes
+      const upcomingShows = showsWithCache
+        .filter(s => isFutureDate(s.date))
+        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      const pastShows = showsWithCache
+        .filter(s => !isFutureDate(s.date))
+        .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+
+      // Agrupa por mês
+      const groupShowsByMonth = (list) => {
+        const groups = {};
+        list.forEach(sl => {
+          const info = getEventMonthInfo(sl.date);
+          if (!groups[info.key]) {
+            groups[info.key] = { title: info.title, list: [], total: 0 };
+          }
+          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+          const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+          groups[info.key].list.push(sl);
+          groups[info.key].total += num;
+        });
+        return groups;
+      };
+
+      const upcomingGroups = groupShowsByMonth(upcomingShows);
+      const pastGroups = groupShowsByMonth(pastShows);
+      const pastKeys = Object.keys(pastGroups);
 
       let html = `
         <div style="margin-bottom: 24px;">
@@ -6839,37 +7493,113 @@
           </div>
         </div>
 
-        <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 14px;">Extrato de Apresentações e Cachês</h3>
-        <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left;">
-            <thead>
-              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
-                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
-                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Local</th>
-                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cachê Bruto</th>
-                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
-                <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${showsWithCache.map(sl => {
-                const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-                const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-                const indiv = m.membersCount > 0 ? (num / m.membersCount) : 0;
-                return `
-                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                    <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
-                    <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 700; color: #fff;">${sl.name || sl.local || 'Show'}</td>
-                    <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                    <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                    <td style="padding: 12px 16px;"><span class="badge badge-emerald" style="font-size: 0.72rem; font-weight: 800;">RECEBIDO</span></td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Extrato de Apresentações e Cachês</h3>
+          <span style="font-size: 0.8rem; color: #94a3b8;">${showsWithCache.length} apresentações registradas</span>
         </div>
       `;
+
+      if (showsWithCache.length === 0) {
+        html += `
+          <div style="text-align: center; padding: 40px; background: #1a2233; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8;">
+            <ion-icon name="cash-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <p style="margin: 0;">Nenhum evento com cachê cadastrado ainda.</p>
+          </div>
+        `;
+      } else {
+        const renderFinanceRows = (list) => {
+          return list.map(sl => {
+            const originalIdx = setlists.indexOf(sl);
+            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+            const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            const hasSplit = sl.cacheSplit && Object.keys(sl.cacheSplit.members || {}).length > 0;
+            const indiv = m.membersCount > 0 ? (num / m.membersCount) : 0;
+            const isPaid = (sl.cacheSplit?.status || 'paid') === 'paid';
+
+            return `
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-size: 0.92rem; font-weight: 700; color: #fff;">${escapeHtml(sl.name || sl.local || 'Show')}</div>
+                  ${sl.local ? `<div style="font-size: 0.78rem; color: #64748b;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(sl.local)}</div>` : ''}
+                </td>
+                <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">
+                  R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  ${hasSplit ? `<span class="badge badge-cyan" style="font-size: 0.65rem; margin-left: 6px; padding: 2px 6px;">Split OK</span>` : ''}
+                </td>
+                <td style="padding: 12px 16px;">
+                  <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.72rem; font-weight: 800;">
+                    ${isPaid ? 'RECEBIDO' : 'PENDENTE'}
+                  </span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 12px; font-size: 0.78rem;" onclick="openCacheSplitModal(${originalIdx})">
+                    <ion-icon name="pie-chart-outline"></ion-icon> <span>Divisão de Cachê</span>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        };
+
+        const renderTableWrapper = (rowsHtml) => `
+          <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow-x: auto; margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Local</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cachê Bruto</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; text-align: right;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        // Renderiza meses futuros primeiro
+        Object.keys(upcomingGroups).forEach(k => {
+          const g = upcomingGroups[k];
+          html += `
+            <div class="month-separator-bar">
+              <span class="month-separator-title">${g.title.toUpperCase()}</span>
+              <div class="month-separator-line"></div>
+              <span class="month-separator-badge">${g.list.length} ${g.list.length === 1 ? 'Show' : 'Shows'} • R$ ${g.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            </div>
+            ${renderTableWrapper(renderFinanceRows(g.list))}
+          `;
+        });
+
+        // Meses passados: ocultos por padrão com barra retrátil
+        if (pastKeys.length > 0) {
+          html += `
+            <div class="past-months-toggle-box" onclick="togglePastFinanceMonths()">
+              <ion-icon name="${showPastFinanceMonths ? 'chevron-up-outline' : 'time-outline'}"></ion-icon>
+              <span>${showPastFinanceMonths ? 'Ocultar meses anteriores' : `Mostrar ${pastShows.length} apresentações anteriores (${pastKeys.length} meses passados)`}</span>
+            </div>
+          `;
+
+          if (showPastFinanceMonths) {
+            pastKeys.forEach(k => {
+              const g = pastGroups[k];
+              html += `
+                <div class="month-separator-bar" style="opacity: 0.85;">
+                  <span class="month-separator-title">${g.title.toUpperCase()}</span>
+                  <div class="month-separator-line"></div>
+                  <span class="month-separator-badge">${g.list.length} ${g.list.length === 1 ? 'Show' : 'Shows'} • R$ ${g.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </div>
+                ${renderTableWrapper(renderFinanceRows(g.list))}
+              `;
+            });
+          }
+        }
+      }
 
       sub.innerHTML = html;
     }
@@ -6932,6 +7662,32 @@
         return isRehearsal;
       }).length;
 
+      // Separa em próximos (cronológico crescente) e anteriores (cronológico decrescente)
+      const upcomingEvents = yearEvents
+        .filter(s => isFutureDate(s.date))
+        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      const pastEvents = yearEvents
+        .filter(s => !isFutureDate(s.date))
+        .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+
+      // Agrupamento por mês
+      const groupEventsByMonth = (list) => {
+        const groups = {};
+        list.forEach(sl => {
+          const info = getEventMonthInfo(sl.date);
+          if (!groups[info.key]) {
+            groups[info.key] = { title: info.title, list: [] };
+          }
+          groups[info.key].list.push(sl);
+        });
+        return groups;
+      };
+
+      const upcomingGroups = groupEventsByMonth(upcomingEvents);
+      const pastGroups = groupEventsByMonth(pastEvents);
+      const pastKeys = Object.keys(pastGroups);
+
       let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
           <div>
@@ -6942,10 +7698,16 @@
             </h2>
             <p style="color: #94a3b8; font-size: 0.88rem;">Cronograma completo de datas, locais, cachês e playlists da banda.</p>
           </div>
-          <button type="button" class="btn btn-cyan btn-sm" onclick="openEditEventPlaylistModal(-1)">
-            <ion-icon name="add-circle-outline"></ion-icon>
-            <span>Novo Evento</span>
-          </button>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="openShareAgendaModal()">
+              <ion-icon name="share-social-outline"></ion-icon>
+              <span>Compartilhar Agenda</span>
+            </button>
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditEventPlaylistModal(-1)">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              <span>Novo Evento</span>
+            </button>
+          </div>
         </div>
 
         <!-- RESUMO DE 3 CÍRCULOS (ANO, SHOWS, ENSAIOS COM ÍCONES SOBREPOSTOS IGUAL APP MOBILE) -->
@@ -6996,7 +7758,7 @@
         </div>
 
         <!-- LISTA DE CARDS DE EVENTO (PADRÃO MOBILE COM BADGE QUADRADO DIA/MÊS) -->
-        <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
       `;
 
       if (yearEvents.length === 0) {
@@ -7009,7 +7771,7 @@
           </div>
         `;
       } else {
-        yearEvents.forEach(sl => {
+        const renderEventCardHtml = (sl) => {
           const originalIdx = setlists.indexOf(sl);
           const sName = sl.name || 'Evento';
           const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
@@ -7018,7 +7780,7 @@
           const dateBadge = getFormattedDateBadge(sl.date);
           const songsCount = (sl.songs || []).length;
 
-          html += `
+          return `
             <div class="agenda-event-card" onclick="openEditEventPlaylistModal(${originalIdx})" title="Clique para editar evento e playlist">
               <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 250px;">
                 <!-- Badge Quadrado Dia/Mês -->
@@ -7051,7 +7813,48 @@
               </div>
             </div>
           `;
+        };
+
+        // Renderiza Próximos Eventos com divisores de mês
+        Object.keys(upcomingGroups).forEach(k => {
+          const g = upcomingGroups[k];
+          const mShows = g.list.filter(s => s.type !== 'rehearsal' && !(s.name || '').toLowerCase().includes('ensaio')).length;
+          const mReh = g.list.length - mShows;
+          html += `
+            <div class="month-separator-bar">
+              <span class="month-separator-title">${g.title.toUpperCase()}</span>
+              <div class="month-separator-line"></div>
+              <span class="month-separator-badge">${mShows} ${mShows === 1 ? 'Show' : 'Shows'}${mReh > 0 ? `, ${mReh} ${mReh === 1 ? 'Ensaio' : 'Ensaios'}` : ''}</span>
+            </div>
+            ${g.list.map(renderEventCardHtml).join('')}
+          `;
         });
+
+        // Eventos Anteriores: ocultos por padrão com botão retrátil
+        if (pastKeys.length > 0) {
+          html += `
+            <div class="past-months-toggle-box" onclick="togglePastAgendaMonths()">
+              <ion-icon name="${showPastAgendaMonths ? 'chevron-up-outline' : 'time-outline'}"></ion-icon>
+              <span>${showPastAgendaMonths ? 'Ocultar eventos anteriores' : `Mostrar ${pastEvents.length} eventos anteriores (${pastKeys.length} meses passados)`}</span>
+            </div>
+          `;
+
+          if (showPastAgendaMonths) {
+            pastKeys.forEach(k => {
+              const g = pastGroups[k];
+              const mShows = g.list.filter(s => s.type !== 'rehearsal' && !(s.name || '').toLowerCase().includes('ensaio')).length;
+              const mReh = g.list.length - mShows;
+              html += `
+                <div class="month-separator-bar" style="opacity: 0.85;">
+                  <span class="month-separator-title">${g.title.toUpperCase()}</span>
+                  <div class="month-separator-line"></div>
+                  <span class="month-separator-badge">${mShows} ${mShows === 1 ? 'Show' : 'Shows'}${mReh > 0 ? `, ${mReh} ${mReh === 1 ? 'Ensaio' : 'Ensaios'}` : ''}</span>
+                </div>
+                ${g.list.map(renderEventCardHtml).join('')}
+              `;
+            });
+          }
+        }
       }
 
       html += `</div>`;
@@ -7062,57 +7865,73 @@
     // HANDLERS DO MODAL DE EVENTO & PLAYLIST (EDIT EVENT & PLAYLIST)
     // ==============================================================
     function openEditEventPlaylistModal(idx) {
-      editingEventIndex = idx;
-      const modal = document.getElementById('editEventPlaylistModal');
-      if (!modal) return;
+      try {
+        editingEventIndex = idx;
+        const modal = document.getElementById('editEventPlaylistModal');
+        if (!modal) return;
 
-      const setlists = currentBandSyncData?.setlists || [];
-      const isNew = idx < 0 || idx >= setlists.length;
-
-      const titleEl = document.getElementById('mEventModalTitle');
-      const badgeEl = document.getElementById('mEventHeaderBadge');
-      const deleteBtn = document.getElementById('btnDeleteEventFromModal');
-
-      if (isNew) {
-        if (titleEl) titleEl.textContent = 'Novo Evento / Show';
-        if (badgeEl) {
-          badgeEl.textContent = 'NOVO';
-          badgeEl.className = 'badge badge-cyan';
+        if (!currentBandData) {
+          currentBandData = (myBands || []).find(b => b.id === currentActiveBandId) || { id: 2, name: 'Bad Badgers' };
         }
-        if (deleteBtn) deleteBtn.style.display = 'none';
-
-        document.getElementById('mEventName').value = '';
-        document.getElementById('mEventType').value = 'show';
-        document.getElementById('mEventDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('mEventTime').value = '21:00';
-        document.getElementById('mEventLocal').value = '';
-        document.getElementById('mEventCache').value = '';
-        document.getElementById('mEventNotes').value = '';
-        editingEventPlaylist = [];
-      } else {
-        const ev = setlists[idx];
-        const isRehearsal = ev.type === 'rehearsal' || (ev.name || '').toLowerCase().includes('ensaio');
-
-        if (titleEl) titleEl.textContent = `Editar: ${ev.name || 'Evento'}`;
-        if (badgeEl) {
-          badgeEl.textContent = isRehearsal ? 'ENSAIO' : 'SHOW';
-          badgeEl.className = isRehearsal ? 'badge badge-amber' : 'badge badge-rose';
+        if (!currentBandSyncData) {
+          const cached = localStorage.getItem('bandlink_band_2_sync');
+          currentBandSyncData = cached ? parseJsonSafe(cached) : { setlists: [], songs: [] };
         }
-        if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+        if (!currentBandSyncData) currentBandSyncData = { setlists: [], songs: [] };
+        if (!currentBandSyncData.setlists) currentBandSyncData.setlists = [];
+        if (!currentBandSyncData.songs) currentBandSyncData.songs = [];
 
-        document.getElementById('mEventName').value = ev.name || '';
-        document.getElementById('mEventType').value = isRehearsal ? 'rehearsal' : 'show';
-        document.getElementById('mEventDate').value = normalizeDateStr(ev.date) || '';
-        document.getElementById('mEventTime').value = ev.time || '';
-        document.getElementById('mEventLocal').value = ev.local || '';
-        document.getElementById('mEventCache').value = ev['cachê'] ?? ev.cache ?? '';
-        document.getElementById('mEventNotes').value = ev.notes || '';
-        editingEventPlaylist = [...(ev.songs || [])];
+        const setlists = currentBandSyncData.setlists;
+        const isNew = idx < 0 || idx >= setlists.length;
+
+        const titleEl = document.getElementById('mEventModalTitle');
+        const badgeEl = document.getElementById('mEventHeaderBadge');
+        const deleteBtn = document.getElementById('btnDeleteEventFromModal');
+
+        if (isNew) {
+          if (titleEl) titleEl.textContent = 'Novo Evento / Show';
+          if (badgeEl) {
+            badgeEl.textContent = 'NOVO';
+            badgeEl.className = 'badge badge-cyan';
+          }
+          if (deleteBtn) deleteBtn.style.display = 'none';
+
+          const nameEl = document.getElementById('mEventName'); if (nameEl) nameEl.value = '';
+          const typeEl = document.getElementById('mEventType'); if (typeEl) typeEl.value = 'show';
+          const dateEl = document.getElementById('mEventDate'); if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+          const timeEl = document.getElementById('mEventTime'); if (timeEl) timeEl.value = '21:00';
+          const locEl = document.getElementById('mEventLocal'); if (locEl) locEl.value = '';
+          const cacheEl = document.getElementById('mEventCache'); if (cacheEl) cacheEl.value = '';
+          const notesEl = document.getElementById('mEventNotes'); if (notesEl) notesEl.value = '';
+          editingEventPlaylist = [];
+        } else {
+          const ev = setlists[idx] || {};
+          const isRehearsal = ev.type === 'rehearsal' || (ev.name || '').toLowerCase().includes('ensaio');
+
+          if (titleEl) titleEl.textContent = `Editar: ${ev.name || 'Evento'}`;
+          if (badgeEl) {
+            badgeEl.textContent = isRehearsal ? 'ENSAIO' : 'SHOW';
+            badgeEl.className = isRehearsal ? 'badge badge-amber' : 'badge badge-rose';
+          }
+          if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+
+          const nameEl = document.getElementById('mEventName'); if (nameEl) nameEl.value = ev.name || '';
+          const typeEl = document.getElementById('mEventType'); if (typeEl) typeEl.value = isRehearsal ? 'rehearsal' : 'show';
+          const dateEl = document.getElementById('mEventDate'); if (dateEl) dateEl.value = normalizeDateStr(ev.date) || '';
+          const timeEl = document.getElementById('mEventTime'); if (timeEl) timeEl.value = ev.time || '';
+          const locEl = document.getElementById('mEventLocal'); if (locEl) locEl.value = ev.local || '';
+          const cacheEl = document.getElementById('mEventCache'); if (cacheEl) cacheEl.value = ev['cachê'] ?? ev.cache ?? '';
+          const notesEl = document.getElementById('mEventNotes'); if (notesEl) notesEl.value = ev.notes || '';
+          editingEventPlaylist = Array.isArray(ev.songs) ? [...ev.songs] : [];
+        }
+
+        switchEventModalTab('details');
+        renderCurrentEventPlaylistSongs();
+        openModal('editEventPlaylistModal');
+      } catch (err) {
+        console.error('Erro ao abrir modal de evento:', err);
+        showToast('Erro ao carregar evento: ' + err.message, 'error');
       }
-
-      switchEventModalTab('details');
-      renderCurrentEventPlaylistSongs();
-      openModal('editEventPlaylistModal');
     }
 
     function updateEventModalTypeBadge() {
@@ -7209,7 +8028,7 @@
 
       let totalSeconds = 0;
       editingEventPlaylist.forEach(s => {
-        if (s.duration) {
+        if (s && typeof s.duration === 'string' && s.duration.includes(':')) {
           const parts = s.duration.split(':').map(n => parseInt(n, 10) || 0);
           if (parts.length === 2) {
             totalSeconds += (parts[0] * 60) + parts[1];
@@ -7282,8 +8101,13 @@
       const cache = document.getElementById('mEventCache').value.trim();
       const notes = document.getElementById('mEventNotes').value.trim();
 
+      const existingEv = (editingEventIndex >= 0 && editingEventIndex < currentBandSyncData.setlists.length)
+        ? currentBandSyncData.setlists[editingEventIndex]
+        : {};
+
       const eventData = {
-        id: editingEventIndex >= 0 ? currentBandSyncData.setlists[editingEventIndex].id : `setlist_${Date.now()}`,
+        ...existingEv,
+        id: existingEv.id || `setlist_${Date.now()}`,
         name,
         type,
         date,
@@ -7301,9 +8125,11 @@
         currentBandSyncData.setlists.unshift(eventData);
       }
 
-      currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+      if (currentBandData) {
+        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+      }
 
-      if (currentBandData.id === 2) {
+      if (!currentBandData || currentBandData.id === 2) {
         localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
       }
 
@@ -7311,6 +8137,7 @@
       showToast('Evento e playlist salvos com sucesso!', 'success');
 
       renderBandAgendaTab(currentBandData, currentBandSyncData);
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
       renderProjectsMainView();
     }
 
@@ -7320,8 +8147,10 @@
 
       if (currentBandSyncData?.setlists) {
         currentBandSyncData.setlists.splice(editingEventIndex, 1);
-        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
-        if (currentBandData.id === 2) {
+        if (currentBandData) {
+          currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+        }
+        if (!currentBandData || currentBandData.id === 2) {
           localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
         }
       }
@@ -7330,7 +8159,579 @@
       showToast('Evento excluído da agenda.', 'info');
 
       renderBandAgendaTab(currentBandData, currentBandSyncData);
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
       renderProjectsMainView();
+    }
+
+    // ==============================================================
+    // HANDLERS DO MODAL DE COMPARTILHAR AGENDA (FLYER BANDLINK)
+    // ==============================================================
+    let selectedFlyerTheme = 'rock';
+    let selectedFlyerEventIds = [];
+
+    function openShareAgendaModal() {
+      const band = currentBandData || { name: 'BAD BADGERS' };
+      const m = getBandMetrics(band);
+      const setlists = m.setlists || [];
+
+      // Filtra apenas shows
+      const shows = setlists.filter(sl => sl.type !== 'rehearsal' && !(sl.name || '').toLowerCase().includes('ensaio'));
+
+      // Ordena cronologicamente
+      const sortedShows = shows.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      // Seleciona os próximos até 6 por padrão
+      const upcoming = sortedShows.filter(s => isFutureDate(s.date));
+      const initialSelection = upcoming.length > 0 ? upcoming.slice(0, 6) : sortedShows.slice(0, 6);
+      selectedFlyerEventIds = initialSelection.map(s => s.id);
+
+      // Popula lista de checkboxes
+      const listEl = document.getElementById('flyerEventsList');
+      if (listEl) {
+        if (sortedShows.length === 0) {
+          listEl.innerHTML = '<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">Nenhum show cadastrado para incluir no flyer.</div>';
+        } else {
+          listEl.innerHTML = sortedShows.map(s => {
+            const isChecked = selectedFlyerEventIds.includes(s.id);
+            const dtBadge = getFormattedDateBadge(s.date);
+            return `
+              <label style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="toggleFlyerEventSelection('${s.id}')" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">${escapeHtml(s.name || 'Show')}</div>
+                  <div style="font-size: 0.75rem; color: #94a3b8;">${dtBadge.day} ${dtBadge.month} • ${escapeHtml(slLocal(s))}</div>
+                </div>
+              </label>
+            `;
+          }).join('');
+        }
+      }
+
+      function slLocal(s) {
+        return s.local || (s.time ? `Início às ${s.time}` : 'Local a confirmar');
+      }
+
+      // Contato default
+      const contactInput = document.getElementById('flyerContactInput');
+      if (contactInput && !contactInput.value) {
+        contactInput.value = 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
+      }
+
+      setFlyerTheme(selectedFlyerTheme || 'rock');
+      updateFlyerPreview();
+      openModal('shareAgendaModal');
+    }
+
+    function setFlyerTheme(themeKey) {
+      selectedFlyerTheme = themeKey;
+      document.querySelectorAll('.flyer-theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-theme') === themeKey);
+      });
+      const previewCard = document.getElementById('flyerPreviewCard');
+      if (previewCard) {
+        previewCard.className = `flyer-card-preview flyer-theme-${themeKey}`;
+      }
+    }
+
+    function toggleFlyerEventSelection(eventId) {
+      if (selectedFlyerEventIds.includes(eventId)) {
+        selectedFlyerEventIds = selectedFlyerEventIds.filter(id => id !== eventId);
+      } else {
+        if (selectedFlyerEventIds.length >= 6) {
+          showToast('O flyer comporta no máximo 6 shows selecionados.', 'warning');
+          // Desmarca checkbox
+          const chk = document.querySelector(`#flyerEventsList input[value="${eventId}"]`);
+          if (chk) chk.checked = false;
+          return;
+        }
+        selectedFlyerEventIds.push(eventId);
+      }
+      updateFlyerPreview();
+    }
+
+    function selectAllUpcomingForFlyer() {
+      const band = currentBandData || { name: 'BAD BADGERS' };
+      const m = getBandMetrics(band);
+      const setlists = m.setlists || [];
+      const shows = setlists.filter(sl => sl.type !== 'rehearsal' && !(sl.name || '').toLowerCase().includes('ensaio'));
+      const upcoming = shows.filter(s => isFutureDate(s.date)).sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+      selectedFlyerEventIds = upcoming.slice(0, 6).map(s => s.id);
+
+      // Atualiza checkboxes
+      document.querySelectorAll('#flyerEventsList input[type="checkbox"]').forEach(chk => {
+        chk.checked = selectedFlyerEventIds.includes(chk.value);
+      });
+
+      updateFlyerPreview();
+      showToast(`${selectedFlyerEventIds.length} próximos shows selecionados para o flyer!`, 'info');
+    }
+
+    function updateFlyerPreview() {
+      const countEl = document.getElementById('flyerSelectedCount');
+      if (countEl) countEl.textContent = selectedFlyerEventIds.length;
+
+      const bandTitleEl = document.getElementById('flyerBandTitle');
+      if (bandTitleEl) {
+        bandTitleEl.textContent = (currentBandData?.name || 'BAD BADGERS').toUpperCase();
+      }
+
+      const contactText = document.getElementById('flyerContactInput')?.value || 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
+      const footerContactEl = document.getElementById('flyerFooterContact');
+      if (footerContactEl) footerContactEl.textContent = contactText;
+
+      const container = document.getElementById('flyerShowsContainer');
+      if (!container) return;
+
+      const band = currentBandData || { name: 'BAD BADGERS' };
+      const m = getBandMetrics(band);
+      const setlists = m.setlists || [];
+
+      const selectedShows = setlists
+        .filter(s => selectedFlyerEventIds.includes(s.id))
+        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      if (selectedShows.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5); font-size: 0.85rem;">
+            Selecione até 6 apresentações ao lado para visualizar a arte.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = selectedShows.map(s => {
+        const dt = getFormattedDateBadge(s.date);
+        return `
+          <div class="flyer-show-row">
+            <div class="flyer-show-date">
+              <span class="flyer-show-date-day">${dt.day}</span>
+              <span class="flyer-show-date-month">${dt.month}</span>
+            </div>
+            <div class="flyer-show-info">
+              <div class="flyer-show-name">${escapeHtml(s.name || 'Show ao Vivo')}</div>
+              <div class="flyer-show-details">
+                ${s.local ? `<span><ion-icon name="location-outline"></ion-icon> ${escapeHtml(s.local)}</span>` : ''}
+                ${s.time ? `<span><ion-icon name="time-outline"></ion-icon> ${escapeHtml(s.time)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function downloadFlyerImage() {
+      const band = currentBandData || { name: 'BAD BADGERS' };
+      const m = getBandMetrics(band);
+      const setlists = m.setlists || [];
+      const selectedShows = setlists
+        .filter(s => selectedFlyerEventIds.includes(s.id))
+        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      if (selectedShows.length === 0) {
+        showToast('Selecione pelo menos 1 evento para gerar o flyer.', 'warning');
+        return;
+      }
+
+      showLoading('Gerando flyer em alta resolução...');
+
+      // Renderização com Canvas em alta definição (1080 x 1350 - proporção 4:5 vertical)
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const ctx = canvas.getContext('2d');
+
+      // Definição de paletas por tema
+      const themePalettes = {
+        rock: { bg1: '#1c0709', bg2: '#0b0d13', accent: '#f87171', text: '#ffffff', badgeBg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(239, 68, 68, 0.35)' },
+        synth: { bg1: '#2e0854', bg2: '#0b132b', accent: '#38bdf8', text: '#ffffff', badgeBg: 'rgba(56, 189, 248, 0.25)', border: 'rgba(56, 189, 248, 0.4)' },
+        acoustic: { bg1: '#311905', bg2: '#120d08', accent: '#fbbf24', text: '#ffffff', badgeBg: 'rgba(251, 191, 36, 0.25)', border: 'rgba(251, 191, 36, 0.35)' },
+        edm: { bg1: '#022c22', bg2: '#051119', accent: '#34d399', text: '#ffffff', badgeBg: 'rgba(52, 211, 153, 0.25)', border: 'rgba(52, 211, 153, 0.35)' },
+        dark: { bg1: '#18181b', bg2: '#09090b', accent: '#a1a1aa', text: '#ffffff', badgeBg: 'rgba(255, 255, 255, 0.1)', border: 'rgba(255, 255, 255, 0.2)' },
+        gold: { bg1: '#1f1b0a', bg2: '#0c0f1d', accent: '#f59e0b', text: '#ffffff', badgeBg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.4)' }
+      };
+
+      const pal = themePalettes[selectedFlyerTheme] || themePalettes.rock;
+
+      // 1. Fundo com Gradiente
+      const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
+      grad.addColorStop(0, pal.bg1);
+      grad.addColorStop(1, pal.bg2);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      // Moldura interna
+      ctx.strokeStyle = pal.border;
+      ctx.lineWidth = 6;
+      ctx.strokeRect(36, 36, 1008, 1278);
+
+      // 2. Header: Badge BandLink
+      ctx.fillStyle = pal.badgeBg;
+      ctx.strokeStyle = pal.border;
+      ctx.lineWidth = 2;
+      roundRect(ctx, 360, 68, 360, 48, 24, true, true);
+
+      ctx.fillStyle = pal.accent;
+      ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BANDLINK • AGENDA OFICIAL', 540, 100);
+
+      // 3. Nome da Banda
+      ctx.fillStyle = pal.text;
+      ctx.font = '900 68px system-ui, -apple-system, sans-serif';
+      ctx.fillText((band.name || 'BANDA').toUpperCase(), 540, 195);
+
+      // Subtítulo
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`AGENDA DE APRESENTAÇÕES • ${selectedAgendaYear}`, 540, 240);
+
+      // Linha divisória
+      ctx.strokeStyle = pal.border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(120, 275);
+      ctx.lineTo(960, 275);
+      ctx.stroke();
+
+      // 4. Lista de Shows (Até 6)
+      const startY = 320;
+      const rowHeight = 135;
+
+      selectedShows.forEach((show, idx) => {
+        const y = startY + (idx * rowHeight);
+        const dt = getFormattedDateBadge(show.date);
+
+        // Card Fundo do Show
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, 80, y, 920, 115, 16, true, true);
+
+        // Badge Quadrada Dia/Mês
+        ctx.fillStyle = pal.badgeBg;
+        ctx.strokeStyle = pal.border;
+        ctx.lineWidth = 2;
+        roundRect(ctx, 100, y + 12, 90, 90, 14, true, true);
+
+        ctx.fillStyle = pal.accent;
+        ctx.font = '900 42px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(dt.day, 145, y + 60);
+
+        ctx.font = '800 18px system-ui, -apple-system, sans-serif';
+        ctx.fillText(dt.month, 145, y + 88);
+
+        // Nome do Show
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(show.name || 'Show ao Vivo', 215, y + 54);
+
+        // Local & Horário
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '22px system-ui, -apple-system, sans-serif';
+        const locStr = show.local ? `📍 ${show.local}` : '';
+        const timeStr = show.time ? ` ⏰ ${show.time}` : '';
+        ctx.fillText(`${locStr}${timeStr}` || 'Local a confirmar', 215, y + 90);
+      });
+
+      // 5. Rodapé
+      const contactText = document.getElementById('flyerContactInput')?.value || 'Contato: (16) 99115-3733 • @badbadgersoficial';
+      ctx.strokeStyle = pal.border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(120, 1190);
+      ctx.lineTo(960, 1190);
+      ctx.stroke();
+
+      ctx.fillStyle = pal.accent;
+      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(contactText, 540, 1235);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.font = '20px system-ui, -apple-system, sans-serif';
+      ctx.fillText('BandLink • Setlist & Agenda Manager • Acesse a página oficial da banda', 540, 1275);
+
+      setTimeout(() => {
+        hideLoading();
+        // Dispara download do PNG
+        const link = document.createElement('a');
+        link.download = `agenda-${(band.name || 'banda').toLowerCase().replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('Arte do flyer baixada com sucesso!', 'success');
+      }, 350);
+
+      // Função auxiliar para retângulos arredondados no Canvas
+      function roundRect(c, x, y, w, h, r, fill, stroke) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+        if (fill) c.fill();
+        if (stroke) c.stroke();
+      }
+    }
+
+    function copyFlyerText() {
+      const band = currentBandData || { name: 'BAD BADGERS' };
+      const m = getBandMetrics(band);
+      const setlists = m.setlists || [];
+      const selectedShows = setlists
+        .filter(s => selectedFlyerEventIds.includes(s.id))
+        .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      if (selectedShows.length === 0) {
+        showToast('Nenhum show selecionado para copiar.', 'warning');
+        return;
+      }
+
+      const contact = document.getElementById('flyerContactInput')?.value || '';
+      let text = `🎸 *AGENDA DE SHOWS - ${(band.name || 'BANDA').toUpperCase()}* 🎸\n\n`;
+
+      selectedShows.forEach(s => {
+        const dt = getFormattedDateBadge(s.date);
+        text += `📅 *${dt.day}/${dt.month}* - ${s.name || 'Show'}\n`;
+        if (s.local) text += `   📍 ${s.local}\n`;
+        if (s.time) text += `   ⏰ Início às ${s.time}\n`;
+        text += `\n`;
+      });
+
+      if (contact) {
+        text += `📞 ${contact}\n`;
+      }
+      text += `📲 Criado no BandLink • Setlist & Agenda Manager`;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Texto da agenda copiado para o WhatsApp!', 'success');
+        }).catch(() => {
+          showToast('Texto copiado!', 'info');
+        });
+      } else {
+        showToast('Texto copiado!', 'info');
+      }
+    }
+
+    // ==============================================================
+    // HANDLERS DO MODAL DE DIVISÃO DE CACHÊ (CACHE SPLIT)
+    // ==============================================================
+    let currentSplitShow = null;
+    let currentSplitMembers = {};
+    let currentSplitSubstitutes = [];
+
+    function openCacheSplitModal(originalIdx) {
+      const band = currentBandData || { name: 'Bad Badgers' };
+      const m = getBandMetrics(band);
+      const setlists = m.setlists || [];
+
+      if (originalIdx < 0 || originalIdx >= setlists.length) {
+        showToast('Evento não encontrado para divisão.', 'error');
+        return;
+      }
+
+      currentSplitShow = setlists[originalIdx];
+      const ev = currentSplitShow;
+
+      const rawC = ev['cachê'] ?? ev.cache ?? ev.valCache ?? ev.value;
+      const grossNum = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+
+      // Header do modal
+      const titleEl = document.getElementById('cacheSplitModalTitle');
+      const subTitleEl = document.getElementById('cacheSplitModalSubtitle');
+      const grossDisplay = document.getElementById('cacheSplitTotalGrossDisplay');
+      const statusSelect = document.getElementById('cacheSplitStatusSelect');
+
+      if (titleEl) titleEl.textContent = `Divisão de Cachê: ${ev.name || 'Show'}`;
+      if (subTitleEl) subTitleEl.textContent = `${formatDateDisplay(ev.date)} • ${ev.local || 'Local a confirmar'}`;
+      if (grossDisplay) grossDisplay.textContent = `R$ ${grossNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+      const membersList = getBandMembersList(band, currentBandSyncData);
+
+      // Carrega divisão existente ou calcula cota igual inicial
+      if (ev.cacheSplit && Object.keys(ev.cacheSplit.members || {}).length > 0) {
+        currentSplitMembers = { ...ev.cacheSplit.members };
+        currentSplitSubstitutes = Array.isArray(ev.cacheSplit.substitutes) ? [...ev.cacheSplit.substitutes] : [];
+        if (statusSelect) statusSelect.value = ev.cacheSplit.status || 'paid';
+      } else {
+        currentSplitMembers = {};
+        currentSplitSubstitutes = [];
+        const perMember = membersList.length > 0 ? (grossNum / membersList.length).toFixed(2) : '0';
+        membersList.forEach(mem => {
+          currentSplitMembers[mem.id] = perMember;
+        });
+        if (statusSelect) statusSelect.value = 'paid';
+      }
+
+      renderCacheSplitMembersList();
+      renderCacheSplitSubstitutesList();
+      updateCacheSplitTotals();
+
+      openModal('cacheSplitModal');
+    }
+
+    function renderCacheSplitMembersList() {
+      const listEl = document.getElementById('cacheSplitMembersList');
+      if (!listEl) return;
+
+      const band = currentBandData || { name: 'Bad Badgers' };
+      const membersList = getBandMembersList(band, currentBandSyncData);
+
+      listEl.innerHTML = membersList.map(mem => {
+        const val = currentSplitMembers[mem.id] !== undefined ? currentSplitMembers[mem.id] : '0';
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #161e2e; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.82rem;">
+                ${mem.name ? mem.name.charAt(0).toUpperCase() : 'M'}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">${escapeHtml(mem.name)}</div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">${escapeHtml(mem.role)}</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">R$</span>
+              <input type="number" step="0.01" class="form-input" style="width: 110px; padding: 6px 10px; font-size: 0.9rem; font-weight: 800; color: #4ade80; text-align: right;" value="${val}" oninput="handleMemberSplitInputChange('${mem.id}', this.value)">
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCacheSplitSubstitutesList() {
+      const listEl = document.getElementById('cacheSplitSubstitutesList');
+      if (!listEl) return;
+
+      if (currentSplitSubstitutes.length === 0) {
+        listEl.innerHTML = `
+          <div style="font-size: 0.8rem; color: #64748b; font-style: italic; padding: 6px 4px;">
+            Nenhum músico substituto adicionado a este evento.
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = currentSplitSubstitutes.map((sub, idx) => `
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 8px;">
+          <input type="text" class="form-input" placeholder="Nome do Músico Substituto" value="${escapeHtml(sub.name || '')}" oninput="handleSubstituteInputChange(${idx}, 'name', this.value)" style="flex: 1; font-size: 0.85rem; padding: 6px 10px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">R$</span>
+            <input type="number" step="0.01" class="form-input" placeholder="0.00" value="${sub.amount || ''}" oninput="handleSubstituteInputChange(${idx}, 'amount', this.value)" style="width: 100px; padding: 6px 10px; font-size: 0.9rem; font-weight: 800; color: #fbbf24; text-align: right;">
+          </div>
+          <button type="button" class="btn btn-sm" onclick="removeSubstituteFromCacheSplit(${idx})" style="padding: 6px 8px; color: #f87171; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25);" title="Remover substituto">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function handleMemberSplitInputChange(memberId, val) {
+      currentSplitMembers[memberId] = val;
+      updateCacheSplitTotals();
+    }
+
+    function handleSubstituteInputChange(idx, field, val) {
+      if (currentSplitSubstitutes[idx]) {
+        currentSplitSubstitutes[idx][field] = val;
+        updateCacheSplitTotals();
+      }
+    }
+
+    function addSubstituteToCacheSplit() {
+      currentSplitSubstitutes.push({ name: '', amount: '0' });
+      renderCacheSplitSubstitutesList();
+      updateCacheSplitTotals();
+    }
+
+    function removeSubstituteFromCacheSplit(idx) {
+      currentSplitSubstitutes.splice(idx, 1);
+      renderCacheSplitSubstitutesList();
+      updateCacheSplitTotals();
+    }
+
+    function splitCacheEquallyAmongMembers() {
+      if (!currentSplitShow) return;
+      const rawC = currentSplitShow['cachê'] ?? currentSplitShow.cache ?? currentSplitShow.valCache ?? currentSplitShow.value;
+      const grossNum = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+
+      // Subtrai valor já destinado a substitutos
+      let subsTotal = 0;
+      currentSplitSubstitutes.forEach(s => {
+        subsTotal += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+      });
+
+      const remain = Math.max(0, grossNum - subsTotal);
+      const band = currentBandData || { name: 'Bad Badgers' };
+      const membersList = getBandMembersList(band, currentBandSyncData);
+
+      if (membersList.length === 0) return;
+      const perMember = (remain / membersList.length).toFixed(2);
+
+      membersList.forEach(mem => {
+        currentSplitMembers[mem.id] = perMember;
+      });
+
+      renderCacheSplitMembersList();
+      updateCacheSplitTotals();
+      showToast('Cachê dividido igualmente entre os integrantes!', 'info');
+    }
+
+    function updateCacheSplitTotals() {
+      if (!currentSplitShow) return;
+      const rawC = currentSplitShow['cachê'] ?? currentSplitShow.cache ?? currentSplitShow.valCache ?? currentSplitShow.value;
+      const grossNum = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+
+      let membersSum = 0;
+      Object.values(currentSplitMembers).forEach(v => {
+        membersSum += parseFloat(String(v || '0').replace(',', '.')) || 0;
+      });
+
+      let subsSum = 0;
+      currentSplitSubstitutes.forEach(s => {
+        subsSum += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+      });
+
+      const totalDistributed = membersSum + subsSum;
+      const bandFund = grossNum - totalDistributed;
+
+      const distEl = document.getElementById('cacheSplitTotalDistributed');
+      const fundEl = document.getElementById('cacheSplitBandFund');
+
+      if (distEl) distEl.textContent = `R$ ${totalDistributed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      if (fundEl) {
+        fundEl.textContent = `R$ ${bandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        fundEl.style.color = bandFund < -0.01 ? '#f87171' : '#4ade80';
+      }
+    }
+
+    function saveCacheSplitModal() {
+      if (!currentSplitShow) return;
+
+      const status = document.getElementById('cacheSplitStatusSelect')?.value || 'paid';
+      currentSplitShow.cacheSplit = {
+        members: { ...currentSplitMembers },
+        substitutes: [...currentSplitSubstitutes],
+        status,
+        updatedAt: new Date().toISOString()
+      };
+
+      if (currentBandData) {
+        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+      }
+      if (!currentBandData || currentBandData.id === 2) {
+        localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
+      }
+
+      closeModal('cacheSplitModal');
+      showToast('Divisão de cachê salva com sucesso!', 'success');
+
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
     }
 
     function openCreateBandModal() {
