@@ -2962,34 +2962,157 @@
       color: #e2e8f0;
     }
 
-    /* Band Member Cards Grid */
-    .band-members-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+    /* Band Member Cards (Full width rows with protruding avatars & role pills) */
+    .band-members-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+      padding: 10px 0 10px 20px;
     }
-    .band-member-card {
+    .band-member-card-row {
+      width: 100%;
+      min-height: 52px;
+      height: 52px;
       background: #1e2638;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
-      padding: 18px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      padding: 0 16px 0 0;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
     }
-    .band-member-avatar {
-      width: 54px;
-      height: 54px;
+    .band-member-card-row:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      background: #232d42;
+    }
+    .band-member-avatar-protruding {
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
-      background: #cbd5e1;
+      position: relative;
+      margin-left: -20px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      border: 3px solid #0f172a;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(56, 189, 248, 0.35);
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: 900;
+      font-size: 1.35rem;
+      color: #fff;
+      z-index: 2;
+    }
+    .band-member-avatar-protruding img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .band-member-info-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+      margin-left: 14px;
+    }
+    .band-member-name {
+      font-size: 1.05rem;
       font-weight: 800;
-      font-size: 1.25rem;
-      color: #1e293b;
-      flex-shrink: 0;
+      color: #ffffff;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .band-member-username {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+    .band-member-roles-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
       overflow: hidden;
+      margin-left: 4px;
+    }
+    .member-role-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.28);
+      padding: 2px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      line-height: 1.3;
+      display: inline-flex;
+      align-items: center;
+    }
+    .band-member-actions-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .member-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .member-action-btn.edit {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+    }
+    .member-action-btn.edit:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+    }
+    .member-action-btn.delete {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    .member-action-btn.delete:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #f87171;
+    }
+    @media (max-width: 768px) {
+      .band-member-card-row {
+        height: auto;
+        min-height: 60px;
+        flex-wrap: wrap;
+        padding: 8px 12px 8px 0;
+        gap: 8px;
+      }
+      .band-member-avatar-protruding {
+        width: 58px;
+        height: 58px;
+        margin-left: -14px;
+        font-size: 1.15rem;
+      }
+      .band-member-info-group {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
     }
 
     /* Band Timeline */
@@ -4894,6 +5017,82 @@
         <button type="button" class="btn btn-outline" onclick="closeModal('cacheSplitModal')">Cancelar</button>
         <button type="button" class="btn btn-primary" onclick="saveCacheSplitModal()">Salvar Divisão de Cachê</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE INTEGRANTE DA BANDA (ADICIONAR / EDITAR) -->
+  <div class="modal-overlay" id="editBandMemberModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: var(--cyan);">
+            <ion-icon name="person-outline" style="font-size: 1.25rem;"></ion-icon>
+          </div>
+          <div>
+            <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0;">Integrante da Banda</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;">Gerencie os dados e função do músico</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('editBandMemberModal')">&times;</button>
+      </div>
+
+      <form id="editBandMemberForm" onsubmit="saveBandMemberModal(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+        <!-- Username com Busca Automática -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span>Nome de Usuário (@username)</span>
+            <span style="font-size: 0.75rem; color: #38bdf8; font-weight: normal;">Puxa nome e avatar automaticamente</span>
+          </label>
+          <div style="position: relative;">
+            <input type="text" id="mMemberUsername" class="form-input" placeholder="Ex: allison_xd" oninput="handleMemberUsernameInput(this.value)" autocomplete="off">
+          </div>
+          <div id="mMemberUserStatus" style="margin-top: 4px; min-height: 18px;"></div>
+        </div>
+
+        <!-- Avatar Preview + Nome de Exibição -->
+        <div style="display: flex; gap: 14px; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <!-- Avatar Preview -->
+          <div id="mMemberAvatarPreviewBox" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #6366f1); border: 2px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; color: #fff; overflow: hidden; flex-shrink: 0;">
+            <span id="mMemberAvatarInitial">M</span>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: block; margin-bottom: 4px;">
+              Nome de Exibição *
+            </label>
+            <input type="text" id="mMemberName" class="form-input" placeholder="Ex: Allison" required oninput="updateMemberModalAvatarPreview(document.getElementById('mMemberAvatarUri')?.value, this.value)">
+          </div>
+        </div>
+
+        <input type="hidden" id="mMemberAvatarUri" value="">
+
+        <!-- Função na Banda (Tags separadas por vírgula) -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span>Função na Banda (Tags)</span>
+            <span style="font-size: 0.72rem; color: #94a3b8;">Separe múltiplos por vírgula</span>
+          </label>
+          <input type="text" id="mMemberRole" class="form-input" placeholder="Ex: Guitarra, Vocal, Backing Vocal" oninput="renderMemberRolePreviewTags(this.value)">
+          <div style="margin-top: 6px;">
+            <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 4px;">Prévia das Pílulas:</span>
+            <div id="mMemberRolePillsPreview" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+          </div>
+        </div>
+
+        <!-- Cargo de Líder -->
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+          <input type="checkbox" id="mMemberIsLeader" style="width: 18px; height: 18px; accent-color: var(--cyan); cursor: pointer;">
+          <div>
+            <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">Líder / Administrador da Banda</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">Permite gerenciar permissões e dados oficiais da banda</div>
+          </div>
+        </label>
+
+        <!-- Ações do Modal -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editBandMemberModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Integrante</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -7276,34 +7475,52 @@
       sub.innerHTML = html;
     }
 
-    // SUBVIEW M: MEMBROS
+    // ==============================================================
+    // SUBVIEW M: INTEGRANTES E FORMAÇÃO DA BANDA
+    // ==============================================================
+    let cachedPlatformUsers = {};
+    let editingBandMemberIndex = -1;
+    let memberLookupTimeout = null;
+
+    function getBandMembersArray() {
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [] };
+      if (!currentBandSyncData.members || currentBandSyncData.members.length === 0) {
+        if (currentBandData?.members?.length > 0) {
+          currentBandSyncData.members = JSON.parse(JSON.stringify(currentBandData.members));
+        } else if (!currentBandData || currentBandData.id === 2 || (currentBandData.name && currentBandData.name.toLowerCase().includes('badger'))) {
+          currentBandSyncData.members = [
+            { id: 'm_0', name: "Allison", role: "Baixo", isLeader: true, phone: "16991153733", startDate: "01/07/2026", username: "allison_xd", avatarUri: "" },
+            { id: 'm_1', name: "André", role: "Guitarra, Vocal", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "" },
+            { id: 'm_2', name: "Caixa", role: "Caixa", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "" },
+            { id: 'm_3', name: "Danilo", role: "Bateria", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "" },
+            { id: 'm_4', name: "Salatiel", role: "Vocal, Guitarra", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "" }
+          ];
+        } else {
+          currentBandSyncData.members = [];
+        }
+      }
+      return currentBandSyncData.members;
+    }
+
+    function persistBandMembers() {
+      if (!currentBandSyncData) return;
+      if (currentBandData) {
+        currentBandData.members = currentBandSyncData.members;
+        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+      }
+      if (!currentBandData || currentBandData.id === 2) {
+        localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
+      }
+    }
+
     function renderBandMembersTab(band, syncData) {
       const sub = document.getElementById('bSubview-M');
       if (!sub) return;
 
-      const rawMembers = syncData?.members || band.members || [];
-      let members = [];
-      if (rawMembers.length > 0) {
-        members = rawMembers.map(m => ({
-          name: m.name || m.username || 'Membro',
-          role: m.role || 'Instrumento',
-          phone: m.phone || '',
-          startDate: m.startDate || '',
-          isLeader: m.isLeader === 1 || m.role?.toLowerCase()?.includes('líder') || m.role?.toLowerCase()?.includes('admin'),
-          username: m.username || ''
-        }));
-      } else if (band.id === 2 || band.name?.toLowerCase().includes('badger')) {
-        members = [
-          { name: "Allison", role: "Baixo", isLeader: true, phone: "16991153733", startDate: "01/07/2026", username: "allison_xd" },
-          { name: "André", role: "Guitarra, Vocal", isLeader: false, phone: "", startDate: "", username: "" },
-          { name: "Caixa", role: "Caixa", isLeader: false, phone: "", startDate: "", username: "" },
-          { name: "Danilo", role: "Bateria", isLeader: false, phone: "", startDate: "", username: "" },
-          { name: "Salatiel", role: "Vocal, Guitarra", isLeader: false, phone: "", startDate: "", username: "" }
-        ];
-      }
+      const members = getBandMembersArray();
 
       let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
           <div>
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
@@ -7312,35 +7529,286 @@
             </h2>
             <p style="color: #94a3b8; font-size: 0.88rem;">Músicos ativos na formação oficial da banda.</p>
           </div>
+          <div>
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditBandMemberModal(-1)">
+              <ion-icon name="person-add-outline"></ion-icon>
+              <span>Adicionar Integrante</span>
+            </button>
+          </div>
         </div>
-        <div class="band-members-grid">
+
+        <div class="band-members-list">
       `;
 
-      members.forEach(mem => {
-        const initials = mem.name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+      if (members.length === 0) {
         html += `
-          <div class="band-member-card">
-            <div class="band-member-avatar">${initials}</div>
-            <div style="flex: 1; min-width: 0;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${mem.name}</h4>
-                <span class="badge ${mem.isLeader ? 'badge-violet' : 'badge-cyan'}" style="font-size: 0.7rem; font-weight: 800;">
-                  ${mem.isLeader ? 'LÍDER' : 'MEMBRO'}
-                </span>
-              </div>
-              <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin: 0 0 6px 0;">${mem.role}</p>
-              <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.78rem; color: #94a3b8;">
-                ${mem.username ? `<span><strong style="color: #cbd5e1;">@${mem.username}</strong></span>` : ''}
-                ${mem.phone ? `<span><ion-icon name="call-outline"></ion-icon> ${mem.phone}</span>` : ''}
-                ${mem.startDate ? `<span><ion-icon name="calendar-outline"></ion-icon> Desde ${mem.startDate}</span>` : ''}
-              </div>
-            </div>
+          <div style="text-align: center; padding: 40px; background: #1a2233; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8;">
+            <ion-icon name="people-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <p style="margin: 0 0 12px 0;">Nenhum integrante cadastrado nesta banda ainda.</p>
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditBandMemberModal(-1)">Cadastrar Primeiro Integrante</button>
           </div>
         `;
-      });
+      } else {
+        members.forEach((mem, idx) => {
+          const initials = (mem.name || 'M').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+          const normImg = normalizeImageUri(mem.avatarUri || mem.pictureUrl || mem.imageUri || mem.photo);
+
+          // Tags de função separadas por vírgula em pílulas
+          const roleTags = (mem.role || 'Músico')
+            .split(',')
+            .map(r => r.trim())
+            .filter(Boolean);
+          const rolePillsHtml = (roleTags.length > 0 ? roleTags : ['Músico'])
+            .map(t => `<span class="member-role-pill">${escapeHtml(t)}</span>`)
+            .join('');
+
+          const cleanUser = (mem.username || '').replace(/^@+/, '').trim();
+
+          html += `
+            <div class="band-member-card-row">
+              <!-- 1. Avatar que sobrepõe a espessura do card -->
+              <div class="band-member-avatar-protruding" title="${escapeHtml(mem.name)}">
+                ${normImg
+                  ? `<img src="${normImg}" alt="${escapeHtml(mem.name)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display:none;">${initials}</span>`
+                  : `<span>${initials}</span>`
+                }
+              </div>
+
+              <!-- Informações em linha contínua -->
+              <div class="band-member-info-group">
+                <!-- 2. Nome de Exibição -->
+                <span class="band-member-name">
+                  ${escapeHtml(mem.name || 'Membro')}
+                  ${mem.isLeader ? '<span class="badge badge-violet" style="font-size: 0.65rem; padding: 2px 7px;">LÍDER</span>' : ''}
+                </span>
+
+                <!-- 3. Nome de Usuário -->
+                <span class="band-member-username">
+                  ${cleanUser ? `@${escapeHtml(cleanUser)}` : '<span style="color: #64748b; font-weight: normal; font-size: 0.78rem;">sem @</span>'}
+                </span>
+
+                <!-- 4. Função na Banda em Pílulas -->
+                <div class="band-member-roles-wrap">
+                  ${rolePillsHtml}
+                </div>
+              </div>
+
+              <!-- 5. Ações: Editar e Apagar -->
+              <div class="band-member-actions-wrap">
+                <button type="button" class="member-action-btn edit" onclick="openEditBandMemberModal(${idx})" title="Editar Integrante">
+                  <ion-icon name="create-outline"></ion-icon>
+                  <span>Editar</span>
+                </button>
+                <button type="button" class="member-action-btn delete" onclick="deleteBandMember(${idx})" title="Remover da Banda">
+                  <ion-icon name="trash-outline"></ion-icon>
+                  <span>Apagar</span>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      }
 
       html += `</div>`;
       sub.innerHTML = html;
+    }
+
+    function openEditBandMemberModal(idx = -1) {
+      editingBandMemberIndex = idx;
+      const members = getBandMembersArray();
+      const modalTitle = document.getElementById('editBandMemberModalTitle');
+      const nameInput = document.getElementById('mMemberName');
+      const usernameInput = document.getElementById('mMemberUsername');
+      const roleInput = document.getElementById('mMemberRole');
+      const leaderCheckbox = document.getElementById('mMemberIsLeader');
+      const avatarInput = document.getElementById('mMemberAvatarUri');
+      const statusDiv = document.getElementById('mMemberUserStatus');
+
+      if (idx >= 0 && idx < members.length) {
+        const mem = members[idx];
+        if (modalTitle) modalTitle.textContent = 'Editar Integrante';
+        if (nameInput) nameInput.value = mem.name || '';
+        if (usernameInput) usernameInput.value = mem.username ? `@${mem.username.replace(/^@+/, '')}` : '';
+        if (roleInput) roleInput.value = mem.role || '';
+        if (leaderCheckbox) leaderCheckbox.checked = !!mem.isLeader;
+        if (avatarInput) avatarInput.value = mem.avatarUri || '';
+        updateMemberModalAvatarPreview(mem.avatarUri, mem.name);
+      } else {
+        if (modalTitle) modalTitle.textContent = 'Adicionar Integrante';
+        if (nameInput) nameInput.value = '';
+        if (usernameInput) usernameInput.value = '';
+        if (roleInput) roleInput.value = '';
+        if (leaderCheckbox) leaderCheckbox.checked = false;
+        if (avatarInput) avatarInput.value = '';
+        updateMemberModalAvatarPreview('', 'Novo');
+      }
+
+      if (statusDiv) statusDiv.innerHTML = '';
+      renderMemberRolePreviewTags(roleInput?.value || '');
+      openModal('editBandMemberModal');
+    }
+
+    async function handleMemberUsernameInput(rawVal) {
+      const clean = (rawVal || '').replace(/^@+/, '').trim().toLowerCase();
+      const statusDiv = document.getElementById('mMemberUserStatus');
+      const nameInput = document.getElementById('mMemberName');
+      const avatarInput = document.getElementById('mMemberAvatarUri');
+
+      if (!clean) {
+        if (statusDiv) statusDiv.innerHTML = '';
+        return;
+      }
+
+      if (statusDiv) {
+        statusDiv.innerHTML = '<span style="font-size: 0.76rem; color: #94a3b8;"><ion-icon name="sync" class="spin"></ion-icon> Buscando usuário...</span>';
+      }
+
+      clearTimeout(memberLookupTimeout);
+      memberLookupTimeout = setTimeout(async () => {
+        try {
+          let found = null;
+          if (cachedPlatformUsers && cachedPlatformUsers[clean]) {
+            found = cachedPlatformUsers[clean];
+          } else if (currentUser && (currentUser.username || '').toLowerCase() === clean) {
+            found = currentUser;
+          }
+
+          if (!found && typeof API_URL !== 'undefined') {
+            try {
+              const res = await fetch(`${API_URL}/Users/${encodeURIComponent(clean)}`, {
+                headers: getAuthHeaders()
+              });
+              if (res.ok) {
+                found = await res.json();
+              }
+            } catch (e) {}
+
+            if (!found) {
+              try {
+                const resSearch = await fetch(`${API_URL}/Users?search=${encodeURIComponent(clean)}`, {
+                  headers: getAuthHeaders()
+                });
+                if (resSearch.ok) {
+                  const list = await resSearch.json();
+                  if (Array.isArray(list)) {
+                    found = list.find(u => (u.username || '').toLowerCase() === clean) || list[0];
+                  }
+                }
+              } catch (e) {}
+            }
+          }
+
+          if (found) {
+            cachedPlatformUsers[clean] = found;
+            const displayName = found.name || found.displayName || found.fullName || found.username;
+            const photoUrl = found.pictureUrl || found.avatarUri || found.imageUri || found.photo || '';
+
+            if (nameInput) nameInput.value = displayName;
+            if (avatarInput) avatarInput.value = photoUrl;
+            updateMemberModalAvatarPreview(photoUrl, displayName);
+
+            if (statusDiv) {
+              statusDiv.innerHTML = `
+                <span style="font-size: 0.78rem; color: #4ade80; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                  <ion-icon name="checkmark-circle"></ion-icon> Usuário encontrado: ${escapeHtml(displayName)}
+                </span>
+              `;
+            }
+          } else {
+            if (statusDiv) {
+              statusDiv.innerHTML = `
+                <span style="font-size: 0.76rem; color: #94a3b8; display: inline-flex; align-items: center; gap: 4px;">
+                  <ion-icon name="information-circle-outline"></ion-icon> Usuário não encontrado na rede. Você pode preencher o nome manualmente.
+                </span>
+              `;
+            }
+          }
+        } catch (err) {
+          console.warn('Erro na busca de usuário:', err);
+          if (statusDiv) {
+            statusDiv.innerHTML = '<span style="font-size: 0.76rem; color: #94a3b8;">Preencha o nome manualmente.</span>';
+          }
+        }
+      }, 350);
+    }
+
+    function updateMemberModalAvatarPreview(photoUrl, nameOrUsername) {
+      const box = document.getElementById('mMemberAvatarPreviewBox');
+      if (!box) return;
+      const initial = (nameOrUsername || 'M').charAt(0).toUpperCase();
+      const norm = normalizeImageUri(photoUrl);
+      if (norm) {
+        box.innerHTML = `<img src="${norm}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.innerHTML='<span>${initial}</span>';">`;
+      } else {
+        box.innerHTML = `<span>${initial}</span>`;
+      }
+    }
+
+    function renderMemberRolePreviewTags(val) {
+      const container = document.getElementById('mMemberRolePillsPreview');
+      if (!container) return;
+      const tags = (val || '').split(',').map(t => t.trim()).filter(Boolean);
+      if (tags.length === 0) {
+        container.innerHTML = '<span style="font-size: 0.72rem; color: #64748b; font-style: italic;">Nenhuma tag adicionada</span>';
+        return;
+      }
+      container.innerHTML = tags.map(t => `
+        <span class="member-role-pill">${escapeHtml(t)}</span>
+      `).join('');
+    }
+
+    function saveBandMemberModal(e) {
+      if (e) e.preventDefault();
+      const name = document.getElementById('mMemberName')?.value.trim();
+      const username = (document.getElementById('mMemberUsername')?.value.trim() || '').replace(/^@+/, '');
+      const role = document.getElementById('mMemberRole')?.value.trim() || 'Músico';
+      const isLeader = document.getElementById('mMemberIsLeader')?.checked || false;
+      const avatarUri = document.getElementById('mMemberAvatarUri')?.value.trim() || '';
+
+      if (!name) {
+        showToast('Informe o nome de exibição do integrante.', 'warning');
+        return;
+      }
+
+      const members = getBandMembersArray();
+      const memberData = {
+        name,
+        username,
+        role,
+        isLeader,
+        avatarUri
+      };
+
+      if (editingBandMemberIndex >= 0 && editingBandMemberIndex < members.length) {
+        members[editingBandMemberIndex] = {
+          ...members[editingBandMemberIndex],
+          ...memberData
+        };
+        showToast('Integrante atualizado com sucesso!', 'success');
+      } else {
+        members.push({
+          id: `m_${Date.now()}`,
+          ...memberData
+        });
+        showToast('Integrante adicionado à banda!', 'success');
+      }
+
+      persistBandMembers();
+      closeModal('editBandMemberModal');
+      renderBandMembersTab(currentBandData, currentBandSyncData);
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+    }
+
+    function deleteBandMember(idx) {
+      const members = getBandMembersArray();
+      if (idx < 0 || idx >= members.length) return;
+      const mem = members[idx];
+      if (!confirm(`Deseja remover "${mem.name}" da formação da banda?`)) return;
+      members.splice(idx, 1);
+      persistBandMembers();
+      showToast(`Integrante "${mem.name}" removido com sucesso.`, 'info');
+      renderBandMembersTab(currentBandData, currentBandSyncData);
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
     }
 
     // ==============================================================
