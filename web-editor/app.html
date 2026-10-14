@@ -2551,15 +2551,21 @@
     .flyer-theme-9 { background-image: url('assets/bg_classic.jpg'); border-color: rgba(255, 255, 255, 0.4); }
 
     .flyer-header {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
       margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     }
     .flyer-band-avatar {
-      width: 58px;
-      height: 58px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
       border: 3px solid #f59e0b;
-      margin: 0 auto 8px auto;
+      margin: 0;
+      flex-shrink: 0;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -2571,23 +2577,33 @@
       height: 100%;
       object-fit: cover;
     }
+    .flyer-header-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
     .flyer-main-title {
-      font-size: 1.55rem;
+      font-size: 1.45rem;
       font-weight: 900;
       color: #ffffff;
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       text-transform: uppercase;
       line-height: 1.1;
       text-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
     }
     .flyer-sub-title {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 800;
       color: #f59e0b;
       letter-spacing: 1px;
-      margin-top: 4px;
+      margin-top: 3px;
       text-transform: uppercase;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .flyer-shows-container {
       display: flex;
@@ -4651,13 +4667,15 @@
         <!-- COLUNA DIREITA: LIVE PREVIEW DA ARTE DO FLYER -->
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; border: 1px dashed rgba(255,255,255,0.1);">
           <div id="flyerPreviewCard" class="flyer-card-preview flyer-theme-1">
-            <!-- Header do Flyer: Logo da Banda no alto, AGENDA em letras garrafais, Próximos Shows -->
+            <!-- Header do Flyer: Logo da Banda à esquerda, AGENDA e Próximos Shows em 2 linhas à direita -->
             <div class="flyer-header">
               <div class="flyer-band-avatar" id="flyerBandAvatarCircle">
                 <span id="flyerBandAvatarInitials" style="font-size: 1.3rem; font-weight: 900; color: #fff;">BB</span>
               </div>
-              <div class="flyer-main-title">AGENDA</div>
-              <div class="flyer-sub-title" id="flyerHeaderSubtitle">PRÓXIMOS SHOWS • BAD BADGERS</div>
+              <div class="flyer-header-text">
+                <div class="flyer-main-title">AGENDA</div>
+                <div class="flyer-sub-title" id="flyerHeaderSubtitle">PRÓXIMOS SHOWS • BAD BADGERS</div>
+              </div>
             </div>
 
             <!-- Lista de Shows no Flyer: Data na lateral esquerda, informações à direita -->
@@ -4731,6 +4749,23 @@
           </div>
         </div>
 
+        <!-- Opção: Caixa da Banda (Reserva do Evento) -->
+        <div style="background: rgba(56, 189, 248, 0.07); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 240px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; color: #38bdf8; flex-shrink: 0;">
+              <ion-icon name="wallet-outline" style="font-size: 1.35rem;"></ion-icon>
+            </div>
+            <div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">Caixa da Banda (Fundo de Reserva)</div>
+              <div style="font-size: 0.76rem; color: #94a3b8;">Inicia em R$ 0,00. Ao destinar valor para o caixa, o split dos membros diminui automaticamente.</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 800;">R$</span>
+            <input type="number" id="cacheSplitBandFundInput" step="0.01" min="0" class="form-input" placeholder="0.00" style="width: 130px; font-size: 1.05rem; font-weight: 900; color: #38bdf8; text-align: right; padding: 6px 12px;" value="0.00" oninput="handleBandFundInputChange(this.value)">
+          </div>
+        </div>
+
         <!-- Seção: Integrantes da Banda -->
         <div style="margin-bottom: 18px;">
           <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
@@ -4759,14 +4794,22 @@
         </div>
 
         <!-- Resumo Contábil da Divisão -->
-        <div style="background: #101624; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="background: #101624; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; align-items: center;">
           <div>
-            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Total Distribuído</span>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #38bdf8;" id="cacheSplitTotalDistributed">R$ 0,00</div>
+            <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Total do Show</span>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;" id="cacheSplitSummaryGross">R$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Fundo da Banda / Saldo</span>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #4ade80;" id="cacheSplitBandFund">R$ 0,00</div>
+            <span style="font-size: 0.72rem; color: #38bdf8; text-transform: uppercase; font-weight: 700; display: block;">Caixa da Banda</span>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #38bdf8;" id="cacheSplitSummaryFund">R$ 0,00</div>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; color: #4ade80; text-transform: uppercase; font-weight: 700; display: block;">Total aos Músicos</span>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #4ade80;" id="cacheSplitTotalDistributed">R$ 0,00</div>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Saldo Restante</span>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #94a3b8;" id="cacheSplitBandFund">R$ 0,00</div>
           </div>
         </div>
       </div>
@@ -6468,6 +6511,9 @@
       let showsCount = 0;
       let rehearsalsCount = 0;
       let totalCache = 0;
+      let totalBandFund = 0;
+      let totalMusiciansPaid = 0;
+      let individualIncome = 0;
 
       if (setlists.length > 0) {
         setlists.forEach(sl => {
@@ -6481,16 +6527,50 @@
           const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
           if (rawC) {
             const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.'));
-            if (!isNaN(num)) totalCache += num;
+            if (!isNaN(num) && num > 0) {
+              totalCache += num;
+
+              if (sl.cacheSplit) {
+                let showBandFund = parseFloat(sl.cacheSplit.bandFund);
+                let memSum = 0;
+                if (sl.cacheSplit.members) {
+                  Object.values(sl.cacheSplit.members).forEach(v => {
+                    memSum += parseFloat(String(v || '0').replace(',', '.')) || 0;
+                  });
+                }
+                let subSum = 0;
+                if (Array.isArray(sl.cacheSplit.substitutes)) {
+                  sl.cacheSplit.substitutes.forEach(s => {
+                    subSum += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+                  });
+                }
+
+                if (isNaN(showBandFund)) {
+                  showBandFund = Math.max(0, num - (memSum + subSum));
+                }
+
+                totalBandFund += showBandFund;
+                const paidToMusicians = num - showBandFund;
+                totalMusiciansPaid += paidToMusicians;
+
+                const memShare = membersCount > 0 ? (memSum > 0 ? (memSum / membersCount) : (paidToMusicians / membersCount)) : 0;
+                individualIncome += memShare;
+              } else {
+                totalMusiciansPaid += num;
+                const memShare = membersCount > 0 ? (num / membersCount) : 0;
+                individualIncome += memShare;
+              }
+            }
           }
         });
       } else if (isBB) {
         showsCount = 9;
         rehearsalsCount = 5;
         totalCache = 10000;
+        totalBandFund = 0;
+        totalMusiciansPaid = 10000;
+        individualIncome = membersCount > 0 ? (totalMusiciansPaid / membersCount) : 2000;
       }
-
-      const individualIncome = membersCount > 0 ? (totalCache / membersCount) : 0;
 
       return {
         syncData,
@@ -6499,6 +6579,8 @@
         showsCount,
         rehearsalsCount,
         totalCache,
+        totalBandFund,
+        totalMusiciansPaid,
         individualIncome,
         setlists
       };
@@ -7569,26 +7651,34 @@
           <p style="color: #94a3b8; font-size: 0.88rem;">Controle de cachês arrecadados, divisão por integrante e demonstrativo anual.</p>
         </div>
 
-        <div class="band-finance-grid">
+        <div class="band-finance-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
           <div class="band-finance-box">
             <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Renda Total da Banda (Ano)</span>
-            <div style="font-size: 1.6rem; font-weight: 900; color: #38bdf8; margin-top: 6px;">R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Total arrecadado em apresentações</span>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #38bdf8; margin-top: 6px;">R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Arrecadação bruta dos eventos</span>
+          </div>
+          <div class="band-finance-box" style="border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase;">Caixa da Banda (Reserva)</span>
+              <ion-icon name="wallet-outline" style="color: #fbbf24; font-size: 1.15rem;"></ion-icon>
+            </div>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #fbbf24; margin-top: 6px;">R$ ${m.totalBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px; display: block;">Fundo de reserva acumulado dos splits</span>
+          </div>
+          <div class="band-finance-box">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Total Pago aos Músicos</span>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #a78bfa; margin-top: 6px;">R$ ${m.totalMusiciansPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Rateio de integrantes e substitutos</span>
           </div>
           <div class="band-finance-box">
             <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Renda Individual (Ano Acumulado)</span>
-            <div style="font-size: 1.6rem; font-weight: 900; color: #4ade80; margin-top: 6px;">R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #4ade80; margin-top: 6px;">R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Cota por membro (${m.membersCount} integrantes)</span>
           </div>
           <div class="band-finance-box">
             <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Média de Cachê por Show</span>
-            <div style="font-size: 1.6rem; font-weight: 900; color: #fbbf24; margin-top: 6px;">R$ ${avgCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #ffffff; margin-top: 6px;">R$ ${avgCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Considerando ${showsWithCache.length} shows remunerados</span>
-          </div>
-          <div class="band-finance-box">
-            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Shows Remunerados</span>
-            <div style="font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 6px;">${showsWithCache.length} Shows</div>
-            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">${m.showsCount} eventos no ano</span>
           </div>
         </div>
 
@@ -7611,8 +7701,15 @@
             const originalIdx = setlists.indexOf(sl);
             const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
             const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            const hasSplit = sl.cacheSplit && Object.keys(sl.cacheSplit.members || {}).length > 0;
-            const indiv = m.membersCount > 0 ? (num / m.membersCount) : 0;
+            const hasSplit = sl.cacheSplit && (sl.cacheSplit.bandFund !== undefined || Object.keys(sl.cacheSplit.members || {}).length > 0);
+            const showBandFund = sl.cacheSplit ? (parseFloat(sl.cacheSplit.bandFund) || 0) : 0;
+            let memSum = 0;
+            if (sl.cacheSplit?.members) {
+              Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
+            }
+            const indiv = sl.cacheSplit
+              ? (m.membersCount > 0 ? (memSum / m.membersCount) : 0)
+              : (m.membersCount > 0 ? (num / m.membersCount) : 0);
             const isPaid = (sl.cacheSplit?.status || 'paid') === 'paid';
 
             return `
@@ -7623,6 +7720,9 @@
                   ${sl.local ? `<div style="font-size: 0.78rem; color: #64748b;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(sl.local)}</div>` : ''}
                 </td>
                 <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #fbbf24;">
+                  ${showBandFund > 0 ? `R$ ${showBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '<span style="color:#64748b; font-size: 0.8rem; font-weight: normal;">R$ 0,00</span>'}
+                </td>
                 <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">
                   R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   ${hasSplit ? `<span class="badge badge-cyan" style="font-size: 0.65rem; margin-left: 6px; padding: 2px 6px;">Split OK</span>` : ''}
@@ -7650,6 +7750,7 @@
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Local</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cachê Bruto</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Caixa Banda</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; text-align: right;">Ações</th>
@@ -7671,8 +7772,19 @@
           const isExpanded = expandedFinanceMonths[k] !== undefined ? expandedFinanceMonths[k] : true;
           const mShows = g.list.length;
           const mGross = g.total;
-          const activeMemCount = m.membersCount || 1;
-          const myShare = mGross > 0 ? (mGross / activeMemCount) : 0;
+          
+          let myShare = 0;
+          g.list.forEach(sl => {
+            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+            const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            if (sl.cacheSplit?.members) {
+              let memSum = 0;
+              Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
+              myShare += (m.membersCount > 0 ? (memSum / m.membersCount) : 0);
+            } else {
+              myShare += (m.membersCount > 0 ? (num / m.membersCount) : 0);
+            }
+          });
 
           html += `
             <div class="mobile-month-bar" onclick="toggleFinanceMonth('${k}')" title="Clique para expandir/recolher mês">
@@ -8303,7 +8415,7 @@
       // Seleciona os próximos até 6 por padrão
       const upcoming = sortedShows.filter(s => isFutureDate(s.date));
       const initialSelection = upcoming.length > 0 ? upcoming.slice(0, 6) : sortedShows.slice(0, 6);
-      selectedFlyerEventIds = initialSelection.map(s => s.id);
+      selectedFlyerEventIds = initialSelection.map(s => String(s.id));
 
       // Popula lista de checkboxes
       const listEl = document.getElementById('flyerEventsList');
@@ -8312,11 +8424,12 @@
           listEl.innerHTML = '<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">Nenhum show cadastrado para incluir no flyer.</div>';
         } else {
           listEl.innerHTML = sortedShows.map(s => {
-            const isChecked = selectedFlyerEventIds.includes(s.id);
+            const sIdStr = String(s.id);
+            const isChecked = selectedFlyerEventIds.some(id => String(id) === sIdStr);
             const dtBadge = getFormattedDateBadge(s.date);
             return `
               <label style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; cursor: pointer; user-select: none;">
-                <input type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="toggleFlyerEventSelection('${s.id}')" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
+                <input type="checkbox" value="${sIdStr}" ${isChecked ? 'checked' : ''} onchange="toggleFlyerEventSelection('${sIdStr}')" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
                 <div style="flex: 1; min-width: 0;">
                   <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">${escapeHtml(s.name || 'Show')}</div>
                   <div style="font-size: 0.75rem; color: #94a3b8;">${dtBadge.day} ${dtBadge.month} • ${escapeHtml(slLocal(s))}</div>
@@ -8374,9 +8487,11 @@
       setFlyerCardScale(flyerCardScale + delta);
     }
 
-    function toggleFlyerEventSelection(eventId) {
-      if (selectedFlyerEventIds.includes(eventId)) {
-        selectedFlyerEventIds = selectedFlyerEventIds.filter(id => id !== eventId);
+    function toggleFlyerEventSelection(rawId) {
+      const eventId = String(rawId);
+      const isAlready = selectedFlyerEventIds.some(id => String(id) === eventId);
+      if (isAlready) {
+        selectedFlyerEventIds = selectedFlyerEventIds.filter(id => String(id) !== eventId);
       } else {
         if (selectedFlyerEventIds.length >= 6) {
           showToast('O flyer comporta no máximo 6 shows selecionados.', 'warning');
@@ -8386,6 +8501,12 @@
         }
         selectedFlyerEventIds.push(eventId);
       }
+
+      // Sincroniza estado visual das checkboxes
+      document.querySelectorAll('#flyerEventsList input[type="checkbox"]').forEach(chk => {
+        chk.checked = selectedFlyerEventIds.some(id => String(id) === String(chk.value));
+      });
+
       updateFlyerPreview();
     }
 
@@ -8395,11 +8516,11 @@
       const setlists = m.setlists || [];
       const shows = setlists.filter(sl => sl.type !== 'rehearsal' && !(sl.name || '').toLowerCase().includes('ensaio'));
       const upcoming = shows.filter(s => isFutureDate(s.date)).sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
-      selectedFlyerEventIds = upcoming.slice(0, 6).map(s => s.id);
+      selectedFlyerEventIds = upcoming.slice(0, 6).map(s => String(s.id));
 
       // Atualiza checkboxes
       document.querySelectorAll('#flyerEventsList input[type="checkbox"]').forEach(chk => {
-        chk.checked = selectedFlyerEventIds.includes(chk.value);
+        chk.checked = selectedFlyerEventIds.some(id => String(id) === String(chk.value));
       });
 
       updateFlyerPreview();
@@ -8414,7 +8535,7 @@
       const normImg = normalizeImageUri(band.imageUri);
       const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
-      // Logo da banda no alto
+      // Logo da banda à esquerda
       const avatarEl = document.getElementById('flyerBandAvatarCircle');
       if (avatarEl) {
         avatarEl.innerHTML = normImg
@@ -8422,7 +8543,7 @@
           : `<span style="font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`;
       }
 
-      // Subtítulo com nome da banda
+      // Subtítulo com nome da banda à direita
       const subTitleEl = document.getElementById('flyerHeaderSubtitle');
       if (subTitleEl) {
         subTitleEl.textContent = `PRÓXIMOS SHOWS • ${(band.name || 'BAD BADGERS').toUpperCase()}`;
@@ -8440,7 +8561,7 @@
       const setlists = m.setlists || [];
 
       const selectedShows = setlists
-        .filter(s => selectedFlyerEventIds.includes(s.id))
+        .filter(s => selectedFlyerEventIds.some(id => String(id) === String(s.id)))
         .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
 
       if (selectedShows.length === 0) {
@@ -8488,7 +8609,7 @@
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
       const selectedShows = setlists
-        .filter(s => selectedFlyerEventIds.includes(s.id))
+        .filter(s => selectedFlyerEventIds.some(id => String(id) === String(s.id)))
         .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
 
       if (selectedShows.length === 0) {
@@ -8536,11 +8657,13 @@
         ctx.lineWidth = 4;
         ctx.strokeRect(36, 36, 1008, 1848);
 
-        // 2. Header: Logo da banda no alto (Circular)
-        const logoY = 130;
+        // 2. Header: Logo da banda à esquerda, textos em 2 linhas à direita
+        const logoX = 160;
+        const logoY = 195;
+        const logoR = 62;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(540, logoY, 56, 0, Math.PI * 2, true);
+        ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
         ctx.closePath();
         ctx.fillStyle = '#f59e0b';
         ctx.fill();
@@ -8549,39 +8672,39 @@
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = '900 46px system-ui, -apple-system, sans-serif';
+        ctx.font = '900 52px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-        ctx.fillText(initials, 540, logoY);
+        ctx.fillText(initials, logoX, logoY);
         ctx.restore();
 
-        // Linha 1: AGENDA
+        // Linha 1: AGENDA (Alinhada à esquerda ao lado do logo)
         ctx.fillStyle = '#ffffff';
-        ctx.font = '900 78px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
+        ctx.font = '900 84px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText('AGENDA', 540, 210);
+        ctx.fillText('AGENDA', 255, 135);
 
         // Linha 2: PRÓXIMOS SHOWS • NOME DA BANDA
         ctx.fillStyle = '#f59e0b';
         ctx.font = '800 32px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`PRÓXIMOS SHOWS • ${(band.name || 'BANDA').toUpperCase()}`, 540, 305);
+        ctx.fillText(`PRÓXIMOS SHOWS • ${(band.name || 'BANDA').toUpperCase()}`, 255, 230);
 
         // Linha divisória
         ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(100, 360);
-        ctx.lineTo(980, 360);
+        ctx.moveTo(80, 290);
+        ctx.lineTo(1000, 290);
         ctx.stroke();
 
         // 3. Cards de Eventos (Escalados por flyerCardScale)
         const showCount = selectedShows.length;
-        const availableHeight = 1100;
+        const availableHeight = 1200;
         const baseRowHeight = Math.floor(availableHeight / Math.max(showCount, 1));
         const rowHeight = Math.min(220, Math.max(130, Math.floor(baseRowHeight * flyerCardScale)));
-        const startY = 400 + Math.floor((availableHeight - (rowHeight * showCount)) / 2);
+        const startY = 320 + Math.floor((availableHeight - (rowHeight * showCount)) / 2);
 
         selectedShows.forEach((show, idx) => {
           const y = startY + (idx * rowHeight);
@@ -8756,6 +8879,7 @@
     let currentSplitShow = null;
     let currentSplitMembers = {};
     let currentSplitSubstitutes = [];
+    let currentSplitBandFund = 0;
 
     function openCacheSplitModal(originalIdx) {
       const band = currentBandData || { name: 'Bad Badgers' };
@@ -8778,6 +8902,7 @@
       const subTitleEl = document.getElementById('cacheSplitModalSubtitle');
       const grossDisplay = document.getElementById('cacheSplitTotalGrossDisplay');
       const statusSelect = document.getElementById('cacheSplitStatusSelect');
+      const fundInput = document.getElementById('cacheSplitBandFundInput');
 
       if (titleEl) titleEl.textContent = `Divisão de Cachê: ${ev.name || 'Show'}`;
       if (subTitleEl) subTitleEl.textContent = `${formatDateDisplay(ev.date)} • ${ev.local || 'Local a confirmar'}`;
@@ -8786,11 +8911,13 @@
       const membersList = getBandMembersList(band, currentBandSyncData);
 
       // Carrega divisão existente ou calcula cota igual inicial
-      if (ev.cacheSplit && Object.keys(ev.cacheSplit.members || {}).length > 0) {
-        currentSplitMembers = { ...ev.cacheSplit.members };
+      if (ev.cacheSplit && (ev.cacheSplit.bandFund !== undefined || Object.keys(ev.cacheSplit.members || {}).length > 0)) {
+        currentSplitBandFund = ev.cacheSplit.bandFund !== undefined ? (parseFloat(ev.cacheSplit.bandFund) || 0) : 0;
+        currentSplitMembers = { ...(ev.cacheSplit.members || {}) };
         currentSplitSubstitutes = Array.isArray(ev.cacheSplit.substitutes) ? [...ev.cacheSplit.substitutes] : [];
         if (statusSelect) statusSelect.value = ev.cacheSplit.status || 'paid';
       } else {
+        currentSplitBandFund = 0;
         currentSplitMembers = {};
         currentSplitSubstitutes = [];
         const perMember = membersList.length > 0 ? (grossNum / membersList.length).toFixed(2) : '0';
@@ -8799,6 +8926,8 @@
         });
         if (statusSelect) statusSelect.value = 'paid';
       }
+
+      if (fundInput) fundInput.value = currentSplitBandFund > 0 ? currentSplitBandFund.toFixed(2) : '0.00';
 
       renderCacheSplitMembersList();
       renderCacheSplitSubstitutesList();
@@ -8863,6 +8992,34 @@
       `).join('');
     }
 
+    function handleBandFundInputChange(val) {
+      if (!currentSplitShow) return;
+      currentSplitBandFund = Math.max(0, parseFloat(String(val).replace(',', '.')) || 0);
+
+      const rawC = currentSplitShow['cachê'] ?? currentSplitShow.cache ?? currentSplitShow.valCache ?? currentSplitShow.value;
+      const grossNum = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+
+      let subsTotal = 0;
+      currentSplitSubstitutes.forEach(s => {
+        subsTotal += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+      });
+
+      // Split automático para os membros descontando o caixa da banda e os substitutos
+      const remain = Math.max(0, grossNum - currentSplitBandFund - subsTotal);
+      const band = currentBandData || { name: 'Bad Badgers' };
+      const membersList = getBandMembersList(band, currentBandSyncData);
+
+      if (membersList.length > 0) {
+        const perMember = (remain / membersList.length).toFixed(2);
+        membersList.forEach(mem => {
+          currentSplitMembers[mem.id] = perMember;
+        });
+        renderCacheSplitMembersList();
+      }
+
+      updateCacheSplitTotals();
+    }
+
     function handleMemberSplitInputChange(memberId, val) {
       currentSplitMembers[memberId] = val;
       updateCacheSplitTotals();
@@ -8892,13 +9049,13 @@
       const rawC = currentSplitShow['cachê'] ?? currentSplitShow.cache ?? currentSplitShow.valCache ?? currentSplitShow.value;
       const grossNum = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
 
-      // Subtrai valor já destinado a substitutos
+      // Subtrai valor do caixa da banda e substitutos
       let subsTotal = 0;
       currentSplitSubstitutes.forEach(s => {
         subsTotal += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
       });
 
-      const remain = Math.max(0, grossNum - subsTotal);
+      const remain = Math.max(0, grossNum - currentSplitBandFund - subsTotal);
       const band = currentBandData || { name: 'Bad Badgers' };
       const membersList = getBandMembersList(band, currentBandSyncData);
 
@@ -8930,15 +9087,28 @@
       });
 
       const totalDistributed = membersSum + subsSum;
-      const bandFund = grossNum - totalDistributed;
+      const balance = grossNum - (currentSplitBandFund + totalDistributed);
 
+      const grossEl = document.getElementById('cacheSplitSummaryGross');
+      const fundDisplayEl = document.getElementById('cacheSplitSummaryFund');
       const distEl = document.getElementById('cacheSplitTotalDistributed');
       const fundEl = document.getElementById('cacheSplitBandFund');
 
+      if (grossEl) grossEl.textContent = `R$ ${grossNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      if (fundDisplayEl) fundDisplayEl.textContent = `R$ ${currentSplitBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
       if (distEl) distEl.textContent = `R$ ${totalDistributed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
       if (fundEl) {
-        fundEl.textContent = `R$ ${bandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        fundEl.style.color = bandFund < -0.01 ? '#f87171' : '#4ade80';
+        if (Math.abs(balance) < 0.01) {
+          fundEl.textContent = 'R$ 0,00 (Exato)';
+          fundEl.style.color = '#4ade80';
+        } else if (balance < -0.01) {
+          fundEl.textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (Excesso)`;
+          fundEl.style.color = '#f87171';
+        } else {
+          fundEl.textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+          fundEl.style.color = '#fbbf24';
+        }
       }
     }
 
@@ -8949,6 +9119,7 @@
       currentSplitShow.cacheSplit = {
         members: { ...currentSplitMembers },
         substitutes: [...currentSplitSubstitutes],
+        bandFund: currentSplitBandFund,
         status,
         updatedAt: new Date().toISOString()
       };
@@ -8965,6 +9136,7 @@
 
       renderBandFinancesTab(currentBandData, currentBandSyncData);
       renderBandAgendaTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
     }
 
     function openCreateBandModal() {
