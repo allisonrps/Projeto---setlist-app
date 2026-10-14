@@ -8741,14 +8741,23 @@
         brandImg.src = 'assets/bandlink_logo_transparent_wide.png';
       });
 
-      Promise.all([bgPromise, logoPromise, brandPromise]).then(([loadedBg, loadedLogo, loadedBrand]) => {
-        renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand);
-      }).catch(err => {
-        console.error('Erro ao preparar assets do flyer:', err);
-        renderCanvasFlyer(null, null, null);
+      // 4. Carrega Imagem do QR Code oficial
+      const qrPromise = new Promise(resolve => {
+        const qrImg = new Image();
+        qrImg.crossOrigin = 'anonymous';
+        qrImg.onload = () => resolve(qrImg);
+        qrImg.onerror = () => resolve(null);
+        qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.bandlink.pro';
       });
 
-      function renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand) {
+      Promise.all([bgPromise, logoPromise, brandPromise, qrPromise]).then(([loadedBg, loadedLogo, loadedBrand, loadedQr]) => {
+        renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand, loadedQr);
+      }).catch(err => {
+        console.error('Erro ao preparar assets do flyer:', err);
+        renderCanvasFlyer(null, null, null, null);
+      });
+
+      function renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand, loadedQr) {
         // 1. Fundo (Imagem da Galeria / Preset ou Gradiente elegante)
         if (loadedBg) {
           ctx.drawImage(loadedBg, 0, 0, 1080, 1920);
@@ -8833,13 +8842,15 @@
         ctx.lineTo(1000, 290);
         ctx.stroke();
 
-        // 3. Cards de Eventos (Escalados por flyerCardScale)
+        // 3. Cards de Eventos (Responsivo e Proporcional ao Live Preview)
         const showCount = selectedShows.length;
         const availableHeight = 1240;
-        const rowGap = Math.max(8, Math.round(18 * flyerCardScale));
-        const targetCardH = Math.round(155 * flyerCardScale);
+        const rowGap = Math.max(8, Math.round(16 * flyerCardScale));
+        
+        // Altura natural do card para não inflar desproporcionalmente
         const maxFittingCardH = Math.floor((availableHeight - (rowGap * (showCount - 1))) / showCount);
-        const cardH = Math.min(targetCardH, Math.max(68, maxFittingCardH));
+        const baseCardH = Math.round(112 * flyerCardScale);
+        const cardH = Math.min(baseCardH, Math.max(56, maxFittingCardH));
         const totalHeight = (cardH * showCount) + (rowGap * (showCount - 1));
         const startY = 320 + Math.max(0, Math.floor((availableHeight - totalHeight) / 2));
 
@@ -8851,63 +8862,97 @@
           ctx.fillStyle = 'rgba(0, 0, 0, 0.74)';
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
           ctx.lineWidth = 2;
-          roundRect(ctx, 80, y, 920, cardH, Math.max(10, Math.round(18 * flyerCardScale)), true, true);
+          roundRect(ctx, 80, y, 920, cardH, Math.max(8, Math.round(14 * flyerCardScale)), true, true);
 
-          // Badge Retangular Dia/Mês na Lateral Esquerda
-          const badgeW = Math.max(140, Math.round(180 * flyerCardScale));
-          const badgeH = cardH - Math.max(10, Math.round(16 * flyerCardScale));
+          // Badge Retangular Dia/Mês na Lateral Esquerda (Centralizado verticalmente)
+          const badgeW = Math.max(130, Math.round(160 * flyerCardScale));
+          const badgeH = cardH - Math.max(10, Math.round(14 * flyerCardScale));
           const badgeX = 95;
-          const badgeY = y + Math.max(5, Math.round(8 * flyerCardScale));
-          const badgeR = Math.max(8, Math.round(14 * flyerCardScale));
+          const badgeY = y + Math.floor((cardH - badgeH) / 2);
+          const badgeR = Math.max(8, Math.round(12 * flyerCardScale));
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
           ctx.strokeStyle = '#f59e0b';
           ctx.lineWidth = 2;
           roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeR, true, true);
 
+          // Fontes e alinhamento do Badge
+          const dateFontSize = Math.max(18, Math.round(27 * flyerCardScale));
+          const weekdayFontSize = Math.max(10, Math.round(14 * flyerCardScale));
+          const dateGapY = Math.max(2, Math.round(4 * flyerCardScale));
+          const totalBadgeContentH = dateFontSize + dateGapY + weekdayFontSize;
+          const badgeContentTop = badgeY + Math.floor((badgeH - totalBadgeContentH) / 2);
+
           // Linha 1 no Badge: 12 NOV no MESMO TAMANHO
-          const dateFontSize = Math.max(16, Math.round(28 * flyerCardScale));
           ctx.font = `900 ${dateFontSize}px system-ui, -apple-system, sans-serif`;
           const dayW = ctx.measureText(dt.day).width;
           const spaceW = ctx.measureText(' ').width;
           const monthW = ctx.measureText(dt.month).width;
           const totalDateW = dayW + spaceW + monthW;
-          const startX = badgeX + ((badgeW - totalDateW) / 2);
-          const line1Y = badgeY + Math.max(6, Math.round(badgeH * 0.16));
+          const startX = badgeX + Math.floor((badgeW - totalDateW) / 2);
 
           // Dia em branco
           ctx.fillStyle = '#ffffff';
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-          ctx.fillText(dt.day, startX, line1Y);
+          ctx.fillText(dt.day, startX, badgeContentTop);
 
           // Mês em dourado (mesmo tamanho dateFontSize)
           ctx.fillStyle = '#f59e0b';
-          ctx.fillText(dt.month, startX + dayW + spaceW, line1Y);
+          ctx.fillText(dt.month, startX + dayW + spaceW, badgeContentTop);
 
-          // Linha 2 no Badge: SÁBADO (bem menor)
-          const weekdayFontSize = Math.max(10, Math.round(14 * flyerCardScale));
+          // Linha 2 no Badge: SÁBADO (bem menor, centralizado embaixo)
           ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
           ctx.font = `700 ${weekdayFontSize}px system-ui, -apple-system, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
-          ctx.fillText((dt.weekDayFull || dt.weekDay).toUpperCase(), badgeX + (badgeW / 2), line1Y + dateFontSize + Math.max(3, Math.round(5 * flyerCardScale)));
+          ctx.fillText((dt.weekDayFull || dt.weekDay).toUpperCase(), badgeX + (badgeW / 2), badgeContentTop + dateFontSize + dateGapY);
+
+          // Conteúdo à direita do Badge: Título e Local/Horário (Centralizados em bloco verticalmente)
+          const titleFontSize = Math.max(16, Math.round(27 * flyerCardScale));
+          const metaFontSize = Math.max(12, Math.round(17 * flyerCardScale));
+          const gapBetweenTitleAndMeta = Math.max(4, Math.round(7 * flyerCardScale));
+          const totalInfoH = titleFontSize + gapBetweenTitleAndMeta + metaFontSize;
+          const infoTopY = y + Math.floor((cardH - totalInfoH) / 2);
+          const infoX = badgeX + badgeW + Math.round(22 * flyerCardScale);
 
           // Título do Show à Direita
-          const titleFontSize = Math.max(16, Math.round(30 * flyerCardScale));
           ctx.fillStyle = '#ffffff';
           ctx.font = `900 ${titleFontSize}px system-ui, -apple-system, sans-serif`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-          ctx.fillText(show.name || 'Show ao Vivo', badgeX + badgeW + Math.round(20 * flyerCardScale), y + Math.max(8, Math.round(14 * flyerCardScale)));
+          ctx.fillText(show.name || 'Show ao Vivo', infoX, infoTopY);
 
-          // Local e Horário
-          const metaFontSize = Math.max(12, Math.round(19 * flyerCardScale));
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-          ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
-          const locStr = show.local ? `📍 ${show.local}` : '';
-          const timeStr = show.time ? `   ⏰ ${show.time}` : '';
-          ctx.fillText(`${locStr}${timeStr}` || 'Local a confirmar', badgeX + badgeW + Math.round(20 * flyerCardScale), y + cardH - metaFontSize - Math.max(8, Math.round(12 * flyerCardScale)));
+          // Local e Horário com ícones nítidos em vetor
+          const metaY = infoTopY + titleFontSize + gapBetweenTitleAndMeta;
+          let curMetaX = infoX;
+
+          if (show.local) {
+            drawPinIcon(ctx, curMetaX, metaY, Math.round(16 * flyerCardScale), '#f87171');
+            curMetaX += Math.round(20 * flyerCardScale);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(show.local, curMetaX, metaY);
+            curMetaX += ctx.measureText(show.local).width + Math.round(22 * flyerCardScale);
+          }
+
+          if (show.time) {
+            drawClockIcon(ctx, curMetaX, metaY, Math.round(16 * flyerCardScale), '#f59e0b');
+            curMetaX += Math.round(20 * flyerCardScale);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(show.time, curMetaX, metaY);
+          } else if (!show.local) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.60)';
+            ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText('Local a confirmar', curMetaX, metaY);
+          }
         });
 
         // 4. Linha de Contato / Texto Livre para a Banda (Logo Acima do BandLink)
@@ -8925,21 +8970,23 @@
         ctx.textBaseline = 'middle';
         ctx.fillText(contactText, 540, contactY + 35);
 
-        // 5. Rodapé Oficial BandLink com Chamada e Acesso
+        // 5. Rodapé Oficial BandLink com Chamada e QR Code (Idêntico ao Live Preview)
         const footerY = 1680;
         ctx.fillStyle = 'rgba(10, 15, 26, 0.94)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
         ctx.lineWidth = 2;
         roundRect(ctx, 80, footerY, 920, 180, 20, true, true);
 
-        // Logo / Texto do rodapé
+        // Alinhamento rigoroso à esquerda para textos do rodapé
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+
+        // Logo BandLink
         if (loadedBrand) {
-          ctx.drawImage(loadedBrand, 120, footerY + 24, 200, 36);
+          ctx.drawImage(loadedBrand, 120, footerY + 24, 210, 38);
         } else {
           ctx.fillStyle = '#ffffff';
           ctx.font = '900 32px system-ui, -apple-system, sans-serif';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
           ctx.fillText('BandLink', 120, footerY + 28);
         }
 
@@ -8951,21 +8998,25 @@
         ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
         ctx.fillText('🌐 www.bandlink.pro', 120, footerY + 115);
 
-        // Caixa de Acesso ao Site / App à Direita
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2;
-        roundRect(ctx, 810, footerY + 25, 160, 130, 14, true, true);
+        // Caixa Branca Oficial do QR Code (idêntica ao live preview)
+        const qrBoxW = 140;
+        const qrBoxH = 144;
+        const qrBoxX = 840;
+        const qrBoxY = footerY + 18;
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, qrBoxX, qrBoxY, qrBoxW, qrBoxH, 14, true, false);
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
+        if (loadedQr) {
+          ctx.drawImage(loadedQr, qrBoxX + 16, qrBoxY + 10, 108, 108);
+        } else {
+          drawQrCodeFallback(ctx, qrBoxX + 16, qrBoxY + 10, 108);
+        }
+
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 13px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillText('ACESSE O SITE', 890, footerY + 45);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 21px system-ui, -apple-system, sans-serif';
-        ctx.fillText('bandlink.pro', 890, footerY + 82);
+        ctx.fillText('ESCANEAR', qrBoxX + (qrBoxW / 2), qrBoxY + 122);
 
         // Dispara download
         setTimeout(() => {
@@ -8976,6 +9027,63 @@
           link.click();
           showToast('Arte do flyer (1080x1920) baixada com sucesso!', 'success');
         }, 300);
+      }
+
+      function drawPinIcon(c, x, y, size, color) {
+        c.save();
+        c.fillStyle = color;
+        const r = size * 0.42;
+        const cx = x + r;
+        const cy = y + r;
+        c.beginPath();
+        c.arc(cx, cy, r, Math.PI, 0, false);
+        c.lineTo(cx, y + size);
+        c.closePath();
+        c.fill();
+        c.fillStyle = '#0b0f19';
+        c.beginPath();
+        c.arc(cx, cy, r * 0.45, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+
+      function drawClockIcon(c, x, y, size, color) {
+        c.save();
+        c.strokeStyle = color;
+        c.lineWidth = Math.max(1.5, size * 0.12);
+        const r = size * 0.45;
+        const cx = x + r;
+        const cy = y + r + (size * 0.05);
+        c.beginPath();
+        c.arc(cx, cy, r, 0, Math.PI * 2);
+        c.stroke();
+        c.beginPath();
+        c.moveTo(cx, cy - (r * 0.55));
+        c.lineTo(cx, cy);
+        c.lineTo(cx + (r * 0.45), cy);
+        c.stroke();
+        c.restore();
+      }
+
+      function drawQrCodeFallback(c, x, y, size) {
+        c.save();
+        c.fillStyle = '#000000';
+        const m = Math.floor(size * 0.28);
+        c.fillRect(x, y, m, m);
+        c.clearRect(x + 4, y + 4, m - 8, m - 8);
+        c.fillRect(x + 8, y + 8, m - 16, m - 16);
+        c.fillRect(x + size - m, y, m, m);
+        c.clearRect(x + size - m + 4, y + 4, m - 8, m - 8);
+        c.fillRect(x + size - m + 8, y + 8, m - 16, m - 16);
+        c.fillRect(x, y + size - m, m, m);
+        c.clearRect(x + 4, y + size - m + 4, m - 8, m - 8);
+        c.fillRect(x + 8, y + size - m + 8, m - 16, m - 16);
+        c.fillRect(x + m + 6, y + 6, 8, 8);
+        c.fillRect(x + m + 18, y + 14, 8, 8);
+        c.fillRect(x + m + 6, y + m + 6, 12, 12);
+        c.fillRect(x + size - m - 14, y + m + 6, 8, 8);
+        c.fillRect(x + m + 6, y + size - m - 6, 10, 10);
+        c.restore();
       }
 
       function roundRect(c, x, y, w, h, r, fill, stroke) {
