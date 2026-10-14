@@ -7785,7 +7785,8 @@
         financeMonthMap[info.key].total += num;
       });
 
-      const allMonthKeys = Object.keys(financeMonthMap).sort();
+      // Inverte a ordem dos meses: meses mais recentes no topo, mais antigos no final
+      const allMonthKeys = Object.keys(financeMonthMap).sort().reverse();
 
       let html = `
         <div style="margin-bottom: 24px;">
@@ -7911,7 +7912,8 @@
         // Renderiza cada mês cronológico com linha expansível (meses passados ocultos por padrão)
         allMonthKeys.forEach(k => {
           const g = financeMonthMap[k];
-          g.list.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+          // Eventos mais recentes no topo do mês
+          g.list.sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
           const isPastMonth = k < currentMonthKey;
           const defaultExpanded = !isPastMonth;
