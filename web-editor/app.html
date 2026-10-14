@@ -3631,39 +3631,6 @@
                 </button>
               </div>
 
-              <!-- Sugestões Rápidas com 1 clique -->
-              <div style="background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.05); padding: 12px 14px; border-radius: 10px; margin-bottom: 16px;">
-                <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
-                  ⚡ Sugestões Rápidas (Clique para adicionar):
-                </span>
-                <div class="extra-skills-quick-chips">
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Transporte Próprio (Van/Carro)', 'Logística', 'car-sport', 'Veículo disponível para transporte de banda e equipamentos')">
-                    🚐 Van / Transporte Próprio
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Técnico de Som / PA', 'Áudio & Som', 'hardware-chip-outline', 'Operação e mixagem de som de palco e monitor')">
-                    🎛️ Técnico de Som / PA
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Design Gráfico & Flyers', 'Audiovisual', 'color-palette-outline', 'Criação de artes para shows, banners e identidade visual')">
-                    🎨 Design & Flyers
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Filmagem & Edição de Vídeo', 'Audiovisual', 'videocam-outline', 'Gravação e edição de reels, bastidores e clipes')">
-                    🎬 Vídeo & Reels
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Social Media & Tráfego Pago', 'Marketing', 'megaphone-outline', 'Gestão de redes sociais e anúncios de eventos')">
-                    📱 Social Media & Anúncios
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Roadie & Montagem de Palco', 'Palco', 'construct-outline', 'Agilidade no setup, cabeamento e passagem de som')">
-                    🔧 Roadie & Setup
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Venda de Shows & Booking', 'Gestão', 'briefcase-outline', 'Contatos com casas de shows, bares e contratantes')">
-                    💼 Booking & Shows
-                  </button>
-                  <button type="button" class="quick-extra-chip" onclick="quickAddExtraSkill('Luthieria & Regulagem', 'Manutenção', 'hammer-outline', 'Regulagem e reparos rápidos de instrumentos e cabos')">
-                    🎸 Luthieria & Reparos
-                  </button>
-                </div>
-              </div>
-
               <!-- Lista de Habilidades Extra-Musicais -->
               <div id="extraSkillsListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
@@ -4481,6 +4448,29 @@
         <button class="modal-close" onclick="closeModal('addExtraSkillModal')">&times;</button>
       </div>
       <form onsubmit="handleSaveExtraSkill(event)">
+        <!-- Scroll de Opções / Sugestões Prontas -->
+        <div class="form-group">
+          <label style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Opções Sugeridas (Role para selecionar)</span>
+            <span style="font-size: 0.72rem; color: #fbbf24; font-weight: 700;">⚡ Sugestões Prontas</span>
+          </label>
+          <select id="extraSkillPresetSelect" class="form-input" onchange="onSelectExtraSkillPreset(this.value)">
+            <option value="">-- Escolha uma sugestão ou customize abaixo --</option>
+            <option value="van">🚐 Transporte Próprio (Van / Carro)</option>
+            <option value="som">🎛️ Técnico de Som / PA</option>
+            <option value="design">🎨 Design Gráfico & Flyers</option>
+            <option value="video">🎬 Filmagem & Edição de Vídeo</option>
+            <option value="social">📱 Social Media & Anúncios</option>
+            <option value="roadie">🔧 Roadie & Montagem de Palco</option>
+            <option value="booking">💼 Venda de Shows & Booking</option>
+            <option value="luthier">🎸 Luthieria & Regulagem</option>
+            <option value="foto">📸 Fotografia Profissional</option>
+            <option value="luz">💡 Técnico de Iluminação / Luz</option>
+            <option value="producao">🎹 Produção Musical & Gravação</option>
+            <option value="custom">✏️ Outra Habilidade (Personalizada)</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>Categoria da Habilidade</label>
           <select id="extraSkillCategoryInput" class="form-input">
@@ -4495,7 +4485,20 @@
         </div>
         <div class="form-group">
           <label>Nome da Habilidade Extra *</label>
-          <input type="text" id="extraSkillNameInput" class="form-input" placeholder="Ex: Transporte Próprio (Van), Técnico de PA, Fotografia..." required>
+          <input type="text" id="extraSkillNameInput" class="form-input" list="extraSkillSuggestionsList" placeholder="Ex: Transporte Próprio (Van), Técnico de PA, Fotografia..." required>
+          <datalist id="extraSkillSuggestionsList">
+            <option value="Transporte Próprio (Van/Carro)">
+            <option value="Técnico de Som / PA">
+            <option value="Design Gráfico & Flyers">
+            <option value="Filmagem & Edição de Vídeo">
+            <option value="Social Media & Tráfego Pago">
+            <option value="Roadie & Montagem de Palco">
+            <option value="Venda de Shows & Booking">
+            <option value="Luthieria & Regulagem">
+            <option value="Fotografia Profissional">
+            <option value="Técnico de Iluminação / Luz">
+            <option value="Produção Musical & Gravação">
+          </datalist>
         </div>
         <div class="form-group">
           <label>Descrição / Detalhe (Opcional)</label>
@@ -6979,10 +6982,44 @@
       }).join('');
     }
 
+    const EXTRA_SKILL_PRESETS = {
+      van: { name: 'Transporte Próprio (Van/Carro)', category: 'Logística & Transporte', icon: 'car-sport', desc: 'Veículo disponível para transporte de banda e equipamentos' },
+      som: { name: 'Técnico de Som / PA', category: 'Áudio & Som', icon: 'hardware-chip-outline', desc: 'Operação e mixagem de som de palco e monitor' },
+      design: { name: 'Design Gráfico & Flyers', category: 'Audiovisual & Design', icon: 'color-palette-outline', desc: 'Criação de artes para shows, banners e divulgação' },
+      video: { name: 'Filmagem & Edição de Vídeo', category: 'Audiovisual & Design', icon: 'videocam-outline', desc: 'Gravação e edição de reels, bastidores e clipes' },
+      social: { name: 'Social Media & Anúncios', category: 'Marketing & Mídias', icon: 'megaphone-outline', desc: 'Gestão de redes sociais e anúncios de eventos' },
+      roadie: { name: 'Roadie & Montagem de Palco', category: 'Palco & Equipamentos', icon: 'construct-outline', desc: 'Agilidade no setup, cabeamento e passagem de som' },
+      booking: { name: 'Venda de Shows & Booking', category: 'Gestão & Booking', icon: 'briefcase-outline', desc: 'Contatos com casas de shows, bares e contratantes' },
+      luthier: { name: 'Luthieria & Regulagem', category: 'Palco & Equipamentos', icon: 'hammer-outline', desc: 'Regulagem e reparos rápidos de instrumentos e cabos' },
+      foto: { name: 'Fotografia Profissional', category: 'Audiovisual & Design', icon: 'camera-outline', desc: 'Fotos profissionais durante apresentações e ensaios' },
+      luz: { name: 'Técnico de Iluminação / Luz', category: 'Palco & Equipamentos', icon: 'bulb-outline', desc: 'Operação de luz e mesa DMX no palco' },
+      producao: { name: 'Produção Musical & Gravação', category: 'Áudio & Som', icon: 'musical-notes-outline', desc: 'Gravação multipista de ensaios e produção em DAW' },
+      custom: { name: '', category: 'Outros', icon: 'sparkles', desc: '' }
+    };
+
+    function onSelectExtraSkillPreset(key) {
+      if (!key) return;
+      const p = EXTRA_SKILL_PRESETS[key];
+      if (p) {
+        applyExtraSkillPresetData(p.name, p.category, p.icon, p.desc);
+      }
+    }
+
+    function applyExtraSkillPresetData(name, category, icon, desc) {
+      const nameInput = document.getElementById('extraSkillNameInput');
+      const catInput = document.getElementById('extraSkillCategoryInput');
+      const descInput = document.getElementById('extraSkillDescInput');
+      if (nameInput) nameInput.value = name || '';
+      if (catInput && category) catInput.value = category;
+      if (descInput) descInput.value = desc || '';
+    }
+
     function openAddExtraSkillModal() {
+      const presetSelect = document.getElementById('extraSkillPresetSelect');
       const nameInput = document.getElementById('extraSkillNameInput');
       const descInput = document.getElementById('extraSkillDescInput');
       const catInput = document.getElementById('extraSkillCategoryInput');
+      if (presetSelect) presetSelect.value = '';
       if (nameInput) nameInput.value = '';
       if (descInput) descInput.value = '';
       if (catInput) catInput.value = 'Logística & Transporte';
