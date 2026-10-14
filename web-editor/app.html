@@ -8033,7 +8033,8 @@
         agendaMonthMap[info.key].list.push(sl);
       });
 
-      const allAgendaMonthKeys = Object.keys(agendaMonthMap).sort();
+      // Inverte a ordem dos meses: meses mais recentes no topo (ex: Dezembro -> Janeiro)
+      const allAgendaMonthKeys = Object.keys(agendaMonthMap).sort().reverse();
 
       let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
@@ -8166,7 +8167,8 @@
         // Renderiza cada mês cronológico com linha expansível (meses passados ocultos por padrão)
         allAgendaMonthKeys.forEach(k => {
           const g = agendaMonthMap[k];
-          g.list.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+          // Eventos mais recentes no topo do mês
+          g.list.sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
           const isPastMonth = k < currentMonthKey;
           const defaultExpanded = !isPastMonth;
