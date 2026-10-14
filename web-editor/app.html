@@ -2447,172 +2447,195 @@
       margin-top: 3px;
     }
 
-    /* Month separator header for Agenda and Finances */
-    .month-separator-bar {
+    /* Mobile Month Header Bar for Agenda and Finances (Icons first, then month name) */
+    .mobile-month-bar {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin: 22px 0 12px 0;
-      padding: 0 4px;
+      gap: 10px;
+      margin: 18px 0 10px 0;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
     }
-    .month-separator-title {
-      font-size: 0.88rem;
+    .mobile-month-bar:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .month-pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.74rem;
       font-weight: 800;
-      color: var(--cyan);
+      white-space: nowrap;
+    }
+    .month-pill-show {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .month-pill-rehearsal {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .month-pill-total {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .month-pill-musician {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .mobile-month-title {
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: #ffffff;
       letter-spacing: 0.8px;
       text-transform: uppercase;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-    .month-separator-badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      background: rgba(56, 189, 248, 0.12);
-      color: #7dd3fc;
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 2px 8px;
-      border-radius: 12px;
-      white-space: nowrap;
-    }
-    .month-separator-line {
+    .mobile-month-line {
       flex: 1;
       height: 1px;
-      background: linear-gradient(90deg, rgba(56, 189, 248, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
-    }
-    .past-months-toggle-box {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px dashed rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      padding: 12px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      margin: 20px 0 14px 0;
-      transition: all 0.2s;
-    }
-    .past-months-toggle-box:hover {
-      background: rgba(56, 189, 248, 0.06);
-      border-color: rgba(56, 189, 248, 0.35);
+      background: rgba(255, 255, 255, 0.12);
+      margin: 0 4px;
     }
 
-    /* Flyer Visual Generator Preview */
+    /* Flyer Visual Generator Preview (Mobile Templates with Backgrounds) */
     .flyer-card-preview {
-      width: 310px;
-      min-height: 470px;
-      border-radius: 18px;
+      width: 380px;
+      min-height: 580px;
+      border-radius: 20px;
       padding: 22px 20px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
       overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background-size: cover;
+      background-position: center;
       transition: all 0.3s;
     }
-    .flyer-theme-rock {
-      background: linear-gradient(145deg, #0d0f18 0%, #171c2b 50%, #0a0c14 100%);
-      border-color: rgba(56, 189, 248, 0.4);
+    .flyer-card-preview::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.62);
+      z-index: 1;
     }
-    .flyer-theme-synth {
-      background: linear-gradient(145deg, #1f082e 0%, #350b44 50%, #0d0722 100%);
-      border-color: rgba(244, 63, 94, 0.5);
+    .flyer-card-preview > * {
+      position: relative;
+      z-index: 2;
     }
-    .flyer-theme-acoustic {
-      background: linear-gradient(145deg, #24160c 0%, #382414 50%, #150d06 100%);
-      border-color: rgba(245, 158, 11, 0.5);
-    }
-    .flyer-theme-edm {
-      background: linear-gradient(145deg, #05192d 0%, #082d4f 50%, #031020 100%);
-      border-color: rgba(6, 182, 212, 0.5);
-    }
-    .flyer-theme-dark {
-      background: #090c12;
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .flyer-theme-gold {
-      background: linear-gradient(145deg, #1c1606 0%, #2e2409 50%, #120e03 100%);
-      border-color: rgba(234, 179, 8, 0.6);
-    }
+
+    /* 9 Mobile Background Themes */
+    .flyer-theme-1 { background-image: url('assets/bg_rock.jpg'); border-color: rgba(239, 68, 68, 0.5); }
+    .flyer-theme-2 { background-image: url('assets/bg_acoustic.jpg'); border-color: rgba(245, 158, 11, 0.5); }
+    .flyer-theme-3 { background-image: url('assets/bg_pop.jpg'); border-color: rgba(244, 63, 94, 0.5); }
+    .flyer-theme-4 { background-image: url('assets/bg_jazz.jpg'); border-color: rgba(56, 189, 248, 0.5); }
+    .flyer-theme-5 { background-image: url('assets/bg_electronic.jpg'); border-color: rgba(16, 185, 129, 0.5); }
+    .flyer-theme-6 { background-image: url('assets/bg_reggae.jpg'); border-color: rgba(234, 179, 8, 0.5); }
+    .flyer-theme-7 { background-image: url('assets/bg_gospel.jpg'); border-color: rgba(168, 85, 247, 0.5); }
+    .flyer-theme-8 { background-image: url('assets/bg_notes.jpg'); border-color: rgba(56, 189, 248, 0.4); }
+    .flyer-theme-9 { background-image: url('assets/bg_classic.jpg'); border-color: rgba(255, 255, 255, 0.4); }
+
     .flyer-header {
       text-align: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-    .flyer-brandlink-badge {
-      display: inline-flex;
+    .flyer-band-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 3px solid #f59e0b;
+      margin: 0 auto 8px auto;
+      overflow: hidden;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #38bdf8;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
     }
-    .flyer-bandlink-logo {
-      height: 14px;
-      object-fit: contain;
+    .flyer-band-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    .flyer-band-title {
-      font-size: 1.4rem;
+    .flyer-main-title {
+      font-size: 1.55rem;
       font-weight: 900;
       color: #ffffff;
-      letter-spacing: 1.5px;
+      letter-spacing: 4px;
       text-transform: uppercase;
       line-height: 1.1;
-      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      text-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
     }
-    .flyer-subtitle {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #94a3b8;
-      letter-spacing: 1.2px;
+    .flyer-sub-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #f59e0b;
+      letter-spacing: 1px;
       margin-top: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
     }
     .flyer-shows-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       flex: 1;
       justify-content: center;
+      margin: 8px 0;
     }
     .flyer-show-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.74);
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      padding: 8px 12px;
+      gap: 12px;
+      transition: all 0.2s;
     }
     .flyer-date-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.4);
+      min-width: 54px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid #f59e0b;
+      text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
+    .flyer-date-weekday {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+    }
     .flyer-date-day {
-      font-size: 1.05rem;
+      font-size: 1.25rem;
       font-weight: 900;
       color: #fff;
-      line-height: 1;
+      line-height: 1.1;
     }
     .flyer-date-month {
-      font-size: 0.6rem;
-      font-weight: 800;
-      color: #38bdf8;
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: #f59e0b;
       text-transform: uppercase;
     }
     .flyer-show-info {
@@ -2620,44 +2643,69 @@
       min-width: 0;
     }
     .flyer-show-title {
-      font-size: 0.85rem;
-      font-weight: 800;
+      font-size: 0.92rem;
+      font-weight: 900;
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .flyer-show-meta {
-      font-size: 0.7rem;
-      color: #94a3b8;
+      font-size: 0.74rem;
+      color: rgba(255, 255, 255, 0.85);
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 2px;
+      gap: 8px;
+      margin-top: 3px;
+      flex-wrap: wrap;
+    }
+    .flyer-contact-row {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 10px;
+      text-align: center;
+    }
+    .flyer-contact-text {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #f59e0b;
+      letter-spacing: 0.5px;
     }
     .flyer-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 10px;
-      margin-top: 12px;
-    }
-    .flyer-footer-contact {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #38bdf8;
+      background: rgba(10, 15, 26, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      gap: 12px;
     }
     .flyer-footer-brand {
-      font-size: 0.62rem;
-      color: #64748b;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+    }
+    .flyer-footer-link {
+      font-size: 0.68rem;
+      color: #38bdf8;
+      font-weight: 800;
+      margin-top: 3px;
     }
     .flyer-qr-box {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #fff;
+      padding: 6px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4503,68 +4551,95 @@
 
   <!-- MODAL COMPARTILHAR AGENDA / GERADOR DE ARTE (FLYER BANDLINK) -->
   <div class="modal-overlay" id="shareAgendaModal">
-    <div class="modal-card large" style="max-width: 960px; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="modal-card large" style="max-width: 990px; max-height: 92vh; display: flex; flex-direction: column;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
           <ion-icon name="share-social-outline" style="font-size: 1.5rem; color: var(--cyan);"></ion-icon>
           <div>
-            <h3 class="modal-title" style="margin: 0;">Compartilhar Agenda de Shows</h3>
-            <span style="font-size: 0.78rem; color: #94a3b8;">Gerador oficial de arte para redes sociais e WhatsApp</span>
+            <h3 class="modal-title" style="margin: 0;">Compartilhar Agenda de Shows (Flyer Oficial)</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;">Gerador oficial de arte para redes sociais e WhatsApp com os mesmos temas e fundos do app mobile</span>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('shareAgendaModal')">&times;</button>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; overflow-y: auto; padding: 4px; flex: 1;">
+      <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; overflow-y: auto; padding: 4px; flex: 1;">
         <!-- COLUNA ESQUERDA: CONTROLES E SELEÇÃO DE SHOWS -->
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <!-- Escolha de Tema Visual -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- 1. Escolha de Arte de Fundo (9 Layouts do Mobile) -->
           <div>
-            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: block;">1. Estilo Visual do Flyer</label>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;" id="flyerThemeSelector">
-              <button type="button" class="btn btn-sm btn-outline active flyer-theme-btn" data-theme="rock" onclick="setFlyerTheme('rock')">
-                <ion-icon name="skull-outline"></ion-icon> Rock
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: block;">1. Estilo / Arte de Fundo</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;" id="flyerThemeSelector">
+              <button type="button" class="btn btn-sm btn-outline active flyer-theme-btn" data-theme="1" onclick="setFlyerTheme(1)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="skull-outline"></ion-icon> Rock & Metal
               </button>
-              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="synth" onclick="setFlyerTheme('synth')">
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="2" onclick="setFlyerTheme(2)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="leaf-outline"></ion-icon> Acústico Folk
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="3" onclick="setFlyerTheme(3)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
                 <ion-icon name="flash-outline"></ion-icon> Synthwave
               </button>
-              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="acoustic" onclick="setFlyerTheme('acoustic')">
-                <ion-icon name="leaf-outline"></ion-icon> Acústico
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="4" onclick="setFlyerTheme(4)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="musical-notes-outline"></ion-icon> Jazz & Blues
               </button>
-              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="edm" onclick="setFlyerTheme('edm')">
-                <ion-icon name="headset-outline"></ion-icon> Eletrônica
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="5" onclick="setFlyerTheme(5)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="headset-outline"></ion-icon> Eletrônica EDM
               </button>
-              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="dark" onclick="setFlyerTheme('dark')">
-                <ion-icon name="moon-outline"></ion-icon> Dark
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="6" onclick="setFlyerTheme(6)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="sunny-outline"></ion-icon> Reggae Roots
               </button>
-              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="gold" onclick="setFlyerTheme('gold')">
-                <ion-icon name="sparkles-outline"></ion-icon> Gold
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="7" onclick="setFlyerTheme(7)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="flame-outline"></ion-icon> Gospel
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="8" onclick="setFlyerTheme(8)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="disc-outline"></ion-icon> Notas
+              </button>
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="9" onclick="setFlyerTheme(9)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
+                <ion-icon name="sparkles-outline"></ion-icon> Clássico
               </button>
             </div>
           </div>
 
-          <!-- Seleção de Shows para Incluir na Arte (Max 6) -->
+          <!-- 2. Ajuste de Tamanho dos Cards dos Eventos (Zoom / Escala) -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0;">2. Tamanho dos Cards de Eventos</label>
+              <span id="cardScaleLabel" style="font-size: 0.78rem; font-weight: 800; color: var(--cyan);">100% (Normal)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 8px;" onclick="changeFlyerCardScale(-0.1)" title="Diminuir tamanho dos cards">
+                <ion-icon name="remove-outline"></ion-icon>
+              </button>
+              <input type="range" id="flyerCardScaleRange" min="0.75" max="1.3" step="0.05" value="1.0" oninput="setFlyerCardScale(this.value)" style="flex: 1; accent-color: var(--cyan); cursor: pointer;">
+              <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 8px;" onclick="changeFlyerCardScale(0.1)" title="Aumentar tamanho dos cards">
+                <ion-icon name="add-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Seleção de Shows para Incluir na Arte (Max 6) -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0;">2. Selecionar Shows na Arte (<span id="flyerSelectedCount">0</span>/6)</label>
+              <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0;">3. Selecionar Shows na Arte (<span id="flyerSelectedCount">0</span>/6)</label>
               <button type="button" class="btn btn-sm" style="font-size: 0.75rem; color: var(--cyan); background: transparent; padding: 2px 6px;" onclick="selectAllUpcomingForFlyer()">Selecionar Próximos</button>
             </div>
-            <div id="flyerEventsList" style="max-height: 200px; overflow-y: auto; background: #131a28; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+            <div id="flyerEventsList" style="max-height: 180px; overflow-y: auto; background: #131a28; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
               <!-- Checkboxes de shows -->
             </div>
           </div>
 
-          <!-- Campo de Rodapé / Contato -->
+          <!-- 4. Contato da Banda / Texto Livre (Última linha antes do rodapé) -->
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">3. Contato para Shows / Redes Sociais</label>
-            <input type="text" id="flyerContactInput" class="form-input" placeholder="Ex: Contato: (16) 99115-3733 • @badbadgersoficial" oninput="updateFlyerPreview()">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">4. Linha de Contato / Texto Livre para a Banda</label>
+            <input type="text" id="flyerContactInput" class="form-input" placeholder="Ex: Contato para Shows: (16) 99115-3733 • @badbadgersoficial" oninput="updateFlyerPreview()">
+            <span style="font-size: 0.74rem; color: #94a3b8; margin-top: 4px; display: block;">Esta linha personalizada é exibida com destaque logo acima da chamada do BandLink.</span>
           </div>
 
           <!-- Botões de Ação -->
           <div style="display: flex; gap: 10px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
             <button type="button" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="downloadFlyerImage()">
               <ion-icon name="download-outline" style="font-size: 1.15rem;"></ion-icon>
-              <span>Baixar Arte (PNG)</span>
+              <span>Baixar Arte (PNG 1080x1920)</span>
             </button>
             <button type="button" class="btn btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="copyFlyerText()" title="Copiar texto formatado para WhatsApp">
               <ion-icon name="copy-outline"></ion-icon>
@@ -4575,30 +4650,42 @@
 
         <!-- COLUNA DIREITA: LIVE PREVIEW DA ARTE DO FLYER -->
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; border: 1px dashed rgba(255,255,255,0.1);">
-          <div id="flyerPreviewCard" class="flyer-card-preview flyer-theme-rock">
-            <!-- Header do Flyer -->
+          <div id="flyerPreviewCard" class="flyer-card-preview flyer-theme-1">
+            <!-- Header do Flyer: Logo da Banda no alto, AGENDA em letras garrafais, Próximos Shows -->
             <div class="flyer-header">
-              <div class="flyer-brandlink-badge">
-                <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="flyer-bandlink-logo" onerror="this.style.display='none'">
-                <span>AGENDA OFICIAL</span>
+              <div class="flyer-band-avatar" id="flyerBandAvatarCircle">
+                <span id="flyerBandAvatarInitials" style="font-size: 1.3rem; font-weight: 900; color: #fff;">BB</span>
               </div>
-              <div class="flyer-band-title" id="flyerBandTitle">BAD BADGERS</div>
-              <div class="flyer-subtitle">AGENDA DE APRESENTAÇÕES • 2026</div>
+              <div class="flyer-main-title">AGENDA</div>
+              <div class="flyer-sub-title" id="flyerHeaderSubtitle">PRÓXIMOS SHOWS • BAD BADGERS</div>
             </div>
 
-            <!-- Lista de Shows no Flyer -->
+            <!-- Lista de Shows no Flyer: Data na lateral esquerda, informações à direita -->
             <div class="flyer-shows-container" id="flyerShowsContainer">
               <!-- Renderizado dinamicamente -->
             </div>
 
-            <!-- Footer do Flyer com Logo e QR Code -->
-            <div class="flyer-footer">
-              <div style="display: flex; flex-direction: column; gap: 2px;">
-                <span class="flyer-footer-contact" id="flyerFooterContact">Contato para Shows</span>
-                <span class="flyer-footer-brand">BandLink • Setlist & Agenda Manager</span>
+            <!-- Linha de Contato / Texto Livre para a Banda (em cima da chamada BandLink) -->
+            <div class="flyer-contact-row" id="flyerContactRow">
+              <div class="flyer-contact-text" id="flyerFooterContactText">
+                📞 Contato para Shows: (16) 99115-3733 • @badbadgersoficial
               </div>
-              <div class="flyer-qr-box" title="Acesse a página da banda">
-                <ion-icon name="qr-code-outline" style="font-size: 2.2rem; color: #fff;"></ion-icon>
+            </div>
+
+            <!-- Rodapé Oficial BandLink: Logo, Chamada, Link www.bandlink.pro e QR Code -->
+            <div class="flyer-footer">
+              <div style="flex: 1; min-width: 0;">
+                <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" style="height: 18px; object-fit: contain; margin-bottom: 4px; display: block;" onerror="this.src='assets/logo.png'">
+                <div class="flyer-footer-brand">
+                  Crie seu perfil, gerencie setlists e cifras com rolagem e sincronização offline.
+                </div>
+                <div class="flyer-footer-link">
+                  🌐 www.bandlink.pro
+                </div>
+              </div>
+              <div class="flyer-qr-box" title="Acesse o app e site www.bandlink.pro">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://www.bandlink.pro" alt="QR" style="width: 46px; height: 46px; display: block;" onerror="this.style.display='none'">
+                <span style="font-size: 0.52rem; font-weight: 900; color: #000; margin-top: 2px;">ESCANEAR</span>
               </div>
             </div>
           </div>
@@ -7336,18 +7423,20 @@
     }
 
     // ==============================================================
-    // HELPERS DE DATA, ORDENAÇÃO E AGRUPAMENTO POR MÊS
+    // HELPERS DE DATA, ORDENAÇÃO E EXPANSÃO POR MÊS (PADRÃO MOBILE)
     // ==============================================================
-    let showPastAgendaMonths = false;
-    let showPastFinanceMonths = false;
+    let expandedAgendaMonths = {};
+    let expandedFinanceMonths = {};
 
-    function togglePastAgendaMonths() {
-      showPastAgendaMonths = !showPastAgendaMonths;
+    function toggleAgendaMonth(key) {
+      const current = expandedAgendaMonths[key] !== undefined ? expandedAgendaMonths[key] : true;
+      expandedAgendaMonths[key] = !current;
       renderBandAgendaTab(currentBandData, currentBandSyncData);
     }
 
-    function togglePastFinanceMonths() {
-      showPastFinanceMonths = !showPastFinanceMonths;
+    function toggleFinanceMonth(key) {
+      const current = expandedFinanceMonths[key] !== undefined ? expandedFinanceMonths[key] : true;
+      expandedFinanceMonths[key] = !current;
       renderBandFinancesTab(currentBandData, currentBandSyncData);
     }
 
@@ -7378,6 +7467,17 @@
     }
 
     const MONTH_NAMES_BR = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const WEEKDAYS_PT = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+
+    function getEventDateDetails(d) {
+      const dt = parseDateForSort(d);
+      const day = String(dt.getDate()).padStart(2, '0');
+      const monthIdx = dt.getMonth();
+      const weekDay = WEEKDAYS_PT[dt.getDay()] || 'SÁB';
+      const monthName = MONTH_NAMES_BR[monthIdx] || 'Mês';
+      const monthShort = monthName.substring(0, 3).toUpperCase();
+      return { day, month: monthShort, monthFull: monthName, weekDay, dateObj: dt };
+    }
 
     function getEventMonthInfo(d) {
       const dt = parseDateForSort(d);
@@ -7447,7 +7547,7 @@
         list.forEach(sl => {
           const info = getEventMonthInfo(sl.date);
           if (!groups[info.key]) {
-            groups[info.key] = { title: info.title, list: [], total: 0 };
+            groups[info.key] = { key: info.key, title: info.title, list: [], total: 0 };
           }
           const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
           const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
@@ -7459,7 +7559,6 @@
 
       const upcomingGroups = groupShowsByMonth(upcomingShows);
       const pastGroups = groupShowsByMonth(pastShows);
-      const pastKeys = Object.keys(pastGroups);
 
       let html = `
         <div style="margin-bottom: 24px;">
@@ -7494,7 +7593,7 @@
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Extrato de Apresentações e Cachês</h3>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Extrato de Apresentações e Cachês por Mês</h3>
           <span style="font-size: 0.8rem; color: #94a3b8;">${showsWithCache.length} apresentações registradas</span>
         </div>
       `;
@@ -7563,42 +7662,43 @@
           </div>
         `;
 
-        // Renderiza meses futuros primeiro
-        Object.keys(upcomingGroups).forEach(k => {
-          const g = upcomingGroups[k];
+        // Renderiza cada mês (futuros e passados) com sua própria linha expansível igual ao mobile
+        const allMonthKeys = [...Object.keys(upcomingGroups), ...Object.keys(pastGroups)];
+        const allGroups = { ...upcomingGroups, ...pastGroups };
+
+        allMonthKeys.forEach(k => {
+          const g = allGroups[k];
+          const isExpanded = expandedFinanceMonths[k] !== undefined ? expandedFinanceMonths[k] : true;
+          const mShows = g.list.length;
+          const mGross = g.total;
+          const activeMemCount = m.membersCount || 1;
+          const myShare = mGross > 0 ? (mGross / activeMemCount) : 0;
+
           html += `
-            <div class="month-separator-bar">
-              <span class="month-separator-title">${g.title.toUpperCase()}</span>
-              <div class="month-separator-line"></div>
-              <span class="month-separator-badge">${g.list.length} ${g.list.length === 1 ? 'Show' : 'Shows'} • R$ ${g.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            <div class="mobile-month-bar" onclick="toggleFinanceMonth('${k}')" title="Clique para expandir/recolher mês">
+              <!-- Ícones e Contadores primeiro (Padrão Mobile) -->
+              <span class="month-pill-badge month-pill-show" title="Shows">
+                <ion-icon name="calendar-outline"></ion-icon> <span>${mShows}</span>
+              </span>
+              <span class="month-pill-badge month-pill-total" title="Cachê Total da Banda">
+                <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${mGross.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </span>
+              <span class="month-pill-badge month-pill-musician" title="Cota do Músico">
+                <ion-icon name="star"></ion-icon> <span>R$ ${myShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </span>
+
+              <!-- Nome do Mês Depois -->
+              <span class="mobile-month-title">${g.title.toUpperCase()}</span>
+
+              <!-- Linha separadora flexível -->
+              <div class="mobile-month-line"></div>
+
+              <!-- Chevron de expandir / recolher -->
+              <ion-icon name="${isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}" style="font-size: 1.15rem; color: #94a3b8;"></ion-icon>
             </div>
-            ${renderTableWrapper(renderFinanceRows(g.list))}
+            ${isExpanded ? renderTableWrapper(renderFinanceRows(g.list)) : ''}
           `;
         });
-
-        // Meses passados: ocultos por padrão com barra retrátil
-        if (pastKeys.length > 0) {
-          html += `
-            <div class="past-months-toggle-box" onclick="togglePastFinanceMonths()">
-              <ion-icon name="${showPastFinanceMonths ? 'chevron-up-outline' : 'time-outline'}"></ion-icon>
-              <span>${showPastFinanceMonths ? 'Ocultar meses anteriores' : `Mostrar ${pastShows.length} apresentações anteriores (${pastKeys.length} meses passados)`}</span>
-            </div>
-          `;
-
-          if (showPastFinanceMonths) {
-            pastKeys.forEach(k => {
-              const g = pastGroups[k];
-              html += `
-                <div class="month-separator-bar" style="opacity: 0.85;">
-                  <span class="month-separator-title">${g.title.toUpperCase()}</span>
-                  <div class="month-separator-line"></div>
-                  <span class="month-separator-badge">${g.list.length} ${g.list.length === 1 ? 'Show' : 'Shows'} • R$ ${g.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-                ${renderTableWrapper(renderFinanceRows(g.list))}
-              `;
-            });
-          }
-        }
       }
 
       sub.innerHTML = html;
@@ -7677,7 +7777,7 @@
         list.forEach(sl => {
           const info = getEventMonthInfo(sl.date);
           if (!groups[info.key]) {
-            groups[info.key] = { title: info.title, list: [] };
+            groups[info.key] = { key: info.key, title: info.title, list: [] };
           }
           groups[info.key].list.push(sl);
         });
@@ -7686,7 +7786,6 @@
 
       const upcomingGroups = groupEventsByMonth(upcomingEvents);
       const pastGroups = groupEventsByMonth(pastEvents);
-      const pastKeys = Object.keys(pastGroups);
 
       let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
@@ -7815,46 +7914,54 @@
           `;
         };
 
-        // Renderiza Próximos Eventos com divisores de mês
-        Object.keys(upcomingGroups).forEach(k => {
-          const g = upcomingGroups[k];
+        // Renderiza cada mês (futuros e passados) com sua própria linha expansível igual ao mobile
+        const allAgendaMonthKeys = [...Object.keys(upcomingGroups), ...Object.keys(pastGroups)];
+        const allAgendaGroups = { ...upcomingGroups, ...pastGroups };
+
+        allAgendaMonthKeys.forEach(k => {
+          const g = allAgendaGroups[k];
+          const isExpanded = expandedAgendaMonths[k] !== undefined ? expandedAgendaMonths[k] : true;
           const mShows = g.list.filter(s => s.type !== 'rehearsal' && !(s.name || '').toLowerCase().includes('ensaio')).length;
           const mReh = g.list.length - mShows;
+
+          let monthGrossTotal = 0;
+          g.list.forEach(sl => {
+            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+            monthGrossTotal += parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+          });
+          const activeMemCount = m.membersCount || 1;
+          const myShare = monthGrossTotal > 0 ? (monthGrossTotal / activeMemCount) : 0;
+
           html += `
-            <div class="month-separator-bar">
-              <span class="month-separator-title">${g.title.toUpperCase()}</span>
-              <div class="month-separator-line"></div>
-              <span class="month-separator-badge">${mShows} ${mShows === 1 ? 'Show' : 'Shows'}${mReh > 0 ? `, ${mReh} ${mReh === 1 ? 'Ensaio' : 'Ensaios'}` : ''}</span>
+            <div class="mobile-month-bar" onclick="toggleAgendaMonth('${k}')" title="Clique para expandir/recolher mês">
+              <!-- Ícones e Contadores primeiro (Padrão Mobile) -->
+              <span class="month-pill-badge month-pill-show" title="Shows">
+                <ion-icon name="calendar-outline"></ion-icon> <span>${mShows}</span>
+              </span>
+              <span class="month-pill-badge month-pill-rehearsal" title="Ensaios">
+                <ion-icon name="headset-outline"></ion-icon> <span>${mReh}</span>
+              </span>
+              ${monthGrossTotal > 0 ? `
+                <span class="month-pill-badge month-pill-total" title="Cachê Total da Banda">
+                  <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${monthGrossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </span>
+                <span class="month-pill-badge month-pill-musician" title="Cota do Músico">
+                  <ion-icon name="star"></ion-icon> <span>R$ ${myShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </span>
+              ` : ''}
+
+              <!-- Nome do Mês Depois -->
+              <span class="mobile-month-title">${g.title.toUpperCase()}</span>
+
+              <!-- Linha separadora flexível -->
+              <div class="mobile-month-line"></div>
+
+              <!-- Chevron de expandir / recolher -->
+              <ion-icon name="${isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}" style="font-size: 1.15rem; color: #94a3b8;"></ion-icon>
             </div>
-            ${g.list.map(renderEventCardHtml).join('')}
+            ${isExpanded ? g.list.map(renderEventCardHtml).join('') : ''}
           `;
         });
-
-        // Eventos Anteriores: ocultos por padrão com botão retrátil
-        if (pastKeys.length > 0) {
-          html += `
-            <div class="past-months-toggle-box" onclick="togglePastAgendaMonths()">
-              <ion-icon name="${showPastAgendaMonths ? 'chevron-up-outline' : 'time-outline'}"></ion-icon>
-              <span>${showPastAgendaMonths ? 'Ocultar eventos anteriores' : `Mostrar ${pastEvents.length} eventos anteriores (${pastKeys.length} meses passados)`}</span>
-            </div>
-          `;
-
-          if (showPastAgendaMonths) {
-            pastKeys.forEach(k => {
-              const g = pastGroups[k];
-              const mShows = g.list.filter(s => s.type !== 'rehearsal' && !(s.name || '').toLowerCase().includes('ensaio')).length;
-              const mReh = g.list.length - mShows;
-              html += `
-                <div class="month-separator-bar" style="opacity: 0.85;">
-                  <span class="month-separator-title">${g.title.toUpperCase()}</span>
-                  <div class="month-separator-line"></div>
-                  <span class="month-separator-badge">${mShows} ${mShows === 1 ? 'Show' : 'Shows'}${mReh > 0 ? `, ${mReh} ${mReh === 1 ? 'Ensaio' : 'Ensaios'}` : ''}</span>
-                </div>
-                ${g.list.map(renderEventCardHtml).join('')}
-              `;
-            });
-          }
-        }
       }
 
       html += `</div>`;
@@ -8166,8 +8273,21 @@
     // ==============================================================
     // HANDLERS DO MODAL DE COMPARTILHAR AGENDA (FLYER BANDLINK)
     // ==============================================================
-    let selectedFlyerTheme = 'rock';
+    let selectedFlyerTheme = 1;
     let selectedFlyerEventIds = [];
+    let flyerCardScale = 1.0;
+
+    const FLYER_BG_IMAGES = {
+      1: 'assets/bg_rock.jpg',
+      2: 'assets/bg_acoustic.jpg',
+      3: 'assets/bg_pop.jpg',
+      4: 'assets/bg_jazz.jpg',
+      5: 'assets/bg_electronic.jpg',
+      6: 'assets/bg_reggae.jpg',
+      7: 'assets/bg_gospel.jpg',
+      8: 'assets/bg_notes.jpg',
+      9: 'assets/bg_classic.jpg'
+    };
 
     function openShareAgendaModal() {
       const band = currentBandData || { name: 'BAD BADGERS' };
@@ -8217,20 +8337,41 @@
         contactInput.value = 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
       }
 
-      setFlyerTheme(selectedFlyerTheme || 'rock');
+      flyerCardScale = 1.0;
+      const rangeEl = document.getElementById('flyerCardScaleRange');
+      if (rangeEl) rangeEl.value = '1.0';
+      const labelEl = document.getElementById('cardScaleLabel');
+      if (labelEl) labelEl.textContent = '100% (Normal)';
+
+      setFlyerTheme(selectedFlyerTheme || 1);
       updateFlyerPreview();
       openModal('shareAgendaModal');
     }
 
-    function setFlyerTheme(themeKey) {
-      selectedFlyerTheme = themeKey;
+    function setFlyerTheme(themeId) {
+      selectedFlyerTheme = parseInt(themeId, 10) || 1;
       document.querySelectorAll('.flyer-theme-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-theme') === themeKey);
+        const t = parseInt(btn.getAttribute('data-theme'), 10);
+        btn.classList.toggle('active', t === selectedFlyerTheme);
       });
       const previewCard = document.getElementById('flyerPreviewCard');
       if (previewCard) {
-        previewCard.className = `flyer-card-preview flyer-theme-${themeKey}`;
+        previewCard.className = `flyer-card-preview flyer-theme-${selectedFlyerTheme}`;
+        previewCard.style.backgroundImage = `url('${FLYER_BG_IMAGES[selectedFlyerTheme]}')`;
       }
+    }
+
+    function setFlyerCardScale(scale) {
+      flyerCardScale = Math.max(0.75, Math.min(1.3, parseFloat(scale) || 1.0));
+      const labelEl = document.getElementById('cardScaleLabel');
+      if (labelEl) labelEl.textContent = `${Math.round(flyerCardScale * 100)}%`;
+      const rangeEl = document.getElementById('flyerCardScaleRange');
+      if (rangeEl) rangeEl.value = String(flyerCardScale);
+      updateFlyerPreview();
+    }
+
+    function changeFlyerCardScale(delta) {
+      setFlyerCardScale(flyerCardScale + delta);
     }
 
     function toggleFlyerEventSelection(eventId) {
@@ -8239,7 +8380,6 @@
       } else {
         if (selectedFlyerEventIds.length >= 6) {
           showToast('O flyer comporta no máximo 6 shows selecionados.', 'warning');
-          // Desmarca checkbox
           const chk = document.querySelector(`#flyerEventsList input[value="${eventId}"]`);
           if (chk) chk.checked = false;
           return;
@@ -8270,19 +8410,32 @@
       const countEl = document.getElementById('flyerSelectedCount');
       if (countEl) countEl.textContent = selectedFlyerEventIds.length;
 
-      const bandTitleEl = document.getElementById('flyerBandTitle');
-      if (bandTitleEl) {
-        bandTitleEl.textContent = (currentBandData?.name || 'BAD BADGERS').toUpperCase();
+      const band = currentBandData || { name: 'BAD BADGERS' };
+      const normImg = normalizeImageUri(band.imageUri);
+      const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+      // Logo da banda no alto
+      const avatarEl = document.getElementById('flyerBandAvatarCircle');
+      if (avatarEl) {
+        avatarEl.innerHTML = normImg
+          ? `<img src="${normImg}" alt="${band.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display:none; font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`
+          : `<span style="font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`;
       }
 
+      // Subtítulo com nome da banda
+      const subTitleEl = document.getElementById('flyerHeaderSubtitle');
+      if (subTitleEl) {
+        subTitleEl.textContent = `PRÓXIMOS SHOWS • ${(band.name || 'BAD BADGERS').toUpperCase()}`;
+      }
+
+      // Linha de contato da banda
       const contactText = document.getElementById('flyerContactInput')?.value || 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
-      const footerContactEl = document.getElementById('flyerFooterContact');
-      if (footerContactEl) footerContactEl.textContent = contactText;
+      const contactRowTextEl = document.getElementById('flyerFooterContactText');
+      if (contactRowTextEl) contactRowTextEl.textContent = contactText;
 
       const container = document.getElementById('flyerShowsContainer');
       if (!container) return;
 
-      const band = currentBandData || { name: 'BAD BADGERS' };
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
 
@@ -8292,26 +8445,37 @@
 
       if (selectedShows.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5); font-size: 0.85rem;">
+          <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.6); font-size: 0.85rem;">
             Selecione até 6 apresentações ao lado para visualizar a arte.
           </div>
         `;
         return;
       }
 
+      // Estilos escalados dinamicamente
+      const padV = Math.round(8 * flyerCardScale);
+      const padH = Math.round(12 * flyerCardScale);
+      const badgeW = Math.round(54 * flyerCardScale);
+      const dayFont = (1.25 * flyerCardScale).toFixed(2);
+      const titleFont = (0.92 * flyerCardScale).toFixed(2);
+      const metaFont = (0.74 * flyerCardScale).toFixed(2);
+
       container.innerHTML = selectedShows.map(s => {
-        const dt = getFormattedDateBadge(s.date);
+        const dt = getEventDateDetails(s.date);
         return `
-          <div class="flyer-show-row">
-            <div class="flyer-show-date">
-              <span class="flyer-show-date-day">${dt.day}</span>
-              <span class="flyer-show-date-month">${dt.month}</span>
+          <div class="flyer-show-row" style="padding: ${padV}px ${padH}px;">
+            <!-- Data na lateral esquerda -->
+            <div class="flyer-date-box" style="min-width: ${badgeW}px;">
+              <span class="flyer-date-weekday">${dt.weekDay}</span>
+              <span class="flyer-date-day" style="font-size: ${dayFont}rem;">${dt.day}</span>
+              <span class="flyer-date-month">${dt.month}</span>
             </div>
+            <!-- Informações do evento à direita -->
             <div class="flyer-show-info">
-              <div class="flyer-show-name">${escapeHtml(s.name || 'Show ao Vivo')}</div>
-              <div class="flyer-show-details">
-                ${s.local ? `<span><ion-icon name="location-outline"></ion-icon> ${escapeHtml(s.local)}</span>` : ''}
-                ${s.time ? `<span><ion-icon name="time-outline"></ion-icon> ${escapeHtml(s.time)}</span>` : ''}
+              <div class="flyer-show-title" style="font-size: ${titleFont}rem;">${escapeHtml(s.name || 'Show ao Vivo')}</div>
+              <div class="flyer-show-meta" style="font-size: ${metaFont}rem;">
+                ${s.local ? `<span><ion-icon name="location-sharp" style="color: #f87171;"></ion-icon> ${escapeHtml(s.local)}</span>` : ''}
+                ${s.time ? `<span><ion-icon name="time" style="color: #f59e0b;"></ion-icon> ${escapeHtml(s.time)}</span>` : ''}
               </div>
             </div>
           </div>
@@ -8332,138 +8496,207 @@
         return;
       }
 
-      showLoading('Gerando flyer em alta resolução...');
+      showLoading('Gerando flyer em alta definição (1080x1920)...');
 
-      // Renderização com Canvas em alta definição (1080 x 1350 - proporção 4:5 vertical)
       const canvas = document.createElement('canvas');
       canvas.width = 1080;
-      canvas.height = 1350;
+      canvas.height = 1920;
       const ctx = canvas.getContext('2d');
 
-      // Definição de paletas por tema
-      const themePalettes = {
-        rock: { bg1: '#1c0709', bg2: '#0b0d13', accent: '#f87171', text: '#ffffff', badgeBg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(239, 68, 68, 0.35)' },
-        synth: { bg1: '#2e0854', bg2: '#0b132b', accent: '#38bdf8', text: '#ffffff', badgeBg: 'rgba(56, 189, 248, 0.25)', border: 'rgba(56, 189, 248, 0.4)' },
-        acoustic: { bg1: '#311905', bg2: '#120d08', accent: '#fbbf24', text: '#ffffff', badgeBg: 'rgba(251, 191, 36, 0.25)', border: 'rgba(251, 191, 36, 0.35)' },
-        edm: { bg1: '#022c22', bg2: '#051119', accent: '#34d399', text: '#ffffff', badgeBg: 'rgba(52, 211, 153, 0.25)', border: 'rgba(52, 211, 153, 0.35)' },
-        dark: { bg1: '#18181b', bg2: '#09090b', accent: '#a1a1aa', text: '#ffffff', badgeBg: 'rgba(255, 255, 255, 0.1)', border: 'rgba(255, 255, 255, 0.2)' },
-        gold: { bg1: '#1f1b0a', bg2: '#0c0f1d', accent: '#f59e0b', text: '#ffffff', badgeBg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.4)' }
+      const bgImg = new Image();
+      bgImg.crossOrigin = 'anonymous';
+      bgImg.src = FLYER_BG_IMAGES[selectedFlyerTheme] || 'assets/bg_rock.jpg';
+
+      bgImg.onload = function() {
+        renderCanvasFlyer(bgImg);
+      };
+      bgImg.onerror = function() {
+        // Fallback sem travar caso imagem local demore
+        renderCanvasFlyer(null);
       };
 
-      const pal = themePalettes[selectedFlyerTheme] || themePalettes.rock;
+      function renderCanvasFlyer(loadedBg) {
+        // 1. Fundo (Imagem ou Gradiente)
+        if (loadedBg) {
+          ctx.drawImage(loadedBg, 0, 0, 1080, 1920);
+        } else {
+          const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+          grad.addColorStop(0, '#1c0709');
+          grad.addColorStop(1, '#090c12');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 1080, 1920);
+        }
 
-      // 1. Fundo com Gradiente
-      const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
-      grad.addColorStop(0, pal.bg1);
-      grad.addColorStop(1, pal.bg2);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1080, 1350);
+        // Overlay escuro
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+        ctx.fillRect(0, 0, 1080, 1920);
 
-      // Moldura interna
-      ctx.strokeStyle = pal.border;
-      ctx.lineWidth = 6;
-      ctx.strokeRect(36, 36, 1008, 1278);
+        // Moldura externa
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(36, 36, 1008, 1848);
 
-      // 2. Header: Badge BandLink
-      ctx.fillStyle = pal.badgeBg;
-      ctx.strokeStyle = pal.border;
-      ctx.lineWidth = 2;
-      roundRect(ctx, 360, 68, 360, 48, 24, true, true);
+        // 2. Header: Logo da banda no alto (Circular)
+        const logoY = 130;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(540, logoY, 56, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fillStyle = '#f59e0b';
+        ctx.fill();
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.stroke();
 
-      ctx.fillStyle = pal.accent;
-      ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('BANDLINK • AGENDA OFICIAL', 540, 100);
-
-      // 3. Nome da Banda
-      ctx.fillStyle = pal.text;
-      ctx.font = '900 68px system-ui, -apple-system, sans-serif';
-      ctx.fillText((band.name || 'BANDA').toUpperCase(), 540, 195);
-
-      // Subtítulo
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`AGENDA DE APRESENTAÇÕES • ${selectedAgendaYear}`, 540, 240);
-
-      // Linha divisória
-      ctx.strokeStyle = pal.border;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(120, 275);
-      ctx.lineTo(960, 275);
-      ctx.stroke();
-
-      // 4. Lista de Shows (Até 6)
-      const startY = 320;
-      const rowHeight = 135;
-
-      selectedShows.forEach((show, idx) => {
-        const y = startY + (idx * rowHeight);
-        const dt = getFormattedDateBadge(show.date);
-
-        // Card Fundo do Show
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.lineWidth = 2;
-        roundRect(ctx, 80, y, 920, 115, 16, true, true);
-
-        // Badge Quadrada Dia/Mês
-        ctx.fillStyle = pal.badgeBg;
-        ctx.strokeStyle = pal.border;
-        ctx.lineWidth = 2;
-        roundRect(ctx, 100, y + 12, 90, 90, 14, true, true);
-
-        ctx.fillStyle = pal.accent;
-        ctx.font = '900 42px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(dt.day, 145, y + 60);
-
-        ctx.font = '800 18px system-ui, -apple-system, sans-serif';
-        ctx.fillText(dt.month, 145, y + 88);
-
-        // Nome do Show
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+        ctx.font = '900 46px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        ctx.fillText(initials, 540, logoY);
+        ctx.restore();
+
+        // Linha 1: AGENDA
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 78px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('AGENDA', 540, 210);
+
+        // Linha 2: PRÓXIMOS SHOWS • NOME DA BANDA
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '800 32px system-ui, -apple-system, sans-serif';
+        ctx.fillText(`PRÓXIMOS SHOWS • ${(band.name || 'BANDA').toUpperCase()}`, 540, 305);
+
+        // Linha divisória
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(100, 360);
+        ctx.lineTo(980, 360);
+        ctx.stroke();
+
+        // 3. Cards de Eventos (Escalados por flyerCardScale)
+        const showCount = selectedShows.length;
+        const availableHeight = 1100;
+        const baseRowHeight = Math.floor(availableHeight / Math.max(showCount, 1));
+        const rowHeight = Math.min(220, Math.max(130, Math.floor(baseRowHeight * flyerCardScale)));
+        const startY = 400 + Math.floor((availableHeight - (rowHeight * showCount)) / 2);
+
+        selectedShows.forEach((show, idx) => {
+          const y = startY + (idx * rowHeight);
+          const dt = getEventDateDetails(show.date);
+          const cardH = rowHeight - 20;
+
+          // Card Fundo
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.74)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+          ctx.lineWidth = 2;
+          roundRect(ctx, 80, y, 920, cardH, 20, true, true);
+
+          // Badge Quadrada Dia/Mês na Lateral Esquerda
+          const badgeW = Math.round(120 * flyerCardScale);
+          const badgeH = cardH - 24;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 2;
+          roundRect(ctx, 95, y + 12, badgeW, badgeH, 14, true, true);
+
+          // Dia da Semana
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.font = '800 18px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(dt.weekDay, 95 + (badgeW / 2), y + 20);
+
+          // Dia Grande
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `900 ${Math.round(48 * flyerCardScale)}px system-ui, -apple-system, sans-serif`;
+          ctx.fillText(dt.day, 95 + (badgeW / 2), y + 42);
+
+          // Mês
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = '900 20px system-ui, -apple-system, sans-serif';
+          ctx.fillText(dt.month, 95 + (badgeW / 2), y + cardH - 32);
+
+          // Título do Show à Direita
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `900 ${Math.round(36 * flyerCardScale)}px system-ui, -apple-system, sans-serif`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText(show.name || 'Show ao Vivo', 120 + badgeW, y + 22);
+
+          // Local e Horário
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.font = '600 24px system-ui, -apple-system, sans-serif';
+          const locStr = show.local ? `📍 ${show.local}` : '';
+          const timeStr = show.time ? `   ⏰ ${show.time}` : '';
+          ctx.fillText(`${locStr}${timeStr}` || 'Local a confirmar', 120 + badgeW, y + cardH - 42);
+        });
+
+        // 4. Linha de Contato / Texto Livre para a Banda (Logo Acima do BandLink)
+        const contactY = 1580;
+        const contactText = document.getElementById('flyerContactInput')?.value || 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, 80, contactY, 920, 70, 14, true, true);
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(contactText, 540, contactY + 35);
+
+        // 5. Rodapé Oficial BandLink com Chamada e QR Code
+        const footerY = 1680;
+        ctx.fillStyle = 'rgba(10, 15, 26, 0.94)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, 80, footerY, 920, 180, 20, true, true);
+
+        // Texto do rodapé
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 32px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(show.name || 'Show ao Vivo', 215, y + 54);
+        ctx.textBaseline = 'top';
+        ctx.fillText('BandLink', 120, footerY + 28);
 
-        // Local & Horário
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.font = '22px system-ui, -apple-system, sans-serif';
-        const locStr = show.local ? `📍 ${show.local}` : '';
-        const timeStr = show.time ? ` ⏰ ${show.time}` : '';
-        ctx.fillText(`${locStr}${timeStr}` || 'Local a confirmar', 215, y + 90);
-      });
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.font = '500 20px system-ui, -apple-system, sans-serif';
+        ctx.fillText('Crie seu perfil, gerencie setlists e cifras com rolagem e sincronização offline.', 120, footerY + 74);
 
-      // 5. Rodapé
-      const contactText = document.getElementById('flyerContactInput')?.value || 'Contato: (16) 99115-3733 • @badbadgersoficial';
-      ctx.strokeStyle = pal.border;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(120, 1190);
-      ctx.lineTo(960, 1190);
-      ctx.stroke();
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+        ctx.fillText('🌐 www.bandlink.pro', 120, footerY + 115);
 
-      ctx.fillStyle = pal.accent;
-      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(contactText, 540, 1235);
+        // QR Code Box
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, 840, footerY + 20, 130, 140, 16, true, false);
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
-      ctx.font = '20px system-ui, -apple-system, sans-serif';
-      ctx.fillText('BandLink • Setlist & Agenda Manager • Acesse a página oficial da banda', 540, 1275);
+        // QR Placeholder / Graphic
+        ctx.fillStyle = '#0b0f19';
+        ctx.font = 'bold 16px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('QR CODE', 905, footerY + 60);
 
-      setTimeout(() => {
-        hideLoading();
-        // Dispara download do PNG
-        const link = document.createElement('a');
-        link.download = `agenda-${(band.name || 'banda').toLowerCase().replace(/\s+/g, '_')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showToast('Arte do flyer baixada com sucesso!', 'success');
-      }, 350);
+        ctx.fillStyle = '#0b0f19';
+        ctx.font = '900 13px system-ui, -apple-system, sans-serif';
+        ctx.fillText('ESCANEAR', 905, footerY + 124);
 
-      // Função auxiliar para retângulos arredondados no Canvas
+        // Dispara download
+        setTimeout(() => {
+          hideLoading();
+          const link = document.createElement('a');
+          link.download = `agenda-${(band.name || 'banda').toLowerCase().replace(/\s+/g, '_')}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('Arte do flyer (1080x1920) baixada com sucesso!', 'success');
+        }, 300);
+      }
+
       function roundRect(c, x, y, w, h, r, fill, stroke) {
         c.beginPath();
         c.moveTo(x + r, y);
@@ -8494,17 +8727,17 @@
       let text = `🎸 *AGENDA DE SHOWS - ${(band.name || 'BANDA').toUpperCase()}* 🎸\n\n`;
 
       selectedShows.forEach(s => {
-        const dt = getFormattedDateBadge(s.date);
-        text += `📅 *${dt.day}/${dt.month}* - ${s.name || 'Show'}\n`;
+        const dt = getEventDateDetails(s.date);
+        text += `📅 *${dt.weekDay} ${dt.day}/${dt.month}* - ${s.name || 'Show'}\n`;
         if (s.local) text += `   📍 ${s.local}\n`;
         if (s.time) text += `   ⏰ Início às ${s.time}\n`;
         text += `\n`;
       });
 
       if (contact) {
-        text += `📞 ${contact}\n`;
+        text += `📞 ${contact}\n\n`;
       }
-      text += `📲 Criado no BandLink • Setlist & Agenda Manager`;
+      text += `🌐 Acesse: www.bandlink.pro\n📲 Criado no BandLink • Setlist & Agenda Manager`;
 
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
