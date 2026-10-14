@@ -1028,16 +1028,23 @@
     }
     .profile-song-tags-inline {
       display: inline-flex;
-      align-items: baseline;
-      gap: 4px;
-      margin-left: 6px;
+      align-items: center;
+      gap: 5px;
+      margin-left: 8px;
       flex-shrink: 0;
     }
     .profile-song-tag-badge {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
+      font-weight: 700;
       color: #38bdf8;
-      font-weight: 600;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      padding: 1px 7px;
+      border-radius: 999px;
       white-space: nowrap;
+      line-height: 1.35;
+      display: inline-flex;
+      align-items: center;
     }
     .profile-song-item-right {
       display: flex;
@@ -5620,7 +5627,7 @@
           const tags = song.style
             ? song.style.split(',').map(t => t.trim()).filter(Boolean)
             : [];
-          const tagsInlineHtml = tags.map(t => `<span class="profile-song-tag-badge">(${escapeHtml(t)})</span>`).join(' ');
+          const tagsInlineHtml = tags.map(t => `<span class="profile-song-tag-badge">${escapeHtml(t)}</span>`).join('');
 
           // Indicadores de conteúdo: Letra, Cifra, Tablatura
           const hasLyrics = !!(song.lyrics && song.lyrics.trim());
