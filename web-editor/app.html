@@ -2513,9 +2513,10 @@
     /* Flyer Visual Generator Preview (Mobile Templates with Backgrounds) */
     .flyer-card-preview {
       width: 380px;
-      min-height: 580px;
+      height: 675px;
+      max-height: 675px;
       border-radius: 20px;
-      padding: 22px 20px;
+      padding: 16px 14px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
       display: flex;
       flex-direction: column;
@@ -2539,7 +2540,7 @@
       z-index: 2;
     }
 
-    /* 9 Mobile Background Themes */
+    /* 9 Mobile Background Themes + Custom Theme */
     .flyer-theme-1 { background-image: url('assets/bg_rock.jpg'); border-color: rgba(239, 68, 68, 0.5); }
     .flyer-theme-2 { background-image: url('assets/bg_acoustic.jpg'); border-color: rgba(245, 158, 11, 0.5); }
     .flyer-theme-3 { background-image: url('assets/bg_pop.jpg'); border-color: rgba(244, 63, 94, 0.5); }
@@ -2549,19 +2550,21 @@
     .flyer-theme-7 { background-image: url('assets/bg_gospel.jpg'); border-color: rgba(168, 85, 247, 0.5); }
     .flyer-theme-8 { background-image: url('assets/bg_notes.jpg'); border-color: rgba(56, 189, 248, 0.4); }
     .flyer-theme-9 { background-image: url('assets/bg_classic.jpg'); border-color: rgba(255, 255, 255, 0.4); }
+    .flyer-theme-custom { border-color: #38bdf8; }
 
     .flyer-header {
       display: flex;
       align-items: center;
       gap: 12px;
       text-align: left;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      flex-shrink: 0;
     }
     .flyer-band-avatar {
-      width: 54px;
-      height: 54px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       border: 3px solid #f59e0b;
       margin: 0;
@@ -2608,10 +2611,11 @@
     .flyer-shows-container {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       flex: 1;
       justify-content: center;
-      margin: 8px 0;
+      margin: 4px 0;
+      overflow: hidden;
     }
     .flyer-show-row {
       display: flex;
@@ -2645,20 +2649,20 @@
       white-space: nowrap;
     }
     .flyer-date-day {
-      font-size: 1.15rem;
+      font-size: 0.95rem;
       font-weight: 900;
       color: #fff;
       line-height: 1;
     }
     .flyer-date-month {
-      font-size: 0.82rem;
-      font-weight: 800;
+      font-size: 0.95rem;
+      font-weight: 900;
       color: #f59e0b;
       text-transform: uppercase;
       line-height: 1;
     }
     .flyer-date-weekday {
-      font-size: 0.58rem;
+      font-size: 0.50rem;
       font-weight: 700;
       color: rgba(255, 255, 255, 0.72);
       text-transform: uppercase;
@@ -4624,6 +4628,13 @@
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="9" onclick="setFlyerTheme(9)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
                 <ion-icon name="sparkles-outline"></ion-icon> Clássico
+              </button>
+            </div>
+            <div style="margin-top: 8px;">
+              <input type="file" id="flyerCustomBgInput" accept="image/*" style="display: none;" onchange="handleFlyerCustomBgUpload(event)">
+              <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="custom" onclick="triggerFlyerCustomBgUpload()" id="flyerCustomBgBtn" style="width: 100%; font-size: 0.78rem; padding: 7px 10px; display: flex; align-items: center; justify-content: center; gap: 8px; border-style: dashed; border-color: var(--cyan); color: var(--cyan);">
+                <ion-icon name="image-outline" style="font-size: 1.1rem;"></ion-icon>
+                <span id="flyerCustomBgLabel">Escolher Foto da Galeria (Fundo Personalizado)</span>
               </button>
             </div>
           </div>
@@ -8402,6 +8413,7 @@
     let selectedFlyerTheme = 1;
     let selectedFlyerEventIds = [];
     let flyerCardScale = 1.0;
+    let customFlyerBgDataUrl = null;
 
     const FLYER_BG_IMAGES = {
       1: 'assets/bg_rock.jpg',
@@ -8475,16 +8487,49 @@
       openModal('shareAgendaModal');
     }
 
+    function triggerFlyerCustomBgUpload() {
+      const fileInput = document.getElementById('flyerCustomBgInput');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    function handleFlyerCustomBgUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        customFlyerBgDataUrl = e.target.result;
+        const label = document.getElementById('flyerCustomBgLabel');
+        if (label) {
+          const shortName = file.name.length > 24 ? file.name.substring(0, 22) + '...' : file.name;
+          label.textContent = `Foto: ${shortName}`;
+        }
+        setFlyerTheme('custom');
+        showToast('Foto da galeria aplicada com sucesso!', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
     function setFlyerTheme(themeId) {
-      selectedFlyerTheme = parseInt(themeId, 10) || 1;
+      if (themeId === 'custom') {
+        selectedFlyerTheme = 'custom';
+      } else {
+        selectedFlyerTheme = parseInt(themeId, 10) || 1;
+      }
       document.querySelectorAll('.flyer-theme-btn').forEach(btn => {
-        const t = parseInt(btn.getAttribute('data-theme'), 10);
-        btn.classList.toggle('active', t === selectedFlyerTheme);
+        const t = btn.getAttribute('data-theme');
+        btn.classList.toggle('active', String(t) === String(selectedFlyerTheme));
       });
       const previewCard = document.getElementById('flyerPreviewCard');
       if (previewCard) {
-        previewCard.className = `flyer-card-preview flyer-theme-${selectedFlyerTheme}`;
-        previewCard.style.backgroundImage = `url('${FLYER_BG_IMAGES[selectedFlyerTheme]}')`;
+        if (selectedFlyerTheme === 'custom' && customFlyerBgDataUrl) {
+          previewCard.className = 'flyer-card-preview flyer-theme-custom';
+          previewCard.style.backgroundImage = `url('${customFlyerBgDataUrl}')`;
+        } else {
+          previewCard.className = `flyer-card-preview flyer-theme-${selectedFlyerTheme}`;
+          previewCard.style.backgroundImage = `url('${FLYER_BG_IMAGES[selectedFlyerTheme] || 'assets/bg_rock.jpg'}')`;
+        }
       }
     }
 
@@ -8605,11 +8650,11 @@
       const datePadV = Math.max(2, Math.round(3 * scale));
       const datePadH = Math.max(4, Math.round(6 * scale));
       const dateRadius = Math.max(4, Math.round(8 * scale));
-      const dateMinW = Math.max(54, Math.round(70 * scale));
+      const dateMinW = Math.max(50, Math.round(68 * scale));
 
-      const dayFont = (1.10 * scale).toFixed(2);
-      const monthFont = (0.78 * scale).toFixed(2);
-      const weekdayFont = (0.55 * scale).toFixed(2);
+      // 12 NOV com o mesmo tamanho e sábado bem menor
+      const dateFont = (0.95 * scale).toFixed(2);
+      const weekdayFont = (0.50 * scale).toFixed(2);
 
       const titleFont = (0.86 * scale).toFixed(2);
       const metaFont = (0.68 * scale).toFixed(2);
@@ -8621,13 +8666,13 @@
         const dt = getEventDateDetails(s.date);
         return `
           <div class="flyer-show-row" style="padding: ${padV}px ${padH}px; gap: ${rowGap}px; border-radius: ${rowRadius}px;">
-            <!-- Data na mesma linha (03 OUT) + Dia da semana menor embaixo -->
+            <!-- Data na mesma linha (12 NOV mesmo tamanho) + Dia da semana menor embaixo -->
             <div class="flyer-date-box" style="min-width: ${dateMinW}px; padding: ${datePadV}px ${datePadH}px; border-radius: ${dateRadius}px;">
-              <div class="flyer-date-main" style="gap: ${Math.max(2, Math.round(4 * scale))}px;">
-                <span class="flyer-date-day" style="font-size: ${dayFont}rem;">${dt.day}</span>
-                <span class="flyer-date-month" style="font-size: ${monthFont}rem;">${dt.month}</span>
+              <div class="flyer-date-main" style="gap: ${Math.max(2, Math.round(4 * scale))}px; display: flex; align-items: baseline; justify-content: center;">
+                <span class="flyer-date-day" style="font-size: ${dateFont}rem; font-weight: 900; color: #ffffff; line-height: 1;">${dt.day}</span>
+                <span class="flyer-date-month" style="font-size: ${dateFont}rem; font-weight: 900; color: #f59e0b; text-transform: uppercase; line-height: 1;">${dt.month}</span>
               </div>
-              <div class="flyer-date-weekday" style="font-size: ${weekdayFont}rem;">
+              <div class="flyer-date-weekday" style="font-size: ${weekdayFont}rem; font-weight: 700; color: rgba(255, 255, 255, 0.72); text-transform: uppercase; line-height: 1; margin-top: ${Math.max(1, Math.round(2 * scale))}px;">
                 ${dt.weekDayFull || dt.weekDay}
               </div>
             </div>
@@ -8664,20 +8709,47 @@
       canvas.height = 1920;
       const ctx = canvas.getContext('2d');
 
-      const bgImg = new Image();
-      bgImg.crossOrigin = 'anonymous';
-      bgImg.src = FLYER_BG_IMAGES[selectedFlyerTheme] || 'assets/bg_rock.jpg';
+      // 1. Carrega Fundo (Foto da galeria ou preset)
+      const bgPromise = new Promise(resolve => {
+        const bgImg = new Image();
+        bgImg.crossOrigin = 'anonymous';
+        const bgSrc = (selectedFlyerTheme === 'custom' && customFlyerBgDataUrl)
+          ? customFlyerBgDataUrl
+          : (FLYER_BG_IMAGES[selectedFlyerTheme] || 'assets/bg_rock.jpg');
+        bgImg.onload = () => resolve(bgImg);
+        bgImg.onerror = () => resolve(null);
+        bgImg.src = bgSrc;
+      });
 
-      bgImg.onload = function() {
-        renderCanvasFlyer(bgImg);
-      };
-      bgImg.onerror = function() {
-        // Fallback sem travar caso imagem local demore
-        renderCanvasFlyer(null);
-      };
+      // 2. Carrega Logo da Banda (para desenhar na arte igual à prévia)
+      const logoPromise = new Promise(resolve => {
+        const normImg = normalizeImageUri(band.imageUri);
+        if (!normImg) return resolve(null);
+        const logoImg = new Image();
+        logoImg.crossOrigin = 'anonymous';
+        logoImg.onload = () => resolve(logoImg);
+        logoImg.onerror = () => resolve(null);
+        logoImg.src = normImg;
+      });
 
-      function renderCanvasFlyer(loadedBg) {
-        // 1. Fundo (Imagem ou Gradiente)
+      // 3. Carrega Logo BandLink para o Rodapé
+      const brandPromise = new Promise(resolve => {
+        const brandImg = new Image();
+        brandImg.crossOrigin = 'anonymous';
+        brandImg.onload = () => resolve(brandImg);
+        brandImg.onerror = () => resolve(null);
+        brandImg.src = 'assets/bandlink_logo_transparent_wide.png';
+      });
+
+      Promise.all([bgPromise, logoPromise, brandPromise]).then(([loadedBg, loadedLogo, loadedBrand]) => {
+        renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand);
+      }).catch(err => {
+        console.error('Erro ao preparar assets do flyer:', err);
+        renderCanvasFlyer(null, null, null);
+      });
+
+      function renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand) {
+        // 1. Fundo (Imagem da Galeria / Preset ou Gradiente elegante)
         if (loadedBg) {
           ctx.drawImage(loadedBg, 0, 0, 1080, 1920);
         } else {
@@ -8688,36 +8760,58 @@
           ctx.fillRect(0, 0, 1080, 1920);
         }
 
-        // Overlay escuro
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+        // Overlay escuro (idêntico ao preview com background-blend-mode / overlay)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.60)';
         ctx.fillRect(0, 0, 1080, 1920);
 
-        // Moldura externa
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+        // Moldura externa elegante
+        ctx.strokeStyle = (selectedFlyerTheme === 'custom') ? '#38bdf8' : 'rgba(255, 255, 255, 0.18)';
         ctx.lineWidth = 4;
         ctx.strokeRect(36, 36, 1008, 1848);
 
         // 2. Header: Logo da banda à esquerda, textos em 2 linhas à direita
         const logoX = 160;
         const logoY = 195;
-        const logoR = 62;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
-        ctx.closePath();
-        ctx.fillStyle = '#f59e0b';
-        ctx.fill();
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = '#f59e0b';
-        ctx.stroke();
+        const logoR = 64;
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 52px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-        ctx.fillText(initials, logoX, logoY);
-        ctx.restore();
+        if (loadedLogo) {
+          // Desenha foto real da banda recortada em círculo
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(loadedLogo, logoX - logoR, logoY - logoR, logoR * 2, logoR * 2);
+          ctx.restore();
+
+          // Borda circular dourada
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = '#f59e0b';
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          // Círculo com iniciais da banda
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
+          ctx.closePath();
+          ctx.fillStyle = '#f59e0b';
+          ctx.fill();
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = '#f59e0b';
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 52px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+          ctx.fillText(initials, logoX, logoY);
+          ctx.restore();
+        }
 
         // Linha 1: AGENDA (Alinhada à esquerda ao lado do logo)
         ctx.fillStyle = '#ffffff';
@@ -8732,7 +8826,7 @@
         ctx.fillText(`PRÓXIMOS SHOWS • ${(band.name || 'BANDA').toUpperCase()}`, 255, 230);
 
         // Linha divisória
-        ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(80, 290);
@@ -8759,8 +8853,8 @@
           ctx.lineWidth = 2;
           roundRect(ctx, 80, y, 920, cardH, Math.max(10, Math.round(18 * flyerCardScale)), true, true);
 
-          // Badge Retangular Dia/Mês na Lateral Esquerda (03 OUT na mesma linha)
-          const badgeW = Math.round(180 * flyerCardScale);
+          // Badge Retangular Dia/Mês na Lateral Esquerda
+          const badgeW = Math.max(140, Math.round(180 * flyerCardScale));
           const badgeH = cardH - Math.max(10, Math.round(16 * flyerCardScale));
           const badgeX = 95;
           const badgeY = y + Math.max(5, Math.round(8 * flyerCardScale));
@@ -8771,40 +8865,36 @@
           ctx.lineWidth = 2;
           roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeR, true, true);
 
-          // Linha 1 no Badge: 03 OUT na mesma linha
-          const dayFontSize = Math.round(36 * flyerCardScale);
-          const monthFontSize = Math.round(26 * flyerCardScale);
-          ctx.font = `900 ${dayFontSize}px system-ui, -apple-system, sans-serif`;
+          // Linha 1 no Badge: 12 NOV no MESMO TAMANHO
+          const dateFontSize = Math.max(16, Math.round(28 * flyerCardScale));
+          ctx.font = `900 ${dateFontSize}px system-ui, -apple-system, sans-serif`;
           const dayW = ctx.measureText(dt.day).width;
-          ctx.font = `900 ${monthFontSize}px system-ui, -apple-system, sans-serif`;
           const spaceW = ctx.measureText(' ').width;
           const monthW = ctx.measureText(dt.month).width;
           const totalDateW = dayW + spaceW + monthW;
           const startX = badgeX + ((badgeW - totalDateW) / 2);
-          const line1Y = badgeY + Math.max(4, Math.round(badgeH * 0.16));
+          const line1Y = badgeY + Math.max(6, Math.round(badgeH * 0.16));
 
           // Dia em branco
           ctx.fillStyle = '#ffffff';
-          ctx.font = `900 ${dayFontSize}px system-ui, -apple-system, sans-serif`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
           ctx.fillText(dt.day, startX, line1Y);
 
-          // Mês em dourado
+          // Mês em dourado (mesmo tamanho dateFontSize)
           ctx.fillStyle = '#f59e0b';
-          ctx.font = `900 ${monthFontSize}px system-ui, -apple-system, sans-serif`;
-          ctx.fillText(dt.month, startX + dayW + spaceW, line1Y + Math.max(2, Math.round(4 * flyerCardScale)));
+          ctx.fillText(dt.month, startX + dayW + spaceW, line1Y);
 
           // Linha 2 no Badge: SÁBADO (bem menor)
-          const weekdayFontSize = Math.max(11, Math.round(17 * flyerCardScale));
+          const weekdayFontSize = Math.max(10, Math.round(14 * flyerCardScale));
           ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
           ctx.font = `700 ${weekdayFontSize}px system-ui, -apple-system, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
-          ctx.fillText(dt.weekDayFull || dt.weekDay, badgeX + (badgeW / 2), line1Y + dayFontSize + Math.max(2, Math.round(4 * flyerCardScale)));
+          ctx.fillText((dt.weekDayFull || dt.weekDay).toUpperCase(), badgeX + (badgeW / 2), line1Y + dateFontSize + Math.max(3, Math.round(5 * flyerCardScale)));
 
           // Título do Show à Direita
-          const titleFontSize = Math.max(16, Math.round(32 * flyerCardScale));
+          const titleFontSize = Math.max(16, Math.round(30 * flyerCardScale));
           ctx.fillStyle = '#ffffff';
           ctx.font = `900 ${titleFontSize}px system-ui, -apple-system, sans-serif`;
           ctx.textAlign = 'left';
@@ -8812,7 +8902,7 @@
           ctx.fillText(show.name || 'Show ao Vivo', badgeX + badgeW + Math.round(20 * flyerCardScale), y + Math.max(8, Math.round(14 * flyerCardScale)));
 
           // Local e Horário
-          const metaFontSize = Math.max(13, Math.round(21 * flyerCardScale));
+          const metaFontSize = Math.max(12, Math.round(19 * flyerCardScale));
           ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
           ctx.font = `600 ${metaFontSize}px system-ui, -apple-system, sans-serif`;
           const locStr = show.local ? `📍 ${show.local}` : '';
@@ -8835,19 +8925,23 @@
         ctx.textBaseline = 'middle';
         ctx.fillText(contactText, 540, contactY + 35);
 
-        // 5. Rodapé Oficial BandLink com Chamada e QR Code
+        // 5. Rodapé Oficial BandLink com Chamada e Acesso
         const footerY = 1680;
         ctx.fillStyle = 'rgba(10, 15, 26, 0.94)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
         ctx.lineWidth = 2;
         roundRect(ctx, 80, footerY, 920, 180, 20, true, true);
 
-        // Texto do rodapé
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 32px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('BandLink', 120, footerY + 28);
+        // Logo / Texto do rodapé
+        if (loadedBrand) {
+          ctx.drawImage(loadedBrand, 120, footerY + 24, 200, 36);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 32px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText('BandLink', 120, footerY + 28);
+        }
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
         ctx.font = '500 20px system-ui, -apple-system, sans-serif';
@@ -8857,20 +8951,21 @@
         ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
         ctx.fillText('🌐 www.bandlink.pro', 120, footerY + 115);
 
-        // QR Code Box
-        ctx.fillStyle = '#ffffff';
-        roundRect(ctx, 840, footerY + 20, 130, 140, 16, true, false);
+        // Caixa de Acesso ao Site / App à Direita
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        roundRect(ctx, 810, footerY + 25, 160, 130, 14, true, true);
 
-        // QR Placeholder / Graphic
-        ctx.fillStyle = '#0b0f19';
-        ctx.font = 'bold 16px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillText('QR CODE', 905, footerY + 60);
+        ctx.fillText('ACESSE O SITE', 890, footerY + 45);
 
-        ctx.fillStyle = '#0b0f19';
-        ctx.font = '900 13px system-ui, -apple-system, sans-serif';
-        ctx.fillText('ESCANEAR', 905, footerY + 124);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 21px system-ui, -apple-system, sans-serif';
+        ctx.fillText('bandlink.pro', 890, footerY + 82);
 
         // Dispara download
         setTimeout(() => {
