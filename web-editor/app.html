@@ -2468,6 +2468,69 @@
       margin-top: 3px;
     }
 
+    .agenda-band-avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #111827;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .agenda-band-avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .musician-agenda-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .musician-agenda-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .flyer-card-band-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1.5px solid #f59e0b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.72rem;
+      color: #fff;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .flyer-card-band-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     /* Mobile Month Header Bar for Agenda and Finances (Icons first, then month name) */
     .mobile-month-bar {
       display: flex;
@@ -3730,22 +3793,76 @@
 
           <!-- ── TAB A: AGENDA ── -->
           <div class="profile-subview" id="subview-agenda">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
               <div>
-                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Agenda de Shows e Ensaios</h3>
-                <p style="color: #94a3b8; font-size: 0.85rem;">Compromissos, apresentações e eventos sincronizados na nuvem.</p>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                  <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
+                  <span>Agenda de Shows & Ensaios</span>
+                  <span class="badge badge-cyan" id="musicianAgendaCountBadge">0 Eventos</span>
+                </h3>
+                <p style="color: #94a3b8; font-size: 0.85rem;">Cronograma unificado com todos os eventos de todas as suas bandas e projetos.</p>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="openAddEventModal()">
-                <ion-icon name="add-circle-outline"></ion-icon>
-                <span>Novo Evento</span>
-              </button>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="openShareMusicianAgendaModal()">
+                  <ion-icon name="share-social-outline"></ion-icon>
+                  <span>Compartilhar Agenda</span>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openAddEventModal()">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                  <span>Novo Evento</span>
+                </button>
+              </div>
             </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 18px;">
-              <button class="btn btn-sm btn-outline active" id="agendaPFilterAll" onclick="filterProfileAgenda('all')">Todos</button>
-              <button class="btn btn-sm btn-outline" id="agendaPFilterUpcoming" onclick="filterProfileAgenda('upcoming')">Próximos</button>
-              <button class="btn btn-sm btn-outline" id="agendaPFilterPast" onclick="filterProfileAgenda('past')">Passados</button>
+
+            <!-- RESUMO DE 3 CÍRCULOS (ANO, SHOWS, ENSAIOS - SOMA DE TODAS AS BANDAS) -->
+            <div class="band-agenda-summary" style="margin-bottom: 20px;">
+              <!-- Círculo 1: Ano com navegação -->
+              <div class="agenda-circle-col">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" onclick="cycleMusicianAgendaYear(-1)" title="Ano anterior" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+                    <ion-icon name="chevron-back-outline" style="font-size: 1.2rem;"></ion-icon>
+                  </button>
+                  <div class="agenda-circle-wrapper">
+                    <div class="agenda-circle-disc" id="musicianAgendaYearDisc">
+                      2026
+                    </div>
+                  </div>
+                  <button type="button" onclick="cycleMusicianAgendaYear(1)" title="Próximo ano" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+                    <ion-icon name="chevron-forward-outline" style="font-size: 1.2rem;"></ion-icon>
+                  </button>
+                </div>
+                <div class="agenda-circle-label">Ano</div>
+              </div>
+
+              <!-- Círculo 2: Shows com ícone sobreposto -->
+              <div class="agenda-circle-col">
+                <div class="agenda-circle-wrapper">
+                  <div class="agenda-circle-disc" id="musicianAgendaShowsDisc" style="padding-left: 10px;">
+                    0
+                  </div>
+                  <div class="agenda-circle-overlap-icon" title="Shows">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                  </div>
+                </div>
+                <div class="agenda-circle-label" id="musicianAgendaShowsLabel">Shows</div>
+              </div>
+
+              <!-- Círculo 3: Ensaios com ícone sobreposto -->
+              <div class="agenda-circle-col">
+                <div class="agenda-circle-wrapper">
+                  <div class="agenda-circle-disc" id="musicianAgendaRehDisc" style="padding-left: 10px;">
+                    0
+                  </div>
+                  <div class="agenda-circle-overlap-icon" title="Ensaios">
+                    <ion-icon name="headset-outline"></ion-icon>
+                  </div>
+                </div>
+                <div class="agenda-circle-label" id="musicianAgendaRehLabel">Ensaios</div>
+              </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;" id="profileAgendaList"></div>
+
+            <!-- Lista de Eventos Agrupados por Mês -->
+            <div style="display: flex; flex-direction: column; gap: 14px;" id="profileAgendaList"></div>
           </div>
 
         </div>
@@ -9490,12 +9607,15 @@
     }
 
     // ==============================================================
+    // ==============================================================
     // HANDLERS DO MODAL DE COMPARTILHAR AGENDA (FLYER BANDLINK)
     // ==============================================================
     let selectedFlyerTheme = 1;
     let selectedFlyerEventIds = [];
     let flyerCardScale = 1.0;
     let customFlyerBgDataUrl = null;
+    let currentShareAgendaContext = 'band'; // 'band' | 'musician'
+    let musicianFlyerShows = [];
 
     const FLYER_BG_IMAGES = {
       1: 'assets/bg_rock.jpg',
@@ -9510,6 +9630,7 @@
     };
 
     function openShareAgendaModal() {
+      currentShareAgendaContext = 'band';
       const band = currentBandData || { name: 'BAD BADGERS' };
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
@@ -9556,8 +9677,69 @@
 
       // Contato default
       const contactInput = document.getElementById('flyerContactInput');
-      if (contactInput && !contactInput.value) {
+      if (contactInput) {
         contactInput.value = 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
+      }
+
+      flyerCardScale = 1.0;
+      const rangeEl = document.getElementById('flyerCardScaleRange');
+      if (rangeEl) rangeEl.value = '1.0';
+      const labelEl = document.getElementById('cardScaleLabel');
+      if (labelEl) labelEl.textContent = '100% (Normal)';
+
+      setFlyerTheme(selectedFlyerTheme || 1);
+      updateFlyerPreview();
+      openModal('shareAgendaModal');
+    }
+
+    function openShareMusicianAgendaModal() {
+      currentShareAgendaContext = 'musician';
+      const allEvents = getMusicianAggregatedEvents();
+      // Filtra apenas shows em todas as bandas
+      const shows = allEvents.filter(sl => sl.type !== 'rehearsal' && !(sl.name || sl.title || '').toLowerCase().includes('ensaio'));
+      musicianFlyerShows = shows;
+
+      // Ordena cronologicamente
+      const sortedShows = [...shows].sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+      // Seleciona os próximos até 6 por padrão
+      const upcoming = sortedShows.filter(s => isFutureDate(s.date));
+      const initialSelection = upcoming.length > 0 ? upcoming.slice(0, 6) : sortedShows.slice(0, 6);
+      selectedFlyerEventIds = initialSelection.map(s => String(s.id));
+
+      // Popula lista de checkboxes
+      const listEl = document.getElementById('flyerEventsList');
+      if (listEl) {
+        if (sortedShows.length === 0) {
+          listEl.innerHTML = '<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">Nenhum show cadastrado para incluir no flyer.</div>';
+        } else {
+          const checklistShows = [...sortedShows].reverse();
+          listEl.innerHTML = checklistShows.map(s => {
+            const sIdStr = String(s.id);
+            const isChecked = selectedFlyerEventIds.some(id => String(id) === sIdStr);
+            const dtBadge = getFormattedDateBadge(s.date);
+            return `
+              <label style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" value="${sIdStr}" ${isChecked ? 'checked' : ''} onchange="toggleFlyerEventSelection('${sIdStr}')" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    <span>${escapeHtml(s.name || s.title || 'Show')}</span>
+                    <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(s.bandName || 'Banda')}</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: #94a3b8;">${dtBadge.day} ${dtBadge.month} • ${escapeHtml(s.local || (s.time ? `Início às ${s.time}` : 'Local a confirmar'))}</div>
+                </div>
+              </label>
+            `;
+          }).join('');
+        }
+      }
+
+      // Contato default para músico
+      const contactInput = document.getElementById('flyerContactInput');
+      if (contactInput) {
+        const userPhone = currentUser?.phone || '(16) 99115-3733';
+        const userInsta = currentUser?.instagram ? `@${currentUser.instagram.replace(/^@/, '')}` : '@bandlink';
+        contactInput.value = `Contato para Shows: ${userPhone} • ${userInsta}`;
       }
 
       flyerCardScale = 1.0;
@@ -9662,10 +9844,15 @@
     }
 
     function selectAllUpcomingForFlyer() {
-      const band = currentBandData || { name: 'BAD BADGERS' };
-      const m = getBandMetrics(band);
-      const setlists = m.setlists || [];
-      const shows = setlists.filter(sl => sl.type !== 'rehearsal' && !(sl.name || '').toLowerCase().includes('ensaio'));
+      let shows = [];
+      if (currentShareAgendaContext === 'musician') {
+        shows = (musicianFlyerShows || []).filter(sl => sl.type !== 'rehearsal' && !(sl.name || sl.title || '').toLowerCase().includes('ensaio'));
+      } else {
+        const band = currentBandData || { name: 'BAD BADGERS' };
+        const m = getBandMetrics(band);
+        const setlists = m.setlists || [];
+        shows = setlists.filter(sl => sl.type !== 'rehearsal' && !(sl.name || '').toLowerCase().includes('ensaio'));
+      }
       const upcoming = shows.filter(s => isFutureDate(s.date)).sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
       selectedFlyerEventIds = upcoming.slice(0, 10).map(s => String(s.id));
 
@@ -9682,36 +9869,47 @@
       const countEl = document.getElementById('flyerSelectedCount');
       if (countEl) countEl.textContent = selectedFlyerEventIds.length;
 
+      const isMusician = currentShareAgendaContext === 'musician';
       const band = currentBandData || { name: 'BAD BADGERS' };
       const normImg = normalizeImageUri(band.imageUri);
       const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
-      // Logo da banda à esquerda
       const avatarEl = document.getElementById('flyerBandAvatarCircle');
-      if (avatarEl) {
-        avatarEl.innerHTML = normImg
-          ? `<img src="${normImg}" alt="${band.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display:none; font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`
-          : `<span style="font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`;
-      }
-
-      // Subtítulo com nome da banda à direita
       const subTitleEl = document.getElementById('flyerHeaderSubtitle');
-      if (subTitleEl) {
-        subTitleEl.textContent = `PRÓXIMOS SHOWS • ${(band.name || 'BAD BADGERS').toUpperCase()}`;
+
+      if (isMusician) {
+        // No topo somente Agenda e Próximos Shows (sem avatar nem nome do músico)
+        if (avatarEl) avatarEl.style.display = 'none';
+        if (subTitleEl) subTitleEl.textContent = 'PRÓXIMOS SHOWS';
+      } else {
+        if (avatarEl) {
+          avatarEl.style.display = 'flex';
+          avatarEl.innerHTML = normImg
+            ? `<img src="${normImg}" alt="${band.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display:none; font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`
+            : `<span style="font-size: 1.3rem; font-weight: 900; color: #fff;">${initials}</span>`;
+        }
+        if (subTitleEl) {
+          subTitleEl.textContent = `PRÓXIMOS SHOWS • ${(band.name || 'BAD BADGERS').toUpperCase()}`;
+        }
       }
 
-      // Linha de contato da banda
-      const contactText = document.getElementById('flyerContactInput')?.value || 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
+      // Linha de contato
+      const contactText = document.getElementById('flyerContactInput')?.value || (isMusician ? 'Contato para Shows: (16) 99115-3733' : 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial');
       const contactRowTextEl = document.getElementById('flyerFooterContactText');
       if (contactRowTextEl) contactRowTextEl.textContent = contactText;
 
       const container = document.getElementById('flyerShowsContainer');
       if (!container) return;
 
-      const m = getBandMetrics(band);
-      const setlists = m.setlists || [];
+      let allSourceShows = [];
+      if (isMusician) {
+        allSourceShows = musicianFlyerShows || [];
+      } else {
+        const m = getBandMetrics(band);
+        allSourceShows = m.setlists || [];
+      }
 
-      const selectedShows = setlists
+      const selectedShows = allSourceShows
         .filter(s => selectedFlyerEventIds.some(id => String(id) === String(s.id)))
         .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
 
@@ -9748,8 +9946,12 @@
 
       container.innerHTML = selectedShows.map(s => {
         const dt = getEventDateDetails(s.date);
+        const showBandName = s.bandName || band.name || 'Banda';
+        const showBandImg = normalizeImageUri(s.bandImageUri || (s.bandId === band.id ? band.imageUri : ''));
+        const showBandInitials = (showBandName).split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
         return `
-          <div class="flyer-show-row" style="padding: ${padV}px ${padH}px; gap: ${rowGap}px; border-radius: ${rowRadius}px;">
+          <div class="flyer-show-row" style="padding: ${padV}px ${padH}px; gap: ${rowGap}px; border-radius: ${rowRadius}px; display: flex; align-items: center;">
             <!-- Data na mesma linha (12 NOV mesmo tamanho) + Dia da semana menor embaixo -->
             <div class="flyer-date-box" style="min-width: ${dateMinW}px; padding: ${datePadV}px ${datePadH}px; border-radius: ${dateRadius}px;">
               <div class="flyer-date-main" style="gap: ${Math.max(2, Math.round(4 * scale))}px; display: flex; align-items: baseline; justify-content: center;">
@@ -9761,23 +9963,36 @@
               </div>
             </div>
             <!-- Informações do evento à direita -->
-            <div class="flyer-show-info">
-              <div class="flyer-show-title" style="font-size: ${titleFont}rem; line-height: 1.2;">${escapeHtml(s.name || 'Show ao Vivo')}</div>
+            <div class="flyer-show-info" style="flex: 1; min-width: 0;">
+              <div class="flyer-show-title" style="font-size: ${titleFont}rem; line-height: 1.2;">${escapeHtml(s.name || s.title || 'Show ao Vivo')}</div>
               <div class="flyer-show-meta" style="font-size: ${metaFont}rem; margin-top: ${Math.max(1, Math.round(2 * scale))}px;">
                 ${s.local ? `<span><ion-icon name="location-sharp" style="color: #f87171; font-size: ${iconSize}rem; vertical-align: -1px;"></ion-icon> ${escapeHtml(s.local)}</span>` : ''}
                 ${s.time ? `<span><ion-icon name="time" style="color: #f59e0b; font-size: ${iconSize}rem; vertical-align: -1px;"></ion-icon> ${escapeHtml(s.time)}</span>` : ''}
               </div>
             </div>
+            ${isMusician ? `
+              <!-- Logo da banda no lado direito do card no flyer -->
+              <div class="flyer-card-band-logo" style="width: ${Math.max(28, Math.round(36 * scale))}px; height: ${Math.max(28, Math.round(36 * scale))}px; font-size: ${Math.max(0.6, 0.72 * scale)}rem;" title="${escapeHtml(showBandName)}">
+                ${showBandImg ? `<img src="${showBandImg}" alt="${escapeHtml(showBandName)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display:none;">${showBandInitials}</span>` : `<span>${showBandInitials}</span>`}
+              </div>
+            ` : ''}
           </div>
         `;
       }).join('');
     }
 
     function downloadFlyerImage() {
+      const isMusician = currentShareAgendaContext === 'musician';
       const band = currentBandData || { name: 'BAD BADGERS' };
-      const m = getBandMetrics(band);
-      const setlists = m.setlists || [];
-      const selectedShows = setlists
+      let allSourceShows = [];
+      if (isMusician) {
+        allSourceShows = musicianFlyerShows || [];
+      } else {
+        const m = getBandMetrics(band);
+        allSourceShows = m.setlists || [];
+      }
+
+      const selectedShows = allSourceShows
         .filter(s => selectedFlyerEventIds.some(id => String(id) === String(s.id)))
         .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
 
@@ -9805,8 +10020,9 @@
         bgImg.src = bgSrc;
       });
 
-      // 2. Carrega Logo da Banda (para desenhar na arte igual à prévia)
+      // 2. Carrega Logo da Banda do cabeçalho (apenas em modo de banda)
       const logoPromise = new Promise(resolve => {
+        if (isMusician) return resolve(null);
         const normImg = normalizeImageUri(band.imageUri);
         if (!normImg) return resolve(null);
         const logoImg = new Image();
@@ -9834,7 +10050,21 @@
         qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.bandlink.pro';
       });
 
-      Promise.all([bgPromise, logoPromise, brandPromise, qrPromise]).then(([loadedBg, loadedLogo, loadedBrand, loadedQr]) => {
+      // 5. Se for músico, pré-carrega imagens de cada banda dos shows para desenhar no lado direito
+      const showBandImagesMap = {};
+      const showBandPromises = isMusician ? selectedShows.map(s => {
+        const bImg = normalizeImageUri(s.bandImageUri || (s.bandId === band.id ? band.imageUri : ''));
+        if (!bImg) return Promise.resolve();
+        return new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => { showBandImagesMap[s.id] = img; resolve(); };
+          img.onerror = () => { showBandImagesMap[s.id] = null; resolve(); };
+          img.src = bImg;
+        });
+      }) : [];
+
+      Promise.all([bgPromise, logoPromise, brandPromise, qrPromise, ...showBandPromises]).then(([loadedBg, loadedLogo, loadedBrand, loadedQr]) => {
         renderCanvasFlyer(loadedBg, loadedLogo, loadedBrand, loadedQr);
       }).catch(err => {
         console.error('Erro ao preparar assets do flyer:', err);
@@ -9862,61 +10092,70 @@
         ctx.lineWidth = 4;
         ctx.strokeRect(36, 36, 1008, 1848);
 
-        // 2. Header: Logo da banda à esquerda, textos em 2 linhas à direita
-        const logoX = 160;
-        const logoY = 195;
-        const logoR = 64;
+        // 2. Header
+        if (isMusician) {
+          // No topo somente Agenda e Próximos Shows (sem avatar nem nome do músico)
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 84px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText('AGENDA', 80, 135);
 
-        if (loadedLogo) {
-          // Desenha foto real da banda recortada em círculo
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
-          ctx.closePath();
-          ctx.clip();
-          ctx.drawImage(loadedLogo, logoX - logoR, logoY - logoR, logoR * 2, logoR * 2);
-          ctx.restore();
-
-          // Borda circular dourada
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
-          ctx.lineWidth = 6;
-          ctx.strokeStyle = '#f59e0b';
-          ctx.stroke();
-          ctx.restore();
-        } else {
-          // Círculo com iniciais da banda
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
-          ctx.closePath();
           ctx.fillStyle = '#f59e0b';
-          ctx.fill();
-          ctx.lineWidth = 6;
-          ctx.strokeStyle = '#f59e0b';
-          ctx.stroke();
+          ctx.font = '800 32px system-ui, -apple-system, sans-serif';
+          ctx.fillText('PRÓXIMOS SHOWS', 80, 230);
+        } else {
+          // Modo Banda: Logo da banda à esquerda, textos em 2 linhas à direita
+          const logoX = 160;
+          const logoY = 195;
+          const logoR = 64;
+
+          if (loadedLogo) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(loadedLogo, logoX - logoR, logoY - logoR, logoR * 2, logoR * 2);
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#f59e0b';
+            ctx.stroke();
+            ctx.restore();
+          } else {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.fillStyle = '#f59e0b';
+            ctx.fill();
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#f59e0b';
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 52px system-ui, -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+            ctx.fillText(initials, logoX, logoY);
+            ctx.restore();
+          }
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '900 52px system-ui, -apple-system, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-          ctx.fillText(initials, logoX, logoY);
-          ctx.restore();
+          ctx.font = '900 84px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText('AGENDA', 255, 135);
+
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = '800 32px system-ui, -apple-system, sans-serif';
+          ctx.fillText(`PRÓXIMOS SHOWS • ${(band.name || 'BANDA').toUpperCase()}`, 255, 230);
         }
-
-        // Linha 1: AGENDA (Alinhada à esquerda ao lado do logo)
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 84px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('AGENDA', 255, 135);
-
-        // Linha 2: PRÓXIMOS SHOWS • NOME DA BANDA
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = '800 32px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`PRÓXIMOS SHOWS • ${(band.name || 'BANDA').toUpperCase()}`, 255, 230);
 
         // Linha divisória
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -10000,12 +10239,61 @@
           const infoTopY = y + Math.floor((cardH - totalInfoH) / 2);
           const infoX = badgeX + badgeW + Math.round(24 * flyerCardScale);
 
-          // Título do Show à Direita
+          // Se for contexto de músico, desenha logo da banda no canto direito do card
+          let rightBoundaryX = 980;
+          if (isMusician) {
+            const bandLogoR = Math.max(22, Math.round(36 * flyerCardScale));
+            const bandLogoX = 1000 - Math.round(28 * flyerCardScale) - bandLogoR;
+            const bandLogoY = y + Math.floor(cardH / 2);
+            rightBoundaryX = bandLogoX - bandLogoR - 12;
+
+            const loadedBandImg = showBandImagesMap[show.id];
+            const showBandName = show.bandName || band.name || 'Banda';
+            const bInitials = (showBandName).split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+            if (loadedBandImg) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(bandLogoX, bandLogoY, bandLogoR, 0, Math.PI * 2, true);
+              ctx.closePath();
+              ctx.clip();
+              ctx.drawImage(loadedBandImg, bandLogoX - bandLogoR, bandLogoY - bandLogoR, bandLogoR * 2, bandLogoR * 2);
+              ctx.restore();
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(bandLogoX, bandLogoY, bandLogoR, 0, Math.PI * 2, true);
+              ctx.lineWidth = 4;
+              ctx.strokeStyle = '#f59e0b';
+              ctx.stroke();
+              ctx.restore();
+            } else {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(bandLogoX, bandLogoY, bandLogoR, 0, Math.PI * 2, true);
+              ctx.closePath();
+              ctx.fillStyle = '#111827';
+              ctx.fill();
+              ctx.lineWidth = 4;
+              ctx.strokeStyle = '#f59e0b';
+              ctx.stroke();
+
+              ctx.fillStyle = '#f59e0b';
+              ctx.font = `bold ${Math.max(12, Math.round(20 * flyerCardScale))}px system-ui, -apple-system, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(bInitials, bandLogoX, bandLogoY);
+              ctx.restore();
+            }
+          }
+
+          // Título do Show à Direita (respeitando limite lateral)
           ctx.fillStyle = '#ffffff';
           ctx.font = `900 ${titleFontSize}px system-ui, -apple-system, sans-serif`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-          ctx.fillText(show.name || 'Show ao Vivo', infoX, infoTopY);
+          const rawTitle = show.name || show.title || 'Show ao Vivo';
+          ctx.fillText(rawTitle, infoX, infoTopY);
 
           // Local e Horário com ícones nítidos em vetor
           const metaY = infoTopY + titleFontSize + gapBetweenTitleAndMeta;
@@ -10041,7 +10329,7 @@
 
         // 4. Linha de Contato / Texto Livre para a Banda (Logo Acima do BandLink)
         const contactY = 1580;
-        const contactText = document.getElementById('flyerContactInput')?.value || 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial';
+        const contactText = document.getElementById('flyerContactInput')?.value || (isMusician ? 'Contato para Shows: (16) 99115-3733' : 'Contato para Shows: (16) 99115-3733 • @badbadgersoficial');
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
         ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
@@ -10076,7 +10364,7 @@
           ctx.clip();
           ctx.drawImage(loadedBrand, logoBoxX, logoBoxY, logoBoxSize, logoBoxSize);
         } else {
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = '#38bdf8';
           ctx.font = '900 24px system-ui, -apple-system, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -10123,7 +10411,7 @@
         setTimeout(() => {
           hideLoading();
           const link = document.createElement('a');
-          link.download = `agenda-${(band.name || 'banda').toLowerCase().replace(/\s+/g, '_')}.png`;
+          link.download = isMusician ? 'agenda-shows.png' : `agenda-${(band.name || 'banda').toLowerCase().replace(/\s+/g, '_')}.png`;
           link.href = canvas.toDataURL('image/png');
           link.click();
           showToast('Arte do flyer (1080x1920) baixada com sucesso!', 'success');
@@ -10201,11 +10489,18 @@
     }
 
     function copyFlyerText() {
+      const isMusician = currentShareAgendaContext === 'musician';
       const band = currentBandData || { name: 'BAD BADGERS' };
-      const m = getBandMetrics(band);
-      const setlists = m.setlists || [];
-      const selectedShows = setlists
-        .filter(s => selectedFlyerEventIds.includes(s.id))
+      let allSourceShows = [];
+      if (isMusician) {
+        allSourceShows = musicianFlyerShows || [];
+      } else {
+        const m = getBandMetrics(band);
+        allSourceShows = m.setlists || [];
+      }
+
+      const selectedShows = allSourceShows
+        .filter(s => selectedFlyerEventIds.some(id => String(id) === String(s.id)))
         .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
 
       if (selectedShows.length === 0) {
@@ -10214,11 +10509,14 @@
       }
 
       const contact = document.getElementById('flyerContactInput')?.value || '';
-      let text = `🎸 *AGENDA DE SHOWS - ${(band.name || 'BANDA').toUpperCase()}* 🎸\n\n`;
+      let text = isMusician
+        ? `🎸 *AGENDA DE SHOWS - PRÓXIMOS SHOWS* 🎸\n\n`
+        : `🎸 *AGENDA DE SHOWS - ${(band.name || 'BANDA').toUpperCase()}* 🎸\n\n`;
 
       selectedShows.forEach(s => {
         const dt = getEventDateDetails(s.date);
-        text += `📅 *${dt.weekDay} ${dt.day}/${dt.month}* - ${s.name || 'Show'}\n`;
+        text += `📅 *${dt.weekDay} ${dt.day}/${dt.month}* - ${s.name || s.title || 'Show'}\n`;
+        if (isMusician && s.bandName) text += `   🎸 Banda: ${s.bandName}\n`;
         if (s.local) text += `   📍 ${s.local}\n`;
         if (s.time) text += `   ⏰ Início às ${s.time}\n`;
         text += `\n`;
@@ -10560,77 +10858,335 @@
     // ==============================================================
     // 5. AGENDA TAB (SHOWS E ENSAIOS CARREGADOS DA NUVEM)
     // ==============================================================
-    function renderProfileAgenda() {
-      const list = document.getElementById('profileAgendaList');
-      const now = new Date();
-      now.setHours(0,0,0,0);
+    let selectedMusicianAgendaYear = new Date().getFullYear();
+    let expandedMusicianAgendaMonths = {};
 
-      let events = [...myEvents];
+    function cycleMusicianAgendaYear(delta) {
+      selectedMusicianAgendaYear += delta;
+      renderProfileAgenda();
+    }
 
-      if (agendaProfileFilterMode === 'upcoming') {
-        events = events.filter(e => new Date(e.date) >= now);
-      } else if (agendaProfileFilterMode === 'past') {
-        events = events.filter(e => new Date(e.date) < now);
+    function toggleMusicianAgendaMonth(monthKey) {
+      const currentMonthKey = new Date().toISOString().substring(0, 7);
+      const isPast = monthKey < currentMonthKey;
+      const currentVal = expandedMusicianAgendaMonths[monthKey] !== undefined ? expandedMusicianAgendaMonths[monthKey] : !isPast;
+      expandedMusicianAgendaMonths[monthKey] = !currentVal;
+      renderProfileAgenda();
+    }
+
+    function openMusicianEventAction(bandId, eventId) {
+      if (bandId) {
+        openBandProfileView(bandId).then(() => {
+          switchBandTab('agenda');
+          if (eventId) {
+            setTimeout(() => {
+              openEditEventPlaylistModal(eventId, 'details');
+            }, 300);
+          }
+        });
+      } else {
+        const ev = (myEvents || []).find(e => String(e.id) === String(eventId));
+        if (ev) {
+          openAddEventModal();
+          const titleEl = document.getElementById('eventTitle'); if (titleEl) titleEl.value = ev.title || '';
+          const dateEl = document.getElementById('eventDate'); if (dateEl) dateEl.value = ev.date || '';
+          const timeEl = document.getElementById('eventTime'); if (timeEl) timeEl.value = ev.time || '';
+          const locEl = document.getElementById('eventLocal'); if (locEl) locEl.value = ev.local || '';
+          const cacheEl = document.getElementById('eventCache'); if (cacheEl) cacheEl.value = ev.cache || '';
+          const notesEl = document.getElementById('eventNotes'); if (notesEl) notesEl.value = ev.notes || '';
+        }
+      }
+    }
+
+    function getMusicianAggregatedEvents() {
+      const aggregated = [];
+      const seenKeys = new Set();
+
+      // 1. Coleta todas as bandas disponíveis
+      const bandsToCheck = [...(myBands || [])];
+      const hasBadBadgers = bandsToCheck.some(b => b.id === 2 || (b.name && b.name.toLowerCase().includes('badger')));
+      if (!hasBadBadgers) {
+        const cachedBB = localStorage.getItem('bandlink_band_2_sync');
+        if (cachedBB) {
+          bandsToCheck.push({ id: 2, name: 'Bad Badgers', syncDataJson: cachedBB });
+        }
       }
 
-      events.sort((a,b) => new Date(a.date) - new Date(b.date));
+      bandsToCheck.forEach(band => {
+        const m = getBandMetrics(band);
+        const setlists = m.setlists || [];
+        const activeMemCount = m.membersCount || (band.name && band.name.toLowerCase().includes('badger') ? 5 : 1);
 
-      if (events.length === 0) {
+        setlists.forEach(sl => {
+          const sName = sl.name || sl.title || '';
+          const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+          const dateStr = normalizeDateStr(sl.date);
+          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
+          const cacheNum = rawC ? (parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0) : 0;
+
+          // Cálculo da parte do músico
+          let myShareNum = 0;
+          if (sl.cacheSplit) {
+            let memSum = 0;
+            if (sl.cacheSplit.members) {
+              if (currentUser && currentUser.id && sl.cacheSplit.members[currentUser.id] !== undefined) {
+                memSum = parseFloat(String(sl.cacheSplit.members[currentUser.id] || '0').replace(',', '.')) || 0;
+                myShareNum = memSum;
+              } else {
+                Object.values(sl.cacheSplit.members).forEach(v => {
+                  memSum += parseFloat(String(v || '0').replace(',', '.')) || 0;
+                });
+                let subSum = 0;
+                if (Array.isArray(sl.cacheSplit.substitutes)) {
+                  sl.cacheSplit.substitutes.forEach(s => {
+                    subSum += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+                  });
+                }
+                let showBandFund = parseFloat(sl.cacheSplit.bandFund);
+                if (isNaN(showBandFund)) {
+                  showBandFund = Math.max(0, cacheNum - (memSum + subSum));
+                }
+                const paidToMusicians = cacheNum - showBandFund;
+                myShareNum = activeMemCount > 0 ? (memSum > 0 ? (memSum / activeMemCount) : (paidToMusicians / activeMemCount)) : 0;
+              }
+            } else {
+              myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
+            }
+          } else {
+            myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
+          }
+
+          const uniqueKey = sl.id ? `id_${sl.id}` : `val_${band.id}_${sName}_${dateStr}`;
+          if (!seenKeys.has(uniqueKey)) {
+            seenKeys.add(uniqueKey);
+            aggregated.push({
+              id: sl.id ? String(sl.id) : `setlist_${band.id}_${Math.random()}`,
+              bandId: band.id,
+              bandName: band.name || 'Banda',
+              bandImageUri: band.imageUri || '',
+              title: sName || (isRehearsal ? 'Ensaio' : 'Show'),
+              name: sName || (isRehearsal ? 'Ensaio' : 'Show'),
+              date: dateStr,
+              time: sl.time || '',
+              local: sl.local || '',
+              cacheNum: Math.round(cacheNum * 100) / 100,
+              myShareNum: Math.round(myShareNum * 100) / 100,
+              isRehearsal: isRehearsal,
+              type: isRehearsal ? 'rehearsal' : 'show',
+              notes: sl.notes || '',
+              fromBand: true
+            });
+          }
+        });
+      });
+
+      // 2. Mescla eventos locais de myEvents
+      (myEvents || []).forEach(ev => {
+        const sName = ev.title || ev.name || '';
+        const isRehearsal = (ev.type === 'rehearsal') || sName.toLowerCase().includes('ensaio');
+        const dateStr = normalizeDateStr(ev.date);
+        const uniqueKey = ev.id ? `id_${ev.id}` : `val_local_${sName}_${dateStr}`;
+
+        if (!seenKeys.has(uniqueKey)) {
+          seenKeys.add(uniqueKey);
+          let matchedBand = null;
+          if (ev.band) {
+            matchedBand = (myBands || []).find(b => (b.name || '').toLowerCase() === (ev.band || '').toLowerCase());
+          }
+          const rawC = ev['cachê'] ?? ev.cache ?? ev.valCache ?? ev.value;
+          const cacheNum = rawC ? (parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0) : 0;
+          const activeMemCount = matchedBand ? ((matchedBand.membersCount || matchedBand.members?.length) || 1) : 1;
+          const myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
+
+          aggregated.push({
+            id: ev.id ? String(ev.id) : `ev_${Math.random()}`,
+            bandId: matchedBand ? matchedBand.id : null,
+            bandName: ev.band || matchedBand?.name || 'Projeto Pessoal',
+            bandImageUri: matchedBand?.imageUri || '',
+            title: sName || (isRehearsal ? 'Ensaio' : 'Show'),
+            name: sName || (isRehearsal ? 'Ensaio' : 'Show'),
+            date: dateStr,
+            time: ev.time || '',
+            local: ev.local || '',
+            cacheNum: Math.round(cacheNum * 100) / 100,
+            myShareNum: Math.round(myShareNum * 100) / 100,
+            isRehearsal: isRehearsal,
+            type: isRehearsal ? 'rehearsal' : 'show',
+            notes: ev.notes || '',
+            fromBand: false
+          });
+        }
+      });
+
+      return aggregated;
+    }
+
+    function renderProfileAgenda() {
+      const list = document.getElementById('profileAgendaList');
+      if (!list) return;
+
+      const allEvents = getMusicianAggregatedEvents();
+
+      // Filtra por ano selecionado
+      const yearEvents = allEvents.filter(sl => {
+        if (!sl.date) return true;
+        const str = String(sl.date).trim();
+        return str.includes(String(selectedMusicianAgendaYear));
+      });
+
+      // Contadores do Resumo Anual (Soma de Todas as Bandas)
+      const yearShows = yearEvents.filter(s => !s.isRehearsal && s.type !== 'rehearsal').length;
+      const yearRehearsals = yearEvents.length - yearShows;
+
+      const yearDiscEl = document.getElementById('musicianAgendaYearDisc');
+      if (yearDiscEl) yearDiscEl.textContent = selectedMusicianAgendaYear;
+      const showsDiscEl = document.getElementById('musicianAgendaShowsDisc');
+      if (showsDiscEl) showsDiscEl.textContent = yearShows;
+      const rehDiscEl = document.getElementById('musicianAgendaRehDisc');
+      if (rehDiscEl) rehDiscEl.textContent = yearRehearsals;
+      const badgeEl = document.getElementById('musicianAgendaCountBadge');
+      if (badgeEl) badgeEl.textContent = `${yearEvents.length} Eventos em ${selectedMusicianAgendaYear}`;
+
+      if (yearEvents.length === 0) {
         list.innerHTML = `
-          <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
-            <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: var(--text-dim); margin-bottom: 8px;"></ion-icon>
-            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado</h4>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Registre ensaios e shows na sua agenda.</p>
-            <button class="btn btn-primary btn-sm" onclick="openAddEventModal()">Adicionar Evento</button>
+          <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado em ${selectedMusicianAgendaYear}</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Registre shows e ensaios nas suas bandas para montar o cronograma unificado.</p>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openAddEventModal()">Adicionar Evento</button>
           </div>
         `;
         return;
       }
 
-      list.innerHTML = events.map(ev => {
-        const isUpcoming = new Date(ev.date) >= now;
-        const [year, month, day] = (ev.date || '2026-01-01').split('-');
-        const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-        const monthLabel = months[parseInt(month, 10) - 1] || '---';
+      // Agrupa por mês (YYYY-MM)
+      const musicianMonthMap = {};
+      yearEvents.forEach(sl => {
+        const info = getEventMonthInfo(sl.date);
+        if (!musicianMonthMap[info.key]) {
+          musicianMonthMap[info.key] = { title: info.title, list: [] };
+        }
+        musicianMonthMap[info.key].list.push(sl);
+      });
 
-        return `
-          <div class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 18px;">
-              <div style="width: 58px; height: 58px; background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
-                <span style="font-size: 1.3rem; font-weight: 900; color: #fff; line-height: 1;">${day}</span>
-                <span style="font-size: 0.68rem; font-weight: 800; color: var(--cyan-light); text-transform: uppercase;">${monthLabel}</span>
-              </div>
-              <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                  <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff;">${ev.title}</h4>
-                  <span class="badge ${isUpcoming ? 'badge-emerald' : 'badge-amber'}">${isUpcoming ? 'Confirmado' : 'Encerrado'}</span>
-                  ${ev.fromCloud ? '<span class="badge badge-cyan" style="font-size:0.65rem;">Nuvem</span>' : ''}
-                </div>
-                <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <span><ion-icon name="location-outline"></ion-icon> ${ev.local || 'Local não informado'}</span>
-                  ${ev.band ? `<span>• Banda: <strong>${ev.band}</strong></span>` : ''}
-                  ${ev.time ? `<span>• Horário: <strong>${ev.time}</strong></span>` : ''}
-                  ${ev.cache ? `<span style="color: var(--emerald);">• Cachê: <strong>${ev.cache}</strong></span>` : ''}
-                </p>
-              </div>
-            </div>
-            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${ev.id}')" title="Excluir Evento">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
+      // Meses mais recentes no topo (ordem cronológica invertida: Dezembro -> Janeiro)
+      const currentMonthKey = new Date().toISOString().substring(0, 7);
+      const allMonthKeys = Object.keys(musicianMonthMap).sort((a, b) => b.localeCompare(a));
+
+      let html = '';
+      allMonthKeys.forEach(k => {
+        const g = musicianMonthMap[k];
+        // Eventos mais recentes no topo do mês
+        g.list.sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+
+        const isPastMonth = k < currentMonthKey;
+        const defaultExpanded = !isPastMonth;
+        const isExpanded = expandedMusicianAgendaMonths[k] !== undefined ? expandedMusicianAgendaMonths[k] : defaultExpanded;
+
+        const mShows = g.list.filter(s => !s.isRehearsal && s.type !== 'rehearsal').length;
+        const mReh = g.list.length - mShows;
+
+        let monthGrossTotal = 0;
+        let monthMyShareTotal = 0;
+        g.list.forEach(sl => {
+          monthGrossTotal += (sl.cacheNum || 0);
+          monthMyShareTotal += (sl.myShareNum || 0);
+        });
+
+        html += `
+          <div class="mobile-month-bar" onclick="toggleMusicianAgendaMonth('${k}')" title="Clique para expandir/recolher mês">
+            <!-- Ícones e Contadores primeiro (Padrão Mobile) -->
+            <span class="month-pill-badge month-pill-show" title="Shows">
+              <ion-icon name="calendar-outline"></ion-icon> <span>${mShows}</span>
+            </span>
+            <span class="month-pill-badge month-pill-rehearsal" title="Ensaios">
+              <ion-icon name="headset-outline"></ion-icon> <span>${mReh}</span>
+            </span>
+            ${monthGrossTotal > 0 ? `
+              <span class="month-pill-badge month-pill-total" title="Cachê Total de Todas as Bandas">
+                <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${monthGrossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </span>
+              <span class="month-pill-badge month-pill-musician" title="Sua Parte (Soma de Todas as Bandas)">
+                <ion-icon name="star"></ion-icon> <span>R$ ${monthMyShareTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </span>
+            ` : ''}
+
+            <!-- Nome do Mês Depois -->
+            <span class="mobile-month-title">${g.title.toUpperCase()}</span>
+
+            <!-- Linha separadora flexível -->
+            <div class="mobile-month-line"></div>
+
+            <!-- Chevron de expandir / recolher -->
+            <ion-icon name="${isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}" style="font-size: 1.15rem; color: #94a3b8;"></ion-icon>
           </div>
         `;
-      }).join('');
+
+        if (isExpanded) {
+          g.list.forEach(ev => {
+            const dt = getFormattedDateBadge(ev.date);
+            const normImg = normalizeImageUri(ev.bandImageUri);
+            const bandInitials = (ev.bandName || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+            html += `
+              <div class="musician-agenda-card" onclick="openMusicianEventAction(${ev.bandId ? `'${ev.bandId}'` : 'null'}, '${ev.id}')" title="Clique para ver detalhes do evento">
+                <!-- Data do lado esquerdo -->
+                <div style="width: 52px; height: 52px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <span style="font-size: 1.25rem; font-weight: 900; color: #fff; line-height: 1;">${dt.day}</span>
+                  <span style="font-size: 0.65rem; font-weight: 800; color: var(--cyan); text-transform: uppercase;">${dt.month}</span>
+                </div>
+
+                <!-- Avatar da banda do lado da data -->
+                <div class="agenda-band-avatar-circle" title="Banda: ${escapeHtml(ev.bandName)}">
+                  ${normImg ? `
+                    <img src="${normImg}" alt="${escapeHtml(ev.bandName)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span style="display:none;">${bandInitials}</span>
+                  ` : `<span>${bandInitials}</span>`}
+                </div>
+
+                <!-- Pílula de show/ensaio + Nome do Evento + Local + Horário -->
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                    <span class="badge ${ev.isRehearsal ? 'badge-amber' : 'badge-rose'}" style="font-size: 0.68rem; font-weight: 800; text-transform: uppercase;">
+                      ${ev.isRehearsal ? 'ENSAIO' : 'SHOW'}
+                    </span>
+                    <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      ${escapeHtml(ev.title)}
+                    </h4>
+                    <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">• ${escapeHtml(ev.bandName)}</span>
+                  </div>
+                  <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    ${ev.local ? `<span><ion-icon name="location-outline" style="color: #f87171;"></ion-icon> ${escapeHtml(ev.local)}</span>` : ''}
+                    ${ev.time ? `<span><ion-icon name="time-outline" style="color: #f59e0b;"></ion-icon> ${escapeHtml(ev.time)}</span>` : ''}
+                    ${ev.notes ? `<span style="color: #64748b;"><ion-icon name="document-text-outline"></ion-icon> ${escapeHtml(ev.notes)}</span>` : ''}
+                  </div>
+                </div>
+
+                <!-- Cachê e Sua parte no canto direito -->
+                <div style="text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;">
+                  ${ev.cacheNum > 0 ? `
+                    <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">
+                      Cachê: <span style="color: #fff; font-weight: 700;">R$ ${ev.cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div style="font-size: 0.92rem; color: var(--emerald); font-weight: 800; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                      <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Sua parte:</span>
+                      <span>R$ ${ev.myShareNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  ` : `
+                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Sem cachê</div>
+                  `}
+                </div>
+              </div>
+            `;
+          });
+        }
+      });
+
+      list.innerHTML = html;
     }
 
     function filterProfileAgenda(mode) {
       agendaProfileFilterMode = mode;
-      ['agendaPFilterAll', 'agendaPFilterUpcoming', 'agendaPFilterPast'].forEach(id => {
-        const b = document.getElementById(id);
-        if (b) b.classList.remove('active');
-      });
-      if (mode === 'all') document.getElementById('agendaPFilterAll').classList.add('active');
-      if (mode === 'upcoming') document.getElementById('agendaPFilterUpcoming').classList.add('active');
-      if (mode === 'past') document.getElementById('agendaPFilterPast').classList.add('active');
       renderProfileAgenda();
     }
 
