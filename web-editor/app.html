@@ -356,8 +356,10 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 990;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 1000;
     }
 
     /* VIEWS */
@@ -1446,15 +1448,19 @@
     }
     @media (max-width: 900px) {
       .figma-label-block {
-        align-items: flex-start;
+        align-items: center;
         text-align: left;
+        flex-direction: row;
+        gap: 12px;
+        margin-bottom: 8px;
       }
     }
     .figma-section-title {
-      font-size: 1.7rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: #ffffff;
       line-height: 1.15;
+      white-space: nowrap;
     }
     .figma-content-block {
       padding-top: 6px;
@@ -2002,7 +2008,8 @@
       .sidebar-musician {
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 1010;
+        z-index: 1010 !important;
+        pointer-events: auto !important;
         width: 290px;
         min-width: 290px;
         background: #111827 !important;
@@ -2581,8 +2588,8 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 18px 0 10px 0;
-      padding: 8px 12px;
+      margin: 8px 0 4px 0;
+      padding: 6px 10px;
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.06);
@@ -2899,7 +2906,7 @@
     .global-loader-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(10, 14, 23, 0.88);
+      background: #0b0f19;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       z-index: 99999;
@@ -3449,6 +3456,19 @@
       .band-page-content {
         padding: 14px 6px 36px 6px !important;
       }
+      #subview-bio {
+        padding: 10px 14px !important;
+      }
+      .figma-section-title {
+        font-size: 1.15rem !important;
+        white-space: nowrap !important;
+      }
+      .figma-label-block {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-bottom: 8px !important;
+      }
       .profile-subview .card {
         padding: 12px 8px !important;
       }
@@ -3703,7 +3723,8 @@
       .mobile-month-bar {
         flex-wrap: wrap !important;
         gap: 6px !important;
-        padding: 8px 8px !important;
+        margin: 6px 0 2px 0 !important;
+        padding: 5px 8px !important;
       }
       .mobile-month-line {
         display: none !important;
@@ -3759,10 +3780,11 @@
     <div class="ambient-glow glow-3"></div>
   </div>
 
-  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar(false)"></div>
-
   <div class="app-layout">
     
+    <!-- MOBILE SIDEBAR BACKDROP -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar(false)"></div>
+
     <!-- LATERAL SIDEBAR -->
     <aside class="sidebar-musician" id="sidebarMusician">
       
@@ -3825,8 +3847,8 @@
       
       <!-- Mobile Topbar (< 960px) -->
       <div class="mobile-topbar">
-        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
-          <span style="font-weight: 800; color: #38bdf8; font-size: 1.1rem; text-decoration: underline;">BANDLINK</span>
+        <a href="/" title="BandLink Home" style="display: flex; align-items: center; text-decoration: none;">
+          <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" style="height: 28px; max-height: 28px; max-width: 135px; object-fit: contain;">
         </a>
         <button class="mobile-toggle-btn" onclick="toggleMobileSidebar(true)">
           <div style="width: 26px; height: 26px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; overflow: hidden; color: #1e293b;" id="mobileAvatarThumb">M</div>
@@ -3913,7 +3935,7 @@
               <!-- 1. SOBRE (CLICAR NO BOTÃO VERDE TRANSFORMA O TEXTO EM FORMULÁRIO) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
-                  <div class="figma-section-title">sobre</div>
+                  <div class="figma-section-title">Sobre Mim</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
                   <button class="btn-edit-circle" onclick="toggleInlineBioEdit()" id="btnEditBio" title="Editar Sobre mim">
                     <ion-icon name="create"></ion-icon>
@@ -3944,7 +3966,7 @@
               <!-- 2. NÍVEL DE INTERESSE & DISPONIBILIDADE (POLÍTICA DO APP + EDIÇÃO INLINE) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
-                  <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">nivel de<br>interesse</div>
+                  <div class="figma-section-title">Nível de Interesse</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
                   <button class="btn-edit-circle" onclick="toggleInlineInterestEdit()" id="btnEditInterest" title="Editar Nível de Interesse e Disponibilidade">
                     <ion-icon name="create"></ion-icon>
@@ -3992,7 +4014,7 @@
               <!-- 3. INFLUÊNCIAS MUSICAIS (COM ESTRELAS CLICÁVEIS E EDIÇÃO INLINE) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
-                  <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">influencias<br>musicais</div>
+                  <div class="figma-section-title">Influências Musicais</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
                   <button class="btn-edit-circle" type="button" onclick="toggleInlineInfluencesEdit()" id="btnEditInfluences" title="Editar Influências Musicais">
                     <ion-icon name="create"></ion-icon>
@@ -4038,7 +4060,7 @@
               <!-- 4. LINKS SOCIAIS (FORMULÁRIO INLINE PARA ADICIONAR OS LINKS) -->
               <div class="figma-bio-grid">
                 <div class="figma-label-block">
-                  <div class="figma-section-title" style="font-size: 1.35rem; line-height: 1.2;">links<br>sociais</div>
+                  <div class="figma-section-title">Links Sociais</div>
                   <!-- GREEN EDIT CIRCLE BUTTON -->
                   <button class="btn-edit-circle" onclick="toggleInlineSocialsEdit()" id="btnEditSocials" title="Editar Links Sociais">
                     <ion-icon name="create"></ion-icon>
@@ -4236,7 +4258,6 @@
                 <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
                   <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
                   <span>Agenda de Shows & Ensaios</span>
-                  <span class="badge badge-cyan" id="musicianAgendaCountBadge">0 Eventos</span>
                 </h3>
               </div>
               <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -4251,27 +4272,35 @@
               </div>
             </div>
 
-            <!-- RESUMO DE 3 CÍRCULOS (ANO, SHOWS, ENSAIOS - SOMA DE TODAS AS BANDAS) -->
+            <!-- RESUMO DE 4 CÍRCULOS (ANO, TOTAL EVENTOS, SHOWS, ENSAIOS - SOMA DE TODAS AS BANDAS) -->
             <div class="band-agenda-summary" style="margin-bottom: 20px;">
-              <!-- Círculo 1: Ano com navegação -->
+              <!-- Círculo 1: Ano com menu nativo (sem flechas) -->
               <div class="agenda-circle-col">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <button type="button" onclick="cycleMusicianAgendaYear(-1)" title="Ano anterior" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
-                    <ion-icon name="chevron-back-outline" style="font-size: 1.2rem;"></ion-icon>
-                  </button>
-                  <div class="agenda-circle-wrapper">
-                    <div class="agenda-circle-disc" id="musicianAgendaYearDisc">
-                      2026
-                    </div>
+                <div class="agenda-circle-wrapper" style="position: relative; cursor: pointer;">
+                  <div class="agenda-circle-disc" id="musicianAgendaYearDisc" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;" title="Clique para trocar o ano">
+                    <span id="musicianAgendaYearText">2026</span>
+                    <ion-icon name="chevron-down-outline" style="font-size: 0.82rem; opacity: 0.7;"></ion-icon>
                   </div>
-                  <button type="button" onclick="cycleMusicianAgendaYear(1)" title="Próximo ano" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
-                    <ion-icon name="chevron-forward-outline" style="font-size: 1.2rem;"></ion-icon>
-                  </button>
+                  <select id="musicianAgendaYearSelect" onchange="setMusicianAgendaYear(this.value)" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; z-index: 10;">
+                  </select>
                 </div>
                 <div class="agenda-circle-label">Ano</div>
               </div>
 
-              <!-- Círculo 2: Shows com ícone sobreposto -->
+              <!-- Círculo 2: Total de Eventos -->
+              <div class="agenda-circle-col">
+                <div class="agenda-circle-wrapper">
+                  <div class="agenda-circle-disc" id="musicianAgendaTotalDisc" style="padding-left: 10px;">
+                    0
+                  </div>
+                  <div class="agenda-circle-overlap-icon" title="Total de Eventos">
+                    <ion-icon name="list-outline"></ion-icon>
+                  </div>
+                </div>
+                <div class="agenda-circle-label">Eventos</div>
+              </div>
+
+              <!-- Círculo 3: Shows com ícone sobreposto -->
               <div class="agenda-circle-col">
                 <div class="agenda-circle-wrapper">
                   <div class="agenda-circle-disc" id="musicianAgendaShowsDisc" style="padding-left: 10px;">
@@ -4284,7 +4313,7 @@
                 <div class="agenda-circle-label" id="musicianAgendaShowsLabel">Shows</div>
               </div>
 
-              <!-- Círculo 3: Ensaios com ícone sobreposto -->
+              <!-- Círculo 4: Ensaios com ícone sobreposto -->
               <div class="agenda-circle-col">
                 <div class="agenda-circle-wrapper">
                   <div class="agenda-circle-disc" id="musicianAgendaRehDisc" style="padding-left: 10px;">
@@ -5050,7 +5079,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="hardware-chip-outline" style="color: var(--violet);"></ion-icon>
-          <span>Adicionar Equipamento / Gear</span>
+          <span id="gearModalTitle">Adicionar Equipamento / Gear</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addGearModal')">&times;</button>
       </div>
@@ -5095,7 +5124,7 @@
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('addGearModal')">Cancelar</button>
-          <button type="submit" class="btn btn-violet">Adicionar</button>
+          <button type="submit" class="btn btn-violet" id="gearModalSubmitBtn">Adicionar</button>
         </div>
       </form>
     </div>
@@ -5964,8 +5993,8 @@
     </div>
   </div>
 
-  <!-- BANDLINK GLOBAL LOADER OVERLAY -->
-  <div id="bandlinkGlobalLoader" class="global-loader-overlay" style="display: none;">
+  <!-- BANDLINK GLOBAL LOADER OVERLAY (Active on initial load / F5 refresh) -->
+  <div id="bandlinkGlobalLoader" class="global-loader-overlay active" style="display: flex; opacity: 1;">
     <div class="global-loader-box">
       <div class="loader-logo-ring-wrapper">
         <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="loader-logo-img" onerror="this.src='assets/logo.png'">
@@ -6006,9 +6035,14 @@
       loadCachedData();
       const token = localStorage.getItem(TOKEN_KEY);
       if (!token) {
+        hideLoading();
         showAuthModal('login');
       } else {
-        await verifySessionAndLoadData();
+        try {
+          await verifySessionAndLoadData();
+        } finally {
+          hideLoading();
+        }
       }
     });
 
@@ -7845,7 +7879,12 @@
               <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Gear')}</span>
               ${negBadge}
             </div>
-            <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" onclick="openEditGearModal(${idx})" title="Editar equipamento" class="clean-chip-del-btn" style="color: #94a3b8; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;">
+                <ion-icon name="create-outline"></ion-icon>
+              </button>
+              <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
+            </div>
           </div>
         `;
       }).join('');
@@ -7912,6 +7951,8 @@
       }
     }
 
+    let editingGearIndex = null;
+
     function toggleGearPriceInput(checked) {
       const priceWrapper = document.getElementById('gearPriceWrapper');
       if (priceWrapper) {
@@ -7924,6 +7965,12 @@
     }
 
     function openAddGearModal() {
+      editingGearIndex = null;
+      const title = document.getElementById('gearModalTitle');
+      if (title) title.textContent = 'Adicionar Equipamento / Gear';
+      const submitBtn = document.getElementById('gearModalSubmitBtn');
+      if (submitBtn) submitBtn.textContent = 'Adicionar';
+
       document.getElementById('gearCategoryInput').value = 'Guitarra';
       document.getElementById('gearNameInput').value = '';
       document.getElementById('gearDetailsInput').value = '';
@@ -7936,6 +7983,29 @@
       openModal('addGearModal');
     }
 
+    function openEditGearModal(idx) {
+      if (idx === undefined || idx < 0 || idx >= myGear.length) return;
+      editingGearIndex = idx;
+      const item = myGear[idx];
+
+      const title = document.getElementById('gearModalTitle');
+      if (title) title.textContent = 'Editar Equipamento';
+      const submitBtn = document.getElementById('gearModalSubmitBtn');
+      if (submitBtn) submitBtn.textContent = 'Salvar Alterações';
+
+      document.getElementById('gearCategoryInput').value = item.category || 'Guitarra';
+      document.getElementById('gearNameInput').value = item.name || '';
+      document.getElementById('gearDetailsInput').value = item.details || '';
+      const isNeg = !!item.isNegotiable;
+      const negCheckbox = document.getElementById('gearIsNegotiableInput');
+      if (negCheckbox) negCheckbox.checked = isNeg;
+      const priceInput = document.getElementById('gearPriceInput');
+      if (priceInput) priceInput.value = item.price || '';
+      const priceWrapper = document.getElementById('gearPriceWrapper');
+      if (priceWrapper) priceWrapper.style.display = isNeg ? 'block' : 'none';
+      openModal('addGearModal');
+    }
+
     function handleSaveGear(e) {
       e.preventDefault();
       const category = document.getElementById('gearCategoryInput').value;
@@ -7945,10 +8015,24 @@
       const price = document.getElementById('gearPriceInput')?.value.trim() || '';
       if (!name) return;
 
-      myGear.push({ id: Date.now(), category, name, details, isNegotiable, price });
+      if (editingGearIndex !== null && editingGearIndex >= 0 && editingGearIndex < myGear.length) {
+        myGear[editingGearIndex] = {
+          ...myGear[editingGearIndex],
+          category,
+          name,
+          details,
+          isNegotiable,
+          price
+        };
+        editingGearIndex = null;
+        showToast('Equipamento atualizado com sucesso!', 'success');
+      } else {
+        myGear.push({ id: Date.now(), category, name, details, isNegotiable, price });
+        showToast('Equipamento cadastrado com sucesso!', 'success');
+      }
+
       saveGearCache();
       closeModal('addGearModal');
-      showToast('Equipamento cadastrado com sucesso!', 'success');
     }
 
     function removeGear(idx) {
@@ -10143,6 +10227,25 @@
     let editingEventIndex = null;
     let editingEventPlaylist = [];
 
+    function generateYearOptions(selectedYear) {
+      const currentYear = new Date().getFullYear();
+      const years = [];
+      for (let y = currentYear - 4; y <= currentYear + 4; y++) {
+        years.push(y);
+      }
+      const numSel = parseInt(selectedYear, 10);
+      if (numSel && !years.includes(numSel)) {
+        years.push(numSel);
+        years.sort((a, b) => a - b);
+      }
+      return years.map(y => `<option value="${y}" ${y === numSel ? 'selected' : ''}>${y}</option>`).join('');
+    }
+
+    function setAgendaYear(val) {
+      selectedAgendaYear = parseInt(val, 10);
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
     function cycleAgendaYear(delta) {
       selectedAgendaYear = selectedAgendaYear + delta;
       renderBandAgendaTab(currentBandData, currentBandSyncData);
@@ -10216,7 +10319,6 @@
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
               <span>Agenda de Shows & Ensaios</span>
-              <span class="badge badge-cyan">${yearEvents.length} Eventos em ${selectedAgendaYear}</span>
             </h2>
           </div>
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -10231,27 +10333,36 @@
           </div>
         </div>
 
-        <!-- RESUMO DE 3 CÍRCULOS (ANO, SHOWS, ENSAIOS COM ÍCONES SOBREPOSTOS IGUAL APP MOBILE) -->
+        <!-- RESUMO DE 4 CÍRCULOS (ANO COM MENU NATIVO, EVENTOS, SHOWS, ENSAIOS) -->
         <div class="band-agenda-summary">
-          <!-- Círculo 1: Ano com flechas de navegação -->
+          <!-- Círculo 1: Ano com menu nativo (sem flechas) -->
           <div class="agenda-circle-col">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <button type="button" onclick="cycleAgendaYear(-1)" title="Ano anterior" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
-                <ion-icon name="chevron-back-outline" style="font-size: 1.2rem;"></ion-icon>
-              </button>
-              <div class="agenda-circle-wrapper">
-                <div class="agenda-circle-disc" title="Ano selecionado: ${selectedAgendaYear}">
-                  ${selectedAgendaYear}
-                </div>
+            <div class="agenda-circle-wrapper" style="position: relative; cursor: pointer;">
+              <div class="agenda-circle-disc" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;" title="Clique para escolher o ano">
+                <span>${selectedAgendaYear}</span>
+                <ion-icon name="chevron-down-outline" style="font-size: 0.82rem; opacity: 0.7;"></ion-icon>
               </div>
-              <button type="button" onclick="cycleAgendaYear(1)" title="Próximo ano" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex; align-items: center;">
-                <ion-icon name="chevron-forward-outline" style="font-size: 1.2rem;"></ion-icon>
-              </button>
+              <select onchange="setAgendaYear(this.value)" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; z-index: 10;">
+                ${generateYearOptions(selectedAgendaYear)}
+              </select>
             </div>
             <div class="agenda-circle-label">Ano</div>
           </div>
 
-          <!-- Círculo 2: Shows com ícone de calendário sobreposto à esquerda -->
+          <!-- Círculo 2: Total de Eventos -->
+          <div class="agenda-circle-col">
+            <div class="agenda-circle-wrapper">
+              <div class="agenda-circle-disc" style="padding-left: 10px;">
+                ${yearEvents.length}
+              </div>
+              <div class="agenda-circle-overlap-icon" title="Total de Eventos">
+                <ion-icon name="list-outline"></ion-icon>
+              </div>
+            </div>
+            <div class="agenda-circle-label">${yearEvents.length === 1 ? 'Evento' : 'Eventos'}</div>
+          </div>
+
+          <!-- Círculo 3: Shows com ícone de calendário sobreposto à esquerda -->
           <div class="agenda-circle-col">
             <div class="agenda-circle-wrapper">
               <div class="agenda-circle-disc" style="padding-left: 10px;">
@@ -10264,7 +10375,7 @@
             <div class="agenda-circle-label">${showCount === 1 ? 'Show' : 'Shows'}</div>
           </div>
 
-          <!-- Círculo 3: Ensaios com ícone de fone sobreposto à esquerda -->
+          <!-- Círculo 4: Ensaios com ícone de fone sobreposto à esquerda -->
           <div class="agenda-circle-col">
             <div class="agenda-circle-wrapper">
               <div class="agenda-circle-disc" style="padding-left: 10px;">
@@ -12013,6 +12124,11 @@
     let selectedMusicianAgendaYear = new Date().getFullYear();
     let expandedMusicianAgendaMonths = {};
 
+    function setMusicianAgendaYear(val) {
+      selectedMusicianAgendaYear = parseInt(val, 10);
+      renderProfileAgenda();
+    }
+
     function cycleMusicianAgendaYear(delta) {
       selectedMusicianAgendaYear += delta;
       renderProfileAgenda();
@@ -12190,14 +12306,19 @@
       const yearShows = yearEvents.filter(s => !s.isRehearsal && s.type !== 'rehearsal').length;
       const yearRehearsals = yearEvents.length - yearShows;
 
-      const yearDiscEl = document.getElementById('musicianAgendaYearDisc');
-      if (yearDiscEl) yearDiscEl.textContent = selectedMusicianAgendaYear;
+      const yearTextEl = document.getElementById('musicianAgendaYearText');
+      if (yearTextEl) yearTextEl.textContent = selectedMusicianAgendaYear;
+      const yearSelectEl = document.getElementById('musicianAgendaYearSelect');
+      if (yearSelectEl) {
+        yearSelectEl.innerHTML = generateYearOptions(selectedMusicianAgendaYear);
+        yearSelectEl.value = String(selectedMusicianAgendaYear);
+      }
+      const totalDiscEl = document.getElementById('musicianAgendaTotalDisc');
+      if (totalDiscEl) totalDiscEl.textContent = yearEvents.length;
       const showsDiscEl = document.getElementById('musicianAgendaShowsDisc');
       if (showsDiscEl) showsDiscEl.textContent = yearShows;
       const rehDiscEl = document.getElementById('musicianAgendaRehDisc');
       if (rehDiscEl) rehDiscEl.textContent = yearRehearsals;
-      const badgeEl = document.getElementById('musicianAgendaCountBadge');
-      if (badgeEl) badgeEl.textContent = `${yearEvents.length} Eventos em ${selectedMusicianAgendaYear}`;
 
       if (yearEvents.length === 0) {
         list.innerHTML = `
