@@ -11169,7 +11169,7 @@
     // ==============================================================
     // HANDLERS DO MODAL DE EVENTO & PLAYLIST (EDIT EVENT & PLAYLIST)
     // ==============================================================
-    function openEditEventPlaylistModal(identifier, initialTab = 'details') {
+    function openEditEventPlaylistModal(identifier, initialTab = 'details', fromDedicatedEditor = false) {
       try {
         const modal = document.getElementById('editEventPlaylistModal');
         if (!modal) return;
@@ -11208,6 +11208,11 @@
         const titleEl = document.getElementById('mEventModalTitle');
         const badgeEl = document.getElementById('mEventHeaderBadge');
         const deleteBtn = document.getElementById('btnDeleteEventFromModal');
+        const tabPlaylistBtn = document.getElementById('mEventSubTabPlaylist');
+
+        if (tabPlaylistBtn) {
+          tabPlaylistBtn.style.display = fromDedicatedEditor ? 'none' : 'inline-flex';
+        }
 
         if (isNew) {
           if (titleEl) titleEl.textContent = 'Novo Evento / Show';
@@ -11224,12 +11229,14 @@
           const locEl = document.getElementById('mEventLocal'); if (locEl) locEl.value = '';
           const cacheEl = document.getElementById('mEventCache'); if (cacheEl) cacheEl.value = '';
           const notesEl = document.getElementById('mEventNotes'); if (notesEl) notesEl.value = '';
-          editingEventPlaylist = [];
+          if (!fromDedicatedEditor) {
+            editingEventPlaylist = [];
+          }
         } else {
           const ev = setlists[idx] || {};
           const isRehearsal = ev.type === 'rehearsal' || (ev.name || '').toLowerCase().includes('ensaio');
 
-          if (titleEl) titleEl.textContent = `Editar: ${ev.name || 'Evento'}`;
+          if (titleEl) titleEl.textContent = fromDedicatedEditor ? `Editar Informações: ${ev.name || 'Playlist'}` : `Editar: ${ev.name || 'Evento'}`;
           if (badgeEl) {
             badgeEl.textContent = isRehearsal ? 'ENSAIO' : 'SHOW';
             badgeEl.className = isRehearsal ? 'badge badge-amber' : 'badge badge-rose';
@@ -11244,36 +11251,40 @@
           const cacheEl = document.getElementById('mEventCache'); if (cacheEl) cacheEl.value = ev['cachê'] ?? ev.cache ?? '';
           const notesEl = document.getElementById('mEventNotes'); if (notesEl) notesEl.value = ev.notes || '';
 
-          // Normalização segura e resiliente da playlist
-          let rawSongs = ev.songs;
-          if (typeof rawSongs === 'string') {
-            try { rawSongs = JSON.parse(rawSongs); } catch { rawSongs = []; }
-          }
-          if (!Array.isArray(rawSongs)) rawSongs = [];
+          // Se veio do editor de setlist dedicado, mantém a playlist em edição atual intacta
+          if (!fromDedicatedEditor) {
+            let rawSongs = ev.songs;
+            if (typeof rawSongs === 'string') {
+              try { rawSongs = JSON.parse(rawSongs); } catch { rawSongs = []; }
+            }
+            if (!Array.isArray(rawSongs)) rawSongs = [];
 
-          editingEventPlaylist = rawSongs.map(item => {
-            if (typeof item === 'object' && item !== null) {
-              return {
-                id: item.id || item.songId || `song_${Math.random()}`,
-                name: item.name || item.title || 'Sem título',
-                originalBand: item.originalBand || item.artist || item.band || 'Banda',
-                duration: item.duration || item.customDuration || '--:--',
-                style: item.style || ''
-              };
-            }
-            const found = (currentBandSyncData?.songs || []).find(s => String(s.id) === String(item)) ||
-                          (mySongs || []).find(s => String(s.id) === String(item));
-            if (found) {
-              return {
-                id: found.id,
-                name: found.name || 'Sem título',
-                originalBand: found.originalBand || 'Banda',
-                duration: found.duration || '--:--',
-                style: found.style || ''
-              };
-            }
-            return { id: item, name: `Música #${item}`, originalBand: 'Banda', duration: '--:--' };
-          });
+            editingEventPlaylist = rawSongs.map(item => {
+              if (typeof item === 'object' && item !== null) {
+                return {
+                  id: item.id || item.songId || `song_${Math.random()}`,
+                  name: item.name || item.title || 'Sem título',
+                  originalBand: item.originalBand || item.artist || item.band || 'Banda',
+                  duration: item.duration || item.customDuration || '--:--',
+                  style: item.style || '',
+                  type: item.type,
+                  customNotes: item.customNotes
+                };
+              }
+              const found = (currentBandSyncData?.songs || []).find(s => String(s.id) === String(item)) ||
+                            (mySongs || []).find(s => String(s.id) === String(item));
+              if (found) {
+                return {
+                  id: found.id,
+                  name: found.name || 'Sem título',
+                  originalBand: found.originalBand || 'Banda',
+                  duration: found.duration || '--:--',
+                  style: found.style || ''
+                };
+              }
+              return { id: item, name: `Música #${item}`, originalBand: 'Banda', duration: '--:--' };
+            });
+          }
         }
 
         renderCurrentEventPlaylistSongs();
@@ -11698,9 +11709,21 @@
       closeSetlistEditorPage();
     }
 
+    function openEditEventInfoFromSetlistEditor() {
+      if (editingEventIndex === null || editingEventIndex < 0) {
+        if (activeSetlistEditingEventId !== null && currentBandSyncData?.setlists) {
+          const idx = currentBandSyncData.setlists.findIndex(s => String(s.id) === String(activeSetlistEditingEventId));
+          if (idx >= 0) editingEventIndex = idx;
+        }
+      }
+      const identifier = (editingEventIndex !== null && editingEventIndex >= 0) ? editingEventIndex : activeSetlistEditingEventId;
+      openEditEventPlaylistModal(identifier, 'details', true);
+    }
+
     function renderDedicatedSetlistEditorView(sub, band, syncData, sl) {
       const sName = sl.name || sl.local || 'Evento';
       const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+      const cacheVal = sl['cachê'] ?? sl.cache ?? '';
 
       sub.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 16px; animation: fadeIn 0.2s ease;">
@@ -11714,20 +11737,30 @@
               </button>
               <div style="height: 28px; width: 1px; background: rgba(255,255,255,0.1);"></div>
               <div>
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                   <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-rose'}" style="font-size: 0.68rem; font-weight: 800; padding: 2px 7px;">
                     ${isRehearsal ? 'ENSAIO' : 'SHOW'}
                   </span>
                   <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">${escapeHtml(sName)}</h3>
+                  <button type="button" onclick="openEditEventInfoFromSetlistEditor()" title="Editar informações do evento / playlist" style="background: none; border: none; cursor: pointer; color: #94a3b8; display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.color='#38bdf8'; this.style.background='rgba(56, 189, 248, 0.1)'" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent'">
+                    <ion-icon name="create-outline" style="font-size: 1.2rem;"></ion-icon>
+                  </button>
                 </div>
-                <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 12px; margin-top: 3px;">
+                <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 12px; margin-top: 3px; flex-wrap: wrap;">
                   <span><ion-icon name="calendar-outline" style="color: var(--cyan); vertical-align: middle;"></ion-icon> ${formatDateDisplay(sl.date)}</span>
+                  ${sl.time ? `<span><ion-icon name="time-outline" style="color: #64748b; vertical-align: middle;"></ion-icon> ${escapeHtml(sl.time)}</span>` : ''}
                   ${sl.local ? `<span><ion-icon name="location-outline" style="color: #64748b; vertical-align: middle;"></ion-icon> ${escapeHtml(sl.local)}</span>` : ''}
+                  ${cacheVal ? `<span><ion-icon name="cash-outline" style="color: #10b981; vertical-align: middle;"></ion-icon> ${escapeHtml(cacheVal)}</span>` : ''}
                 </div>
+                ${sl.notes ? `<div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 6px; width: fit-content; max-width: 100%;"><ion-icon name="document-text-outline" style="color: var(--cyan); flex-shrink: 0;"></ion-icon> <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(sl.notes)}</span></div>` : ''}
               </div>
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="openEditEventInfoFromSetlistEditor()" title="Editar dados da playlist (nome, local, horário, data, tipo, anotações, cachê)" style="display: flex; align-items: center; gap: 6px; font-weight: 700; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+                <ion-icon name="create-outline" style="font-size: 1.15rem;"></ion-icon>
+                <span>Editar Informações</span>
+              </button>
               <button type="button" class="btn btn-primary" onclick="saveSetlistFromEditorPage()" style="padding: 8px 20px; font-weight: 700;">
                 <ion-icon name="checkmark-circle-outline" style="font-size: 1.15rem;"></ion-icon>
                 <span>Salvar Setlist</span>
@@ -11788,9 +11821,14 @@
             <button type="button" class="btn btn-outline" onclick="closeSetlistEditorPage()">
               <ion-icon name="arrow-back-outline"></ion-icon> Voltar para Eventos
             </button>
-            <button type="button" class="btn btn-primary" onclick="saveSetlistFromEditorPage()" style="padding: 8px 24px; font-weight: 700;">
-              <ion-icon name="checkmark-circle-outline"></ion-icon> Salvar Alterações do Setlist
-            </button>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn btn-outline" onclick="openEditEventInfoFromSetlistEditor()" title="Editar informações da playlist (nome, local, horário, data, tipo, anotações, cachê)">
+                <ion-icon name="create-outline"></ion-icon> Editar Informações
+              </button>
+              <button type="button" class="btn btn-primary" onclick="saveSetlistFromEditorPage()" style="padding: 8px 24px; font-weight: 700;">
+                <ion-icon name="checkmark-circle-outline"></ion-icon> Salvar Alterações do Setlist
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -11994,7 +12032,11 @@
       persistCurrentBandSync();
 
       closeModal('editEventPlaylistModal');
-      showToast('Evento e playlist salvos com sucesso!', 'success');
+      showToast('Informações do evento e playlist salvas!', 'success');
+
+      if (activeSetlistEditingEventId !== null) {
+        activeSetlistEditingEventId = eventData.id;
+      }
 
       renderBandAgendaTab(currentBandData, currentBandSyncData);
       renderBandFinancesTab(currentBandData, currentBandSyncData);
@@ -12014,6 +12056,11 @@
           localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
         }
         persistCurrentBandSync();
+      }
+
+      if (activeSetlistEditingEventId !== null) {
+        activeSetlistEditingEventId = null;
+        editingEventIndex = null;
       }
 
       closeModal('editEventPlaylistModal');
