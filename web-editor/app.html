@@ -1654,6 +1654,27 @@
       gap: 18px;
     }
 
+    .profile-bands-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1240px) {
+      .profile-bands-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 860px) {
+      .profile-bands-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 540px) {
+      .profile-bands-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* BAND CARD */
     .band-card {
       display: flex;
@@ -1662,14 +1683,17 @@
       padding: 0;
       cursor: pointer;
       transition: all 0.25s ease;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .band-card:hover {
       border-color: var(--cyan);
       transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(14, 165, 233, 0.2);
+      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.18);
     }
     .band-card-cover {
-      height: 130px;
+      height: 95px;
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3));
       position: relative;
       overflow: hidden;
@@ -1684,20 +1708,20 @@
       display: block;
     }
     .band-card-fallback-avatar {
-      width: 64px;
-      height: 64px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--cyan), var(--violet));
       color: #fff;
-      font-size: 1.5rem;
+      font-size: 1.15rem;
       font-weight: 900;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 3px solid rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.2);
     }
     .band-card-body {
-      padding: 18px 20px 20px 20px;
+      padding: 12px 14px 14px 14px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -3789,7 +3813,7 @@
                 <span>Criar Nova Banda</span>
               </button>
             </div>
-            <div class="grid-cards" id="profileBandsGrid"></div>
+            <div class="profile-bands-grid" id="profileBandsGrid"></div>
           </div>
 
           <!-- ── TAB A: AGENDA ── -->
@@ -4197,7 +4221,7 @@
             <ion-icon name="people-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label">Membros</span>
           </button>
-          <button class="band-tab-btn active" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Repertório da Banda">
+          <button class="band-tab-btn" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Repertório da Banda">
             <ion-icon name="musical-notes-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label">Repertório</span>
           </button>
@@ -4205,7 +4229,7 @@
             <ion-icon name="wallet-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label">Finanças</span>
           </button>
-          <button class="band-tab-btn" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda de Shows e Ensaios">
+          <button class="band-tab-btn active" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda de Shows e Ensaios">
             <ion-icon name="calendar-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label">Agenda</span>
           </button>
@@ -4219,14 +4243,14 @@
           <!-- SUBVIEW M: MEMBROS -->
           <div class="band-page-subview" id="bSubview-M"></div>
 
-          <!-- SUBVIEW R: REPERTÓRIO & SETLISTS (ACTIVE DEFAULT) -->
-          <div class="band-page-subview active" id="bSubview-R"></div>
+          <!-- SUBVIEW R: REPERTÓRIO & SETLISTS -->
+          <div class="band-page-subview" id="bSubview-R"></div>
 
           <!-- SUBVIEW F: FINANÇAS -->
           <div class="band-page-subview" id="bSubview-F"></div>
 
-          <!-- SUBVIEW A: AGENDA -->
-          <div class="band-page-subview" id="bSubview-A"></div>
+          <!-- SUBVIEW A: AGENDA (ACTIVE DEFAULT) -->
+          <div class="band-page-subview active" id="bSubview-A"></div>
         </div>
       </section>
 
@@ -7603,6 +7627,27 @@
       }
     }
 
+    function getBandGenrePills(rawGenre) {
+      if (!rawGenre) return [];
+      let list = [];
+      if (Array.isArray(rawGenre)) {
+        list = rawGenre;
+      } else if (typeof rawGenre === 'string') {
+        const trimmed = rawGenre.trim();
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) list = parsed;
+          } catch (e) {
+            list = trimmed.replace(/[\[\]"]/g, '').split(/[,/•;]+/);
+          }
+        } else {
+          list = trimmed.split(/[,/•;]+/);
+        }
+      }
+      return list.map(s => String(s).trim()).filter(s => s && s !== 'null' && s !== 'undefined');
+    }
+
     function renderProfileBandsTab() {
       const grid = document.getElementById('profileBandsGrid');
       if (!grid) return;
@@ -7621,6 +7666,10 @@
       grid.innerHTML = myBands.map(band => {
         const initials = (band.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
         const normImg = normalizeImageUri(band.imageUri);
+        const genreList = getBandGenrePills(band.genre);
+        const genrePillsHtml = genreList.length > 0
+          ? genreList.map(g => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">${escapeHtml(g)}</span>`).join('')
+          : `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">Geral</span>`;
 
         return `
           <div class="card band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${band.name}">
@@ -7634,19 +7683,21 @@
             </div>
             <div class="band-card-body">
               <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                  <span class="badge ${band.isLeader ? 'badge-violet' : 'badge-cyan'}">${band.role || 'Membro'}</span>
-                  <span class="badge badge-emerald">${band.membersCount || 5} Integrante(s)</span>
+                <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(band.name)}">${escapeHtml(band.name)}</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;">
+                  ${genrePillsHtml}
                 </div>
-                <h4 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">${band.name}</h4>
-                <p style="color: var(--cyan-light); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px;">${band.genre || 'Rock'}</p>
-                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">${band.description || 'Sem descrição informada.'}</p>
+                ${band.description ? `
+                  <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    ${escapeHtml(band.description)}
+                  </p>
+                ` : ''}
               </div>
-              <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-                  <ion-icon name="open-outline"></ion-icon> Ver Painel da Banda
+              <div style="display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.75rem; color: var(--cyan-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                  <ion-icon name="open-outline"></ion-icon> Ver Agenda & Painel
                 </span>
-                <ion-icon name="chevron-forward-outline" style="color: var(--text-dim);"></ion-icon>
+                <ion-icon name="chevron-forward-outline" style="color: var(--text-dim); font-size: 0.85rem;"></ion-icon>
               </div>
             </div>
           </div>
@@ -7801,9 +7852,18 @@
       const country = band.country || 'Brasil';
       if (hLoc) hLoc.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${city}, ${state}, ${country}</span>`;
 
-      // Default to tab R as in Print 1!
-      switchBandPageTab('R');
-      setTimeout(() => hideLoading(), 260);
+      // Abre por padrão na aba de Agenda (A) e rola imediatamente para o topo
+      switchBandPageTab('A');
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        hideLoading();
+      }, 150);
     }
 
     function switchBandPageTab(tabKey) {
@@ -7815,6 +7875,10 @@
         if (sub) sub.classList.toggle('active', t === tabKey);
       });
 
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
       if (!currentBandData) return;
 
       if (tabKey === 'L') renderBandTimelineTab(currentBandData, currentBandSyncData);
@@ -7822,6 +7886,17 @@
       if (tabKey === 'R') renderBandRepertoireTab(currentBandData, currentBandSyncData);
       if (tabKey === 'F') renderBandFinancesTab(currentBandData, currentBandSyncData);
       if (tabKey === 'A') renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
+    function switchBandTab(tabKey) {
+      if (!tabKey) return switchBandPageTab('A');
+      const u = String(tabKey).toUpperCase();
+      if (u === 'A' || u === 'AGENDA') return switchBandPageTab('A');
+      if (u === 'R' || u === 'REPERTOIRE' || u === 'REPERTORIO') return switchBandPageTab('R');
+      if (u === 'M' || u === 'MEMBERS' || u === 'MEMBROS') return switchBandPageTab('M');
+      if (u === 'F' || u === 'FINANCES' || u === 'FINANCAS') return switchBandPageTab('F');
+      if (u === 'L' || u === 'TIMELINE' || u === 'HISTORICO') return switchBandPageTab('L');
+      switchBandPageTab(tabKey);
     }
 
     // ==============================================================
