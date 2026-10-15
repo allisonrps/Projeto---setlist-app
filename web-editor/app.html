@@ -2563,6 +2563,56 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    .agenda-circle-disc.agenda-income-disc {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+    .agenda-circle-disc.agenda-income-disc:hover {
+      border-color: #34d399;
+    }
+
+    /* Mostrador de Valor em Círculo na Agenda do Músico */
+    .musician-event-val-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #34d399;
+      flex-shrink: 0;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+    .musician-event-val-circle:hover {
+      transform: scale(1.05);
+      border-color: #34d399;
+      background: rgba(16, 185, 129, 0.2);
+    }
+    .musician-event-val-circle.no-income {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: #64748b;
+      box-shadow: none;
+    }
+    .musician-event-val-circle .val-curr-symbol {
+      font-size: 0.65rem;
+      font-weight: 800;
+      line-height: 1;
+      opacity: 0.85;
+    }
+    .musician-event-val-circle .val-num-amount {
+      font-size: 0.86rem;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.3px;
+    }
 
     /* Agenda Event Card (Mobile Style) */
     .agenda-event-card {
@@ -3826,17 +3876,27 @@
         gap: 8px !important;
       }
       .band-agenda-summary {
-        gap: 12px !important;
-        padding: 10px 6px !important;
+        gap: 8px !important;
+        padding: 10px 4px !important;
       }
       .agenda-circle-disc {
-        width: 56px !important;
-        height: 56px !important;
-        font-size: 1.1rem !important;
+        width: 54px !important;
+        height: 54px !important;
+        font-size: 1.05rem !important;
       }
       .agenda-circle-wrapper {
-        width: 58px !important;
-        height: 58px !important;
+        width: 56px !important;
+        height: 56px !important;
+      }
+      .musician-event-val-circle {
+        width: 44px !important;
+        height: 44px !important;
+      }
+      .musician-event-val-circle .val-curr-symbol {
+        font-size: 0.6rem !important;
+      }
+      .musician-event-val-circle .val-num-amount {
+        font-size: 0.78rem !important;
       }
 
       /* FINANCES GRID */
@@ -4414,6 +4474,20 @@
                   </div>
                 </div>
                 <div class="agenda-circle-label" id="musicianAgendaRehLabel">Ensaios</div>
+              </div>
+
+              <!-- Círculo 5: Total Recebido de Todas as Bandas no Ano -->
+              <div class="agenda-circle-col">
+                <div class="agenda-circle-wrapper">
+                  <div class="agenda-circle-disc agenda-income-disc" id="musicianAgendaIncomeDisc" style="padding-left: 10px; flex-direction: column; gap: 0;" title="Total de valor que entrou de todas as bandas no ano">
+                    <span style="font-size: 0.62rem; font-weight: 800; opacity: 0.85; line-height: 1;">$</span>
+                    <span id="musicianAgendaIncomeText" style="font-size: 0.92rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.3px;">0</span>
+                  </div>
+                  <div class="agenda-circle-overlap-icon" style="border-color: #10b981; color: #34d399; background: #132420;" title="Total Recebido de Todas as Bandas no Ano">
+                    <ion-icon name="cash-outline"></ion-icon>
+                  </div>
+                </div>
+                <div class="agenda-circle-label" style="color: #34d399;">Entradas</div>
               </div>
             </div>
 
@@ -11021,6 +11095,8 @@
         localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
       }
 
+      persistCurrentBandSync();
+
       closeModal('editEventPlaylistModal');
       showToast('Evento e playlist salvos com sucesso!', 'success');
 
@@ -11041,6 +11117,7 @@
         if (!currentBandData || currentBandData.id === 2) {
           localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
         }
+        persistCurrentBandSync();
       }
 
       closeModal('editEventPlaylistModal');
@@ -12504,6 +12581,7 @@
       // Contadores do Resumo Anual (Soma de Todas as Bandas)
       const yearShows = yearEvents.filter(s => !s.isRehearsal && s.type !== 'rehearsal').length;
       const yearRehearsals = yearEvents.length - yearShows;
+      const yearTotalIncome = yearEvents.reduce((acc, ev) => acc + (ev.myShareNum || 0), 0);
 
       const yearTextEl = document.getElementById('musicianAgendaYearText');
       if (yearTextEl) yearTextEl.textContent = selectedMusicianAgendaYear;
@@ -12518,6 +12596,14 @@
       if (showsDiscEl) showsDiscEl.textContent = yearShows;
       const rehDiscEl = document.getElementById('musicianAgendaRehDisc');
       if (rehDiscEl) rehDiscEl.textContent = yearRehearsals;
+      const incomeTextEl = document.getElementById('musicianAgendaIncomeText');
+      if (incomeTextEl) {
+        if (yearTotalIncome >= 1000) {
+          incomeTextEl.textContent = yearTotalIncome.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        } else {
+          incomeTextEl.textContent = yearTotalIncome.toLocaleString('pt-BR', { minimumFractionDigits: yearTotalIncome % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+        }
+      }
 
       if (yearEvents.length === 0) {
         list.innerHTML = `
@@ -12576,7 +12662,7 @@
             </span>
             ${monthMyShareTotal > 0 ? `
               <span class="month-pill-badge month-pill-musician" title="Sua Parte no Mês">
-                <ion-icon name="star"></ion-icon> <span>R$ ${monthMyShareTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <ion-icon name="star"></ion-icon> <span>$ ${monthMyShareTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </span>
             ` : ''}
 
@@ -12630,15 +12716,12 @@
                   </div>
                 </div>
 
-                <!-- Valor no canto direito: apenas a parte do músico -->
-                <div style="text-align: right; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end;">
-                  ${ev.myShareNum > 0 ? `
-                    <div style="font-size: 1.05rem; color: var(--emerald); font-weight: 800; letter-spacing: -0.3px;">
-                      R$ ${ev.myShareNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </div>
-                  ` : `
-                    <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;">--</div>
-                  `}
+                <!-- Valor no canto direito: círculo com valor em $ -->
+                <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end;">
+                  <div class="musician-event-val-circle ${ev.myShareNum > 0 ? 'has-income' : 'no-income'}" title="Valor da parte do músico: $ ${ev.myShareNum > 0 ? ev.myShareNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}">
+                    <span class="val-curr-symbol">$</span>
+                    <span class="val-num-amount">${ev.myShareNum > 0 ? (ev.myShareNum >= 1000 ? ev.myShareNum.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : ev.myShareNum.toLocaleString('pt-BR', { minimumFractionDigits: ev.myShareNum % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })) : '0'}</span>
+                  </div>
                 </div>
               </div>
             `;
