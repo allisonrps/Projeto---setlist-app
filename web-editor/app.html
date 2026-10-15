@@ -2614,6 +2614,50 @@
       letter-spacing: -0.3px;
     }
 
+    /* Modal Songbook Add Tabs & Format Selector */
+    .btn-tab-modal {
+      background: transparent;
+      color: #94a3b8;
+    }
+    .btn-tab-modal:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-tab-modal.active {
+      background: var(--surface-card);
+      color: #34d399;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    }
+
+    .format-choice-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .format-choice-card:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .format-choice-card.active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: #38bdf8;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spin, .spin-animation {
+      animation: spin 1s linear infinite;
+    }
+
     /* Agenda Event Card (Mobile Style) */
     .agenda-event-card {
       background: #1e2638;
@@ -5363,48 +5407,126 @@
     </div>
   </div>
 
-  <!-- ADD SONG MODAL -->
+  <!-- ADD SONG MODAL (CRIAÇÃO RÁPIDA & IMPORTAÇÃO EM LOTE) -->
   <div class="modal-overlay" id="addSongModal">
-    <div class="modal-card large">
-      <div class="modal-header">
+    <div class="modal-card" style="max-width: 560px;">
+      <div class="modal-header" style="margin-bottom: 14px;">
         <h3 class="modal-title">
-          <ion-icon name="musical-notes-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Adicionar Nova Música</span>
+          <ion-icon name="musical-notes" style="color: #34d399; font-size: 1.3rem;"></ion-icon>
+          <span>Adicionar Música ao Songbook</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addSongModal')">&times;</button>
       </div>
-      <form onsubmit="handleSaveNewSong(event)">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-          <div class="form-group">
-            <label>Nome da Música *</label>
-            <input type="text" id="newSongName" class="form-input" placeholder="Ex: Tempo Perdido" required>
+
+      <!-- TABS DE NAVEGAÇÃO INTERNA: RÁPIDA / EM LOTE -->
+      <div style="display: flex; gap: 8px; margin-bottom: 18px; background: rgba(0,0,0,0.25); padding: 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+        <button type="button" id="tabBtnAddSingle" class="btn-tab-modal active" onclick="switchAddSongTab('single')" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+          <ion-icon name="flash-outline"></ion-icon>
+          <span>Criação Rápida</span>
+        </button>
+        <button type="button" id="tabBtnAddBatch" class="btn-tab-modal" onclick="switchAddSongTab('batch')" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+          <ion-icon name="clipboard-outline"></ion-icon>
+          <span>Colar Lista em Lote</span>
+        </button>
+      </div>
+
+      <!-- PAINEL 1: CRIAÇÃO RÁPIDA INDIVIDUAL -->
+      <div id="panelAddSingle">
+        <p style="font-size: 0.84rem; color: #94a3b8; margin-top: -6px; margin-bottom: 16px; line-height: 1.4;">
+          Criação simples e rápida — informe o nome e a banda. Depois você pode editar cifras, letras e detalhes diretamente no Songbook.
+        </p>
+
+        <form onsubmit="handleSaveNewSong(event)">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">Nome da Música *</label>
+              <input type="text" id="newSongName" class="form-input" placeholder="Ex: Its My Life" required maxlength="150" autofocus>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">Banda / Artista *</label>
+              <input type="text" id="newSongArtist" class="form-input" placeholder="Ex: Bon Jovi" required maxlength="150">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 6px;">
+              <button type="button" class="btn btn-outline" onclick="closeModal('addSongModal')">Cancelar</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitSingleSong" style="display: flex; align-items: center; gap: 6px; font-weight: 800; padding: 10px 20px;" title="Adicionar Música no Songbook">
+                <ion-icon name="add-circle" style="font-size: 1.25rem;"></ion-icon>
+                <span>Adicionar Música (+)</span>
+              </button>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Banda / Artista Original *</label>
-            <input type="text" id="newSongArtist" class="form-input" placeholder="Ex: Legião Urbana" required>
+        </form>
+
+        <div style="margin-top: 20px; padding: 12px 14px; background: rgba(56, 189, 248, 0.05); border: 1px dashed rgba(56, 189, 248, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; font-size: 0.82rem;">
+            <ion-icon name="list-outline" style="font-size: 1.2rem; color: var(--cyan);"></ion-icon>
+            <span>Quer cadastrar uma lista inteira de uma vez?</span>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="switchAddSongTab('batch')" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.4); font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <ion-icon name="clipboard-outline"></ion-icon>
+            <span>Colar Lista de Músicas</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PAINEL 2: COLAR LISTA EM LOTE -->
+      <div id="panelAddBatch" style="display: none;">
+        <p style="font-size: 0.84rem; color: #94a3b8; margin-top: -6px; margin-bottom: 14px; line-height: 1.4;">
+          Cole sua lista de músicas (uma por linha). O sistema irá identificar as faixas e criá-las automaticamente no Songbook.
+        </p>
+
+        <!-- Seleção de Formato com Checkbox / Radio -->
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+            Formato da Lista:
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label id="lblFormatBandSong" class="format-choice-card active" onclick="setBatchFormat('band_song')">
+              <input type="radio" name="batchFormatChoice" id="fmtBandSong" value="band_song" checked style="accent-color: #38bdf8; cursor: pointer;">
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 800; color: #fff; font-size: 0.88rem;">Banda — Música</span>
+                <span style="font-size: 0.74rem; color: #94a3b8;">Ex: Bon Jovi - Its My Life</span>
+              </div>
+            </label>
+            <label id="lblFormatSongBand" class="format-choice-card" onclick="setBatchFormat('song_band')">
+              <input type="radio" name="batchFormatChoice" id="fmtSongBand" value="song_band" style="accent-color: #34d399; cursor: pointer;">
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 800; color: #fff; font-size: 0.88rem;">Música — Banda</span>
+                <span style="font-size: 0.74rem; color: #94a3b8;">Ex: Its My Life - Bon Jovi</span>
+              </div>
+            </label>
           </div>
         </div>
-        <div class="form-group">
-          <label>Estilo / Gênero / Tags</label>
-          <input type="text" id="newSongStyle" class="form-input" placeholder="Ex: Rock Nacional, 80s, Acústico">
+
+        <!-- Área de Texto para Colar Lista -->
+        <div class="form-group" style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1;">Cole sua lista abaixo:</label>
+            <span id="batchCountBadge" style="font-size: 0.75rem; font-weight: 800; color: #34d399; background: rgba(16,185,129,0.12); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16,185,129,0.3);">0 músicas detectadas</span>
+          </div>
+          <textarea id="batchSongInput" class="form-input" style="min-height: 160px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; resize: vertical;" placeholder="Bon Jovi - Its My Life&#10;System of a Down - BYOB&#10;Pink Floyd - Wish you are here&#10;The Cure - Forest" oninput="updateBatchPreview()"></textarea>
         </div>
-        <div class="form-group">
-          <label>Cifra com Acordes</label>
-          <textarea id="newSongChords" class="form-input" style="min-height: 140px; font-family: var(--font-mono);" placeholder="C     G     Am    F..."></textarea>
+
+        <!-- Pré-visualização Dinâmica -->
+        <div id="batchPreviewContainer" style="display: none; margin-bottom: 14px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px;">
+          <div style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
+            Pré-visualização do Reconhecimento:
+          </div>
+          <div id="batchPreviewList" style="display: flex; flex-direction: column; gap: 4px; max-height: 110px; overflow-y: auto;"></div>
         </div>
-        <div class="form-group">
-          <label>Letra Completa</label>
-          <textarea id="newSongLyrics" class="form-input" style="min-height: 100px;" placeholder="Todos os dias quando acordo..."></textarea>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline" onclick="switchAddSongTab('single')">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+            <span>Voltar</span>
+          </button>
+          <button type="button" class="btn btn-primary" id="btnSubmitBatchSongs" onclick="handleSaveBatchSongs()" style="display: flex; align-items: center; gap: 6px; font-weight: 800; padding: 10px 20px;">
+            <ion-icon name="add-circle" style="font-size: 1.25rem;"></ion-icon>
+            <span>Criar Músicas da Lista (+)</span>
+          </button>
         </div>
-        <div class="form-group">
-          <label>Tablatura (Opcional)</label>
-          <textarea id="newSongTabs" class="form-input" style="min-height: 80px; font-family: var(--font-mono);" placeholder="e|---0---1---3---|..."></textarea>
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('addSongModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar no Songbook</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -13977,28 +14099,169 @@
         .replace(/'/g, '&#039;');
     }
 
+    let currentBatchFormat = 'band_song'; // 'band_song' | 'song_band'
+
     function openAddSongModal() {
-      document.getElementById('newSongName').value = '';
-      document.getElementById('newSongArtist').value = '';
-      document.getElementById('newSongStyle').value = '';
-      document.getElementById('newSongChords').value = '';
-      document.getElementById('newSongLyrics').value = '';
-      document.getElementById('newSongTabs').value = '';
+      const nameInput = document.getElementById('newSongName');
+      const artistInput = document.getElementById('newSongArtist');
+      if (nameInput) nameInput.value = '';
+      if (artistInput) artistInput.value = '';
+
+      const batchInput = document.getElementById('batchSongInput');
+      if (batchInput) batchInput.value = '';
+
+      setBatchFormat('band_song');
+      switchAddSongTab('single');
       openModal('addSongModal');
     }
 
+    function switchAddSongTab(mode) {
+      const btnSingle = document.getElementById('tabBtnAddSingle');
+      const btnBatch = document.getElementById('tabBtnAddBatch');
+      const panelSingle = document.getElementById('panelAddSingle');
+      const panelBatch = document.getElementById('panelAddBatch');
+
+      if (mode === 'single') {
+        if (btnSingle) btnSingle.classList.add('active');
+        if (btnBatch) btnBatch.classList.remove('active');
+        if (panelSingle) panelSingle.style.display = 'block';
+        if (panelBatch) panelBatch.style.display = 'none';
+        setTimeout(() => {
+          const input = document.getElementById('newSongName');
+          if (input) input.focus();
+        }, 100);
+      } else {
+        if (btnBatch) btnBatch.classList.add('active');
+        if (btnSingle) btnSingle.classList.remove('active');
+        if (panelBatch) panelBatch.style.display = 'block';
+        if (panelSingle) panelSingle.style.display = 'none';
+        setTimeout(() => {
+          const ta = document.getElementById('batchSongInput');
+          if (ta) ta.focus();
+        }, 100);
+      }
+    }
+
+    function setBatchFormat(fmt) {
+      currentBatchFormat = fmt;
+      const elBand = document.getElementById('fmtBandSong');
+      const elSong = document.getElementById('fmtSongBand');
+      const lblBand = document.getElementById('lblFormatBandSong');
+      const lblSong = document.getElementById('lblFormatSongBand');
+
+      if (fmt === 'band_song') {
+        if (elBand) elBand.checked = true;
+        if (lblBand) lblBand.classList.add('active');
+        if (lblSong) lblSong.classList.remove('active');
+      } else {
+        if (elSong) elSong.checked = true;
+        if (lblSong) lblSong.classList.add('active');
+        if (lblBand) lblBand.classList.remove('active');
+      }
+      updateBatchPreview();
+    }
+
+    function parseBatchSongLines(text, format) {
+      if (!text) return [];
+      const lines = text.split(/\r?\n/);
+      const parsed = [];
+
+      for (let rawLine of lines) {
+        let line = rawLine.trim();
+        if (!line) continue;
+
+        // Strip line numbering e.g. "1. ", "01) ", "1 - ", "• ", "- "
+        line = line.replace(/^[\s\d]+[\.\)\-\:\s]+\s*/, '').trim();
+        if (!line) continue;
+
+        // Split by dash variations (hyphen, en-dash, em-dash)
+        let parts = line.split(/\s*[\-\–\—]\s*/);
+        if (parts.length < 2) {
+          parts = line.split(/[\-\–\—]/);
+        }
+
+        let name = '';
+        let artist = '';
+
+        if (parts.length >= 2) {
+          if (format === 'band_song') {
+            artist = parts[0].trim();
+            name = parts.slice(1).join(' - ').trim();
+          } else {
+            name = parts[0].trim();
+            artist = parts.slice(1).join(' - ').trim();
+          }
+        } else {
+          name = line.trim();
+          artist = '';
+        }
+
+        if (name) {
+          parsed.push({ name, originalBand: artist });
+        }
+      }
+
+      return parsed;
+    }
+
+    function updateBatchPreview() {
+      const textarea = document.getElementById('batchSongInput');
+      const badge = document.getElementById('batchCountBadge');
+      const previewBox = document.getElementById('batchPreviewContainer');
+      const previewList = document.getElementById('batchPreviewList');
+      if (!textarea) return;
+
+      const items = parseBatchSongLines(textarea.value, currentBatchFormat);
+      if (badge) {
+        badge.textContent = `${items.length} ${items.length === 1 ? 'música detectada' : 'músicas detectadas'}`;
+      }
+
+      if (!previewBox || !previewList) return;
+
+      if (items.length === 0) {
+        previewBox.style.display = 'none';
+        previewList.innerHTML = '';
+        return;
+      }
+
+      previewBox.style.display = 'block';
+      const sample = items.slice(0, 5);
+      previewList.innerHTML = sample.map((s, idx) => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 0.8rem;">
+          <span style="font-weight: 700; color: #fff;">${idx + 1}. ${escapeHtml(s.name)}</span>
+          <span style="color: #38bdf8; font-weight: 600;">${escapeHtml(s.originalBand || 'Artista não especificado')}</span>
+        </div>
+      `).join('') + (items.length > 5 ? `<div style="font-size: 0.74rem; color: #94a3b8; text-align: center; margin-top: 4px;">+ mais ${items.length - 5} músicas na lista</div>` : '');
+    }
+
     async function handleSaveNewSong(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
+      const name = document.getElementById('newSongName').value.trim();
+      const artist = document.getElementById('newSongArtist').value.trim();
+
+      if (!name) {
+        showToast('Informe o nome da música.', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitSingleSong');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<ion-icon name="sync-outline" class="spin-animation"></ion-icon> <span>Salvando...</span>`;
+      }
+
       const payload = {
-        name: document.getElementById('newSongName').value.trim(),
-        originalBand: document.getElementById('newSongArtist').value.trim(),
+        name,
+        originalBand: artist,
         duration: '',
-        style: document.getElementById('newSongStyle').value.trim(),
-        chords: document.getElementById('newSongChords').value,
-        lyrics: document.getElementById('newSongLyrics').value,
-        tabs: document.getElementById('newSongTabs').value
+        style: '',
+        chords: '',
+        lyrics: '',
+        tabs: ''
       };
 
+      let created = null;
       try {
         const res = await fetch(`${API_URL}/Songs`, {
           method: 'POST',
@@ -14007,24 +14270,154 @@
         });
 
         if (res.ok) {
-          const created = await res.json();
-          mySongs.unshift(created);
-          selectedSong = created;
-        } else {
-          const fallback = { ...payload, id: 'local_' + Date.now(), createdAt: new Date().toISOString() };
-          mySongs.unshift(fallback);
-          selectedSong = fallback;
+          created = await res.json();
         }
       } catch (err) {
-        const fallback = { ...payload, id: 'local_' + Date.now(), createdAt: new Date().toISOString() };
-        mySongs.unshift(fallback);
-        selectedSong = fallback;
+        console.warn('Erro ao salvar música na API:', err);
+      }
+
+      if (!created) {
+        created = { ...payload, id: 'local_' + Date.now(), createdAt: new Date().toISOString() };
+      }
+
+      mySongs.unshift(created);
+      selectedSong = created;
+
+      saveSongsCache();
+      renderSongbookSplitView();
+      if (typeof selectSongbookItem === 'function') {
+        selectSongbookItem(created.id);
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+
+      document.getElementById('newSongName').value = '';
+      document.getElementById('newSongArtist').value = '';
+
+      closeModal('addSongModal');
+      showToast(`Música "${name}" adicionada com sucesso!`, 'success');
+    }
+
+    async function handleSaveBatchSongs() {
+      const textarea = document.getElementById('batchSongInput');
+      if (!textarea) return;
+
+      const items = parseBatchSongLines(textarea.value, currentBatchFormat);
+      if (items.length === 0) {
+        showToast('Nenhuma música válida encontrada na lista. Cole as músicas no formato especificado.', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitBatchSongs');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<ion-icon name="sync-outline" class="spin-animation"></ion-icon> <span>Importando (0/${items.length})...</span>`;
+      }
+
+      const createdSongs = [];
+
+      // 1. Tenta envio em lote direto pela API batch
+      let batchSuccess = false;
+      try {
+        const dtos = items.map(it => ({
+          name: it.name,
+          originalBand: it.originalBand || '',
+          duration: '',
+          style: '',
+          chords: '',
+          lyrics: '',
+          tabs: ''
+        }));
+
+        const res = await fetch(`${API_URL}/Songs/batch`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(dtos)
+        });
+
+        if (res.ok) {
+          const resultList = await res.json();
+          if (Array.isArray(resultList) && resultList.length > 0) {
+            createdSongs.push(...resultList);
+            batchSuccess = true;
+          }
+        }
+      } catch (batchErr) {
+        console.warn('Endpoint batch não disponível, usando fallback em blocos:', batchErr);
+      }
+
+      // 2. Se o batch não estiver disponível no servidor live, envia em chunks paralelos de 4
+      if (!batchSuccess) {
+        const chunkSize = 4;
+        for (let i = 0; i < items.length; i += chunkSize) {
+          const chunk = items.slice(i, i + chunkSize);
+          if (btn) {
+            btn.innerHTML = `<ion-icon name="sync-outline" class="spin-animation"></ion-icon> <span>Importando (${Math.min(i, items.length)}/${items.length})...</span>`;
+          }
+
+          const chunkPromises = chunk.map(async (item) => {
+            const payload = {
+              name: item.name,
+              originalBand: item.originalBand || '',
+              duration: '',
+              style: '',
+              chords: '',
+              lyrics: '',
+              tabs: ''
+            };
+
+            try {
+              const res = await fetch(`${API_URL}/Songs`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload)
+              });
+
+              if (res.ok) {
+                const created = await res.json();
+                return created;
+              }
+            } catch (e) {
+              console.warn('Erro ao salvar música online:', item.name, e);
+            }
+
+            return {
+              ...payload,
+              id: 'local_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+              createdAt: new Date().toISOString()
+            };
+          });
+
+          const results = await Promise.all(chunkPromises);
+          createdSongs.push(...results);
+        }
+      }
+
+      // Adiciona todas as músicas novas no topo do songbook
+      mySongs.unshift(...createdSongs);
+      if (createdSongs.length > 0) {
+        selectedSong = createdSongs[0];
       }
 
       saveSongsCache();
-      closeModal('addSongModal');
       renderSongbookSplitView();
-      showToast('Nova música adicionada com sucesso!', 'success');
+      if (selectedSong && typeof selectSongbookItem === 'function') {
+        selectSongbookItem(selectedSong.id);
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+
+      textarea.value = '';
+      updateBatchPreview();
+      closeModal('addSongModal');
+      showToast(`${createdSongs.length} músicas adicionadas ao Songbook com sucesso!`, 'success');
     }
 
     // ==========================================
