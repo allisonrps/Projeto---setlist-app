@@ -5865,30 +5865,33 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
             <div>
               <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Músicas neste Setlist:</span>
-              <span style="font-size: 0.75rem; color: #64748b; margin-left: 6px;">(Arraste para reordenar)</span>
               <span style="font-size: 0.8rem; color: #94a3b8; margin-left: 8px;" id="mEventTotalDuration">Duração Total: --:--</span>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker()">
-                <ion-icon name="add-circle-outline"></ion-icon> Adicionar Música do Repertório
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker()" style="font-weight: 700;">
+                <ion-icon name="add-circle-outline"></ion-icon> + Música
+              </button>
+              <button type="button" class="btn btn-sm" onclick="handleAddPauseToPlaylist()" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-weight: 700;">
+                <ion-icon name="pause-circle-outline"></ion-icon> + Pausa
+              </button>
+              <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; font-weight: 700;">
+                <ion-icon name="document-text-outline"></ion-icon> + Anotação
+              </button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="openSetlistEditorPage(editingEventIndex)" title="Abrir na página de eventos" style="font-weight: 700;">
+                <ion-icon name="expand-outline"></ion-icon> Página Própria
               </button>
             </div>
           </div>
 
-          <!-- SELETOR DE MÚSICA DO REPERTÓRIO PARA ADICIONAR -->
-          <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <div style="font-size: 0.82rem; font-weight: 700; color: var(--cyan); display: flex; align-items: center; gap: 6px;">
-                <ion-icon name="list-outline"></ion-icon> <span>Repertório Organizado por Banda (A-Z)</span>
-              </div>
-              <button type="button" class="modal-close" style="font-size: 1.1rem; line-height: 1;" onclick="toggleAddSongToPlaylistPicker(false)">&times;</button>
-            </div>
-            <div style="margin-bottom: 8px;">
-              <input type="text" id="mEventSongCatalogFilter" class="form-input" placeholder="🔍 Filtrar por banda ou música..." oninput="populateEventSongCatalogSelect(this.value)" style="padding: 7px 10px; font-size: 0.82rem;">
+          <!-- SELETOR DE MÚSICA DO REPERTÓRIO PARA ADICIONAR (EXTENDIDO, SEM SUBTEXTOS) -->
+          <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <input type="text" id="mEventSongCatalogFilter" class="form-input" placeholder="🔍 Digite para buscar música ou banda no repertório..." oninput="populateEventSongCatalogSelect(this.value)" style="width: 100%; padding: 9px 12px; font-size: 0.88rem;">
+              <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)" title="Fechar seletor" style="padding: 0 12px;">Fechar</button>
             </div>
             <div style="display: flex; gap: 8px;">
-              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.85rem;"></select>
-              <button type="button" class="btn btn-sm btn-primary" onclick="addSelectedSongToCurrentPlaylist()" style="padding: 0 16px; font-weight: 700;">
+              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.88rem; padding: 8px 10px;"></select>
+              <button type="button" class="btn btn-sm btn-primary" onclick="addSelectedSongToCurrentPlaylist()" style="padding: 0 18px; font-weight: 700;">
                 <ion-icon name="add-outline"></ion-icon> Adicionar
               </button>
             </div>
@@ -10917,12 +10920,28 @@
       return { day: '01', month: 'JAN' };
     }
 
+    let activeSetlistEditingEventId = null;
+
     function renderBandAgendaTab(band, syncData) {
       const sub = document.getElementById('bSubview-A');
       if (!sub) return;
 
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
+
+      // SE HOUVER UM EVENTO COM EDIÇÃO DE SETLIST ATIVA, CARREGA A PÁGINA PRÓPRIA
+      if (activeSetlistEditingEventId !== null) {
+        let sl = setlists.find(s => String(s.id) === String(activeSetlistEditingEventId));
+        if (!sl && !isNaN(activeSetlistEditingEventId)) {
+          sl = setlists[parseInt(activeSetlistEditingEventId, 10)];
+        }
+        if (sl) {
+          renderDedicatedSetlistEditorView(sub, band, syncData, sl);
+          return;
+        } else {
+          activeSetlistEditingEventId = null;
+        }
+      }
 
       // Filtra eventos pelo ano selecionado
       const yearEvents = setlists.filter(sl => {
@@ -11083,7 +11102,7 @@
               <!-- Lado direito: Cachê e Ação -->
               <div style="display: flex; align-items: center; gap: 14px;">
                 ${cacheNum ? `<span style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
-                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openEditEventPlaylistModal('${escapeHtml(evIdentifier)}', 'playlist')">
+                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openSetlistEditorPage('${escapeHtml(evIdentifier)}')">
                   <ion-icon name="create-outline"></ion-icon> Editar Playlist
                 </button>
               </div>
@@ -11375,6 +11394,81 @@
       showToast(`"${song.name}" adicionada à playlist!`, 'success');
     }
 
+    function handleAddPauseToPlaylist() {
+      editingEventPlaylist.push({
+        id: -1,
+        type: 'pause',
+        name: 'Pausa / Intervalo',
+        duration: '10 min',
+        customNotes: ''
+      });
+      renderCurrentEventPlaylistSongs();
+      showToast('Pausa adicionada ao setlist!', 'info');
+    }
+
+    function handleAddNoteToPlaylist() {
+      editingEventPlaylist.push({
+        id: -2,
+        type: 'note',
+        name: 'Anotação / Recado de Palco',
+        duration: '',
+        customNotes: ''
+      });
+      renderCurrentEventPlaylistSongs();
+      showToast('Anotação adicionada ao setlist!', 'info');
+    }
+
+    function updatePlaylistItemField(idx, field, val) {
+      if (!editingEventPlaylist[idx]) return;
+      editingEventPlaylist[idx][field] = val;
+      if (field === 'duration') {
+        updatePlaylistDurationDisplay();
+      }
+    }
+
+    function updatePlaylistDurationDisplay() {
+      const durEl = document.getElementById('mEventTotalDuration');
+      const countEl = document.getElementById('mEventSongsCount');
+      const pageDurEl = document.getElementById('pageEventTotalDuration');
+      const pageCountEl = document.getElementById('pageEventSongsCount');
+
+      let totalSeconds = 0;
+      let songsOnlyCount = 0;
+      let pauseCount = 0;
+      let noteCount = 0;
+
+      editingEventPlaylist.forEach(s => {
+        if (!s) return;
+        const isPause = s.id === -1 || s.type === 'pause';
+        const isNote = s.id === -2 || s.type === 'note';
+        if (isPause) pauseCount++;
+        else if (isNote) noteCount++;
+        else songsOnlyCount++;
+
+        const dur = String(s.duration || s.customDuration || '').trim().toLowerCase();
+        if (dur.includes(':')) {
+          const parts = dur.split(':').map(n => parseInt(n, 10) || 0);
+          if (parts.length === 2) {
+            totalSeconds += (parts[0] * 60) + parts[1];
+          } else if (parts.length === 3) {
+            totalSeconds += (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+          }
+        } else if (dur.includes('min')) {
+          const m = parseInt(dur, 10) || 0;
+          totalSeconds += m * 60;
+        }
+      });
+
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
+
+      if (durEl) durEl.textContent = `Duração Total: ${durStr}`;
+      if (countEl) countEl.textContent = editingEventPlaylist.length;
+      if (pageDurEl) pageDurEl.textContent = durStr;
+      if (pageCountEl) pageCountEl.textContent = `${songsOnlyCount} músicas${pauseCount > 0 ? `, ${pauseCount} pausas` : ''}${noteCount > 0 ? `, ${noteCount} anotações` : ''}`;
+    }
+
     // ==============================================================
     // DRAG AND DROP SUAVE NO EDITOR DE PLAYLIST
     // ==============================================================
@@ -11450,7 +11544,7 @@
         const movedItem = editingEventPlaylist.splice(fromIdx, 1)[0];
         editingEventPlaylist.splice(insertIdx, 0, movedItem);
         renderCurrentEventPlaylistSongs();
-        showToast(`"${movedItem.name || 'Música'}" reposicionada!`, 'info');
+        showToast(`"${movedItem.name || 'Item'}" reposicionado!`, 'info');
       }
       draggedPlaylistSongIndex = null;
     }
@@ -11533,84 +11627,321 @@
       }
     }
 
+    // ==============================================================
+    // PÁGINA PRÓPRIA DE EDIÇÃO DE SETLIST DENTRO DA ABA DE EVENTOS
+    // ==============================================================
+    function openSetlistEditorPage(identifier) {
+      if (!currentBandSyncData) currentBandSyncData = { setlists: [], songs: [] };
+      if (!currentBandSyncData.setlists) currentBandSyncData.setlists = [];
+
+      const setlists = currentBandSyncData.setlists;
+      let sl = null;
+      let originalIdx = -1;
+
+      originalIdx = setlists.findIndex(s => String(s.id) === String(identifier));
+      if (originalIdx === -1 && !isNaN(identifier)) {
+        originalIdx = parseInt(identifier, 10);
+      }
+      if (originalIdx >= 0 && originalIdx < setlists.length) {
+        sl = setlists[originalIdx];
+      }
+
+      if (!sl) {
+        showToast('Evento não encontrado para edição de setlist.', 'error');
+        return;
+      }
+
+      editingEventIndex = originalIdx;
+      activeSetlistEditingEventId = identifier;
+
+      editingEventPlaylist = (sl.songs || []).map(item => {
+        if (typeof item === 'object' && item !== null) {
+          return { ...item };
+        }
+        const found = (currentBandSyncData?.songs || []).find(s => String(s.id) === String(item)) ||
+                      (mySongs || []).find(s => String(s.id) === String(item));
+        if (found) {
+          return {
+            id: found.id,
+            name: found.name || 'Sem título',
+            originalBand: found.originalBand || 'Banda',
+            duration: found.duration || '--:--',
+            style: found.style || ''
+          };
+        }
+        return { id: item, name: `Música #${item}`, originalBand: 'Banda', duration: '--:--' };
+      });
+
+      closeModal('editEventPlaylistModal');
+      switchBandTab('agenda');
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeSetlistEditorPage() {
+      activeSetlistEditingEventId = null;
+      editingEventIndex = null;
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+    }
+
+    async function saveSetlistFromEditorPage() {
+      if (editingEventIndex === null || !currentBandSyncData?.setlists?.[editingEventIndex]) {
+        showToast('Nenhum setlist selecionado para salvar.', 'error');
+        return;
+      }
+
+      currentBandSyncData.setlists[editingEventIndex].songs = [...editingEventPlaylist];
+      currentBandSyncData.setlists[editingEventIndex].updatedAt = new Date().toISOString();
+
+      await persistCurrentBandSync();
+      showToast('Setlist salvo com sucesso na nuvem!', 'success');
+      closeSetlistEditorPage();
+    }
+
+    function renderDedicatedSetlistEditorView(sub, band, syncData, sl) {
+      const sName = sl.name || sl.local || 'Evento';
+      const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
+
+      sub.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 16px; animation: fadeIn 0.2s ease;">
+          
+          <!-- TOP BAR: VOLTAR, EVENT INFO, SALVAR -->
+          <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 260px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="closeSetlistEditorPage()" title="Voltar para a lista de eventos">
+                <ion-icon name="arrow-back-outline" style="font-size: 1.15rem;"></ion-icon>
+                <span>Voltar para Eventos</span>
+              </button>
+              <div style="height: 28px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-rose'}" style="font-size: 0.68rem; font-weight: 800; padding: 2px 7px;">
+                    ${isRehearsal ? 'ENSAIO' : 'SHOW'}
+                  </span>
+                  <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">${escapeHtml(sName)}</h3>
+                </div>
+                <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 12px; margin-top: 3px;">
+                  <span><ion-icon name="calendar-outline" style="color: var(--cyan); vertical-align: middle;"></ion-icon> ${formatDateDisplay(sl.date)}</span>
+                  ${sl.local ? `<span><ion-icon name="location-outline" style="color: #64748b; vertical-align: middle;"></ion-icon> ${escapeHtml(sl.local)}</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" class="btn btn-primary" onclick="saveSetlistFromEditorPage()" style="padding: 8px 20px; font-weight: 700;">
+                <ion-icon name="checkmark-circle-outline" style="font-size: 1.15rem;"></ion-icon>
+                <span>Salvar Setlist</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY METRICS & ROTEIRO ACTION BAR -->
+          <div style="background: #182030; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 16px; font-size: 0.88rem;">
+              <div>
+                <span style="color: #94a3b8;">Itens: </span>
+                <strong style="color: #fff;" id="pageEventSongsCount">0 itens</strong>
+              </div>
+              <div style="width: 4px; height: 4px; border-radius: 50%; background: #64748b;"></div>
+              <div>
+                <span style="color: #94a3b8;">Duração Total: </span>
+                <strong style="color: var(--cyan);" id="pageEventTotalDuration">--:--</strong>
+              </div>
+            </div>
+
+            <!-- ACTION BAR: + MÚSICA, + PAUSA, + ANOTAÇÃO -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker()" style="font-weight: 700;">
+                <ion-icon name="add-circle-outline"></ion-icon> <span>+ Música</span>
+              </button>
+              <button type="button" class="btn btn-sm" onclick="handleAddPauseToPlaylist()" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-weight: 700;">
+                <ion-icon name="pause-circle-outline"></ion-icon> <span>+ Pausa</span>
+              </button>
+              <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; font-weight: 700;">
+                <ion-icon name="document-text-outline"></ion-icon> <span>+ Anotação</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- EXTENDED SONG CATALOG SEARCH & PICKER -->
+          <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <input type="text" id="mEventSongCatalogFilter" class="form-input" placeholder="🔍 Digite para buscar música ou banda no repertório..." oninput="populateEventSongCatalogSelect(this.value)" style="width: 100%; padding: 10px 14px; font-size: 0.92rem;">
+              <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)" title="Fechar seletor" style="padding: 0 16px;">Fechar</button>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.9rem; padding: 10px 12px;"></select>
+              <button type="button" class="btn btn-primary" onclick="addSelectedSongToCurrentPlaylist()" style="padding: 0 22px; font-weight: 700;">
+                <ion-icon name="add-circle-outline"></ion-icon> Adicionar
+              </button>
+            </div>
+          </div>
+
+          <!-- ITEMS LIST (DRAG AND DROP) -->
+          <div id="mEventPlaylistItemsList" style="min-height: 250px;">
+            <!-- Músicas, Pausas e Anotações com Drag & Drop suave -->
+          </div>
+
+          <!-- BOTTOM ACTIONS BAR -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 10px;">
+            <button type="button" class="btn btn-outline" onclick="closeSetlistEditorPage()">
+              <ion-icon name="arrow-back-outline"></ion-icon> Voltar para Eventos
+            </button>
+            <button type="button" class="btn btn-primary" onclick="saveSetlistFromEditorPage()" style="padding: 8px 24px; font-weight: 700;">
+              <ion-icon name="checkmark-circle-outline"></ion-icon> Salvar Alterações do Setlist
+            </button>
+          </div>
+        </div>
+      `;
+
+      renderCurrentEventPlaylistSongs();
+    }
+
     function renderCurrentEventPlaylistSongs() {
       const listContainer = document.getElementById('mEventPlaylistItemsList');
-      const countEl = document.getElementById('mEventSongsCount');
-      const durEl = document.getElementById('mEventTotalDuration');
-
-      if (countEl) countEl.textContent = editingEventPlaylist.length;
-
-      let totalSeconds = 0;
-      editingEventPlaylist.forEach(s => {
-        if (s && typeof s.duration === 'string' && s.duration.includes(':')) {
-          const parts = s.duration.split(':').map(n => parseInt(n, 10) || 0);
-          if (parts.length === 2) {
-            totalSeconds += (parts[0] * 60) + parts[1];
-          } else if (parts.length === 3) {
-            totalSeconds += (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-          }
-        }
-      });
-      const hrs = Math.floor(totalSeconds / 3600);
-      const mins = Math.floor((totalSeconds % 3600) / 60);
-      const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
-      if (durEl) durEl.textContent = `Duração Total: ${durStr}`;
+      updatePlaylistDurationDisplay();
 
       if (!listContainer) return;
 
       if (editingEventPlaylist.length === 0) {
         listContainer.innerHTML = `
-          <div style="text-align: center; padding: 32px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.1);">
-            <ion-icon name="musical-notes-outline" style="font-size: 2rem; color: #64748b; margin-bottom: 6px;"></ion-icon>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 10px 0;">Nenhuma música escalada para este evento ainda.</p>
-            <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker(true)">Adicionar do Repertório</button>
+          <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+            <ion-icon name="musical-notes-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <p style="color: #94a3b8; font-size: 0.88rem; margin: 0 0 12px 0;">Nenhuma música ou intervalo escalado neste setlist ainda.</p>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker(true)"><ion-icon name="add-circle-outline"></ion-icon> Adicionar Música</button>
+              <button type="button" class="btn btn-sm" onclick="handleAddPauseToPlaylist()" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24;"><ion-icon name="pause-circle-outline"></ion-icon> Adicionar Pausa</button>
+              <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc;"><ion-icon name="document-text-outline"></ion-icon> Adicionar Anotação</button>
+            </div>
           </div>
         `;
         return;
       }
 
-      listContainer.innerHTML = editingEventPlaylist.map((song, idx) => `
-        <div class="playlist-song-row"
-             id="playlistSongRow_${idx}"
-             data-index="${idx}"
-             draggable="true"
-             ondragstart="handlePlaylistDragStart(event, ${idx})"
-             ondragover="handlePlaylistDragOver(event, ${idx})"
-             ondragleave="handlePlaylistDragLeave(event, ${idx})"
-             ondrop="handlePlaylistDrop(event, ${idx})"
-             ondragend="handlePlaylistDragEnd(event)">
-          
-          <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-            <!-- Handle de Arrastar Suave -->
-            <div class="playlist-drag-handle" title="Arraste para cima ou para baixo para reordenar na playlist">
-              <ion-icon name="reorder-two-outline" style="font-size: 1.4rem; pointer-events: none;"></ion-icon>
+      listContainer.innerHTML = editingEventPlaylist.map((song, idx) => {
+        const isPause = song.id === -1 || song.type === 'pause';
+        const isNote = song.id === -2 || song.type === 'note';
+
+        if (isPause) {
+          return `
+            <div class="playlist-song-row"
+                 id="playlistSongRow_${idx}"
+                 data-index="${idx}"
+                 draggable="true"
+                 style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25);"
+                 ondragstart="handlePlaylistDragStart(event, ${idx})"
+                 ondragover="handlePlaylistDragOver(event, ${idx})"
+                 ondragleave="handlePlaylistDragLeave(event, ${idx})"
+                 ondrop="handlePlaylistDrop(event, ${idx})"
+                 ondragend="handlePlaylistDragEnd(event)">
+              
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                <div class="playlist-drag-handle" title="Arraste para reordenar">
+                  <ion-icon name="reorder-two-outline" style="font-size: 1.4rem; pointer-events: none; color: #fbbf24;"></ion-icon>
+                </div>
+                <span style="font-size: 0.82rem; font-weight: 800; color: #fbbf24; width: 28px; text-align: center;">#${idx + 1}</span>
+
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; color: #fbbf24; flex-shrink: 0;">
+                  <ion-icon name="pause-circle-outline" style="font-size: 1.25rem;"></ion-icon>
+                </div>
+
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.88rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">
+                    PAUSA / INTERVALO
+                  </div>
+                  <input type="text" class="form-input" style="padding: 3px 8px; font-size: 0.78rem; height: 26px; margin-top: 3px; background: rgba(0,0,0,0.25); border-color: rgba(245, 158, 11, 0.2);" placeholder="Observação da pausa (opcional)..." value="${escapeHtml(song.customNotes || '')}" oninput="updatePlaylistItemField(${idx}, 'customNotes', this.value)">
+                </div>
+
+                <div style="width: 90px; flex-shrink: 0;">
+                  <input type="text" class="form-input" style="padding: 4px 6px; font-size: 0.82rem; text-align: center; font-weight: 800; font-family: var(--font-mono); color: #fbbf24; background: rgba(0,0,0,0.3); border-color: rgba(245, 158, 11, 0.3);" placeholder="10 min" value="${escapeHtml(song.duration || '10 min')}" oninput="updatePlaylistItemField(${idx}, 'duration', this.value)">
+                </div>
+              </div>
+
+              <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
+              </button>
+            </div>
+          `;
+        }
+
+        if (isNote) {
+          return `
+            <div class="playlist-song-row"
+                 id="playlistSongRow_${idx}"
+                 data-index="${idx}"
+                 draggable="true"
+                 style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25);"
+                 ondragstart="handlePlaylistDragStart(event, ${idx})"
+                 ondragover="handlePlaylistDragOver(event, ${idx})"
+                 ondragleave="handlePlaylistDragLeave(event, ${idx})"
+                 ondrop="handlePlaylistDrop(event, ${idx})"
+                 ondragend="handlePlaylistDragEnd(event)">
+              
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                <div class="playlist-drag-handle" title="Arraste para reordenar">
+                  <ion-icon name="reorder-two-outline" style="font-size: 1.4rem; pointer-events: none; color: #c084fc;"></ion-icon>
+                </div>
+                <span style="font-size: 0.82rem; font-weight: 800; color: #c084fc; width: 28px; text-align: center;">#${idx + 1}</span>
+
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #c084fc; flex-shrink: 0;">
+                  <ion-icon name="document-text-outline" style="font-size: 1.25rem;"></ion-icon>
+                </div>
+
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.82rem; font-weight: 800; color: #c084fc; text-transform: uppercase; margin-bottom: 3px;">
+                    ANOTAÇÃO DE PALCO
+                  </div>
+                  <input type="text" class="form-input" style="padding: 4px 8px; font-size: 0.82rem; background: rgba(0,0,0,0.25); border-color: rgba(168, 85, 247, 0.2);" placeholder="Digite o aviso, fala com público ou recado..." value="${escapeHtml(song.customNotes || (song.name !== 'Anotação / Recado de Palco' && song.name !== 'Anotação / Fala com o público' ? song.name : '') || '')}" oninput="updatePlaylistItemField(${idx}, 'customNotes', this.value)">
+                </div>
+              </div>
+
+              <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
+              </button>
+            </div>
+          `;
+        }
+
+        // Standard Song Row
+        return `
+          <div class="playlist-song-row"
+               id="playlistSongRow_${idx}"
+               data-index="${idx}"
+               draggable="true"
+               ondragstart="handlePlaylistDragStart(event, ${idx})"
+               ondragover="handlePlaylistDragOver(event, ${idx})"
+               ondragleave="handlePlaylistDragLeave(event, ${idx})"
+               ondrop="handlePlaylistDrop(event, ${idx})"
+               ondragend="handlePlaylistDragEnd(event)">
+            
+            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+              <div class="playlist-drag-handle" title="Arraste para reordenar">
+                <ion-icon name="reorder-two-outline" style="font-size: 1.4rem; pointer-events: none;"></ion-icon>
+              </div>
+
+              <span style="font-size: 0.82rem; font-weight: 800; color: #64748b; width: 28px; text-align: center;">#${idx + 1}</span>
+
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 0.9rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(song.name || 'Sem título')}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(song.originalBand || 'Banda')}
+                </div>
+              </div>
+
+              <span style="font-size: 0.78rem; color: #94a3b8; font-family: var(--font-mono); margin-right: 6px;">
+                ${song.duration || '--:--'}
+              </span>
             </div>
 
-            <!-- Contador de Ordem -->
-            <span style="font-size: 0.82rem; font-weight: 800; color: #64748b; width: 28px; text-align: center;">#${idx + 1}</span>
-
-            <!-- Nome da Música & Banda -->
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 0.9rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${escapeHtml(song.name || 'Sem título')}
-              </div>
-              <div style="font-size: 0.75rem; color: var(--cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${escapeHtml(song.originalBand || 'Banda')}
-              </div>
-            </div>
-
-            <!-- Duração -->
-            <span style="font-size: 0.78rem; color: #94a3b8; font-family: var(--font-mono); margin-right: 6px;">
-              ${song.duration || '--:--'}
-            </span>
+            <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease;">
+              <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
+            </button>
           </div>
-
-          <!-- Botão Excluir (Sem as flechinhas!) -->
-          <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease;">
-            <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
-          </button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       initPlaylistTouchDrag();
     }
