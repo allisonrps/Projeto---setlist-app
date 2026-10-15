@@ -4217,14 +4217,13 @@
 
           <!-- ── TAB P: BANDAS E PROJETOS ── -->
           <div class="profile-subview" id="subview-bands">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
-                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Bandas e Projetos</h3>
-                <p style="color: #94a3b8; font-size: 0.85rem;">Clique em qualquer banda para abrir o perfil público.</p>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0;">Bandas e Projetos</h3>
               </div>
               <button class="btn btn-violet btn-sm" onclick="openCreateBandModal()">
                 <ion-icon name="add-circle-outline"></ion-icon>
-                <span>Criar Nova Banda</span>
+                <span>Nova Banda</span>
               </button>
             </div>
             <div class="profile-bands-grid" id="profileBandsGrid"></div>
@@ -4232,14 +4231,13 @@
 
           <!-- ── TAB A: AGENDA ── -->
           <div class="profile-subview" id="subview-agenda">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 14px;">
               <div>
-                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
                   <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
                   <span>Agenda de Shows & Ensaios</span>
                   <span class="badge badge-cyan" id="musicianAgendaCountBadge">0 Eventos</span>
                 </h3>
-                <p style="color: #94a3b8; font-size: 0.85rem;">Cronograma unificado com todos os eventos de todas as suas bandas e projetos.</p>
               </div>
               <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn btn-outline btn-sm" onclick="openShareMusicianAgendaModal()">
@@ -4571,12 +4569,11 @@
       <section class="main-view" id="view-projects">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px;">
+            <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px; margin: 0;">
               <ion-icon name="briefcase" style="color: var(--cyan);"></ion-icon>
               <span>Meus Projetos & Bandas</span>
               <span class="badge badge-cyan" id="projectsCountBadge">1 Banda</span>
             </h1>
-            <p style="color: var(--text-muted); font-size: 0.88rem;">Bandas e projetos dos quais você participa como integrante ou administrador.</p>
           </div>
           <button class="btn btn-violet" onclick="openCreateBandModal()">
             <ion-icon name="add-circle-outline"></ion-icon>
@@ -5080,6 +5077,22 @@
           <label>Detalhes Adicionais (Opcional)</label>
           <textarea id="gearDetailsInput" class="form-input" placeholder="Ano, captação, regulagem, notas..."></textarea>
         </div>
+
+        <!-- Marcador de Negociável & Valor -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="gearIsNegotiableInput" onchange="toggleGearPriceInput(this.checked)" style="width: 18px; height: 18px; accent-color: #22c55e; cursor: pointer;">
+            <span style="font-weight: 700; color: #fff; font-size: 0.9rem;">Item Negociável (Disponível para venda ou troca)</span>
+          </label>
+          <div id="gearPriceWrapper" style="display: none; margin-top: 10px;">
+            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px; font-weight: 600;">Valor Pretendido (R$)</label>
+            <div style="position: relative; max-width: 200px;">
+              <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 0.9rem; color: #34d399;">R$</span>
+              <input type="text" id="gearPriceInput" class="form-input" placeholder="0,00" style="padding-left: 36px; font-weight: 800; color: #34d399;">
+            </div>
+          </div>
+        </div>
+
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('addGearModal')">Cancelar</button>
           <button type="submit" class="btn btn-violet">Adicionar</button>
@@ -5177,7 +5190,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="people-outline" style="color: var(--violet);"></ion-icon>
-          <span>Criar Banda na Nuvem</span>
+          <span>Nova Banda</span>
         </h3>
         <button class="modal-close" onclick="closeModal('createBandModal')">&times;</button>
       </div>
@@ -5207,7 +5220,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('createBandModal')">Cancelar</button>
-          <button type="submit" class="btn btn-violet">Criar Banda</button>
+          <button type="submit" class="btn btn-violet">Nova Banda</button>
         </div>
       </form>
     </div>
@@ -6224,7 +6237,7 @@
 
       if ((!myGear || myGear.length === 0) && (currentUser.username === 'allison_xd' || currentUser.email === 'allison@example.com')) {
         myGear = [
-          { id: 1, category: 'Baixo', name: 'Tagima TW-73 Jazz Bass', details: '4 cordas, passivo, acabamento Sunburst' },
+          { id: 1, category: 'Baixo', name: 'Tagima TW-73 Jazz Bass', details: '4 cordas, passivo, acabamento Sunburst', isNegotiable: true, price: '1.200,00' },
           { id: 2, category: 'Baixo', name: 'Fender Jazz Bass Standard', details: 'Escala em Maple, regulado com cordas D\'Addario .045' },
           { id: 3, category: 'Amplificador', name: 'Hartke HA3500 + Caixa 4x10', details: '350W RMS híbrido com cone de alumínio' },
           { id: 4, category: 'Pedal / Efeitos', name: 'Zoom B3n Bass Multi-Effects', details: 'Compressor, SansAmp bass driver e afinador integrado' }
@@ -7581,8 +7594,7 @@
           <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
             <ion-icon name="flash-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
             <h4 style="color: #fff; font-size: 0.95rem;">Nenhuma habilidade cadastrada</h4>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Adicione os instrumentos que você toca e seu nível de domínio.</p>
-            <button class="btn btn-primary btn-sm" onclick="openAddSkillModal()">Adicionar</button>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Adicione os instrumentos que você toca e seu nível de domínio.</p>
           </div>
         `;
       } else {
@@ -7627,13 +7639,9 @@
           <div style="text-align: center; padding: 24px; background: rgba(251, 191, 36, 0.03); border-radius: var(--radius-md); border: 1px dashed rgba(251, 191, 36, 0.25);">
             <ion-icon name="sparkles-outline" style="font-size: 2rem; color: #fbbf24; margin-bottom: 4px; opacity: 0.8;"></ion-icon>
             <h4 style="color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Nenhum diferencial extra cadastrado</h4>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px; max-width: 440px; margin-left: auto; margin-right: auto;">
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0; max-width: 440px; margin-left: auto; margin-right: auto;">
               Adicione diferenciais que ajudam muito uma banda (van, som de PA, flyers, etc.).
             </p>
-            <button class="btn btn-amber btn-sm" onclick="openAddExtraSkillModal()" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); font-weight: 700;">
-              <ion-icon name="add-circle-outline"></ion-icon>
-              <span>Adicionar</span>
-            </button>
           </div>
         `;
         return;
@@ -7649,7 +7657,6 @@
             <div style="display: flex; align-items: center; gap: 10px;">
               <ion-icon name="${iconName}" style="color: #fbbf24; font-size: 1.15rem;"></ion-icon>
               <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(item.name)}</span>
-              <span class="badge badge-amber" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Diferencial')}</span>
             </div>
             <button type="button" onclick="removeExtraSkill(${idx})" title="Remover diferencial" class="clean-chip-del-btn">&times;</button>
           </div>
@@ -7819,16 +7826,29 @@
       container.style.display = 'flex';
       container.style.flexDirection = 'column';
       container.style.gap = '8px';
-      container.innerHTML = myGear.map((item, idx) => `
-        <div class="profile-clean-row">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <ion-icon name="hardware-chip-outline" style="color: var(--violet); font-size: 1.15rem;"></ion-icon>
-            <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(item.name)}</span>
-            <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Gear')}</span>
+      container.innerHTML = myGear.map((item, idx) => {
+        let negBadge = '';
+        if (item.isNegotiable) {
+          const priceDisplay = item.price ? (String(item.price).trim().startsWith('R$') ? String(item.price).trim() : `R$ ${String(item.price).trim()}`) : '';
+          negBadge = `
+            <span class="badge" style="font-size: 0.68rem; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700;">
+              <ion-icon name="pricetag-outline"></ion-icon>
+              <span>Negociável${priceDisplay ? ': ' + escapeHtml(priceDisplay) : ''}</span>
+            </span>
+          `;
+        }
+        return `
+          <div class="profile-clean-row">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <ion-icon name="hardware-chip-outline" style="color: var(--violet); font-size: 1.15rem; flex-shrink: 0;"></ion-icon>
+              <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(item.name)}</span>
+              <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Gear')}</span>
+              ${negBadge}
+            </div>
+            <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
           </div>
-          <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function openAddSkillModal() {
@@ -7892,10 +7912,27 @@
       }
     }
 
+    function toggleGearPriceInput(checked) {
+      const priceWrapper = document.getElementById('gearPriceWrapper');
+      if (priceWrapper) {
+        priceWrapper.style.display = checked ? 'block' : 'none';
+        if (checked) {
+          const input = document.getElementById('gearPriceInput');
+          if (input) input.focus();
+        }
+      }
+    }
+
     function openAddGearModal() {
       document.getElementById('gearCategoryInput').value = 'Guitarra';
       document.getElementById('gearNameInput').value = '';
       document.getElementById('gearDetailsInput').value = '';
+      const negCheckbox = document.getElementById('gearIsNegotiableInput');
+      if (negCheckbox) negCheckbox.checked = false;
+      const priceInput = document.getElementById('gearPriceInput');
+      if (priceInput) priceInput.value = '';
+      const priceWrapper = document.getElementById('gearPriceWrapper');
+      if (priceWrapper) priceWrapper.style.display = 'none';
       openModal('addGearModal');
     }
 
@@ -7904,9 +7941,11 @@
       const category = document.getElementById('gearCategoryInput').value;
       const name = document.getElementById('gearNameInput').value.trim();
       const details = document.getElementById('gearDetailsInput').value.trim();
+      const isNegotiable = !!document.getElementById('gearIsNegotiableInput')?.checked;
+      const price = document.getElementById('gearPriceInput')?.value.trim() || '';
       if (!name) return;
 
-      myGear.push({ id: Date.now(), category, name, details });
+      myGear.push({ id: Date.now(), category, name, details, isNegotiable, price });
       saveGearCache();
       closeModal('addGearModal');
       showToast('Equipamento cadastrado com sucesso!', 'success');
@@ -10174,12 +10213,11 @@
       let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
           <div>
-            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="calendar" style="color: var(--cyan);"></ion-icon>
               <span>Agenda de Shows & Ensaios</span>
               <span class="badge badge-cyan">${yearEvents.length} Eventos em ${selectedAgendaYear}</span>
             </h2>
-            <p style="color: #94a3b8; font-size: 0.88rem;">Cronograma completo de datas, locais, cachês e playlists da banda.</p>
           </div>
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline btn-sm" onclick="openShareAgendaModal()">
