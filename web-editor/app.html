@@ -5356,6 +5356,117 @@
     </div>
   </div>
 
+  <!-- MODAL: LANÇAMENTO FINANCEIRO MANUAL (ENTRADA OU DESPESA) -->
+  <div class="modal-overlay" id="editFinanceEntryModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: var(--cyan);">
+            <ion-icon name="receipt-outline" style="font-size: 1.3rem;"></ion-icon>
+          </div>
+          <div>
+            <h3 class="modal-title" id="editFinanceEntryModalTitle" style="margin: 0;">Lançamento Financeiro</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;">Registre entradas ou despesas da banda</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('editFinanceEntryModal')">&times;</button>
+      </div>
+
+      <form onsubmit="handleSaveFinanceEntry(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+        <!-- Tipo de Lançamento: Entrada (+) vs Saída / Despesa (-) -->
+        <div class="form-group">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Tipo de Operação</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.08); cursor: pointer; color: #4ade80; font-weight: 700; font-size: 0.9rem;">
+              <input type="radio" name="finEntryType" id="finEntryTypeIncome" value="income" style="accent-color: #4ade80;">
+              <span>+ Entrada (Receita)</span>
+            </label>
+            <label style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); cursor: pointer; color: #f87171; font-weight: 700; font-size: 0.9rem;">
+              <input type="radio" name="finEntryType" id="finEntryTypeExpense" value="expense" checked style="accent-color: #f87171;">
+              <span>- Saída (Despesa)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Descrição / Título -->
+        <div class="form-group">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Descrição / Título *</label>
+          <input type="text" id="finEntryTitle" class="form-input" placeholder="Ex: Compra de cabos, Patrocínio, Combustível van..." required maxlength="200">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <!-- Valor -->
+          <div class="form-group">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Valor (R$) *</label>
+            <input type="number" step="0.01" min="0.01" id="finEntryAmount" class="form-input" placeholder="0.00" required style="font-weight: 800; font-size: 1.05rem;">
+          </div>
+
+          <!-- Data -->
+          <div class="form-group">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Data *</label>
+            <input type="date" id="finEntryDate" class="form-input" required>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Status do Pagamento</label>
+          <select id="finEntryStatus" class="form-input">
+            <option value="paid">Pago / Concluído</option>
+            <option value="pending">Pendente</option>
+          </select>
+        </div>
+
+        <!-- Observações -->
+        <div class="form-group">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block;">Observações (Opcional)</label>
+          <textarea id="finEntryNotes" class="form-input" rows="2" placeholder="Detalhes adicionais, comprovante, responsável..." maxlength="500"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editFinanceEntryModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AJUSTE MANUAL DO CAIXA DA BANDA -->
+  <div class="modal-overlay" id="editBandCashModal">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); display: flex; align-items: center; justify-content: center; color: #fbbf24;">
+            <ion-icon name="wallet-outline" style="font-size: 1.3rem;"></ion-icon>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0;">Ajustar Caixa da Banda</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;">Fundo de reserva disponível</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('editBandCashModal')">&times;</button>
+      </div>
+
+      <form onsubmit="handleSaveBandCash(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+        <div class="form-group">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fbbf24; margin-bottom: 4px; display: block;">Saldo do Caixa da Banda (R$) *</label>
+          <input type="number" step="0.01" min="0" id="bandCashAmountInput" class="form-input" placeholder="0.00" required style="font-size: 1.4rem; font-weight: 900; color: #fbbf24; text-align: right; padding: 10px 14px;">
+          <span style="font-size: 0.76rem; color: #94a3b8; margin-top: 4px; display: block;">Ao salvar, este valor se tornará o saldo oficial do fundo de reserva da banda.</span>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block;">Motivo do Ajuste (Opcional)</label>
+          <input type="text" id="bandCashNotesInput" class="form-input" placeholder="Ex: Aporte inicial, conferência de saldo, retirada..." maxlength="200">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editBandCashModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="background: #fbbf24; color: #000; border-color: #fbbf24; font-weight: 700;">Salvar Saldo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL DE INTEGRANTE DA BANDA (ADICIONAR / EDITAR) -->
   <div class="modal-overlay" id="editBandMemberModal">
     <div class="modal-card" style="max-width: 520px;">
@@ -5499,15 +5610,22 @@
       try {
         const storedSongs = localStorage.getItem(SONGS_CACHE_KEY);
         if (storedSongs) mySongs = JSON.parse(storedSongs);
+      } catch (e) { console.error('Error loading songs cache:', e); }
+
+      try {
         const storedEvents = localStorage.getItem(EVENTS_CACHE_KEY);
         if (storedEvents) myEvents = JSON.parse(storedEvents);
-        const storedGear = localStorage.getItem(GEAR_CACHE_KEY);
+      } catch (e) { console.error('Error loading events cache:', e); }
+
+      try {
+        const storedGear = localStorage.getItem(GEAR_CACHE_KEY) || localStorage.getItem('user_gear');
         if (storedGear) myGear = JSON.parse(storedGear);
+      } catch (e) { console.error('Error loading gear cache:', e); }
+
+      try {
         const storedExtra = localStorage.getItem(EXTRA_SKILLS_CACHE_KEY);
         if (storedExtra) myExtraSkills = JSON.parse(storedExtra);
-      } catch (e) {
-        console.error('Error loading local cache:', e);
-      }
+      } catch (e) { console.error('Error loading extra skills cache:', e); }
     }
 
     function saveSongsCache() {
@@ -5554,6 +5672,10 @@
 
     function saveGearCache() {
       localStorage.setItem(GEAR_CACHE_KEY, JSON.stringify(myGear));
+      localStorage.setItem('user_gear', JSON.stringify(myGear));
+      if (currentUser?.username) {
+        localStorage.setItem(`bandlink_user_gear_${currentUser.username}`, JSON.stringify(myGear));
+      }
       renderGearTab();
     }
 
@@ -5692,6 +5814,29 @@
           { id: 3, name: 'Design Gráfico & Flyers', category: 'Audiovisual', icon: 'color-palette-outline', description: 'Criação de artes para shows, banners e identidade visual' }
         ];
         localStorage.setItem(EXTRA_SKILLS_CACHE_KEY, JSON.stringify(myExtraSkills));
+      }
+
+      // Equipamentos / Gear do Músico (Garante que nunca sumam)
+      if (!myGear || myGear.length === 0) {
+        const savedGear = localStorage.getItem(GEAR_CACHE_KEY) || localStorage.getItem('user_gear') || (currentUser?.username ? localStorage.getItem(`bandlink_user_gear_${currentUser.username}`) : null);
+        if (savedGear) {
+          try {
+            const parsed = JSON.parse(savedGear);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              myGear = parsed;
+            }
+          } catch (e) {}
+        }
+      }
+
+      if ((!myGear || myGear.length === 0) && (currentUser.username === 'allison_xd' || currentUser.email === 'allison@example.com')) {
+        myGear = [
+          { id: 1, category: 'Baixo', name: 'Tagima TW-73 Jazz Bass', details: '4 cordas, passivo, acabamento Sunburst' },
+          { id: 2, category: 'Baixo', name: 'Fender Jazz Bass Standard', details: 'Escala em Maple, regulado com cordas D\'Addario .045' },
+          { id: 3, category: 'Amplificador', name: 'Hartke HA3500 + Caixa 4x10', details: '350W RMS híbrido com cone de alumínio' },
+          { id: 4, category: 'Pedal / Efeitos', name: 'Zoom B3n Bass Multi-Effects', details: 'Compressor, SansAmp bass driver e afinador integrado' }
+        ];
+        saveGearCache();
       }
     }
 
@@ -7424,26 +7569,34 @@
     }
 
     function getBandMetrics(band) {
-      let syncData = parseJsonSafe(band.syncDataJson);
-      if (!syncData && (band.id === 2 || (band.name && band.name.toLowerCase().includes('badger')))) {
-        const cached = localStorage.getItem('bandlink_band_2_sync');
+      let syncData = (currentBandData && currentBandData.id === band?.id && currentBandSyncData)
+        ? currentBandSyncData
+        : parseJsonSafe(band?.syncDataJson);
+
+      const bandId = band?.id;
+      if (!syncData && bandId) {
+        const cached = localStorage.getItem(`bandlink_band_${bandId}_sync`) || (bandId === 2 ? localStorage.getItem('bandlink_band_2_sync') : null);
         if (cached) syncData = parseJsonSafe(cached);
       }
 
-      const isBB = band.id === 2 || (band.name && band.name.toLowerCase().includes('badger'));
+      const isBB = bandId === 2 || (band?.name && band.name.toLowerCase().includes('badger'));
 
       const repertoireCount = syncData?.songs?.length || (isBB ? 63 : 0);
       const membersCount = (syncData?.members && syncData.members.length > 0)
         ? syncData.members.length
-        : (band.membersCount || band.members?.length || (isBB ? 5 : 1));
+        : (band?.membersCount || band?.members?.length || (isBB ? 5 : 1));
 
       const setlists = syncData?.setlists || [];
+      const finances = Array.isArray(syncData?.finances) ? syncData.finances : [];
+
       let showsCount = 0;
       let rehearsalsCount = 0;
       let totalCache = 0;
-      let totalBandFund = 0;
+      let totalBandFundFromShows = 0;
       let totalMusiciansPaid = 0;
       let individualIncome = 0;
+      let totalManualIncome = 0;
+      let totalManualExpense = 0;
 
       if (setlists.length > 0) {
         setlists.forEach(sl => {
@@ -7479,7 +7632,7 @@
                   showBandFund = Math.max(0, num - (memSum + subSum));
                 }
 
-                totalBandFund += showBandFund;
+                totalBandFundFromShows += showBandFund;
                 const paidToMusicians = num - showBandFund;
                 totalMusiciansPaid += paidToMusicians;
 
@@ -7497,9 +7650,32 @@
         showsCount = 9;
         rehearsalsCount = 5;
         totalCache = 10000;
-        totalBandFund = 0;
+        totalBandFundFromShows = 0;
         totalMusiciansPaid = 10000;
         individualIncome = membersCount > 0 ? (totalMusiciansPaid / membersCount) : 2000;
+      }
+
+      // Processa lançamentos manuais da banda (Entradas e Despesas)
+      finances.forEach(f => {
+        const amt = typeof f.amount === 'number' ? f.amount : (parseFloat(String(f.amount || '0').replace(',', '.')) || 0);
+        if (f.type === 'expense') {
+          totalManualExpense += amt;
+        } else {
+          totalManualIncome += amt;
+        }
+      });
+
+      // Total de receita bruta da banda = Cachês dos shows + Entradas manuais
+      const totalBandRevenue = totalCache + totalManualIncome;
+
+      // Caixa da Banda (Fundo de Reserva):
+      // Se definido manualmente pelo usuário, usa manualCashBalance;
+      // Caso contrário, calcula: (reserva dos shows + entradas manuais - despesas manuais)
+      let effectiveBandFund = 0;
+      if (syncData?.manualCashBalance !== undefined && syncData?.manualCashBalance !== null) {
+        effectiveBandFund = parseFloat(syncData.manualCashBalance) || 0;
+      } else {
+        effectiveBandFund = Math.max(0, totalBandFundFromShows + totalManualIncome - totalManualExpense);
       }
 
       return {
@@ -7509,10 +7685,15 @@
         showsCount,
         rehearsalsCount,
         totalCache,
-        totalBandFund,
+        totalBandRevenue,
+        totalBandFund: effectiveBandFund,
+        totalBandFundFromShows,
         totalMusiciansPaid,
         individualIncome,
-        setlists
+        totalManualIncome,
+        totalManualExpense,
+        setlists,
+        finances
       };
     }
 
@@ -7573,8 +7754,27 @@
             } catch (e) {}
           }
 
-          if (band.id === 2 && band.syncDataJson) {
-            try { localStorage.setItem('bandlink_band_2_sync', band.syncDataJson); } catch (e) {}
+          const localSavedAt = parseInt(localStorage.getItem(`bandlink_band_${band.id}_savedAt`) || '0', 10);
+          const localCached = localStorage.getItem(`bandlink_band_${band.id}_sync`) || (band.id === 2 ? localStorage.getItem('bandlink_band_2_sync') : null);
+
+          if (localCached && localSavedAt > 0) {
+            band.syncDataJson = localCached;
+            // Se houver alterações locais mais recentes, mantém e sincroniza em background com a nuvem
+            if (getAuthHeaders().Authorization) {
+              fetch(`${API_URL}/Bands/${band.id}/sync`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                  name: band.name,
+                  syncDataJson: localCached
+                })
+              }).catch(() => {});
+            }
+          } else if (band.syncDataJson) {
+            localStorage.setItem(`bandlink_band_${band.id}_sync`, band.syncDataJson);
+            if (band.id === 2) {
+              try { localStorage.setItem('bandlink_band_2_sync', band.syncDataJson); } catch (e) {}
+            }
           }
         }
 
@@ -7807,10 +8007,19 @@
       }
 
       currentBandData = band;
-      currentBandSyncData = parseJsonSafe(band.syncDataJson);
-      if (!currentBandSyncData && bandId === 2) {
-        const cached = localStorage.getItem('bandlink_band_2_sync');
-        if (cached) currentBandSyncData = parseJsonSafe(cached);
+      const localCached = localStorage.getItem(`bandlink_band_${bandId}_sync`) || (bandId === 2 ? localStorage.getItem('bandlink_band_2_sync') : null);
+      if (localCached) {
+        const parsedLocal = parseJsonSafe(localCached);
+        if (parsedLocal) {
+          currentBandSyncData = parsedLocal;
+          band.syncDataJson = localCached;
+        }
+      }
+      if (!currentBandSyncData) {
+        currentBandSyncData = parseJsonSafe(band.syncDataJson);
+      }
+      if (!currentBandSyncData) {
+        currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
       }
 
       // Switch to main view band-profile
@@ -8112,8 +8321,8 @@
     let memberLookupTimeout = null;
 
     function getBandMembersArray() {
-      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [] };
-      if (!currentBandSyncData.members || currentBandSyncData.members.length === 0) {
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+      if (!currentBandSyncData.membersInitialized && (!currentBandSyncData.members || currentBandSyncData.members.length === 0)) {
         if (currentBandData?.members?.length > 0) {
           currentBandSyncData.members = JSON.parse(JSON.stringify(currentBandData.members));
         } else if (!currentBandData || currentBandData.id === 2 || (currentBandData.name && currentBandData.name.toLowerCase().includes('badger'))) {
@@ -8128,18 +8337,74 @@
           currentBandSyncData.members = [];
         }
       }
+      if (!Array.isArray(currentBandSyncData.members)) {
+        currentBandSyncData.members = [];
+      }
       return currentBandSyncData.members;
     }
 
-    function persistBandMembers() {
-      if (!currentBandSyncData) return;
-      if (currentBandData) {
+    async function persistCurrentBandSync(skipApi = false) {
+      if (!currentBandData) return;
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+
+      currentBandSyncData.membersInitialized = true;
+      currentBandSyncData.updatedAt = new Date().toISOString();
+      const serialized = JSON.stringify(currentBandSyncData);
+      currentBandData.syncDataJson = serialized;
+
+      if (currentBandSyncData.members) {
         currentBandData.members = currentBandSyncData.members;
-        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
       }
-      if (!currentBandData || currentBandData.id === 2) {
-        localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
+
+      // Atualiza no cache myBands
+      const bIdx = (myBands || []).findIndex(b => b.id === currentBandData.id);
+      if (bIdx !== -1) {
+        myBands[bIdx].syncDataJson = serialized;
+        if (currentBandSyncData.members) myBands[bIdx].members = currentBandSyncData.members;
       }
+
+      const bandId = currentBandData.id;
+      if (bandId) {
+        localStorage.setItem(`bandlink_band_${bandId}_sync`, serialized);
+        localStorage.setItem(`bandlink_band_${bandId}_savedAt`, Date.now().toString());
+        if (bandId === 2) {
+          localStorage.setItem('bandlink_band_2_sync', serialized);
+        }
+      }
+
+      // Sincroniza em background com o backend cloud
+      if (!skipApi && bandId && typeof API_URL !== 'undefined') {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+          try {
+            fetch(`${API_URL}/Bands/${bandId}/sync`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({
+                name: currentBandData.name,
+                genre: currentBandData.genre || '',
+                description: currentBandData.description || '',
+                imageUri: currentBandData.imageUri || '',
+                city: currentBandData.city || '',
+                state: currentBandData.state || '',
+                country: currentBandData.country || '',
+                syncDataJson: serialized
+              })
+            }).then(res => {
+              if (res.ok) console.log(`Banda ${bandId} sincronizada com a nuvem.`);
+              else console.warn(`Sincronização da banda ${bandId} retornou status:`, res.status);
+            }).catch(e => {
+              console.warn(`Erro de rede ao sincronizar banda ${bandId}:`, e);
+            });
+          } catch (e) {
+            console.warn('Erro ao disparar sync da banda:', e);
+          }
+        }
+      }
+    }
+
+    function persistBandMembers() {
+      persistCurrentBandSync();
     }
 
     function renderBandMembersTab(band, syncData) {
@@ -8448,6 +8713,7 @@
       if (idx < 0 || idx >= members.length) return;
       const mem = members[idx];
       if (!confirm(`Deseja remover "${mem.name}" da formação da banda?`)) return;
+      if (currentBandSyncData) currentBandSyncData.membersInitialized = true;
       members.splice(idx, 1);
       persistBandMembers();
       showToast(`Integrante "${mem.name}" removido com sucesso.`, 'info');
@@ -8842,6 +9108,22 @@
     }
 
     function getBandMembersList(band, syncData) {
+      const activeSync = currentBandSyncData || syncData;
+      if (activeSync && Array.isArray(activeSync.members)) {
+        if (activeSync.members.length > 0) {
+          return activeSync.members.map((m, idx) => ({
+            id: m.id || m.userId || `m_${idx}`,
+            name: m.name || m.username || `Membro ${idx + 1}`,
+            role: m.role || 'Instrumento',
+            phone: m.phone || '',
+            isLeader: m.isLeader === 1 || m.role?.toLowerCase()?.includes('líder') || m.role?.toLowerCase()?.includes('admin'),
+            username: m.username || ''
+          }));
+        } else if (activeSync.membersInitialized) {
+          return [];
+        }
+      }
+
       const rawMembers = syncData?.members || band?.members || [];
       if (rawMembers.length > 0) {
         return rawMembers.map((m, idx) => ({
@@ -8868,12 +9150,16 @@
     // ==============================================================
     // SUBVIEW F: FINANÇAS & DIVISÃO DE CACHÊS (PADRÃO MOBILE COM MESES)
     // ==============================================================
+    let editingFinanceEntryId = null;
+
     function renderBandFinancesTab(band, syncData) {
       const sub = document.getElementById('bSubview-F');
       if (!sub) return;
 
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
+      const finances = Array.isArray(m.finances) ? m.finances : [];
+
       const showsWithCache = setlists.filter(sl => {
         const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
         return rawC && parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) > 0;
@@ -8881,122 +9167,249 @@
 
       const avgCache = showsWithCache.length > 0 ? (m.totalCache / showsWithCache.length) : 0;
 
-      // Agrupamento unificado por mês cronológico
+      // Agrupamento unificado por mês cronológico (Shows + Lançamentos Manuais)
       const now = new Date();
       const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
       const financeMonthMap = {};
-      showsWithCache.forEach(sl => {
-        const info = getEventMonthInfo(sl.date);
+
+      const ensureMonthGroup = (dateStr) => {
+        const info = getEventMonthInfo(dateStr);
         if (!financeMonthMap[info.key]) {
-          financeMonthMap[info.key] = { key: info.key, title: info.title, list: [], total: 0 };
+          financeMonthMap[info.key] = {
+            key: info.key,
+            title: info.title,
+            items: [],
+            totalShows: 0,
+            totalIncome: 0,
+            totalExpense: 0,
+            musicianShare: 0
+          };
         }
+        return financeMonthMap[info.key];
+      };
+
+      // 1. Adiciona shows
+      showsWithCache.forEach(sl => {
+        const g = ensureMonthGroup(sl.date);
         const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
         const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-        financeMonthMap[info.key].list.push(sl);
-        financeMonthMap[info.key].total += num;
+        g.items.push({
+          type: 'show',
+          date: sl.date,
+          sl,
+          amount: num
+        });
+        g.totalShows += 1;
+        g.totalIncome += num;
+
+        if (sl.cacheSplit?.members) {
+          let memSum = 0;
+          Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
+          g.musicianShare += (m.membersCount > 0 ? (memSum / m.membersCount) : 0);
+        } else {
+          g.musicianShare += (m.membersCount > 0 ? (num / m.membersCount) : 0);
+        }
+      });
+
+      // 2. Adiciona lançamentos manuais
+      finances.forEach(f => {
+        const g = ensureMonthGroup(f.date);
+        const num = typeof f.amount === 'number' ? f.amount : (parseFloat(String(f.amount || '0').replace(',', '.')) || 0);
+        g.items.push({
+          type: 'manual',
+          date: f.date,
+          entry: f,
+          amount: num
+        });
+        if (f.type === 'expense') {
+          g.totalExpense += num;
+        } else {
+          g.totalIncome += num;
+        }
       });
 
       // Inverte a ordem dos meses: meses mais recentes no topo, mais antigos no final
       const allMonthKeys = Object.keys(financeMonthMap).sort().reverse();
 
       let html = `
-        <div style="margin-bottom: 24px;">
-          <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-            <ion-icon name="wallet" style="color: var(--cyan);"></ion-icon>
-            <span>Finanças & Lançamentos de Cachês</span>
-          </h2>
-          <p style="color: #94a3b8; font-size: 0.88rem;">Controle de cachês arrecadados, divisão por integrante e demonstrativo anual.</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="wallet" style="color: var(--cyan);"></ion-icon>
+              <span>Finanças & Lançamentos da Banda</span>
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.88rem;">Controle completo de cachês, divisão entre integrantes, despesas e fundo de reserva.</p>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline" onclick="openEditBandCashModal()" style="font-size: 0.84rem; padding: 7px 14px; border-color: rgba(251,191,36,0.4); color: #fbbf24;">
+              <ion-icon name="create-outline"></ion-icon>
+              <span>Ajustar Caixa</span>
+            </button>
+            <button type="button" class="btn btn-primary" onclick="openAddFinanceEntryModal()" style="font-size: 0.84rem; padding: 7px 16px;">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              <span>Novo Lançamento</span>
+            </button>
+          </div>
         </div>
 
         <div class="band-finance-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+          <!-- Card 1: Renda Bruta Total -->
           <div class="band-finance-box">
-            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Renda Total da Banda (Ano)</span>
-            <div style="font-size: 1.55rem; font-weight: 900; color: #38bdf8; margin-top: 6px;">R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Arrecadação bruta dos eventos</span>
+            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Receita Total da Banda (Ano)</span>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #38bdf8; margin-top: 6px;">R$ ${m.totalBandRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Cachês brutos + entradas manuais</span>
           </div>
-          <div class="band-finance-box" style="border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.05);">
+
+          <!-- Card 2: Caixa da Banda (Reserva) com botão de ajuste -->
+          <div class="band-finance-box" style="border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.06);">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase;">Caixa da Banda (Reserva)</span>
-              <ion-icon name="wallet-outline" style="color: #fbbf24; font-size: 1.15rem;"></ion-icon>
+              <button type="button" onclick="openEditBandCashModal()" title="Editar Saldo do Caixa" style="background: none; border: none; color: #fbbf24; cursor: pointer; display: flex; align-items: center; padding: 2px;">
+                <ion-icon name="create-outline" style="font-size: 1.15rem;"></ion-icon>
+              </button>
             </div>
             <div style="font-size: 1.55rem; font-weight: 900; color: #fbbf24; margin-top: 6px;">R$ ${m.totalBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px; display: block;">Fundo de reserva acumulado dos splits</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <span style="font-size: 0.78rem; color: #94a3b8;">Fundo de reserva disponível</span>
+              <button type="button" onclick="openEditBandCashModal()" style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 4px; color: #fbbf24; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; cursor: pointer;">Ajustar</button>
+            </div>
           </div>
+
+          <!-- Card 3: Despesas da Banda -->
+          <div class="band-finance-box" style="border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.05);">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #f87171; text-transform: uppercase;">Despesas da Banda (Ano)</span>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #f87171; margin-top: 6px;">R$ ${m.totalManualExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px; display: block;">${finances.filter(f => f.type === 'expense').length} despesas avulsas cadastradas</span>
+          </div>
+
+          <!-- Card 4: Total Pago aos Músicos -->
           <div class="band-finance-box">
             <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Total Pago aos Músicos</span>
             <div style="font-size: 1.55rem; font-weight: 900; color: #a78bfa; margin-top: 6px;">R$ ${m.totalMusiciansPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Rateio de integrantes e substitutos</span>
           </div>
+
+          <!-- Card 5: Cota Individual por Membro -->
           <div class="band-finance-box">
             <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Renda Individual (Ano Acumulado)</span>
             <div style="font-size: 1.55rem; font-weight: 900; color: #4ade80; margin-top: 6px;">R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Cota por membro (${m.membersCount} integrantes)</span>
           </div>
-          <div class="band-finance-box">
-            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Média de Cachê por Show</span>
-            <div style="font-size: 1.55rem; font-weight: 900; color: #ffffff; margin-top: 6px;">R$ ${avgCache.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">Considerando ${showsWithCache.length} shows remunerados</span>
-          </div>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Extrato de Apresentações e Cachês por Mês</h3>
-          <span style="font-size: 0.8rem; color: #94a3b8;">${showsWithCache.length} apresentações registradas</span>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Extrato Financeiro por Mês</h3>
+          <span style="font-size: 0.8rem; color: #94a3b8;">${showsWithCache.length} shows e ${finances.length} lançamentos manuais</span>
         </div>
       `;
 
-      if (showsWithCache.length === 0) {
+      if (allMonthKeys.length === 0) {
         html += `
           <div style="text-align: center; padding: 40px; background: #1a2233; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8;">
-            <ion-icon name="cash-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <p style="margin: 0;">Nenhum evento com cachê cadastrado ainda.</p>
+            <ion-icon name="wallet-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <p style="margin: 0 0 10px 0;">Nenhum evento ou lançamento financeiro cadastrado ainda.</p>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openAddFinanceEntryModal()">
+              <ion-icon name="add-circle-outline"></ion-icon> Adicionar Primeiro Lançamento
+            </button>
           </div>
         `;
       } else {
-        const renderFinanceRows = (list) => {
-          return list.map(sl => {
-            const originalIdx = setlists.indexOf(sl);
-            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-            const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            const hasSplit = sl.cacheSplit && (sl.cacheSplit.bandFund !== undefined || Object.keys(sl.cacheSplit.members || {}).length > 0);
-            const showBandFund = sl.cacheSplit ? (parseFloat(sl.cacheSplit.bandFund) || 0) : 0;
-            let memSum = 0;
-            if (sl.cacheSplit?.members) {
-              Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
-            }
-            const indiv = sl.cacheSplit
-              ? (m.membersCount > 0 ? (memSum / m.membersCount) : 0)
-              : (m.membersCount > 0 ? (num / m.membersCount) : 0);
-            const isPaid = (sl.cacheSplit?.status || 'paid') === 'paid';
+        const renderFinanceRows = (itemsList) => {
+          return itemsList.map(item => {
+            if (item.type === 'show') {
+              const sl = item.sl;
+              const originalIdx = setlists.indexOf(sl);
+              const num = item.amount;
+              const hasSplit = sl.cacheSplit && (sl.cacheSplit.bandFund !== undefined || Object.keys(sl.cacheSplit.members || {}).length > 0);
+              const showBandFund = sl.cacheSplit ? (parseFloat(sl.cacheSplit.bandFund) || 0) : 0;
+              let memSum = 0;
+              if (sl.cacheSplit?.members) {
+                Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
+              }
+              const indiv = sl.cacheSplit
+                ? (m.membersCount > 0 ? (memSum / m.membersCount) : 0)
+                : (m.membersCount > 0 ? (num / m.membersCount) : 0);
+              const isPaid = (sl.cacheSplit?.status || 'paid') === 'paid';
 
-            return `
-              <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
-                <td style="padding: 12px 16px;">
-                  <div style="font-size: 0.92rem; font-weight: 700; color: #fff;">${escapeHtml(sl.name || sl.local || 'Show')}</div>
-                  ${sl.local ? `<div style="font-size: 0.78rem; color: #64748b;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(sl.local)}</div>` : ''}
-                </td>
-                <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #fbbf24;">
-                  ${showBandFund > 0 ? `R$ ${showBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '<span style="color:#64748b; font-size: 0.8rem; font-weight: normal;">R$ 0,00</span>'}
-                </td>
-                <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">
-                  R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  ${hasSplit ? `<span class="badge badge-cyan" style="font-size: 0.65rem; margin-left: 6px; padding: 2px 6px;">Split OK</span>` : ''}
-                </td>
-                <td style="padding: 12px 16px;">
-                  <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.72rem; font-weight: 800;">
-                    ${isPaid ? 'RECEBIDO' : 'PENDENTE'}
-                  </span>
-                </td>
-                <td style="padding: 12px 16px; text-align: right;">
-                  <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 12px; font-size: 0.78rem;" onclick="openCacheSplitModal(${originalIdx})">
-                    <ion-icon name="pie-chart-outline"></ion-icon> <span>Divisão de Cachê</span>
-                  </button>
-                </td>
-              </tr>
-            `;
+              return `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                  <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
+                  <td style="padding: 12px 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px;">SHOW</span>
+                      <div style="font-size: 0.92rem; font-weight: 700; color: #fff;">${escapeHtml(sl.name || sl.local || 'Show')}</div>
+                    </div>
+                    ${sl.local ? `<div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(sl.local)}</div>` : ''}
+                  </td>
+                  <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #fbbf24;">
+                    ${showBandFund > 0 ? `R$ ${showBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '<span style="color:#64748b; font-size: 0.8rem; font-weight: normal;">R$ 0,00</span>'}
+                  </td>
+                  <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">
+                    R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    ${hasSplit ? `<span class="badge badge-cyan" style="font-size: 0.65rem; margin-left: 6px; padding: 2px 6px;">Split OK</span>` : ''}
+                  </td>
+                  <td style="padding: 12px 16px;">
+                    <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.72rem; font-weight: 800;">
+                      ${isPaid ? 'RECEBIDO' : 'PENDENTE'}
+                    </span>
+                  </td>
+                  <td style="padding: 12px 16px; text-align: right;">
+                    <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 12px; font-size: 0.78rem;" onclick="openCacheSplitModal(${originalIdx})">
+                      <ion-icon name="pie-chart-outline"></ion-icon> <span>Divisão de Cachê</span>
+                    </button>
+                  </td>
+                </tr>
+              `;
+            } else {
+              // Manual Financial Entry (Income or Expense)
+              const f = item.entry;
+              const isIncome = f.type === 'income';
+              const num = item.amount;
+              const isPaid = (f.status || 'paid') === 'paid';
+
+              return `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: ${isIncome ? 'rgba(74,222,128,0.02)' : 'rgba(248,113,113,0.02)'};">
+                  <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(f.date)}</td>
+                  <td style="padding: 12px 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="badge ${isIncome ? 'badge-emerald' : 'badge-danger'}" style="font-size: 0.65rem; padding: 2px 7px;">
+                        ${isIncome ? '+ ENTRADA' : '- DESPESA'}
+                      </span>
+                      <div style="font-size: 0.92rem; font-weight: 700; color: #fff;">${escapeHtml(f.title || 'Lançamento')}</div>
+                    </div>
+                    ${f.notes ? `<div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px; font-style: italic;"><ion-icon name="document-text-outline"></ion-icon> ${escapeHtml(f.notes)}</div>` : ''}
+                  </td>
+                  <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: ${isIncome ? '#4ade80' : '#f87171'};">
+                    ${isIncome ? '+ ' : '- '}R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td style="padding: 12px 16px; font-size: 0.82rem; color: #94a3b8;">
+                    ${isIncome ? '<span style="color:#4ade80;">Crédito Caixa</span>' : '<span style="color:#f87171;">Débito Caixa</span>'}
+                  </td>
+                  <td style="padding: 12px 16px; font-size: 0.82rem; color: #64748b;">
+                    Lançamento da Banda
+                  </td>
+                  <td style="padding: 12px 16px;">
+                    <button type="button" onclick="toggleFinanceEntryStatus('${f.id}')" title="Clique para alternar status" style="background: none; border: none; cursor: pointer; padding: 0;">
+                      <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.72rem; font-weight: 800;">
+                        ${isPaid ? (isIncome ? 'RECEBIDO' : 'PAGO') : 'PENDENTE'}
+                      </span>
+                    </button>
+                  </td>
+                  <td style="padding: 12px 16px; text-align: right;">
+                    <div style="display: inline-flex; gap: 6px;">
+                      <button type="button" class="member-action-btn edit" onclick="openEditFinanceEntryModal('${f.id}')" title="Editar Lançamento" style="padding: 5px 10px; font-size: 0.76rem;">
+                        <ion-icon name="create-outline"></ion-icon> <span>Editar</span>
+                      </button>
+                      <button type="button" class="member-action-btn delete" onclick="deleteFinanceEntry('${f.id}')" title="Excluir Lançamento" style="padding: 5px 10px; font-size: 0.76rem;">
+                        <ion-icon name="trash-outline"></ion-icon> <span>Excluir</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }
           }).join('');
         };
 
@@ -9006,8 +9419,8 @@
               <thead>
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Local</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cachê Bruto</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Descrição</th>
+                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Valor</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Caixa Banda</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
                   <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
@@ -9021,42 +9434,37 @@
           </div>
         `;
 
-        // Renderiza cada mês cronológico com linha expansível (meses passados ocultos por padrão)
+        // Renderiza cada mês cronológico
         allMonthKeys.forEach(k => {
           const g = financeMonthMap[k];
-          // Eventos mais recentes no topo do mês
-          g.list.sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+          // Ordena itens do mês: mais recentes primeiro
+          g.items.sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
           const isPastMonth = k < currentMonthKey;
           const defaultExpanded = !isPastMonth;
           const isExpanded = expandedFinanceMonths[k] !== undefined ? expandedFinanceMonths[k] : defaultExpanded;
-          const mShows = g.list.length;
-          const mGross = g.total;
-          
-          let myShare = 0;
-          g.list.forEach(sl => {
-            const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-            const num = parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            if (sl.cacheSplit?.members) {
-              let memSum = 0;
-              Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
-              myShare += (m.membersCount > 0 ? (memSum / m.membersCount) : 0);
-            } else {
-              myShare += (m.membersCount > 0 ? (num / m.membersCount) : 0);
-            }
-          });
+
+          const mShows = g.totalShows;
+          const mTotalIn = g.totalIncome;
+          const mTotalOut = g.totalExpense;
+          const mMyShare = g.musicianShare;
 
           html += `
             <div class="mobile-month-bar" onclick="toggleFinanceMonth('${k}')" title="Clique para expandir/recolher mês">
               <!-- Ícones e Contadores primeiro (Padrão Mobile) -->
-              <span class="month-pill-badge month-pill-show" title="Shows">
+              <span class="month-pill-badge month-pill-show" title="Shows no Mês">
                 <ion-icon name="calendar-outline"></ion-icon> <span>${mShows}</span>
               </span>
-              <span class="month-pill-badge month-pill-total" title="Cachê Total da Banda">
-                <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${mGross.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              <span class="month-pill-badge month-pill-total" title="Entradas no Mês">
+                <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${mTotalIn.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </span>
+              ${mTotalOut > 0 ? `
+                <span class="month-pill-badge" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3);" title="Despesas do Mês">
+                  <ion-icon name="trending-down"></ion-icon> <span>- R$ ${mTotalOut.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </span>
+              ` : ''}
               <span class="month-pill-badge month-pill-musician" title="Cota do Músico">
-                <ion-icon name="star"></ion-icon> <span>R$ ${myShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <ion-icon name="star"></ion-icon> <span>R$ ${mMyShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </span>
 
               <!-- Nome do Mês Depois -->
@@ -9068,12 +9476,215 @@
               <!-- Chevron de expandir / recolher -->
               <ion-icon name="${isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}" style="font-size: 1.15rem; color: #94a3b8;"></ion-icon>
             </div>
-            ${isExpanded ? renderTableWrapper(renderFinanceRows(g.list)) : ''}
+            ${isExpanded ? renderTableWrapper(renderFinanceRows(g.items)) : ''}
           `;
         });
       }
 
       sub.innerHTML = html;
+    }
+
+    // ==============================================================
+    // HANDLERS DE LANÇAMENTO FINANCEIRO MANUAL & CAIXA DA BANDA
+    // ==============================================================
+    function openAddFinanceEntryModal() {
+      editingFinanceEntryId = null;
+      const titleEl = document.getElementById('editFinanceEntryModalTitle');
+      if (titleEl) titleEl.textContent = 'Novo Lançamento Financeiro';
+
+      const typeExpense = document.getElementById('finEntryTypeExpense');
+      if (typeExpense) typeExpense.checked = true;
+
+      const titleInput = document.getElementById('finEntryTitle');
+      if (titleInput) titleInput.value = '';
+
+      const amountInput = document.getElementById('finEntryAmount');
+      if (amountInput) amountInput.value = '';
+
+      const dateInput = document.getElementById('finEntryDate');
+      if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+
+      const statusSelect = document.getElementById('finEntryStatus');
+      if (statusSelect) statusSelect.value = 'paid';
+
+      const notesInput = document.getElementById('finEntryNotes');
+      if (notesInput) notesInput.value = '';
+
+      openModal('editFinanceEntryModal');
+    }
+
+    function openEditFinanceEntryModal(id) {
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+      if (!Array.isArray(currentBandSyncData.finances)) currentBandSyncData.finances = [];
+
+      const entry = currentBandSyncData.finances.find(f => f.id === id);
+      if (!entry) {
+        showToast('Lançamento não encontrado.', 'error');
+        return;
+      }
+
+      editingFinanceEntryId = id;
+      const titleEl = document.getElementById('editFinanceEntryModalTitle');
+      if (titleEl) titleEl.textContent = 'Editar Lançamento Financeiro';
+
+      if (entry.type === 'income') {
+        const typeIncome = document.getElementById('finEntryTypeIncome');
+        if (typeIncome) typeIncome.checked = true;
+      } else {
+        const typeExpense = document.getElementById('finEntryTypeExpense');
+        if (typeExpense) typeExpense.checked = true;
+      }
+
+      const titleInput = document.getElementById('finEntryTitle');
+      if (titleInput) titleInput.value = entry.title || '';
+
+      const amountInput = document.getElementById('finEntryAmount');
+      if (amountInput) amountInput.value = entry.amount || '';
+
+      const dateInput = document.getElementById('finEntryDate');
+      if (dateInput) dateInput.value = entry.date || new Date().toISOString().split('T')[0];
+
+      const statusSelect = document.getElementById('finEntryStatus');
+      if (statusSelect) statusSelect.value = entry.status || 'paid';
+
+      const notesInput = document.getElementById('finEntryNotes');
+      if (notesInput) notesInput.value = entry.notes || '';
+
+      openModal('editFinanceEntryModal');
+    }
+
+    async function handleSaveFinanceEntry(e) {
+      if (e) e.preventDefault();
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+      if (!Array.isArray(currentBandSyncData.finances)) currentBandSyncData.finances = [];
+
+      const type = document.getElementById('finEntryTypeIncome')?.checked ? 'income' : 'expense';
+      const title = document.getElementById('finEntryTitle')?.value.trim();
+      const rawAmt = document.getElementById('finEntryAmount')?.value;
+      const amount = parseFloat(String(rawAmt).replace(',', '.')) || 0;
+      const date = document.getElementById('finEntryDate')?.value || new Date().toISOString().split('T')[0];
+      const status = document.getElementById('finEntryStatus')?.value || 'paid';
+      const notes = document.getElementById('finEntryNotes')?.value.trim() || '';
+
+      if (!title) {
+        showToast('Informe a descrição do lançamento.', 'warning');
+        return;
+      }
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Informe um valor válido maior que zero.', 'warning');
+        return;
+      }
+
+      if (editingFinanceEntryId) {
+        const idx = currentBandSyncData.finances.findIndex(f => f.id === editingFinanceEntryId);
+        if (idx !== -1) {
+          currentBandSyncData.finances[idx] = {
+            ...currentBandSyncData.finances[idx],
+            title,
+            amount,
+            type,
+            date,
+            status,
+            notes,
+            updatedAt: new Date().toISOString()
+          };
+          showToast('Lançamento atualizado com sucesso!', 'success');
+        }
+      } else {
+        currentBandSyncData.finances.push({
+          id: `fin_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          title,
+          amount,
+          type,
+          date,
+          status,
+          notes,
+          createdAt: new Date().toISOString()
+        });
+        showToast('Lançamento financeiro registrado!', 'success');
+      }
+
+      await persistCurrentBandSync();
+      closeModal('editFinanceEntryModal');
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
+    }
+
+    async function toggleFinanceEntryStatus(id) {
+      if (!currentBandSyncData || !Array.isArray(currentBandSyncData.finances)) return;
+      const entry = currentBandSyncData.finances.find(f => f.id === id);
+      if (!entry) return;
+      entry.status = entry.status === 'paid' ? 'pending' : 'paid';
+      await persistCurrentBandSync();
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+      showToast(`Status alterado para ${entry.status === 'paid' ? 'Pago' : 'Pendente'}.`, 'info');
+    }
+
+    async function deleteFinanceEntry(id) {
+      if (!currentBandSyncData || !Array.isArray(currentBandSyncData.finances)) return;
+      const idx = currentBandSyncData.finances.findIndex(f => f.id === id);
+      if (idx === -1) return;
+      const item = currentBandSyncData.finances[idx];
+      if (!confirm(`Deseja excluir o lançamento "${item.title}"?`)) return;
+
+      currentBandSyncData.finances.splice(idx, 1);
+      await persistCurrentBandSync();
+      showToast('Lançamento financeiro removido.', 'info');
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
+    }
+
+    function openEditBandCashModal() {
+      const band = currentBandData || { name: 'Bad Badgers' };
+      const m = getBandMetrics(band);
+
+      const currentVal = (currentBandSyncData && currentBandSyncData.manualCashBalance !== undefined && currentBandSyncData.manualCashBalance !== null)
+        ? parseFloat(currentBandSyncData.manualCashBalance)
+        : m.totalBandFund;
+
+      const input = document.getElementById('bandCashAmountInput');
+      if (input) input.value = !isNaN(currentVal) ? currentVal.toFixed(2) : '0.00';
+
+      const notesInput = document.getElementById('bandCashNotesInput');
+      if (notesInput) notesInput.value = '';
+
+      openModal('editBandCashModal');
+    }
+
+    async function handleSaveBandCash(e) {
+      if (e) e.preventDefault();
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+
+      const rawVal = document.getElementById('bandCashAmountInput')?.value;
+      const parsedVal = parseFloat(String(rawVal).replace(',', '.'));
+      if (isNaN(parsedVal) || parsedVal < 0) {
+        showToast('Informe um valor válido para o saldo do caixa.', 'warning');
+        return;
+      }
+
+      currentBandSyncData.manualCashBalance = parsedVal;
+      currentBandSyncData.manualCashUpdatedAt = new Date().toISOString();
+
+      const notes = document.getElementById('bandCashNotesInput')?.value.trim();
+      if (notes) {
+        if (!Array.isArray(currentBandSyncData.finances)) currentBandSyncData.finances = [];
+        currentBandSyncData.finances.push({
+          id: `fin_adjust_${Date.now()}`,
+          title: `Ajuste de Caixa: ${notes}`,
+          amount: parsedVal,
+          type: 'income',
+          date: new Date().toISOString().split('T')[0],
+          status: 'paid',
+          notes: notes,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      await persistCurrentBandSync();
+      closeModal('editBandCashModal');
+      showToast('Saldo do caixa da banda atualizado com sucesso!', 'success');
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
     }
 
     // ==============================================================
@@ -10624,6 +11235,9 @@
 
     function openCacheSplitModal(originalIdx) {
       const band = currentBandData || { name: 'Bad Badgers' };
+      if (!currentBandSyncData) {
+        currentBandSyncData = parseJsonSafe(band.syncDataJson) || { members: [], setlists: [], songs: [], finances: [] };
+      }
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
 
@@ -10632,7 +11246,11 @@
         return;
       }
 
-      currentSplitShow = setlists[originalIdx];
+      if (!currentBandSyncData.setlists || currentBandSyncData.setlists.length === 0) {
+        currentBandSyncData.setlists = JSON.parse(JSON.stringify(setlists));
+      }
+
+      currentSplitShow = currentBandSyncData.setlists[originalIdx] || setlists[originalIdx];
       const ev = currentSplitShow;
 
       const rawC = ev['cachê'] ?? ev.cache ?? ev.valCache ?? ev.value;
@@ -10857,7 +11475,7 @@
       if (!currentSplitShow) return;
 
       const status = document.getElementById('cacheSplitStatusSelect')?.value || 'paid';
-      currentSplitShow.cacheSplit = {
+      const splitObj = {
         members: { ...currentSplitMembers },
         substitutes: [...currentSplitSubstitutes],
         bandFund: currentSplitBandFund,
@@ -10865,12 +11483,22 @@
         updatedAt: new Date().toISOString()
       };
 
-      if (currentBandData) {
-        currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
+      currentSplitShow.cacheSplit = splitObj;
+
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+      if (!currentBandSyncData.setlists) currentBandSyncData.setlists = [];
+
+      let targetSl = currentBandSyncData.setlists.find(s =>
+        (currentSplitShow.id && s.id === currentSplitShow.id) ||
+        (s.name === currentSplitShow.name && s.date === currentSplitShow.date)
+      );
+      if (targetSl) {
+        targetSl.cacheSplit = splitObj;
+      } else {
+        currentBandSyncData.setlists.push(currentSplitShow);
       }
-      if (!currentBandData || currentBandData.id === 2) {
-        localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
-      }
+
+      persistCurrentBandSync();
 
       closeModal('cacheSplitModal');
       showToast('Divisão de cachê salva com sucesso!', 'success');
