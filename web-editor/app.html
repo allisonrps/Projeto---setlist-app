@@ -6123,7 +6123,6 @@
           </div>
           <div>
             <h3 class="modal-title" id="editFinanceEntryModalTitle" style="margin: 0;">Lançamento Financeiro</h3>
-            <span style="font-size: 0.78rem; color: #94a3b8;">Registre entradas ou despesas da banda</span>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('editFinanceEntryModal')">&times;</button>
@@ -6135,11 +6134,11 @@
           <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Tipo de Operação</label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <label style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.08); cursor: pointer; color: #4ade80; font-weight: 700; font-size: 0.9rem;">
-              <input type="radio" name="finEntryType" id="finEntryTypeIncome" value="income" style="accent-color: #4ade80;">
+              <input type="radio" name="finEntryType" id="finEntryTypeIncome" value="income" onchange="updateFinanceCashSimulation()" style="accent-color: #4ade80;">
               <span>+ Entrada (Receita)</span>
             </label>
             <label style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); cursor: pointer; color: #f87171; font-weight: 700; font-size: 0.9rem;">
-              <input type="radio" name="finEntryType" id="finEntryTypeExpense" value="expense" checked style="accent-color: #f87171;">
+              <input type="radio" name="finEntryType" id="finEntryTypeExpense" value="expense" checked onchange="updateFinanceCashSimulation()" style="accent-color: #f87171;">
               <span>- Saída (Despesa)</span>
             </label>
           </div>
@@ -6154,14 +6153,38 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <!-- Valor -->
           <div class="form-group">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Valor (R$) *</label>
-            <input type="number" step="0.01" min="0.01" id="finEntryAmount" class="form-input" placeholder="0.00" required style="font-weight: 800; font-size: 1.05rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Valor ($) *</label>
+            <input type="number" step="0.01" min="0.01" id="finEntryAmount" class="form-input" placeholder="0.00" required oninput="updateFinanceCashSimulation()" style="font-weight: 800; font-size: 1.05rem;">
           </div>
 
           <!-- Data -->
           <div class="form-group">
             <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Data *</label>
             <input type="date" id="finEntryDate" class="form-input" required>
+          </div>
+        </div>
+
+        <!-- Opção de Caixa da Banda com Simulação -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.88rem; font-weight: 700; color: #fff;">
+            <input type="checkbox" id="finEntryUseCash" onchange="updateFinanceCashSimulation()" style="width: 17px; height: 17px; accent-color: #fbbf24; cursor: pointer;">
+            <span id="finEntryUseCashLabel">Retirar do caixa da banda</span>
+          </label>
+
+          <!-- Simulação do Caixa: Saldo Atual, Quanto vai usar e Saldo Posterior -->
+          <div id="finCashSimulationBox" style="display: none; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 12px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; text-align: center;">
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Saldo Atual</div>
+              <div id="finSimCurrentCash" style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; font-family: var(--font-mono); margin-top: 2px;">$ 0,00</div>
+            </div>
+            <div>
+              <div id="finSimActionLabel" style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Quanto vai usar</div>
+              <div id="finSimUseAmount" style="font-size: 0.95rem; font-weight: 800; color: #f87171; font-family: var(--font-mono); margin-top: 2px;">- $ 0,00</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Saldo Posterior</div>
+              <div id="finSimResultCash" style="font-size: 0.95rem; font-weight: 800; color: #34d399; font-family: var(--font-mono); margin-top: 2px;">$ 0,00</div>
+            </div>
           </div>
         </div>
 
@@ -10244,10 +10267,10 @@
                     ${f.notes ? `<div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px; font-style: italic;"><ion-icon name="document-text-outline"></ion-icon> ${escapeHtml(f.notes)}</div>` : ''}
                   </td>
                   <td style="padding: 12px 14px; font-size: 0.95rem; font-weight: 800; color: ${isIncome ? '#4ade80' : '#f87171'};">
-                    ${isIncome ? '+ ' : '- '}R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    ${isIncome ? '+ ' : '- '}$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </td>
                   <td style="padding: 12px 14px; font-size: 0.82rem; color: #94a3b8;">
-                    ${isIncome ? '<span style="color:#4ade80;">Crédito Caixa</span>' : '<span style="color:#f87171;">Débito Caixa</span>'}
+                    ${f.useBandCash !== false ? (isIncome ? '<span style="color:#4ade80;">+ Caixa Banda</span>' : '<span style="color:#f87171;">- Caixa Banda</span>') : '<span style="color:#64748b;">Externo</span>'}
                   </td>
                   <td style="padding: 12px 14px; font-size: 0.82rem; color: #64748b;">
                     Lançamento da Banda
@@ -10343,6 +10366,7 @@
                       <span class="badge ${isIncome ? 'badge-emerald' : 'badge-danger'}" style="font-size: 0.65rem; padding: 2px 6px;">
                         ${isIncome ? '+ ENTRADA' : '- DESPESA'}
                       </span>
+                      ${f.useBandCash !== false ? `<span class="badge" style="background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; font-size: 0.65rem; padding: 2px 6px;"><ion-icon name="wallet-outline" style="vertical-align: middle;"></ion-icon> Caixa</span>` : ''}
                       <span style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(f.date)}</span>
                       <button type="button" onclick="toggleFinanceEntryStatus('${f.id}')" title="Clique para alternar status" style="background: none; border: none; cursor: pointer; padding: 0;">
                         <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.65rem; padding: 2px 6px;">
@@ -10351,7 +10375,7 @@
                       </button>
                     </div>
                     <div style="font-size: 1.05rem; font-weight: 900; color: ${isIncome ? '#4ade80' : '#f87171'}; flex-shrink: 0;">
-                      ${isIncome ? '+' : '-'} R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      ${isIncome ? '+' : '-'} $ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                   </div>
 
@@ -10454,6 +10478,71 @@
     // ==============================================================
     // HANDLERS DE LANÇAMENTO FINANCEIRO MANUAL & CAIXA DA BANDA
     // ==============================================================
+    function getCurrentBandCashBalance() {
+      const band = currentBandData || { name: 'Bad Badgers' };
+      const m = getBandMetrics(band);
+      if (currentBandSyncData && currentBandSyncData.manualCashBalance !== undefined && currentBandSyncData.manualCashBalance !== null) {
+        return parseFloat(currentBandSyncData.manualCashBalance) || 0;
+      }
+      return m.totalBandFund || 0;
+    }
+
+    function updateFinanceCashSimulation() {
+      const isIncome = !!document.getElementById('finEntryTypeIncome')?.checked;
+      const useCashCheckbox = document.getElementById('finEntryUseCash');
+      const useCashLabel = document.getElementById('finEntryUseCashLabel');
+      const simBox = document.getElementById('finCashSimulationBox');
+      const curEl = document.getElementById('finSimCurrentCash');
+      const actionEl = document.getElementById('finSimActionLabel');
+      const useEl = document.getElementById('finSimUseAmount');
+      const resEl = document.getElementById('finSimResultCash');
+
+      if (useCashLabel) {
+        useCashLabel.textContent = isIncome ? 'Adicionar ao caixa da banda' : 'Retirar do caixa da banda';
+      }
+
+      const useCash = useCashCheckbox ? useCashCheckbox.checked : true;
+      if (simBox) {
+        simBox.style.display = useCash ? 'grid' : 'none';
+      }
+
+      if (!useCash) return;
+
+      // Base cash calculation (if editing an existing entry that used cash, restore its value for accurate baseline)
+      let baseCash = getCurrentBandCashBalance();
+      if (editingFinanceEntryId && currentBandSyncData && Array.isArray(currentBandSyncData.finances)) {
+        const oldEntry = currentBandSyncData.finances.find(f => f.id === editingFinanceEntryId);
+        if (oldEntry && oldEntry.useBandCash) {
+          const oldAmt = parseFloat(String(oldEntry.amount || '0').replace(',', '.')) || 0;
+          if (oldEntry.type === 'expense') {
+            baseCash += oldAmt;
+          } else {
+            baseCash -= oldAmt;
+          }
+        }
+      }
+
+      const rawAmt = document.getElementById('finEntryAmount')?.value;
+      const amount = parseFloat(String(rawAmt || '0').replace(',', '.')) || 0;
+      const resultCash = isIncome ? (baseCash + amount) : (baseCash - amount);
+
+      const formatVal = (v) => {
+        const n = isNaN(v) ? 0 : v;
+        return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      };
+
+      if (curEl) curEl.textContent = `$ ${formatVal(baseCash)}`;
+      if (actionEl) actionEl.textContent = isIncome ? 'Quanto vai entrar' : 'Quanto vai usar';
+      if (useEl) {
+        useEl.textContent = (isIncome ? '+ $ ' : '- $ ') + formatVal(amount);
+        useEl.style.color = isIncome ? '#34d399' : '#f87171';
+      }
+      if (resEl) {
+        resEl.textContent = `$ ${formatVal(resultCash)}`;
+        resEl.style.color = resultCash >= 0 ? '#34d399' : '#f87171';
+      }
+    }
+
     function openAddFinanceEntryModal() {
       editingFinanceEntryId = null;
       const titleEl = document.getElementById('editFinanceEntryModalTitle');
@@ -10471,12 +10560,16 @@
       const dateInput = document.getElementById('finEntryDate');
       if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
 
+      const useCashCheckbox = document.getElementById('finEntryUseCash');
+      if (useCashCheckbox) useCashCheckbox.checked = true;
+
       const statusSelect = document.getElementById('finEntryStatus');
       if (statusSelect) statusSelect.value = 'paid';
 
       const notesInput = document.getElementById('finEntryNotes');
       if (notesInput) notesInput.value = '';
 
+      updateFinanceCashSimulation();
       openModal('editFinanceEntryModal');
     }
 
@@ -10511,12 +10604,16 @@
       const dateInput = document.getElementById('finEntryDate');
       if (dateInput) dateInput.value = entry.date || new Date().toISOString().split('T')[0];
 
+      const useCashCheckbox = document.getElementById('finEntryUseCash');
+      if (useCashCheckbox) useCashCheckbox.checked = (entry.useBandCash !== false);
+
       const statusSelect = document.getElementById('finEntryStatus');
       if (statusSelect) statusSelect.value = entry.status || 'paid';
 
       const notesInput = document.getElementById('finEntryNotes');
       if (notesInput) notesInput.value = entry.notes || '';
 
+      updateFinanceCashSimulation();
       openModal('editFinanceEntryModal');
     }
 
@@ -10530,6 +10627,7 @@
       const rawAmt = document.getElementById('finEntryAmount')?.value;
       const amount = parseFloat(String(rawAmt).replace(',', '.')) || 0;
       const date = document.getElementById('finEntryDate')?.value || new Date().toISOString().split('T')[0];
+      const useBandCash = !!document.getElementById('finEntryUseCash')?.checked;
       const status = document.getElementById('finEntryStatus')?.value || 'paid';
       const notes = document.getElementById('finEntryNotes')?.value.trim() || '';
 
@@ -10545,12 +10643,39 @@
       if (editingFinanceEntryId) {
         const idx = currentBandSyncData.finances.findIndex(f => f.id === editingFinanceEntryId);
         if (idx !== -1) {
+          const oldEntry = currentBandSyncData.finances[idx];
+          // Revert old effect if it used cash
+          if (oldEntry && oldEntry.useBandCash) {
+            let curBal = getCurrentBandCashBalance();
+            if (oldEntry.type === 'expense') {
+              curBal += (parseFloat(oldEntry.amount) || 0);
+            } else {
+              curBal -= (parseFloat(oldEntry.amount) || 0);
+            }
+            currentBandSyncData.manualCashBalance = curBal;
+          }
+
+          // Apply new effect if useBandCash is true
+          if (useBandCash) {
+            let curBal = getCurrentBandCashBalance();
+            if (type === 'expense') {
+              curBal -= amount;
+            } else {
+              curBal += amount;
+            }
+            currentBandSyncData.manualCashBalance = curBal;
+            currentBandSyncData.manualCashUpdatedAt = new Date().toISOString();
+          } else if (oldEntry && oldEntry.useBandCash) {
+            currentBandSyncData.manualCashUpdatedAt = new Date().toISOString();
+          }
+
           currentBandSyncData.finances[idx] = {
-            ...currentBandSyncData.finances[idx],
+            ...oldEntry,
             title,
             amount,
             type,
             date,
+            useBandCash,
             status,
             notes,
             updatedAt: new Date().toISOString()
@@ -10558,12 +10683,25 @@
           showToast('Lançamento atualizado com sucesso!', 'success');
         }
       } else {
+        // New entry
+        if (useBandCash) {
+          let curBal = getCurrentBandCashBalance();
+          if (type === 'expense') {
+            curBal -= amount;
+          } else {
+            curBal += amount;
+          }
+          currentBandSyncData.manualCashBalance = curBal;
+          currentBandSyncData.manualCashUpdatedAt = new Date().toISOString();
+        }
+
         currentBandSyncData.finances.push({
           id: `fin_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           title,
           amount,
           type,
           date,
+          useBandCash,
           status,
           notes,
           createdAt: new Date().toISOString()
@@ -10593,6 +10731,17 @@
       if (idx === -1) return;
       const item = currentBandSyncData.finances[idx];
       if (!confirm(`Deseja excluir o lançamento "${item.title}"?`)) return;
+
+      if (item.useBandCash) {
+        let curBal = getCurrentBandCashBalance();
+        if (item.type === 'expense') {
+          curBal += (parseFloat(item.amount) || 0);
+        } else {
+          curBal -= (parseFloat(item.amount) || 0);
+        }
+        currentBandSyncData.manualCashBalance = curBal;
+        currentBandSyncData.manualCashUpdatedAt = new Date().toISOString();
+      }
 
       currentBandSyncData.finances.splice(idx, 1);
       await persistCurrentBandSync();
