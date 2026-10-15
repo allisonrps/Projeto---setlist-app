@@ -3970,6 +3970,61 @@
         grid-template-columns: 1fr !important;
       }
     }
+
+    /* PLAYLIST DRAG & DROP STYLES */
+    .playlist-song-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #1a2233;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      gap: 10px;
+      user-select: none;
+      transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+    }
+    .playlist-song-row:hover {
+      background: #202b40;
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+    .playlist-song-row.dragging {
+      opacity: 0.35 !important;
+      transform: scale(0.98);
+      background: rgba(56, 189, 248, 0.08) !important;
+      border: 1px dashed var(--cyan) !important;
+    }
+    .playlist-song-row.drag-over-top {
+      border-top: 2px solid var(--cyan) !important;
+      box-shadow: 0 -4px 10px rgba(56, 189, 248, 0.3);
+      transform: translateY(2px);
+    }
+    .playlist-song-row.drag-over-bottom {
+      border-bottom: 2px solid var(--cyan) !important;
+      box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+    .playlist-drag-handle {
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 6px;
+      border-radius: 6px;
+      color: #64748b;
+      transition: all 0.15s ease;
+      touch-action: none;
+    }
+    .playlist-drag-handle:hover {
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.1);
+    }
+    .playlist-drag-handle:active {
+      cursor: grabbing;
+      color: var(--cyan);
+    }
   </style>
 </head>
 <body>
@@ -5810,6 +5865,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
             <div>
               <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Músicas neste Setlist:</span>
+              <span style="font-size: 0.75rem; color: #64748b; margin-left: 6px;">(Arraste para reordenar)</span>
               <span style="font-size: 0.8rem; color: #94a3b8; margin-left: 8px;" id="mEventTotalDuration">Duração Total: --:--</span>
             </div>
             <div style="display: flex; gap: 8px;">
@@ -5821,11 +5877,20 @@
 
           <!-- SELETOR DE MÚSICA DO REPERTÓRIO PARA ADICIONAR -->
           <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
-            <div style="font-size: 0.82rem; font-weight: 700; color: var(--cyan); margin-bottom: 8px;">Selecione uma música do repertório para adicionar à playlist:</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--cyan); display: flex; align-items: center; gap: 6px;">
+                <ion-icon name="list-outline"></ion-icon> <span>Repertório Organizado por Banda (A-Z)</span>
+              </div>
+              <button type="button" class="modal-close" style="font-size: 1.1rem; line-height: 1;" onclick="toggleAddSongToPlaylistPicker(false)">&times;</button>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <input type="text" id="mEventSongCatalogFilter" class="form-input" placeholder="🔍 Filtrar por banda ou música..." oninput="populateEventSongCatalogSelect(this.value)" style="padding: 7px 10px; font-size: 0.82rem;">
+            </div>
             <div style="display: flex; gap: 8px;">
-              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1;"></select>
-              <button type="button" class="btn btn-sm btn-primary" onclick="addSelectedSongToCurrentPlaylist()">Adicionar</button>
-              <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)">Fechar</button>
+              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.85rem;"></select>
+              <button type="button" class="btn btn-sm btn-primary" onclick="addSelectedSongToCurrentPlaylist()" style="padding: 0 16px; font-weight: 700;">
+                <ion-icon name="add-outline"></ion-icon> Adicionar
+              </button>
             </div>
           </div>
 
@@ -11238,21 +11303,63 @@
       const shouldShow = typeof force === 'boolean' ? force : (picker.style.display === 'none');
       picker.style.display = shouldShow ? 'block' : 'none';
       if (shouldShow) {
+        const filterInput = document.getElementById('mEventSongCatalogFilter');
+        if (filterInput) filterInput.value = '';
         populateEventSongCatalogSelect();
       }
     }
 
-    function populateEventSongCatalogSelect() {
+    function populateEventSongCatalogSelect(filterQuery = '') {
       const select = document.getElementById('mEventSongCatalogSelect');
       if (!select) return;
-      const catalog = currentBandSyncData?.songs || [];
+      let catalog = Array.isArray(currentBandSyncData?.songs) ? [...currentBandSyncData.songs] : [];
       if (catalog.length === 0) {
         select.innerHTML = '<option value="">Nenhuma música no repertório da banda</option>';
         return;
       }
-      select.innerHTML = catalog.map(s => `
-        <option value="${s.id}">${escapeHtml(s.originalBand || 'Banda')} - ${escapeHtml(s.name || 'Música')} (${s.duration || '--:--'})</option>
-      `).join('');
+
+      // Ordena estritamente por ordem alfabética do nome da BANDA, e em seguida pelo nome da música
+      catalog.sort((a, b) => {
+        const bandA = (a.originalBand || 'Banda').trim();
+        const bandB = (b.originalBand || 'Banda').trim();
+        const cmpBand = bandA.localeCompare(bandB, 'pt-BR', { sensitivity: 'base' });
+        if (cmpBand !== 0) return cmpBand;
+        const nameA = (a.name || 'Música').trim();
+        const nameB = (b.name || 'Música').trim();
+        return nameA.localeCompare(nameB, 'pt-BR', { sensitivity: 'base' });
+      });
+
+      if (filterQuery && filterQuery.trim()) {
+        const q = filterQuery.trim().toLowerCase();
+        catalog = catalog.filter(s =>
+          (s.originalBand && s.originalBand.toLowerCase().includes(q)) ||
+          (s.name && s.name.toLowerCase().includes(q))
+        );
+      }
+
+      if (catalog.length === 0) {
+        select.innerHTML = '<option value="">Nenhuma música encontrada para este filtro</option>';
+        return;
+      }
+
+      // Agrupa por banda em ordem alfabética com optgroups
+      const groups = {};
+      catalog.forEach(s => {
+        const b = (s.originalBand || 'Banda').trim();
+        if (!groups[b]) groups[b] = [];
+        groups[b].push(s);
+      });
+
+      let html = '';
+      Object.keys(groups).forEach(bName => {
+        html += `<optgroup label="🎸 ${escapeHtml(bName)}">`;
+        groups[bName].forEach(s => {
+          html += `<option value="${s.id}">${escapeHtml(bName)} - ${escapeHtml(s.name || 'Música')} (${s.duration || '--:--'})</option>`;
+        });
+        html += `</optgroup>`;
+      });
+
+      select.innerHTML = html;
     }
 
     function addSelectedSongToCurrentPlaylist() {
@@ -11266,6 +11373,146 @@
       editingEventPlaylist.push({ ...song });
       renderCurrentEventPlaylistSongs();
       showToast(`"${song.name}" adicionada à playlist!`, 'success');
+    }
+
+    // ==============================================================
+    // DRAG AND DROP SUAVE NO EDITOR DE PLAYLIST
+    // ==============================================================
+    let draggedPlaylistSongIndex = null;
+
+    function handlePlaylistDragStart(e, idx) {
+      draggedPlaylistSongIndex = idx;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(idx));
+      }
+      const row = document.getElementById(`playlistSongRow_${idx}`);
+      if (row) {
+        setTimeout(() => row.classList.add('dragging'), 0);
+      }
+    }
+
+    function handlePlaylistDragOver(e, idx) {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move';
+      }
+      if (draggedPlaylistSongIndex === null || draggedPlaylistSongIndex === idx) return;
+
+      const row = document.getElementById(`playlistSongRow_${idx}`);
+      if (!row) return;
+
+      const rect = row.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+
+      if (e.clientY < midY) {
+        row.classList.add('drag-over-top');
+        row.classList.remove('drag-over-bottom');
+      } else {
+        row.classList.add('drag-over-bottom');
+        row.classList.remove('drag-over-top');
+      }
+    }
+
+    function handlePlaylistDragLeave(e, idx) {
+      const row = document.getElementById(`playlistSongRow_${idx}`);
+      if (row) {
+        row.classList.remove('drag-over-top', 'drag-over-bottom');
+      }
+    }
+
+    function handlePlaylistDrop(e, targetIdx) {
+      if (e) e.preventDefault();
+      const fromIdx = draggedPlaylistSongIndex;
+      if (fromIdx === null || fromIdx === undefined) return;
+
+      const targetRow = document.getElementById(`playlistSongRow_${targetIdx}`);
+      const isAfter = targetRow && targetRow.classList.contains('drag-over-bottom');
+
+      document.querySelectorAll('.playlist-song-row').forEach(el => {
+        el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+      });
+
+      if (fromIdx === targetIdx) {
+        draggedPlaylistSongIndex = null;
+        return;
+      }
+
+      let insertIdx = targetIdx;
+      if (isAfter) {
+        insertIdx = fromIdx < targetIdx ? targetIdx : targetIdx + 1;
+      } else {
+        insertIdx = fromIdx < targetIdx ? targetIdx - 1 : targetIdx;
+      }
+      insertIdx = Math.max(0, Math.min(editingEventPlaylist.length - 1, insertIdx));
+
+      if (fromIdx !== insertIdx) {
+        const movedItem = editingEventPlaylist.splice(fromIdx, 1)[0];
+        editingEventPlaylist.splice(insertIdx, 0, movedItem);
+        renderCurrentEventPlaylistSongs();
+        showToast(`"${movedItem.name || 'Música'}" reposicionada!`, 'info');
+      }
+      draggedPlaylistSongIndex = null;
+    }
+
+    function handlePlaylistDragEnd(e) {
+      draggedPlaylistSongIndex = null;
+      document.querySelectorAll('.playlist-song-row').forEach(el => {
+        el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+      });
+    }
+
+    function initPlaylistTouchDrag() {
+      const rows = document.querySelectorAll('.playlist-song-row');
+      rows.forEach(row => {
+        const handle = row.querySelector('.playlist-drag-handle');
+        if (!handle) return;
+
+        let touchFromIdx = null;
+        let lastTargetRow = null;
+
+        handle.addEventListener('touchstart', (e) => {
+          touchFromIdx = parseInt(row.getAttribute('data-index'), 10);
+          draggedPlaylistSongIndex = touchFromIdx;
+          row.classList.add('dragging');
+        }, { passive: true });
+
+        handle.addEventListener('touchmove', (e) => {
+          if (touchFromIdx === null) return;
+          const touch = e.touches[0];
+          const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+          const targetRow = targetEl ? targetEl.closest('.playlist-song-row') : null;
+
+          document.querySelectorAll('.playlist-song-row').forEach(r => {
+            if (r !== row) r.classList.remove('drag-over-top', 'drag-over-bottom');
+          });
+
+          if (targetRow && targetRow !== row) {
+            lastTargetRow = targetRow;
+            const rect = targetRow.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (touch.clientY < midY) {
+              targetRow.classList.add('drag-over-top');
+              targetRow.classList.remove('drag-over-bottom');
+            } else {
+              targetRow.classList.add('drag-over-bottom');
+              targetRow.classList.remove('drag-over-top');
+            }
+          }
+        }, { passive: true });
+
+        handle.addEventListener('touchend', (e) => {
+          if (touchFromIdx === null) return;
+          if (lastTargetRow) {
+            const targetIdx = parseInt(lastTargetRow.getAttribute('data-index'), 10);
+            handlePlaylistDrop(e, targetIdx);
+          } else {
+            handlePlaylistDragEnd(e);
+          }
+          touchFromIdx = null;
+          lastTargetRow = null;
+        });
+      });
     }
 
     function moveSongInPlaylist(idx, delta) {
@@ -11323,9 +11570,26 @@
       }
 
       listContainer.innerHTML = editingEventPlaylist.map((song, idx) => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #1a2233; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-bottom: 6px; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
-            <span style="font-size: 0.82rem; font-weight: 800; color: #64748b; width: 28px;">#${idx + 1}</span>
+        <div class="playlist-song-row"
+             id="playlistSongRow_${idx}"
+             data-index="${idx}"
+             draggable="true"
+             ondragstart="handlePlaylistDragStart(event, ${idx})"
+             ondragover="handlePlaylistDragOver(event, ${idx})"
+             ondragleave="handlePlaylistDragLeave(event, ${idx})"
+             ondrop="handlePlaylistDrop(event, ${idx})"
+             ondragend="handlePlaylistDragEnd(event)">
+          
+          <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+            <!-- Handle de Arrastar Suave -->
+            <div class="playlist-drag-handle" title="Arraste para cima ou para baixo para reordenar na playlist">
+              <ion-icon name="reorder-two-outline" style="font-size: 1.4rem; pointer-events: none;"></ion-icon>
+            </div>
+
+            <!-- Contador de Ordem -->
+            <span style="font-size: 0.82rem; font-weight: 800; color: #64748b; width: 28px; text-align: center;">#${idx + 1}</span>
+
+            <!-- Nome da Música & Banda -->
             <div style="flex: 1; min-width: 0;">
               <div style="font-size: 0.9rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 ${escapeHtml(song.name || 'Sem título')}
@@ -11334,25 +11598,21 @@
                 ${escapeHtml(song.originalBand || 'Banda')}
               </div>
             </div>
+
+            <!-- Duração -->
             <span style="font-size: 0.78rem; color: #94a3b8; font-family: var(--font-mono); margin-right: 6px;">
               ${song.duration || '--:--'}
             </span>
           </div>
 
-          <!-- Botões Reordenar (▲ / ▼) e Remover -->
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <button type="button" onclick="moveSongInPlaylist(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: ${idx === 0 ? '#475569' : '#fff'}; cursor: ${idx === 0 ? 'default' : 'pointer'}; display: flex; align-items: center; justify-content: center;">
-              ▲
-            </button>
-            <button type="button" onclick="moveSongInPlaylist(${idx}, 1)" ${idx === editingEventPlaylist.length - 1 ? 'disabled' : ''} style="width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: ${idx === editingEventPlaylist.length - 1 ? '#475569' : '#fff'}; cursor: ${idx === editingEventPlaylist.length - 1 ? 'default' : 'pointer'}; display: flex; align-items: center; justify-content: center;">
-              ▼
-            </button>
-            <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 4px;">
-              <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
-            </button>
-          </div>
+          <!-- Botão Excluir (Sem as flechinhas!) -->
+          <button type="button" onclick="removeSongFromPlaylist(${idx})" title="Remover da playlist" style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease;">
+            <ion-icon name="trash-outline" style="font-size: 0.95rem;"></ion-icon>
+          </button>
         </div>
       `).join('');
+
+      initPlaylistTouchDrag();
     }
 
     function handleSaveEventPlaylistModal(e) {
