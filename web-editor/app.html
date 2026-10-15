@@ -330,9 +330,7 @@
       position: sticky;
       top: 0;
       z-index: 90;
-      background: var(--bg-glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: #111827;
       border-bottom: 1px solid var(--border-subtle);
       padding: 12px 16px;
       align-items: center;
@@ -358,8 +356,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.65);
       z-index: 95;
     }
 
@@ -3360,21 +3357,94 @@
       gap: 20px;
     }
 
+    /* Clean Chips for Skills, Gear & Extra-skills (Saves massive space) */
+    .skill-clean-chip,
+    .gear-clean-chip,
+    .extra-skill-clean-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.15s ease;
+      max-width: 100%;
+    }
+    .skill-clean-chip:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .gear-clean-chip:hover {
+      border-color: rgba(192, 132, 252, 0.45);
+      background: rgba(192, 132, 252, 0.08);
+    }
+    .extra-skill-clean-chip:hover {
+      border-color: rgba(251, 191, 36, 0.45);
+      background: rgba(251, 191, 36, 0.08);
+    }
+    .clean-chip-del-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.15rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0 0 4px;
+      transition: color 0.15s;
+    }
+    .clean-chip-del-btn:hover {
+      color: #f87171;
+    }
+
+    /* Finance Mobile Cards */
+    .finance-mobile-card {
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
     /* ============================================================== */
     /* COMPREHENSIVE MOBILE RESPONSIVENESS & ICON-ONLY TABS (< 768px) */
     /* ============================================================== */
     @media (max-width: 768px) {
+      /* Mobile Viewport Edge Alignment (Cards & Tables touch closer to screen border) */
+      .main-viewport {
+        margin-left: 0 !important;
+        padding: 12px 6px !important;
+      }
+      .mobile-topbar {
+        display: flex !important;
+        margin: -12px -6px 14px -6px !important;
+        padding: 10px 12px !important;
+      }
+      .profile-content-container,
+      .band-page-content {
+        padding: 14px 6px 36px 6px !important;
+      }
+      .profile-subview .card {
+        padding: 12px 8px !important;
+      }
+
       /* 1. ICON-ONLY TAB STRIPS (PROFILE, BAND, SONGBOOK, MODALS) */
       .profile-tabs-strip,
       .band-page-tabs-strip {
-        padding-left: 6px !important;
-        padding-right: 6px !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
         justify-content: space-around !important;
         width: 100% !important;
         min-height: 50px !important;
         overflow-x: hidden !important;
         display: flex !important;
-        gap: 3px !important;
+        gap: 2px !important;
       }
       .profile-tab-btn,
       .band-tab-btn {
@@ -3443,8 +3513,8 @@
 
       /* 3. HERO HEADERS (PROFILE & BAND) */
       .profile-hero {
-        padding: 22px 14px 16px 14px !important;
-        gap: 16px !important;
+        padding: 20px 10px 14px 10px !important;
+        gap: 14px !important;
         text-align: center;
         justify-content: center;
       }
@@ -3464,7 +3534,7 @@
         font-size: 2.2rem !important;
       }
       .profile-hero-name {
-        font-size: 1.45rem !important;
+        font-size: 1.35rem !important;
         text-align: center;
       }
       .profile-hero-handle-row,
@@ -3473,7 +3543,7 @@
       }
 
       .band-page-hero {
-        padding: 22px 14px 16px 14px !important;
+        padding: 20px 10px 14px 10px !important;
       }
       .band-page-hero-inner {
         flex-direction: column !important;
@@ -3489,7 +3559,7 @@
         margin-bottom: 0 !important;
       }
       .band-page-hero-title {
-        font-size: 1.45rem !important;
+        font-size: 1.35rem !important;
         text-align: center !important;
       }
       .band-page-hero-handle-row,
@@ -3504,12 +3574,60 @@
         border-radius: 16px !important;
         width: 100% !important;
       }
+
+      /* 5. FINANCES: DESKTOP TABLE VS MOBILE CARDS */
+      .finance-table-desktop {
+        display: none !important;
+      }
+      .finance-cards-mobile {
+        display: flex !important;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .finance-table-desktop {
+        display: block !important;
+      }
+      .finance-cards-mobile {
+        display: none !important;
+      }
     }
 
     @media (max-width: 680px) {
+      /* MUSICIAN SONGBOOK REPERTOIRE (CARD RESPONSIVENESS & SMALLER FONTS) */
+      .profile-song-item {
+        padding: 8px 8px !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+      }
+      .profile-song-item-titles {
+        font-size: 0.8rem !important;
+        white-space: normal !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+      }
+      .profile-song-item-titles .song-band {
+        font-size: 0.8rem !important;
+      }
+      .profile-song-item-titles .song-name {
+        font-size: 0.8rem !important;
+      }
+      .profile-song-tag-badge {
+        font-size: 0.62rem !important;
+        padding: 1px 6px !important;
+      }
+      .profile-song-tags-inline {
+        margin-left: 0 !important;
+        flex-wrap: wrap !important;
+        gap: 3px !important;
+      }
+      .profile-song-item-right {
+        gap: 6px !important;
+      }
+
       /* PROJECTS VIEW CARDS */
       .projects-container {
-        padding: 24px 12px 40px 12px !important;
+        padding: 18px 4px 36px 4px !important;
         gap: 20px !important;
       }
       .project-band-card-wrapper {
@@ -3518,7 +3636,7 @@
         margin-bottom: 24px !important;
       }
       .project-band-card {
-        padding: 48px 14px 18px 14px !important;
+        padding: 48px 12px 18px 12px !important;
         width: 100% !important;
         box-sizing: border-box !important;
       }
@@ -3542,19 +3660,19 @@
       .band-member-card-row {
         height: auto !important;
         min-height: 52px !important;
-        padding: 10px 12px !important;
-        gap: 10px !important;
+        padding: 10px 10px !important;
+        gap: 8px !important;
         flex-wrap: wrap !important;
       }
       .band-member-avatar-protruding {
         margin-left: 0 !important;
-        width: 48px !important;
-        height: 48px !important;
+        width: 46px !important;
+        height: 46px !important;
         font-size: 1.05rem !important;
       }
       .band-member-info-group {
         flex: 1 !important;
-        min-width: 140px !important;
+        min-width: 130px !important;
       }
       .band-member-actions-wrap {
         width: 100% !important;
@@ -3565,8 +3683,8 @@
       /* MONTH BARS & AGENDA CARDS */
       .mobile-month-bar {
         flex-wrap: wrap !important;
-        gap: 8px !important;
-        padding: 8px 10px !important;
+        gap: 6px !important;
+        padding: 8px 8px !important;
       }
       .mobile-month-line {
         display: none !important;
@@ -3574,21 +3692,21 @@
       .musician-agenda-card,
       .agenda-event-card {
         flex-wrap: wrap !important;
-        padding: 12px !important;
-        gap: 10px !important;
+        padding: 10px 10px !important;
+        gap: 8px !important;
       }
       .band-agenda-summary {
-        gap: 14px !important;
-        padding: 12px 8px !important;
+        gap: 12px !important;
+        padding: 10px 6px !important;
       }
       .agenda-circle-disc {
-        width: 58px !important;
-        height: 58px !important;
-        font-size: 1.15rem !important;
+        width: 56px !important;
+        height: 56px !important;
+        font-size: 1.1rem !important;
       }
       .agenda-circle-wrapper {
-        width: 60px !important;
-        height: 60px !important;
+        width: 58px !important;
+        height: 58px !important;
       }
 
       /* FINANCES GRID */
@@ -3597,16 +3715,16 @@
         gap: 10px !important;
       }
       .band-finance-box {
-        padding: 14px 16px !important;
+        padding: 14px 14px !important;
       }
     }
 
     @media (max-width: 440px) {
       .flyer-card-preview {
         width: 100% !important;
-        max-width: 330px !important;
+        max-width: 320px !important;
         height: auto !important;
-        min-height: 500px !important;
+        min-height: 480px !important;
       }
       .project-band-metrics-grid {
         grid-template-columns: 1fr !important;
@@ -7466,31 +7584,26 @@
     function renderSkillsTab() {
       const container = document.getElementById('skillsListContainer');
       if (mySkills.length === 0) {
+        container.style.display = 'block';
         container.innerHTML = `
-          <div style="text-align: center; padding: 36px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-            <ion-icon name="flash-outline" style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 6px;"></ion-icon>
-            <h4 style="color: #fff; font-size: 1rem;">Nenhuma habilidade cadastrada</h4>
-            <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 12px;">Adicione os instrumentos que você toca e seu nível de domínio.</p>
+          <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+            <ion-icon name="flash-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
+            <h4 style="color: #fff; font-size: 0.95rem;">Nenhuma habilidade cadastrada</h4>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Adicione os instrumentos que você toca e seu nível de domínio.</p>
             <button class="btn btn-primary btn-sm" onclick="openAddSkillModal()">Adicionar Habilidade</button>
           </div>
         `;
       } else {
+        container.style.display = 'flex';
+        container.style.flexDirection = 'row';
+        container.style.flexWrap = 'wrap';
+        container.style.gap = '8px';
         container.innerHTML = mySkills.map((s, idx) => `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(14,165,233,0.12); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan-light); flex-shrink: 0;">
-                <ion-icon name="musical-notes-outline" style="font-size: 1.3rem;"></ion-icon>
-              </div>
-              <div>
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                  <span class="badge badge-cyan" style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 9999px;">${s.instrument || s.name}</span>
-                  <div>${renderStarsHtml(s.stars, 14)}</div>
-                </div>
-              </div>
-            </div>
-            <button class="btn btn-sm btn-danger" onclick="removeSkill(${idx})" title="Remover habilidade">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
+          <div class="skill-clean-chip" title="${escapeHtml(s.instrument || s.name)} (${s.stars || 1} estrelas)">
+            <ion-icon name="musical-notes" style="color: var(--cyan); font-size: 0.95rem;"></ion-icon>
+            <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(s.instrument || s.name)}</span>
+            <span style="color: #fbbf24; font-size: 0.72rem; letter-spacing: 1px;">${'★'.repeat(Math.max(1, Math.min(5, parseInt(s.stars) || 1)))}</span>
+            <button type="button" onclick="removeSkill(${idx})" title="Remover habilidade" class="clean-chip-del-btn">&times;</button>
           </div>
         `).join('');
       }
@@ -7516,12 +7629,13 @@
       if (!container) return;
 
       if (!myExtraSkills || myExtraSkills.length === 0) {
+        container.style.display = 'block';
         container.innerHTML = `
-          <div style="text-align: center; padding: 32px 20px; background: rgba(251, 191, 36, 0.03); border-radius: var(--radius-md); border: 1px dashed rgba(251, 191, 36, 0.25);">
-            <ion-icon name="sparkles-outline" style="font-size: 2.2rem; color: #fbbf24; margin-bottom: 6px; opacity: 0.8;"></ion-icon>
-            <h4 style="color: #fff; font-size: 1rem; margin-bottom: 4px;">Nenhum diferencial extra cadastrado</h4>
-            <p style="color: var(--text-muted); font-size: 0.84rem; margin-bottom: 12px; max-width: 440px; margin-left: auto; margin-right: auto;">
-              Adicione diferenciais que ajudam muito uma banda (ex: ter van própria, saber operar som de PA, fazer flyers, editar vídeos, etc.).
+          <div style="text-align: center; padding: 24px; background: rgba(251, 191, 36, 0.03); border-radius: var(--radius-md); border: 1px dashed rgba(251, 191, 36, 0.25);">
+            <ion-icon name="sparkles-outline" style="font-size: 2rem; color: #fbbf24; margin-bottom: 4px; opacity: 0.8;"></ion-icon>
+            <h4 style="color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Nenhum diferencial extra cadastrado</h4>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px; max-width: 440px; margin-left: auto; margin-right: auto;">
+              Adicione diferenciais que ajudam muito uma banda (van, som de PA, flyers, etc.).
             </p>
             <button class="btn btn-amber btn-sm" onclick="openAddExtraSkillModal()" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); font-weight: 700;">
               <ion-icon name="add-circle-outline"></ion-icon>
@@ -7532,25 +7646,18 @@
         return;
       }
 
+      container.style.display = 'flex';
+      container.style.flexDirection = 'row';
+      container.style.flexWrap = 'wrap';
+      container.style.gap = '8px';
       container.innerHTML = myExtraSkills.map((item, idx) => {
         const iconName = item.icon || getExtraSkillCategoryIcon(item.category || item.name);
         return `
-          <div class="extra-skill-card-item">
-            <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
-              <div class="extra-skill-icon-box">
-                <ion-icon name="${iconName}"></ion-icon>
-              </div>
-              <div style="min-width: 0; flex: 1;">
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <span class="extra-skill-category-tag">${escapeHtml(item.category || 'Diferencial')}</span>
-                  <span class="extra-skill-title">${escapeHtml(item.name)}</span>
-                </div>
-                ${item.description ? `<p class="extra-skill-desc">${escapeHtml(item.description)}</p>` : ''}
-              </div>
-            </div>
-            <button class="btn btn-sm btn-danger" onclick="removeExtraSkill(${idx})" title="Remover diferencial" style="flex-shrink: 0; align-self: center;">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
+          <div class="extra-skill-clean-chip" title="${escapeHtml(item.name)} - ${escapeHtml(item.category || '')}">
+            <ion-icon name="${iconName}" style="color: #fbbf24; font-size: 0.95rem;"></ion-icon>
+            <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(item.name)}</span>
+            <span class="badge badge-amber" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(item.category || 'Extra')}</span>
+            <button type="button" onclick="removeExtraSkill(${idx})" title="Remover diferencial" class="clean-chip-del-btn">&times;</button>
           </div>
         `;
       }).join('');
@@ -7718,8 +7825,9 @@
     function renderGearTab() {
       const container = document.getElementById('gearListContainer');
       if (myGear.length === 0) {
+        container.style.display = 'block';
         container.innerHTML = `
-          <div style="text-align: center; padding: 28px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+          <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
             <ion-icon name="hardware-chip-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
             <h4 style="color: #fff; font-size: 0.95rem;">Nenhum equipamento cadastrado</h4>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
@@ -7729,23 +7837,17 @@
         return;
       }
 
+      container.style.display = 'flex';
+      container.style.flexDirection = 'row';
+      container.style.flexWrap = 'wrap';
+      container.style.gap = '8px';
       container.innerHTML = myGear.map((item, idx) => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(139,92,246,0.12); border: 1px solid var(--violet); display: flex; align-items: center; justify-content: center; color: var(--violet-light);">
-              <ion-icon name="hardware-chip-outline" style="font-size: 1.2rem;"></ion-icon>
-            </div>
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.95rem; font-weight: 800; color: #fff;">${item.name}</span>
-                <span class="badge badge-violet" style="font-size: 0.65rem;">${item.category}</span>
-              </div>
-              ${item.details ? `<p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">${item.details}</p>` : ''}
-            </div>
-          </div>
-          <button class="btn btn-sm btn-danger" onclick="removeGear(${idx})" title="Remover equipamento">
-            <ion-icon name="trash-outline"></ion-icon>
-          </button>
+        <div class="gear-clean-chip" title="${escapeHtml(item.name)} (${escapeHtml(item.category || 'Gear')})${item.details ? ' - ' + escapeHtml(item.details) : ''}">
+          <ion-icon name="hardware-chip-outline" style="color: var(--violet); font-size: 0.95rem;"></ion-icon>
+          <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(item.name)}</span>
+          <span class="badge badge-violet" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(item.category || 'Gear')}</span>
+          ${item.details ? `<span style="font-size: 0.72rem; color: #94a3b8; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(item.details)}</span>` : ''}
+          <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
         </div>
       `).join('');
     }
@@ -9256,69 +9358,6 @@
 
       html += `</div>`;
 
-      // SEÇÃO ADICIONAL: SETLISTS GRAVADOS COM ACCORDION
-      if (setlists && setlists.length > 0) {
-        html += `
-          <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <div>
-                <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 2px;">Setlists Gravados da Banda</h3>
-                <p style="color: #94a3b8; font-size: 0.82rem;">Playlists escaladas para shows e ensaios.</p>
-              </div>
-              <span class="badge badge-emerald">${setlists.length} Setlists</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-        `;
-
-        setlists.forEach((sl, idx) => {
-          const sName = sl.name || `Setlist #${idx + 1}`;
-          const isRehearsal = sl.type === 'rehearsal' || sName.toLowerCase().includes('ensaio') || sName.toLowerCase().includes('all songs');
-          const rawC = sl['cachê'] ?? sl.cache ?? sl.valCache ?? sl.value;
-          const cacheNum = rawC ? parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) : null;
-          const songsList = sl.songs || [];
-
-          html += `
-            <div class="band-setlist-card" id="setlistCard-${idx}">
-              <div class="band-setlist-header" onclick="toggleSetlistAccordion(${idx})">
-                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                  <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.72rem; font-weight: 800;">
-                    ${isRehearsal ? 'ENSAIO' : 'SHOW'}
-                  </span>
-                  <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0;">${sName}</h4>
-                  <span style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
-                    <ion-icon name="calendar-outline"></ion-icon> ${formatDateDisplay(sl.date)}
-                  </span>
-                  ${sl.local ? `<span style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="location-outline"></ion-icon> ${sl.local}</span>` : ''}
-                </div>
-                <div style="display: flex; align-items: center; gap: 14px;">
-                  ${cacheNum ? `<span style="font-size: 0.9rem; font-weight: 800; color: #4ade80;">R$ ${cacheNum.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>` : ''}
-                  <span class="badge badge-cyan" style="font-size: 0.78rem;">${songsList.length} músicas</span>
-                  <ion-icon name="chevron-down-outline" class="setlist-acc-icon" id="setlistAccIcon-${idx}" style="font-size: 1.15rem; color: #94a3b8; transition: transform 0.2s;"></ion-icon>
-                </div>
-              </div>
-              <div class="band-setlist-body" id="setlistBody-${idx}" style="display: none; padding: 12px 18px; background: rgba(0,0,0,0.2);">
-                ${songsList.length === 0 ? '<p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">Nenhuma música escalada.</p>' : `
-                  <table class="band-setlist-songs-table" style="width: 100%; border-collapse: collapse;">
-                    <tbody>
-                      ${songsList.map((s, sIdx) => `
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                          <td style="padding: 6px 8px; width: 35px; color: #64748b; font-weight: 700; font-size: 0.82rem;">#${sIdx + 1}</td>
-                          <td style="padding: 6px 8px; font-weight: 700; color: #fff; font-size: 0.88rem;">${s.name || 'Sem título'}</td>
-                          <td style="padding: 6px 8px; color: #94a3b8; font-size: 0.82rem;">${s.originalBand || '-'}</td>
-                          <td style="padding: 6px 8px; text-align: right; color: #94a3b8; font-size: 0.82rem; font-family: var(--font-mono);">${s.duration || '--:--'}</td>
-                        </tr>
-                      `).join('')}
-                    </tbody>
-                  </table>
-                `}
-              </div>
-            </div>
-          `;
-        });
-
-        html += `</div></div>`;
-      }
-
       sub.innerHTML = html;
     }
 
@@ -9540,7 +9579,7 @@
           </div>
         </div>
 
-        <div class="band-finance-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+        <div class="band-finance-grid" style="margin-bottom: 24px;">
           <!-- Card 1: Renda Bruta Total -->
           <div class="band-finance-box">
             <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Receita Total da Banda (Ano)</span>
@@ -9602,7 +9641,7 @@
           </div>
         `;
       } else {
-        const renderFinanceRows = (itemsList) => {
+        const renderFinanceDesktopRows = (itemsList) => {
           return itemsList.map(item => {
             if (item.type === 'show') {
               const sl = item.sl;
@@ -9621,28 +9660,28 @@
 
               return `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                  <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
-                  <td style="padding: 12px 16px;">
+                  <td style="padding: 12px 14px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</td>
+                  <td style="padding: 12px 14px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px;">SHOW</span>
                       <div style="font-size: 0.92rem; font-weight: 700; color: #fff;">${escapeHtml(sl.name || sl.local || 'Show')}</div>
                     </div>
                     ${sl.local ? `<div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(sl.local)}</div>` : ''}
                   </td>
-                  <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                  <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #fbbf24;">
+                  <td style="padding: 12px 14px; font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td style="padding: 12px 14px; font-size: 0.92rem; font-weight: 800; color: #fbbf24;">
                     ${showBandFund > 0 ? `R$ ${showBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '<span style="color:#64748b; font-size: 0.8rem; font-weight: normal;">R$ 0,00</span>'}
                   </td>
-                  <td style="padding: 12px 16px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">
+                  <td style="padding: 12px 14px; font-size: 0.92rem; font-weight: 800; color: #4ade80;">
                     R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     ${hasSplit ? `<span class="badge badge-cyan" style="font-size: 0.65rem; margin-left: 6px; padding: 2px 6px;">Split OK</span>` : ''}
                   </td>
-                  <td style="padding: 12px 16px;">
+                  <td style="padding: 12px 14px;">
                     <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.72rem; font-weight: 800;">
                       ${isPaid ? 'RECEBIDO' : 'PENDENTE'}
                     </span>
                   </td>
-                  <td style="padding: 12px 16px; text-align: right;">
+                  <td style="padding: 12px 14px; text-align: right;">
                     <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 12px; font-size: 0.78rem;" onclick="openCacheSplitModal(${originalIdx})">
                       <ion-icon name="pie-chart-outline"></ion-icon> <span>Divisão de Cachê</span>
                     </button>
@@ -9658,8 +9697,8 @@
 
               return `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: ${isIncome ? 'rgba(74,222,128,0.02)' : 'rgba(248,113,113,0.02)'};">
-                  <td style="padding: 12px 16px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(f.date)}</td>
-                  <td style="padding: 12px 16px;">
+                  <td style="padding: 12px 14px; font-size: 0.88rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(f.date)}</td>
+                  <td style="padding: 12px 14px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <span class="badge ${isIncome ? 'badge-emerald' : 'badge-danger'}" style="font-size: 0.65rem; padding: 2px 7px;">
                         ${isIncome ? '+ ENTRADA' : '- DESPESA'}
@@ -9668,23 +9707,23 @@
                     </div>
                     ${f.notes ? `<div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px; font-style: italic;"><ion-icon name="document-text-outline"></ion-icon> ${escapeHtml(f.notes)}</div>` : ''}
                   </td>
-                  <td style="padding: 12px 16px; font-size: 0.95rem; font-weight: 800; color: ${isIncome ? '#4ade80' : '#f87171'};">
+                  <td style="padding: 12px 14px; font-size: 0.95rem; font-weight: 800; color: ${isIncome ? '#4ade80' : '#f87171'};">
                     ${isIncome ? '+ ' : '- '}R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </td>
-                  <td style="padding: 12px 16px; font-size: 0.82rem; color: #94a3b8;">
+                  <td style="padding: 12px 14px; font-size: 0.82rem; color: #94a3b8;">
                     ${isIncome ? '<span style="color:#4ade80;">Crédito Caixa</span>' : '<span style="color:#f87171;">Débito Caixa</span>'}
                   </td>
-                  <td style="padding: 12px 16px; font-size: 0.82rem; color: #64748b;">
+                  <td style="padding: 12px 14px; font-size: 0.82rem; color: #64748b;">
                     Lançamento da Banda
                   </td>
-                  <td style="padding: 12px 16px;">
+                  <td style="padding: 12px 14px;">
                     <button type="button" onclick="toggleFinanceEntryStatus('${f.id}')" title="Clique para alternar status" style="background: none; border: none; cursor: pointer; padding: 0;">
                       <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.72rem; font-weight: 800;">
                         ${isPaid ? (isIncome ? 'RECEBIDO' : 'PAGO') : 'PENDENTE'}
                       </span>
                     </button>
                   </td>
-                  <td style="padding: 12px 16px; text-align: right;">
+                  <td style="padding: 12px 14px; text-align: right;">
                     <div style="display: inline-flex; gap: 6px;">
                       <button type="button" class="member-action-btn edit" onclick="openEditFinanceEntryModal('${f.id}')" title="Editar Lançamento" style="padding: 5px 10px; font-size: 0.76rem;">
                         <ion-icon name="create-outline"></ion-icon> <span>Editar</span>
@@ -9700,24 +9739,129 @@
           }).join('');
         };
 
-        const renderTableWrapper = (rowsHtml) => `
-          <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow-x: auto; margin-bottom: 16px;">
+        const renderFinanceMobileCards = (itemsList) => {
+          return itemsList.map(item => {
+            if (item.type === 'show') {
+              const sl = item.sl;
+              const originalIdx = setlists.indexOf(sl);
+              const num = item.amount;
+              const showBandFund = sl.cacheSplit ? (parseFloat(sl.cacheSplit.bandFund) || 0) : 0;
+              let memSum = 0;
+              if (sl.cacheSplit?.members) {
+                Object.values(sl.cacheSplit.members).forEach(v => memSum += parseFloat(String(v || '0').replace(',', '.')) || 0);
+              }
+              const indiv = sl.cacheSplit
+                ? (m.membersCount > 0 ? (memSum / m.membersCount) : 0)
+                : (m.membersCount > 0 ? (num / m.membersCount) : 0);
+              const isPaid = (sl.cacheSplit?.status || 'paid') === 'paid';
+
+              return `
+                <div class="finance-mobile-card">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 6px;">SHOW</span>
+                      <span style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(sl.date)}</span>
+                      <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.65rem; padding: 2px 6px;">
+                        ${isPaid ? 'RECEBIDO' : 'PENDENTE'}
+                      </span>
+                    </div>
+                    <div style="font-size: 1.05rem; font-weight: 900; color: #38bdf8; flex-shrink: 0;">
+                      R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+
+                  <div style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 4px 0 2px 0;">
+                    ${escapeHtml(sl.name || sl.local || 'Show')}
+                  </div>
+                  ${sl.local ? `<div style="font-size: 0.78rem; color: #64748b; margin-bottom: 4px;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(sl.local)}</div>` : ''}
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 6px 10px; margin: 4px 0 6px 0; font-size: 0.78rem;">
+                    <div>
+                      <span style="color: #94a3b8;">Cota: </span>
+                      <strong style="color: #4ade80;">R$ ${indiv.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+                    </div>
+                    <div>
+                      <span style="color: #94a3b8;">Caixa: </span>
+                      <strong style="color: #fbbf24;">R$ ${showBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; justify-content: flex-end;">
+                    <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openCacheSplitModal(${originalIdx})">
+                      <ion-icon name="pie-chart-outline"></ion-icon> <span>Divisão de Cachê</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+            } else {
+              // Manual financial entry
+              const f = item.entry;
+              const isIncome = f.type === 'income';
+              const num = item.amount;
+              const isPaid = (f.status || 'paid') === 'paid';
+
+              return `
+                <div class="finance-mobile-card" style="border-left: 3px solid ${isIncome ? '#4ade80' : '#f87171'};">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <span class="badge ${isIncome ? 'badge-emerald' : 'badge-danger'}" style="font-size: 0.65rem; padding: 2px 6px;">
+                        ${isIncome ? '+ ENTRADA' : '- DESPESA'}
+                      </span>
+                      <span style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">${formatDateDisplay(f.date)}</span>
+                      <button type="button" onclick="toggleFinanceEntryStatus('${f.id}')" title="Clique para alternar status" style="background: none; border: none; cursor: pointer; padding: 0;">
+                        <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.65rem; padding: 2px 6px;">
+                          ${isPaid ? (isIncome ? 'RECEBIDO' : 'PAGO') : 'PENDENTE'}
+                        </span>
+                      </button>
+                    </div>
+                    <div style="font-size: 1.05rem; font-weight: 900; color: ${isIncome ? '#4ade80' : '#f87171'}; flex-shrink: 0;">
+                      ${isIncome ? '+' : '-'} R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+
+                  <div style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 4px 0 2px 0;">
+                    ${escapeHtml(f.title || (isIncome ? 'Entrada' : 'Despesa'))}
+                  </div>
+                  ${f.notes ? `<div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 4px; font-style: italic;"><ion-icon name="document-text-outline"></ion-icon> ${escapeHtml(f.notes)}</div>` : ''}
+
+                  <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px;">
+                    <button type="button" class="member-action-btn edit" onclick="openEditFinanceEntryModal('${f.id}')" title="Editar" style="padding: 4px 8px; font-size: 0.74rem;">
+                      <ion-icon name="create-outline"></ion-icon>
+                    </button>
+                    <button type="button" class="member-action-btn delete" onclick="deleteFinanceEntry('${f.id}')" title="Excluir" style="padding: 4px 8px; font-size: 0.74rem;">
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                  </div>
+                </div>
+              `;
+            }
+          }).join('');
+        };
+
+        const renderTableWrapper = (itemsList) => `
+          <!-- Desktop Table View -->
+          <div class="finance-table-desktop" style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow-x: auto; margin-bottom: 16px;">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
               <thead>
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Descrição</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Valor</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Caixa Banda</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
-                  <th style="padding: 12px 16px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; text-align: right;">Ações</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Data</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Evento / Descrição</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Valor</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Caixa Banda</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Cota Individual</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Status</th>
+                  <th style="padding: 12px 14px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; text-align: right;">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                ${rowsHtml}
+                ${renderFinanceDesktopRows(itemsList)}
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Cards View -->
+          <div class="finance-cards-mobile" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+            ${renderFinanceMobileCards(itemsList)}
           </div>
         `;
 
@@ -9763,7 +9907,7 @@
               <!-- Chevron de expandir / recolher -->
               <ion-icon name="${isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}" style="font-size: 1.15rem; color: #94a3b8;"></ion-icon>
             </div>
-            ${isExpanded ? renderTableWrapper(renderFinanceRows(g.items)) : ''}
+            ${isExpanded ? renderTableWrapper(g.items) : ''}
           `;
         });
       }
