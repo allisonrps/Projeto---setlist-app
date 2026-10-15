@@ -283,31 +283,31 @@
       border-radius: 6px;
       background: transparent;
       border: 1px solid transparent;
-      color: #94a3b8;
+      color: #cbd5e1;
       cursor: pointer;
-      font-size: 0.86rem;
-      font-weight: 700;
+      font-size: 0.88rem;
+      font-weight: 800;
       letter-spacing: 0.8px;
       text-transform: uppercase;
       text-align: left;
       transition: all 0.2s ease;
     }
     .sidebar-nav-btn ion-icon {
-      font-size: 1.15rem;
-      color: #64748b;
+      font-size: 1.2rem;
+      color: #94a3b8;
       transition: color 0.2s;
     }
     .sidebar-nav-btn:hover {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
     }
     .sidebar-nav-btn:hover ion-icon {
-      color: #fff;
+      color: #38bdf8;
     }
     .sidebar-nav-btn.active {
       color: #fff;
-      background: #1e2235;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #1e293b;
+      border: 1px solid rgba(56, 189, 248, 0.35);
     }
     .sidebar-nav-btn.active ion-icon {
       color: #38bdf8;
@@ -329,7 +329,7 @@
       display: none;
       position: sticky;
       top: 0;
-      z-index: 90;
+      z-index: 1005;
       background: #111827;
       border-bottom: 1px solid var(--border-subtle);
       padding: 12px 16px;
@@ -342,8 +342,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: var(--radius-full);
       padding: 4px 10px 4px 4px;
       color: #fff;
@@ -356,8 +356,8 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.65);
-      z-index: 95;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 990;
     }
 
     /* VIEWS */
@@ -2001,11 +2001,13 @@
     @media (max-width: 960px) {
       .sidebar-musician {
         transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 1000;
-        width: 300px;
-        min-width: 300px;
-        box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1010;
+        width: 290px;
+        min-width: 290px;
+        background: #111827 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 10px 0 40px rgba(0, 0, 0, 0.85);
       }
       .sidebar-musician.open { transform: translateX(0); }
       .sidebar-backdrop.active { display: block; }
@@ -3383,17 +3385,34 @@
       border-color: rgba(251, 191, 36, 0.45);
       background: rgba(251, 191, 36, 0.08);
     }
+    /* Clean Full-Width Line Row for Skills, Gear & Extra Skills */
+    .profile-clean-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      transition: all 0.15s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .profile-clean-row:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
     .clean-chip-del-btn {
       background: none;
       border: none;
       color: #94a3b8;
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       line-height: 1;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 0 0 4px;
+      padding: 2px 6px;
       transition: color 0.15s;
     }
     .clean-chip-del-btn:hover {
@@ -4085,63 +4104,57 @@
           <div class="profile-subview" id="subview-skills">
             <!-- 1. HABILIDADES MUSICAIS (INSTRUMENTOS & DOMÍNIO) -->
             <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08); margin-bottom: 24px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
                     <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
                     <span>Habilidades Musicais</span>
                   </h3>
-                  <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Instrumentos e técnicas do músico com nível de domínio (estrelas).</p>
                 </div>
                 <button class="btn btn-primary btn-sm" onclick="openAddSkillModal()">
                   <ion-icon name="add-circle-outline"></ion-icon>
-                  <span>Adicionar Instrumento</span>
+                  <span>Adicionar</span>
                 </button>
               </div>
-              <div id="skillsListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+              <div id="skillsListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
 
-            <!-- 2. HABILIDADES EXTRA-MUSICAIS (VALOR ESTRATÉGICO PARA A BANDA) -->
+            <!-- 2. HABILIDADES EXTRA-MUSICAIS -->
             <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                 <div>
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
-                      <ion-icon name="sparkles" style="color: #fbbf24;"></ion-icon>
-                      <span>Habilidades Extra-Musicais</span>
-                    </h3>
-                    <span class="badge badge-amber" style="font-size: 0.7rem; font-weight: 800;">VALOR P/ A BANDA</span>
-                  </div>
-                  <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Destaque diferenciais essenciais que você soma ao projeto além de tocar (som, van, design, redes, roadie, etc.).</p>
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <ion-icon name="sparkles" style="color: #fbbf24;"></ion-icon>
+                    <span>Habilidades Extra-Musicais</span>
+                  </h3>
                 </div>
                 <button class="btn btn-amber btn-sm" onclick="openAddExtraSkillModal()" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); font-weight: 700;">
                   <ion-icon name="add-circle-outline"></ion-icon>
-                  <span>Adicionar Habilidade Extra</span>
+                  <span>Adicionar</span>
                 </button>
               </div>
 
               <!-- Lista de Habilidades Extra-Musicais -->
-              <div id="extraSkillsListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+              <div id="extraSkillsListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
           </div>
 
           <!-- ── TAB E: EQUIPAMENTOS (GEAR) ── -->
           <div class="profile-subview" id="subview-gear">
             <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div>
-                  <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
                     <ion-icon name="hardware-chip-outline" style="color: var(--violet);"></ion-icon>
                     <span>Meus Equipamentos (Gear)</span>
                   </h3>
-                  <p style="color: #94a3b8; font-size: 0.85rem;">Guitarras, baixos, amplificadores, pedais e microfones do seu set.</p>
                 </div>
                 <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">
                   <ion-icon name="add-circle-outline"></ion-icon>
-                  <span>Adicionar Equipamento</span>
+                  <span>Adicionar</span>
                 </button>
               </div>
-              <div id="gearListContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+              <div id="gearListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
           </div>
 
@@ -4974,15 +4987,15 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('addSkillModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Instrumento</button>
+          <button type="submit" class="btn btn-primary">Adicionar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ADD EXTRA SKILL MODAL -->
+  <!-- ADD EXTRA SKILL MODAL (CLEAN & STREAMLINED) -->
   <div class="modal-overlay" id="addExtraSkillModal">
-    <div class="modal-card" style="max-width: 520px;">
+    <div class="modal-card" style="max-width: 480px;">
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="sparkles" style="color: #fbbf24;"></ion-icon>
@@ -4990,68 +5003,47 @@
         </h3>
         <button class="modal-close" onclick="closeModal('addExtraSkillModal')">&times;</button>
       </div>
-      <form onsubmit="handleSaveExtraSkill(event)">
-        <!-- Scroll de Opções / Sugestões Prontas -->
-        <div class="form-group">
-          <label style="display: flex; justify-content: space-between; align-items: center;">
-            <span>Opções Sugeridas (Role para selecionar)</span>
-            <span style="font-size: 0.72rem; color: #fbbf24; font-weight: 700;">⚡ Sugestões Prontas</span>
-          </label>
-          <select id="extraSkillPresetSelect" class="form-input" onchange="onSelectExtraSkillPreset(this.value)">
-            <option value="">-- Escolha uma sugestão ou customize abaixo --</option>
-            <option value="van">🚐 Transporte Próprio (Van / Carro)</option>
-            <option value="som">🎛️ Técnico de Som / PA</option>
-            <option value="design">🎨 Design Gráfico & Flyers</option>
-            <option value="video">🎬 Filmagem & Edição de Vídeo</option>
-            <option value="social">📱 Social Media & Anúncios</option>
-            <option value="roadie">🔧 Roadie & Montagem de Palco</option>
-            <option value="booking">💼 Venda de Shows & Booking</option>
-            <option value="luthier">🎸 Luthieria & Regulagem</option>
-            <option value="foto">📸 Fotografia Profissional</option>
-            <option value="luz">💡 Técnico de Iluminação / Luz</option>
-            <option value="producao">🎹 Produção Musical & Gravação</option>
-            <option value="custom">✏️ Outra Habilidade (Personalizada)</option>
-          </select>
-        </div>
 
-        <div class="form-group">
-          <label>Categoria da Habilidade</label>
-          <select id="extraSkillCategoryInput" class="form-input">
-            <option value="Logística & Transporte">🚐 Logística & Transporte</option>
-            <option value="Áudio & Som">🎛️ Áudio, Gravação & Som</option>
-            <option value="Audiovisual & Design">🎨 Audiovisual, Vídeo & Design</option>
-            <option value="Marketing & Mídias">📱 Marketing, Tráfego & Redes</option>
-            <option value="Palco & Equipamentos">🔧 Palco, Roadie & Luthieria</option>
-            <option value="Gestão & Booking">💼 Gestão, Venda de Shows & Booking</option>
-            <option value="Outros">⭐ Outra Habilidade</option>
+      <!-- Único scroll/seletor de opções sugeridas -->
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label style="font-size: 0.84rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Selecione a Habilidade</label>
+        <div style="display: flex; gap: 8px;">
+          <select id="extraSkillPresetSelect" class="form-input" style="flex: 1;">
+            <option value="">-- Escolha uma opção da lista --</option>
+            <option value="Transporte Próprio (Van/Carro)">🚐 Transporte Próprio (Van / Carro)</option>
+            <option value="Técnico de Som / PA">🎛️ Técnico de Som / PA</option>
+            <option value="Design Gráfico & Flyers">🎨 Design Gráfico & Flyers</option>
+            <option value="Filmagem & Edição de Vídeo">🎬 Filmagem & Edição de Vídeo</option>
+            <option value="Social Media & Tráfego Pago">📱 Social Media & Anúncios</option>
+            <option value="Roadie & Montagem de Palco">🔧 Roadie & Montagem de Palco</option>
+            <option value="Venda de Shows & Booking">💼 Venda de Shows & Booking</option>
+            <option value="Luthieria & Regulagem">🎸 Luthieria & Regulagem</option>
+            <option value="Fotografia Profissional">📸 Fotografia Profissional</option>
+            <option value="Técnico de Iluminação / Luz">💡 Técnico de Iluminação / Luz</option>
+            <option value="Produção Musical & Gravação">🎹 Produção Musical & Gravação</option>
           </select>
+          <button type="button" class="btn btn-amber" onclick="addSelectedPresetExtraSkill()" style="background: #f59e0b; border-color: #f59e0b; padding: 0 16px; font-weight: 800;">Adicionar</button>
         </div>
-        <div class="form-group">
-          <label>Nome da Habilidade Extra *</label>
-          <input type="text" id="extraSkillNameInput" class="form-input" list="extraSkillSuggestionsList" placeholder="Ex: Transporte Próprio (Van), Técnico de PA, Fotografia..." required>
-          <datalist id="extraSkillSuggestionsList">
-            <option value="Transporte Próprio (Van/Carro)">
-            <option value="Técnico de Som / PA">
-            <option value="Design Gráfico & Flyers">
-            <option value="Filmagem & Edição de Vídeo">
-            <option value="Social Media & Tráfego Pago">
-            <option value="Roadie & Montagem de Palco">
-            <option value="Venda de Shows & Booking">
-            <option value="Luthieria & Regulagem">
-            <option value="Fotografia Profissional">
-            <option value="Técnico de Iluminação / Luz">
-            <option value="Produção Musical & Gravação">
-          </datalist>
+      </div>
+
+      <!-- Opção de digitar uma habilidade personalizada -->
+      <div class="form-group" style="margin-bottom: 18px;">
+        <label style="font-size: 0.78rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px; display: block;">Ou digite uma opção personalizada:</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="extraSkillCustomInput" class="form-input" placeholder="Ex: Direção de Palco, Gravação em DAW...">
+          <button type="button" class="btn btn-outline" onclick="addCustomExtraSkill()" style="padding: 0 14px; font-size: 0.82rem; font-weight: 700;">Adicionar</button>
         </div>
-        <div class="form-group">
-          <label>Descrição / Detalhe (Opcional)</label>
-          <input type="text" id="extraSkillDescInput" class="form-input" placeholder="Ex: Van com 7 lugares e bagageiro disponível para viagens e shows">
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('addExtraSkillModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary" style="background: #f59e0b; border-color: #f59e0b;">Salvar Habilidade Extra</button>
-        </div>
-      </form>
+      </div>
+
+      <!-- Pílulas das habilidades já cadastradas (fácil de remover aqui no modal) -->
+      <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+        <label style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">Habilidades Cadastradas no Perfil</label>
+        <div id="modalExtraSkillsChips" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 36px;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+        <button type="button" class="btn btn-primary" onclick="closeModal('addExtraSkillModal')">Concluir</button>
+      </div>
     </div>
   </div>
 
@@ -5090,7 +5082,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('addGearModal')">Cancelar</button>
-          <button type="submit" class="btn btn-violet">Salvar Equipamento</button>
+          <button type="submit" class="btn btn-violet">Adicionar</button>
         </div>
       </form>
     </div>
@@ -7590,19 +7582,20 @@
             <ion-icon name="flash-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
             <h4 style="color: #fff; font-size: 0.95rem;">Nenhuma habilidade cadastrada</h4>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Adicione os instrumentos que você toca e seu nível de domínio.</p>
-            <button class="btn btn-primary btn-sm" onclick="openAddSkillModal()">Adicionar Habilidade</button>
+            <button class="btn btn-primary btn-sm" onclick="openAddSkillModal()">Adicionar</button>
           </div>
         `;
       } else {
         container.style.display = 'flex';
-        container.style.flexDirection = 'row';
-        container.style.flexWrap = 'wrap';
+        container.style.flexDirection = 'column';
         container.style.gap = '8px';
         container.innerHTML = mySkills.map((s, idx) => `
-          <div class="skill-clean-chip" title="${escapeHtml(s.instrument || s.name)} (${s.stars || 1} estrelas)">
-            <ion-icon name="musical-notes" style="color: var(--cyan); font-size: 0.95rem;"></ion-icon>
-            <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(s.instrument || s.name)}</span>
-            <span style="color: #fbbf24; font-size: 0.72rem; letter-spacing: 1px;">${'★'.repeat(Math.max(1, Math.min(5, parseInt(s.stars) || 1)))}</span>
+          <div class="profile-clean-row">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="musical-notes" style="color: var(--cyan); font-size: 1.15rem;"></ion-icon>
+              <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(s.instrument || s.name)}</span>
+              <span style="color: #fbbf24; font-size: 0.82rem; letter-spacing: 2px;">${'★'.repeat(Math.max(1, Math.min(5, parseInt(s.stars) || 1)))}</span>
+            </div>
             <button type="button" onclick="removeSkill(${idx})" title="Remover habilidade" class="clean-chip-del-btn">&times;</button>
           </div>
         `).join('');
@@ -7639,7 +7632,7 @@
             </p>
             <button class="btn btn-amber btn-sm" onclick="openAddExtraSkillModal()" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); font-weight: 700;">
               <ion-icon name="add-circle-outline"></ion-icon>
-              <span>Adicionar Habilidade Extra</span>
+              <span>Adicionar</span>
             </button>
           </div>
         `;
@@ -7647,96 +7640,82 @@
       }
 
       container.style.display = 'flex';
-      container.style.flexDirection = 'row';
-      container.style.flexWrap = 'wrap';
+      container.style.flexDirection = 'column';
       container.style.gap = '8px';
       container.innerHTML = myExtraSkills.map((item, idx) => {
         const iconName = item.icon || getExtraSkillCategoryIcon(item.category || item.name);
         return `
-          <div class="extra-skill-clean-chip" title="${escapeHtml(item.name)} - ${escapeHtml(item.category || '')}">
-            <ion-icon name="${iconName}" style="color: #fbbf24; font-size: 0.95rem;"></ion-icon>
-            <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(item.name)}</span>
-            <span class="badge badge-amber" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(item.category || 'Extra')}</span>
+          <div class="profile-clean-row">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="${iconName}" style="color: #fbbf24; font-size: 1.15rem;"></ion-icon>
+              <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(item.name)}</span>
+              <span class="badge badge-amber" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Diferencial')}</span>
+            </div>
             <button type="button" onclick="removeExtraSkill(${idx})" title="Remover diferencial" class="clean-chip-del-btn">&times;</button>
           </div>
         `;
       }).join('');
     }
 
-    const EXTRA_SKILL_PRESETS = {
-      van: { name: 'Transporte Próprio (Van/Carro)', category: 'Logística & Transporte', icon: 'car-sport', desc: 'Veículo disponível para transporte de banda e equipamentos' },
-      som: { name: 'Técnico de Som / PA', category: 'Áudio & Som', icon: 'hardware-chip-outline', desc: 'Operação e mixagem de som de palco e monitor' },
-      design: { name: 'Design Gráfico & Flyers', category: 'Audiovisual & Design', icon: 'color-palette-outline', desc: 'Criação de artes para shows, banners e divulgação' },
-      video: { name: 'Filmagem & Edição de Vídeo', category: 'Audiovisual & Design', icon: 'videocam-outline', desc: 'Gravação e edição de reels, bastidores e clipes' },
-      social: { name: 'Social Media & Anúncios', category: 'Marketing & Mídias', icon: 'megaphone-outline', desc: 'Gestão de redes sociais e anúncios de eventos' },
-      roadie: { name: 'Roadie & Montagem de Palco', category: 'Palco & Equipamentos', icon: 'construct-outline', desc: 'Agilidade no setup, cabeamento e passagem de som' },
-      booking: { name: 'Venda de Shows & Booking', category: 'Gestão & Booking', icon: 'briefcase-outline', desc: 'Contatos com casas de shows, bares e contratantes' },
-      luthier: { name: 'Luthieria & Regulagem', category: 'Palco & Equipamentos', icon: 'hammer-outline', desc: 'Regulagem e reparos rápidos de instrumentos e cabos' },
-      foto: { name: 'Fotografia Profissional', category: 'Audiovisual & Design', icon: 'camera-outline', desc: 'Fotos profissionais durante apresentações e ensaios' },
-      luz: { name: 'Técnico de Iluminação / Luz', category: 'Palco & Equipamentos', icon: 'bulb-outline', desc: 'Operação de luz e mesa DMX no palco' },
-      producao: { name: 'Produção Musical & Gravação', category: 'Áudio & Som', icon: 'musical-notes-outline', desc: 'Gravação multipista de ensaios e produção em DAW' },
-      custom: { name: '', category: 'Outros', icon: 'sparkles', desc: '' }
-    };
-
-    function onSelectExtraSkillPreset(key) {
-      if (!key) return;
-      const p = EXTRA_SKILL_PRESETS[key];
-      if (p) {
-        applyExtraSkillPresetData(p.name, p.category, p.icon, p.desc);
-      }
-    }
-
-    function applyExtraSkillPresetData(name, category, icon, desc) {
-      const nameInput = document.getElementById('extraSkillNameInput');
-      const catInput = document.getElementById('extraSkillCategoryInput');
-      const descInput = document.getElementById('extraSkillDescInput');
-      if (nameInput) nameInput.value = name || '';
-      if (catInput && category) catInput.value = category;
-      if (descInput) descInput.value = desc || '';
-    }
-
     function openAddExtraSkillModal() {
       const presetSelect = document.getElementById('extraSkillPresetSelect');
-      const nameInput = document.getElementById('extraSkillNameInput');
-      const descInput = document.getElementById('extraSkillDescInput');
-      const catInput = document.getElementById('extraSkillCategoryInput');
+      const customInput = document.getElementById('extraSkillCustomInput');
       if (presetSelect) presetSelect.value = '';
-      if (nameInput) nameInput.value = '';
-      if (descInput) descInput.value = '';
-      if (catInput) catInput.value = 'Logística & Transporte';
+      if (customInput) customInput.value = '';
+      renderModalExtraSkillsChips();
       openModal('addExtraSkillModal');
     }
 
-    async function handleSaveExtraSkill(e) {
-      if (e) e.preventDefault();
-      const nameInput = document.getElementById('extraSkillNameInput');
-      const descInput = document.getElementById('extraSkillDescInput');
-      const catInput = document.getElementById('extraSkillCategoryInput');
-
-      const name = nameInput ? nameInput.value.trim() : '';
-      const description = descInput ? descInput.value.trim() : '';
-      const category = catInput ? catInput.value : 'Geral';
-
-      if (!name) {
-        showToast('Informe o nome da habilidade extra.', 'warning');
+    function renderModalExtraSkillsChips() {
+      const container = document.getElementById('modalExtraSkillsChips');
+      if (!container) return;
+      if (!myExtraSkills || myExtraSkills.length === 0) {
+        container.innerHTML = `<span style="font-size: 0.8rem; color: #64748b; font-style: italic;">Nenhuma habilidade extra adicionada ainda.</span>`;
         return;
       }
+      container.innerHTML = myExtraSkills.map((item, idx) => {
+        const iconName = item.icon || getExtraSkillCategoryIcon(item.category || item.name);
+        return `
+          <div class="extra-skill-clean-chip" style="background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.35);">
+            <ion-icon name="${iconName}" style="color: #fbbf24; font-size: 0.95rem;"></ion-icon>
+            <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(item.name)}</span>
+            <button type="button" onclick="removeExtraSkillFromModal(${idx})" title="Remover" class="clean-chip-del-btn">&times;</button>
+          </div>
+        `;
+      }).join('');
+    }
 
-      const icon = getExtraSkillCategoryIcon(category + ' ' + name);
-      const newExtraSkill = {
-        id: `es_${Date.now()}`,
-        name,
-        category,
-        icon,
-        description
-      };
+    async function addSelectedPresetExtraSkill() {
+      const select = document.getElementById('extraSkillPresetSelect');
+      const val = select ? select.value.trim() : '';
+      if (!val) {
+        showToast('Selecione uma opção na lista.', 'warning');
+        return;
+      }
+      await quickAddExtraSkill(val, 'Diferencial');
+      if (select) select.value = '';
+      renderModalExtraSkillsChips();
+    }
 
-      if (!myExtraSkills) myExtraSkills = [];
-      myExtraSkills.push(newExtraSkill);
-      closeModal('addExtraSkillModal');
+    async function addCustomExtraSkill() {
+      const input = document.getElementById('extraSkillCustomInput');
+      const val = input ? input.value.trim() : '';
+      if (!val) {
+        showToast('Digite o nome da habilidade.', 'warning');
+        return;
+      }
+      await quickAddExtraSkill(val, 'Personalizado');
+      if (input) input.value = '';
+      renderModalExtraSkillsChips();
+    }
+
+    async function removeExtraSkillFromModal(idx) {
+      if (!myExtraSkills || idx < 0 || idx >= myExtraSkills.length) return;
+      myExtraSkills.splice(idx, 1);
+      renderModalExtraSkillsChips();
       renderExtraSkillsTab();
       await saveExtraSkillsOnline();
-      showToast('Habilidade extra-musical adicionada com sucesso!', 'success');
+      showToast('Habilidade extra removida.', 'info');
     }
 
     async function quickAddExtraSkill(name, category, icon, description) {
@@ -7794,7 +7773,7 @@
         instBox.innerHTML = `
           <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">Nenhum instrumento adicionado no perfil ainda.</p>
-            <button class="btn btn-outline btn-sm" onclick="openAddSkillModal()">Cadastrar Instrumento</button>
+            <button class="btn btn-outline btn-sm" onclick="openAddSkillModal()">Adicionar</button>
           </div>
         `;
       } else {
@@ -7831,22 +7810,22 @@
             <ion-icon name="hardware-chip-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
             <h4 style="color: #fff; font-size: 0.95rem;">Nenhum equipamento cadastrado</h4>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
-            <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">Adicionar Equipamento</button>
+            <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">Adicionar</button>
           </div>
         `;
         return;
       }
 
       container.style.display = 'flex';
-      container.style.flexDirection = 'row';
-      container.style.flexWrap = 'wrap';
+      container.style.flexDirection = 'column';
       container.style.gap = '8px';
       container.innerHTML = myGear.map((item, idx) => `
-        <div class="gear-clean-chip" title="${escapeHtml(item.name)} (${escapeHtml(item.category || 'Gear')})${item.details ? ' - ' + escapeHtml(item.details) : ''}">
-          <ion-icon name="hardware-chip-outline" style="color: var(--violet); font-size: 0.95rem;"></ion-icon>
-          <span style="font-weight: 800; font-size: 0.82rem; color: #fff;">${escapeHtml(item.name)}</span>
-          <span class="badge badge-violet" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(item.category || 'Gear')}</span>
-          ${item.details ? `<span style="font-size: 0.72rem; color: #94a3b8; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(item.details)}</span>` : ''}
+        <div class="profile-clean-row">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="hardware-chip-outline" style="color: var(--violet); font-size: 1.15rem;"></ion-icon>
+            <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(item.name)}</span>
+            <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Gear')}</span>
+          </div>
           <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
         </div>
       `).join('');
