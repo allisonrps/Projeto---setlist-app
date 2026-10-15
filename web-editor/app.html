@@ -131,7 +131,7 @@
     .sidebar-brand {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       padding-bottom: 8px;
     }
     .sidebar-logo {
@@ -139,6 +139,26 @@
       max-width: 190px;
       object-fit: contain;
       cursor: pointer;
+    }
+    .sidebar-close-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 1.45rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .sidebar-close-btn:hover, .sidebar-close-btn:active {
+      background: rgba(239, 68, 68, 0.22);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.45);
     }
 
     /* SIDEBAR MUSICIAN CARD (FIGMA DESIGN: CENTERED AVATAR, NAME, HANDLE, LOGOUT ROW) */
@@ -1992,6 +2012,7 @@
       }
       .sidebar-musician.open { transform: translateX(0); }
       .sidebar-backdrop.active { display: block; }
+      .sidebar-close-btn { display: flex; }
       .main-viewport { margin-left: 0; padding: 20px 16px; }
       .mobile-topbar { display: flex; margin: -20px -16px 20px -16px; }
     }
@@ -3332,6 +3353,265 @@
       border-radius: 12px;
       padding: 20px;
     }
+
+    .share-flyer-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 20px;
+    }
+
+    /* ============================================================== */
+    /* COMPREHENSIVE MOBILE RESPONSIVENESS & ICON-ONLY TABS (< 768px) */
+    /* ============================================================== */
+    @media (max-width: 768px) {
+      /* 1. ICON-ONLY TAB STRIPS (PROFILE, BAND, SONGBOOK, MODALS) */
+      .profile-tabs-strip,
+      .band-page-tabs-strip {
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+        min-height: 50px !important;
+        overflow-x: hidden !important;
+        display: flex !important;
+        gap: 3px !important;
+      }
+      .profile-tab-btn,
+      .band-tab-btn {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        padding: 12px 2px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0 !important;
+      }
+      .profile-tab-btn .tab-name-label,
+      .band-tab-btn .tab-name-label {
+        display: none !important;
+      }
+      .profile-tab-btn .tab-icon,
+      .band-tab-btn .tab-icon {
+        font-size: 1.45rem !important;
+        margin: 0 auto !important;
+        display: block !important;
+      }
+
+      /* Songbook Editor Tabs */
+      .sb-editor-tabs {
+        flex: 1;
+        display: flex;
+        justify-content: space-around;
+        gap: 4px;
+      }
+      .sb-editor-tab-btn {
+        flex: 1 1 0;
+        justify-content: center;
+        padding: 8px 4px !important;
+        min-width: 0;
+      }
+      .sb-editor-tab-btn span {
+        display: none !important;
+      }
+      .sb-editor-tab-btn ion-icon {
+        font-size: 1.35rem !important;
+        margin: 0 auto !important;
+      }
+
+      /* Event Modal Subtabs */
+      #mEventSubTabDetails .tab-name-label,
+      #mEventSubTabPlaylist .tab-name-label {
+        display: none !important;
+      }
+      #mEventSubTabDetails,
+      #mEventSubTabPlaylist {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 6px;
+      }
+      #mEventSubTabDetails ion-icon,
+      #mEventSubTabPlaylist ion-icon {
+        font-size: 1.35rem !important;
+        margin: 0 auto !important;
+      }
+
+      /* 2. SHARE FLYER MODAL GRID */
+      .share-flyer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      /* 3. HERO HEADERS (PROFILE & BAND) */
+      .profile-hero {
+        padding: 22px 14px 16px 14px !important;
+        gap: 16px !important;
+        text-align: center;
+        justify-content: center;
+      }
+      .profile-hero-left {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        width: 100% !important;
+      }
+      .profile-hero-avatar {
+        width: 90px !important;
+        height: 90px !important;
+        margin-bottom: 0 !important;
+      }
+      .profile-hero-initials {
+        font-size: 2.2rem !important;
+      }
+      .profile-hero-name {
+        font-size: 1.45rem !important;
+        text-align: center;
+      }
+      .profile-hero-handle-row,
+      .profile-hero-location {
+        justify-content: center !important;
+      }
+
+      .band-page-hero {
+        padding: 22px 14px 16px 14px !important;
+      }
+      .band-page-hero-inner {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        text-align: center !important;
+      }
+      .band-page-hero-avatar {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 1.8rem !important;
+        margin-bottom: 0 !important;
+      }
+      .band-page-hero-title {
+        font-size: 1.45rem !important;
+        text-align: center !important;
+      }
+      .band-page-hero-handle-row,
+      .band-page-hero-location {
+        justify-content: center !important;
+      }
+
+      /* 4. MODALS SIZING */
+      .modal-card {
+        padding: 20px 14px !important;
+        max-height: 94vh !important;
+        border-radius: 16px !important;
+        width: 100% !important;
+      }
+    }
+
+    @media (max-width: 680px) {
+      /* PROJECTS VIEW CARDS */
+      .projects-container {
+        padding: 24px 12px 40px 12px !important;
+        gap: 20px !important;
+      }
+      .project-band-card-wrapper {
+        padding-left: 0 !important;
+        padding-top: 45px !important;
+        margin-bottom: 24px !important;
+      }
+      .project-band-card {
+        padding: 48px 14px 18px 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .project-band-title {
+        margin-left: 0 !important;
+        margin: 0 0 12px 0 !important;
+        text-align: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+      }
+      .project-band-avatar {
+        left: 50% !important;
+        top: -45px !important;
+        transform: translateX(-50%) !important;
+        width: 88px !important;
+        height: 88px !important;
+        font-size: 2rem !important;
+      }
+
+      /* BAND MEMBERS ROW CARD */
+      .band-member-card-row {
+        height: auto !important;
+        min-height: 52px !important;
+        padding: 10px 12px !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+      }
+      .band-member-avatar-protruding {
+        margin-left: 0 !important;
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.05rem !important;
+      }
+      .band-member-info-group {
+        flex: 1 !important;
+        min-width: 140px !important;
+      }
+      .band-member-actions-wrap {
+        width: 100% !important;
+        justify-content: flex-end !important;
+        margin-top: 4px !important;
+      }
+
+      /* MONTH BARS & AGENDA CARDS */
+      .mobile-month-bar {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+      }
+      .mobile-month-line {
+        display: none !important;
+      }
+      .musician-agenda-card,
+      .agenda-event-card {
+        flex-wrap: wrap !important;
+        padding: 12px !important;
+        gap: 10px !important;
+      }
+      .band-agenda-summary {
+        gap: 14px !important;
+        padding: 12px 8px !important;
+      }
+      .agenda-circle-disc {
+        width: 58px !important;
+        height: 58px !important;
+        font-size: 1.15rem !important;
+      }
+      .agenda-circle-wrapper {
+        width: 60px !important;
+        height: 60px !important;
+      }
+
+      /* FINANCES GRID */
+      .band-finance-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+      .band-finance-box {
+        padding: 14px 16px !important;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .flyer-card-preview {
+        width: 100% !important;
+        max-width: 330px !important;
+        height: auto !important;
+        min-height: 500px !important;
+      }
+      .project-band-metrics-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3349,11 +3629,14 @@
     <!-- LATERAL SIDEBAR -->
     <aside class="sidebar-musician" id="sidebarMusician">
       
-      <!-- Brand Logo (BandLink Wide Transparent Logo) -->
+      <!-- Brand Logo (BandLink Wide Transparent Logo) & Mobile Close Button -->
       <div class="sidebar-brand">
         <a href="/" title="BandLink Home" style="display: flex; align-items: center; text-decoration: none;">
           <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="sidebar-logo">
         </a>
+        <button class="sidebar-close-btn" onclick="toggleMobileSidebar(false)" title="Fechar Menu" aria-label="Fechar Menu">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
       </div>
 
       <!-- Musician Mini Card (Centered Avatar, Display Name, Username, Red Logout Circle & Status Bar) -->
@@ -4997,11 +5280,11 @@
 
       <!-- Abas internas: Detalhes do Evento vs Gerenciar Playlist -->
       <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
-        <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')">
-          <ion-icon name="information-circle-outline"></ion-icon> Detalhes do Evento
+        <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')" title="Detalhes do Evento">
+          <ion-icon name="information-circle-outline"></ion-icon> <span class="tab-name-label">Detalhes do Evento</span>
         </button>
-        <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')">
-          <ion-icon name="musical-notes-outline"></ion-icon> Playlist / Músicas Escaladas (<span id="mEventSongsCount">0</span>)
+        <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')" title="Playlist">
+          <ion-icon name="musical-notes-outline"></ion-icon> <span class="tab-name-label">Playlist (<span id="mEventSongsCount">0</span>)</span>
         </button>
       </div>
 
@@ -5105,7 +5388,7 @@
         <button class="modal-close" onclick="closeModal('shareAgendaModal')">&times;</button>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; overflow-y: auto; padding: 4px; flex: 1;">
+      <div class="share-flyer-grid" style="overflow-y: auto; padding: 4px; flex: 1;">
         <!-- COLUNA ESQUERDA: CONTROLES E SELEÇÃO DE SHOWS -->
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <!-- 1. Escolha de Arte de Fundo (9 Layouts do Mobile) -->
@@ -6422,12 +6705,16 @@
     function toggleMobileSidebar(open) {
       const sidebar = document.getElementById('sidebarMusician');
       const backdrop = document.getElementById('sidebarBackdrop');
-      if (open) {
+      if (!sidebar) return;
+      const shouldOpen = open !== undefined ? !!open : !sidebar.classList.contains('open');
+      if (shouldOpen) {
         sidebar.classList.add('open');
-        backdrop.classList.add('active');
+        if (backdrop) backdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
       } else {
         sidebar.classList.remove('open');
-        backdrop.classList.remove('active');
+        if (backdrop) backdrop.classList.remove('active');
+        document.body.style.overflow = '';
       }
     }
 
