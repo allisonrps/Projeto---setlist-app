@@ -446,10 +446,20 @@
       flex-wrap: wrap;
     }
     .profile-hero-handle {
-      color: #e2e8f0;
-      font-size: 1.05rem;
-      font-weight: 600;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--cyan-light);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
       font-family: var(--font-mono);
+      letter-spacing: 0.4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: default;
+      user-select: none;
     }
     .profile-hero-age-pill {
       background: rgba(34, 197, 94, 0.12);
@@ -1389,12 +1399,92 @@
     @media (max-width: 900px) {
       .sb-workspace-container {
         flex-direction: column;
+        position: relative;
       }
-      .sb-sidebar, .sb-sidebar.collapsed {
-        width: 100%;
+      /* Padrão mobile: exibe a lista de músicas e oculta o editor */
+      .sb-sidebar {
+        width: 100% !important;
+        display: flex !important;
       }
-      .sb-sidebar.collapsed .sb-song-list,
-      .sb-sidebar.collapsed .sb-search-box {
+      .sb-main-panel {
+        display: none !important;
+        width: 100% !important;
+      }
+      
+      /* Ao clicar em uma música no mobile: oculta a lista e exibe o editor/detalhes */
+      .sb-workspace-container.mobile-detail-open .sb-sidebar {
+        display: none !important;
+      }
+      .sb-workspace-container.mobile-detail-open .sb-main-panel {
+        display: flex !important;
+      }
+
+      .sb-mobile-nav-bar {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: rgba(18, 24, 38, 0.98);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        gap: 10px;
+        flex-wrap: nowrap;
+      }
+      .sb-mobile-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+      }
+      .sb-mobile-back-btn:hover, .sb-mobile-back-btn:active {
+        background: rgba(56, 189, 248, 0.15);
+        color: var(--cyan-light);
+        border-color: rgba(56, 189, 248, 0.35);
+      }
+      .sb-mobile-icons-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .sb-mobile-icon-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #cbd5e1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .sb-mobile-icon-btn:hover, .sb-mobile-icon-btn:active {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+      }
+      .sb-mobile-icon-btn.sb-mobile-btn-save {
+        background: rgba(52, 211, 153, 0.18);
+        border-color: rgba(52, 211, 153, 0.4);
+        color: #34d399;
+      }
+      .sb-mobile-icon-btn.active {
+        color: #fbbf24;
+      }
+    }
+
+    @media (min-width: 901px) {
+      .sb-mobile-nav-bar {
         display: none !important;
       }
     }
@@ -4424,12 +4514,43 @@
               <ion-icon name="musical-notes-outline"></ion-icon>
               <h3>Nenhuma música selecionada</h3>
               <p>Adicione ou selecione uma música no menu lateral para visualizar e editar letras, cifras e tablaturas.</p>
-              <button class="btn btn-primary btn-sm" onclick="openAddSongModal()">Adicionar Nova Música</button>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                <button class="btn btn-outline btn-sm sb-mobile-back-btn" onclick="returnToSongbookList()">
+                  <ion-icon name="arrow-back-outline"></ion-icon>
+                  <span>Voltar para Lista</span>
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="openAddSongModal()">Adicionar Nova Música</button>
+              </div>
             </div>
 
             <!-- Card Principal do Editor -->
             <div id="sbEditorWrapper" class="sb-editor-card">
               
+              <!-- Barra de Navegação e Opções Mobile (Alinhados em Linha no Topo) -->
+              <div class="sb-mobile-nav-bar" id="sbMobileNavBar">
+                <button type="button" class="sb-mobile-back-btn" onclick="returnToSongbookList()" title="Voltar para a Lista de Músicas">
+                  <ion-icon name="arrow-back-outline"></ion-icon>
+                  <span>Músicas</span>
+                </button>
+                <div class="sb-mobile-icons-row">
+                  <button type="button" class="sb-mobile-icon-btn" onclick="toggleSongDetailsDrawer()" title="Editar Detalhes da Música">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </button>
+                  <button type="button" class="sb-mobile-icon-btn" onclick="toggleCurrentSongFavorite()" id="sbMobileBtnFav" title="Favoritar">
+                    <ion-icon name="star-outline"></ion-icon>
+                  </button>
+                  <button type="button" class="sb-mobile-icon-btn" onclick="copyCurrentTabContent()" title="Copiar Conteúdo">
+                    <ion-icon name="copy-outline"></ion-icon>
+                  </button>
+                  <button type="button" class="sb-mobile-icon-btn" onclick="toggleAutoScroll()" id="sbMobileBtnScroll" title="Rolar">
+                    <ion-icon name="play-outline"></ion-icon>
+                  </button>
+                  <button type="button" class="sb-mobile-icon-btn sb-mobile-btn-save" onclick="saveCurrentSongContent()" title="Salvar Música">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                  </button>
+                </div>
+              </div>
+
               <!-- Topo da Música: Título, Artista, Tom, Botão Editar Detalhes e Salvar -->
               <div class="sb-song-header">
                 <div class="sb-song-header-info">
@@ -6066,6 +6187,18 @@
         const storedExtra = localStorage.getItem(EXTRA_SKILLS_CACHE_KEY);
         if (storedExtra) myExtraSkills = JSON.parse(storedExtra);
       } catch (e) { console.error('Error loading extra skills cache:', e); }
+
+      try {
+        const cachedUserStr = localStorage.getItem(USER_KEY);
+        const userObj = cachedUserStr ? JSON.parse(cachedUserStr) : null;
+        const userKey = userObj?.username ? `bandlink_user_skills_${userObj.username}` : null;
+        const storedSkills = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('bandlink_user_skills');
+        if (storedSkills) {
+          mySkills = parseInstrumentsList(JSON.parse(storedSkills));
+        } else if (userObj && (userObj.instruments || userObj.skillsJson)) {
+          mySkills = parseInstrumentsList(userObj.instruments || userObj.skillsJson);
+        }
+      } catch (e) { console.error('Error loading skills cache:', e); }
     }
 
     function saveSongsCache() {
@@ -6076,6 +6209,42 @@
     function saveEventsCache() {
       localStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(myEvents));
       renderProfileAgenda();
+    }
+
+    function saveSkillsCache() {
+      const skillsJson = JSON.stringify(mySkills);
+      localStorage.setItem('bandlink_user_skills', skillsJson);
+      if (currentUser?.username) {
+        localStorage.setItem(`bandlink_user_skills_${currentUser.username}`, skillsJson);
+      }
+      if (currentUser) {
+        currentUser.instruments = skillsJson;
+        currentUser.skillsJson = skillsJson;
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      }
+      renderSkillsTab();
+      renderInstrumentsTab();
+    }
+
+    async function syncSkillsToApi() {
+      if (!currentUser || !mySkills) return;
+      try {
+        const skillsJson = JSON.stringify(mySkills);
+        const payload = {
+          instruments: skillsJson,
+          skillsJson: skillsJson
+        };
+        const res = await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          console.warn('API returned non-OK status syncing skills:', res.status);
+        }
+      } catch (e) {
+        console.warn('Network error syncing skills to API:', e);
+      }
     }
 
     async function loadOnlineSongs() {
@@ -6152,10 +6321,31 @@
             localStorage.setItem('bandlink_user_picture', currentUser.pictureUrl);
           }
 
-          // Restore saved skills from local storage if not returned by backend
-          const savedSkills = localStorage.getItem('bandlink_user_skills');
-          if (savedSkills && (!currentUser.instruments || currentUser.instruments === '[]' || currentUser.instruments === '')) {
-            currentUser.instruments = savedSkills;
+          // Restore saved skills: prioritize API instruments if present, else fallback to local cache & sync to DB
+          const serverSkills = parseInstrumentsList(currentUser.instruments || currentUser.skillsJson);
+          const userKey = currentUser?.username ? `bandlink_user_skills_${currentUser.username}` : null;
+          const savedSkillsRaw = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('bandlink_user_skills');
+          let localSkills = [];
+          if (savedSkillsRaw) {
+            try {
+              const parsed = JSON.parse(savedSkillsRaw);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                localSkills = parseInstrumentsList(parsed);
+              }
+            } catch (e) {}
+          }
+
+          if (serverSkills && serverSkills.length > 0) {
+            mySkills = serverSkills;
+            localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
+            if (currentUser.username) {
+              localStorage.setItem(`bandlink_user_skills_${currentUser.username}`, JSON.stringify(mySkills));
+            }
+          } else if (localSkills.length > 0) {
+            mySkills = localSkills;
+            currentUser.instruments = JSON.stringify(mySkills);
+            currentUser.skillsJson = JSON.stringify(mySkills);
+            syncSkillsToApi();
           }
 
           localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
@@ -6184,7 +6374,8 @@
           if (savedPic && (!currentUser.pictureUrl || !currentUser.pictureUrl.trim())) {
             currentUser.pictureUrl = savedPic;
           }
-          const savedSkills = localStorage.getItem('bandlink_user_skills');
+          const userKey = currentUser?.username ? `bandlink_user_skills_${currentUser.username}` : null;
+          const savedSkills = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('bandlink_user_skills');
           if (savedSkills && (!currentUser.instruments || currentUser.instruments === '[]' || currentUser.instruments === '')) {
             currentUser.instruments = savedSkills;
           }
@@ -6200,20 +6391,26 @@
 
     function parseUserSkillsAndGear() {
       if (!currentUser) return;
-      const savedSkills = localStorage.getItem('bandlink_user_skills');
-      if (savedSkills) {
+      const serverSkills = parseInstrumentsList(currentUser.instruments || currentUser.skillsJson);
+      const userKey = currentUser?.username ? `bandlink_user_skills_${currentUser.username}` : null;
+      const savedSkillsRaw = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('bandlink_user_skills');
+      let localSkills = [];
+      if (savedSkillsRaw) {
         try {
-          const parsed = JSON.parse(savedSkills);
+          const parsed = JSON.parse(savedSkillsRaw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            mySkills = parseInstrumentsList(parsed);
+            localSkills = parseInstrumentsList(parsed);
           }
         } catch (e) {}
       }
-      if (!mySkills || mySkills.length === 0) {
-        mySkills = parseInstrumentsList(currentUser.instruments || currentUser.skillsJson);
-        if (mySkills.length > 0 && !savedSkills) {
-          localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
-        }
+
+      if (serverSkills && serverSkills.length > 0) {
+        mySkills = serverSkills;
+      } else if (localSkills.length > 0) {
+        mySkills = localSkills;
+        currentUser.instruments = JSON.stringify(mySkills);
+        currentUser.skillsJson = JSON.stringify(mySkills);
+        syncSkillsToApi();
       }
 
       // Habilidades Extra-Musicais
@@ -6564,7 +6761,13 @@
       if (window.innerWidth <= 960) toggleMobileSidebar(false);
 
       if (viewId === 'profile') renderCentralProfile();
-      if (viewId === 'songbook') renderSongbookSplitView();
+      if (viewId === 'songbook') {
+        const ws = document.getElementById('sbWorkspaceContainer');
+        if (ws && (!selectedSong || window.innerWidth <= 900)) {
+          ws.classList.remove('mobile-detail-open');
+        }
+        renderSongbookSplitView();
+      }
       if (viewId === 'projects') renderProjectsMainView();
       if (viewId === 'band-profile') {
         const pBtn = document.getElementById('mainNav-projects');
@@ -7905,22 +8108,22 @@
       const newSkill = { id: Date.now(), instrument, name: instrument, type: instrument, stars };
       mySkills.push(newSkill);
       closeModal('addSkillModal');
-      renderSkillsTab();
-      renderInstrumentsTab();
-
-      localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
-      if (currentUser) {
-        currentUser.instruments = JSON.stringify(mySkills);
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-      }
+      
+      saveSkillsCache();
 
       try {
-        await fetch(`${API_URL}/Users/profile`, {
+        const skillsJson = JSON.stringify(mySkills);
+        const res = await fetch(`${API_URL}/Users/profile`, {
           method: "PUT",
           headers: getAuthHeaders(),
-          body: JSON.stringify({ instruments: JSON.stringify(mySkills), skillsJson: JSON.stringify(mySkills) })
+          body: JSON.stringify({ instruments: skillsJson, skillsJson: skillsJson })
         });
-        showToast('Instrumento adicionado ao perfil!', 'success');
+        if (res.ok) {
+          showToast('Instrumento salvo com sucesso!', 'success');
+        } else {
+          console.warn('API returned non-OK status saving skill:', res.status);
+          showToast('Instrumento salvo localmente.', 'info');
+        }
       } catch (err) {
         console.error(err);
         showToast('Instrumento salvo localmente.', 'info');
@@ -7930,22 +8133,18 @@
     async function removeSkill(idx) {
       if (!confirm('Deseja remover este instrumento/habilidade?')) return;
       mySkills.splice(idx, 1);
-      renderSkillsTab();
-      renderInstrumentsTab();
-
-      localStorage.setItem('bandlink_user_skills', JSON.stringify(mySkills));
-      if (currentUser) {
-        currentUser.instruments = JSON.stringify(mySkills);
-        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
-      }
+      saveSkillsCache();
 
       try {
-        await fetch(`${API_URL}/Users/profile`, {
+        const skillsJson = JSON.stringify(mySkills);
+        const res = await fetch(`${API_URL}/Users/profile`, {
           method: "PUT",
           headers: getAuthHeaders(),
-          body: JSON.stringify({ instruments: JSON.stringify(mySkills), skillsJson: JSON.stringify(mySkills) })
+          body: JSON.stringify({ instruments: skillsJson, skillsJson: skillsJson })
         });
-        showToast('Instrumento removido.', 'info');
+        if (res.ok) {
+          showToast('Instrumento removido.', 'info');
+        }
       } catch (err) {
         console.error(err);
       }
@@ -12423,7 +12622,6 @@
                     <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       ${escapeHtml(ev.title)}
                     </h4>
-                    <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">• ${escapeHtml(ev.bandName)}</span>
                   </div>
                   <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                     ${ev.local ? `<span><ion-icon name="location-outline" style="color: #f87171;"></ion-icon> ${escapeHtml(ev.local)}</span>` : ''}
@@ -13229,7 +13427,16 @@
       const activeEl = document.getElementById(`sbItem-${found.id}`);
       if (activeEl) activeEl.classList.add('active');
 
+      // On mobile web: hide song list and display the song detail/edit panel
+      const ws = document.getElementById('sbWorkspaceContainer');
+      if (ws) ws.classList.add('mobile-detail-open');
+
       populateSongbookEditor(selectedSong);
+    }
+
+    function returnToSongbookList() {
+      const ws = document.getElementById('sbWorkspaceContainer');
+      if (ws) ws.classList.remove('mobile-detail-open');
     }
 
     function populateSongbookEditor(song) {
@@ -13243,6 +13450,7 @@
       const bpmEl = document.getElementById('sbSongBpm');
       const durationEl = document.getElementById('sbSongDuration');
       const favBtn = document.getElementById('sbBtnFav');
+      const mobFavBtn = document.getElementById('sbMobileBtnFav');
 
       if (titleEl) titleEl.textContent = song.name || 'Música Sem Título';
       if (artistEl) artistEl.textContent = song.originalBand || 'Artista Desconhecido';
@@ -13264,6 +13472,11 @@
       if (favBtn) {
         favBtn.className = song.isFavorite ? 'btn-favorite-star active' : 'btn-favorite-star';
         favBtn.innerHTML = song.isFavorite ? '<ion-icon name="star"></ion-icon>' : '<ion-icon name="star-outline"></ion-icon>';
+      }
+
+      if (mobFavBtn) {
+        mobFavBtn.className = song.isFavorite ? 'sb-mobile-icon-btn active' : 'sb-mobile-icon-btn';
+        mobFavBtn.innerHTML = song.isFavorite ? '<ion-icon name="star"></ion-icon>' : '<ion-icon name="star-outline"></ion-icon>';
       }
 
       // Populate details drawer inputs
@@ -13534,6 +13747,11 @@
         favBtn.className = selectedSong.isFavorite ? 'btn-favorite-star active' : 'btn-favorite-star';
         favBtn.innerHTML = selectedSong.isFavorite ? '<ion-icon name="star"></ion-icon>' : '<ion-icon name="star-outline"></ion-icon>';
       }
+      const mobFavBtn = document.getElementById('sbMobileBtnFav');
+      if (mobFavBtn) {
+        mobFavBtn.className = selectedSong.isFavorite ? 'sb-mobile-icon-btn active' : 'sb-mobile-icon-btn';
+        mobFavBtn.innerHTML = selectedSong.isFavorite ? '<ion-icon name="star"></ion-icon>' : '<ion-icon name="star-outline"></ion-icon>';
+      }
       saveSongsCache();
       persistSongToServer(selectedSong, selectedSong.isFavorite ? 'Adicionada aos favoritos!' : 'Removida dos favoritos.');
     }
@@ -13802,6 +14020,7 @@
       saveSongsCache();
       renderSongbookSplitView();
       toggleSongDetailsDrawer(false);
+      returnToSongbookList();
 
       try {
         if (typeof songId === 'number' || (!String(songId).startsWith('local_'))) {
