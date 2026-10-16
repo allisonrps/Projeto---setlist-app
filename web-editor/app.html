@@ -2328,54 +2328,85 @@
     .announcement-card-thumb:hover {
       transform: scale(1.05);
     }
+    .announcement-card-mobile-meta {
+      display: none;
+    }
     @media (max-width: 768px) {
+      .desktop-only-meta {
+        display: none !important;
+      }
       .announcement-card-wrapper {
-        margin-top: 32px;
-        margin-bottom: 18px;
-      }
-      .announcement-card-floating-header {
-        position: static;
-        padding-left: 72px;
-        padding-right: 8px;
-        margin-bottom: 10px;
-        min-height: 48px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
-        gap: 4px;
-      }
-      .announcement-card-title {
-        font-size: 1.08rem;
-        word-break: break-word;
-      }
-      .announcement-card-header-meta {
-        font-size: 0.78rem;
-        gap: 12px;
-        flex-wrap: wrap;
+        margin-top: 36px;
+        margin-bottom: 20px;
       }
       .announcement-card-floating-avatar {
         position: absolute;
-        top: -6px;
-        left: 6px;
-        width: 58px;
-        height: 58px;
+        top: -24px;
+        left: 16px;
+        width: 72px;
+        height: 72px;
+        z-index: 10;
       }
       .announcement-card-avatar-circle {
-        width: 58px;
-        height: 58px;
-        border-width: 3px;
+        width: 72px;
+        height: 72px;
+        border-width: 3.5px;
       }
       .announcement-card-avatar-initial {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
+      }
+      .announcement-card-floating-header {
+        position: static;
+        margin-left: 100px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+        padding-right: 8px;
+      }
+      .announcement-card-title {
+        font-size: 1.15rem;
+        word-break: break-word;
+        text-align: left;
+        line-height: 1.25;
       }
       .announcement-card-body {
-        padding: 14px 14px 12px 14px;
-        border-radius: 16px;
+        padding: 18px 16px 14px 16px;
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
         gap: 10px;
+      }
+      .announcement-card-mobile-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        margin-bottom: 6px;
+        width: 100%;
+      }
+      .announcement-card-mobile-meta .announcement-card-date {
+        color: #94a3b8;
+        font-size: 0.84rem;
+        font-weight: 600;
+      }
+      .announcement-card-mobile-meta .announcement-card-location {
+        color: #cbd5e1;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
       }
       .announcement-card-main-content {
         flex-direction: column;
+        align-items: center;
+        width: 100%;
         gap: 10px;
       }
       .announcement-card-thumb {
@@ -2385,25 +2416,51 @@
         object-fit: cover;
         border-radius: 10px;
       }
+      .announcement-card-content {
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        gap: 8px;
+      }
+      .announcement-card-tags-row {
+        justify-content: center;
+        width: 100%;
+        gap: 6px;
+      }
+      .announcement-card-procura-row {
+        justify-content: center;
+        width: 100%;
+        gap: 6px;
+      }
+      .announcement-card-desc {
+        text-align: center;
+        width: 100%;
+      }
       .announcement-card-bottom-row {
-        justify-content: flex-end;
-        padding-top: 10px;
+        justify-content: center;
+        width: 100%;
+        padding-top: 14px;
       }
       .announcement-creator-toolbar {
         width: 100%;
-        justify-content: space-between;
+        justify-content: center;
+        gap: 16px;
       }
       .ann-icon-btn {
-        width: 38px;
-        height: 38px;
-      }
-      .ann-icon-candidates {
-        padding: 0 10px;
-      }
-      .announcement-interest-btn {
         width: 44px;
         height: 44px;
         font-size: 1.25rem;
+      }
+      .ann-icon-candidates {
+        min-width: 44px;
+        height: 44px;
+        padding: 0 12px;
+      }
+      .announcement-interest-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 1.3rem;
+        margin: 0 auto;
       }
       .ann-two-col-grid {
         grid-template-columns: 1fr !important;
@@ -2885,6 +2942,7 @@
     .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
     .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.3); }
     .badge-rose { background: rgba(244, 63, 94, 0.16); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.35); }
+    .badge-sky { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35); }
 
     /* MODALS */
     .modal-overlay {
@@ -6737,8 +6795,12 @@
           <input type="text" id="annTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" required maxlength="200">
         </div>
         <div class="form-group">
-          <label>Instrumento / Função Procurada *</label>
-          <input type="text" id="annInstrument" class="form-input" placeholder="Ex: Baixista, Vocalista, Baterista" required maxlength="100">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <label style="margin: 0;">Músicos / Funções Procuradas *</label>
+            <span style="font-size: 0.72rem; color: #94a3b8;">(separe por vírgula se for mais de um)</span>
+          </div>
+          <input type="text" id="annInstrument" class="form-input" placeholder="Ex: Guitarrista, Baixista, Vocalista" required maxlength="150" oninput="handleAnnInstrumentTextInput('create')">
+          <div class="ann-styles-chips" id="annInstrumentPreview_create" style="min-height: 26px; margin-top: 6px;"></div>
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
@@ -6752,18 +6814,24 @@
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
-            <label>Tipo de Repertório</label>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <label style="margin: 0;">Tipo de Repertório</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+            </div>
             <div class="ann-segments-grid" id="annProjectTypeGroup_create">
-              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="setAnnProjectType('Cover', 'create')">Cover</button>
-              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="setAnnProjectType('Autoral', 'create')">Autoral</button>
+              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="toggleAnnProjectType('Cover', 'create')">Cover</button>
+              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="toggleAnnProjectType('Autoral', 'create')">Autoral</button>
             </div>
             <input type="hidden" id="annProjectType" value="Cover">
           </div>
           <div class="form-group">
-            <label>Nível de Interesse</label>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <label style="margin: 0;">Nível de Interesse</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+            </div>
             <div class="ann-segments-grid" id="annInterestLevelGroup_create">
-              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="setAnnInterestLevel('Casual', 'create')">Casual</button>
-              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="setAnnInterestLevel('Profissional', 'create')">Profissional</button>
+              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="toggleAnnInterestLevel('Casual', 'create')">Casual</button>
+              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="toggleAnnInterestLevel('Profissional', 'create')">Profissional</button>
             </div>
             <input type="hidden" id="annInterestLevel" value="Casual">
           </div>
@@ -6826,8 +6894,12 @@
           <input type="text" id="editAnnTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" required maxlength="200">
         </div>
         <div class="form-group">
-          <label>Instrumento / Função Procurada *</label>
-          <input type="text" id="editAnnInstrument" class="form-input" placeholder="Ex: Baixista, Vocalista, Baterista" required maxlength="100">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <label style="margin: 0;">Músicos / Funções Procuradas *</label>
+            <span style="font-size: 0.72rem; color: #94a3b8;">(separe por vírgula se for mais de um)</span>
+          </div>
+          <input type="text" id="editAnnInstrument" class="form-input" placeholder="Ex: Guitarrista, Baixista, Vocalista" required maxlength="150" oninput="handleAnnInstrumentTextInput('edit')">
+          <div class="ann-styles-chips" id="annInstrumentPreview_edit" style="min-height: 26px; margin-top: 6px;"></div>
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
@@ -6841,18 +6913,24 @@
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
-            <label>Tipo de Repertório</label>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <label style="margin: 0;">Tipo de Repertório</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+            </div>
             <div class="ann-segments-grid" id="annProjectTypeGroup_edit">
-              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="setAnnProjectType('Cover', 'edit')">Cover</button>
-              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="setAnnProjectType('Autoral', 'edit')">Autoral</button>
+              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="toggleAnnProjectType('Cover', 'edit')">Cover</button>
+              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="toggleAnnProjectType('Autoral', 'edit')">Autoral</button>
             </div>
             <input type="hidden" id="editAnnProjectType" value="Cover">
           </div>
           <div class="form-group">
-            <label>Nível de Interesse</label>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <label style="margin: 0;">Nível de Interesse</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+            </div>
             <div class="ann-segments-grid" id="annInterestLevelGroup_edit">
-              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="setAnnInterestLevel('Casual', 'edit')">Casual</button>
-              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="setAnnInterestLevel('Profissional', 'edit')">Profissional</button>
+              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="toggleAnnInterestLevel('Casual', 'edit')">Casual</button>
+              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="toggleAnnInterestLevel('Profissional', 'edit')">Profissional</button>
             </div>
             <input type="hidden" id="editAnnInterestLevel" value="Casual">
           </div>
@@ -17057,16 +17135,21 @@
             // Pills de estilos / cover / autoral / nivel de interesse
             const stylePills = [];
             if (ann.projectType) {
-              stylePills.push({ label: ann.projectType, colorClass: 'badge-cyan' });
+              ann.projectType.split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean).forEach(pt => {
+                const isAutoral = pt.toLowerCase().includes('autoral');
+                stylePills.push({ label: pt, colorClass: isAutoral ? 'badge-emerald' : 'badge-cyan' });
+              });
             }
             if (ann.interestLevel) {
-              const isPro = ann.interestLevel.toLowerCase().includes('pro');
-              stylePills.push({ label: ann.interestLevel, colorClass: isPro ? 'badge-violet' : 'badge-emerald' });
+              ann.interestLevel.split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean).forEach(lvl => {
+                const isPro = lvl.toLowerCase().includes('pro');
+                stylePills.push({ label: lvl, colorClass: isPro ? 'badge-violet' : 'badge-amber' });
+              });
             }
             if (ann.styles) {
-              ann.styles.split(/[,/•;]+/).map(s => s.trim()).filter(Boolean).forEach(s => {
+              ann.styles.split(/[,/•;]+/).map(s => s.trim()).filter(Boolean).slice(0, 4).forEach(s => {
                 if (!stylePills.some(p => p.label.toLowerCase() === s.toLowerCase())) {
-                  stylePills.push({ label: s, colorClass: 'badge-violet' });
+                  stylePills.push({ label: s, colorClass: 'badge-sky' });
                 }
               });
             }
@@ -17077,7 +17160,7 @@
               if (combinedText.includes('autoral')) stylePills.push({ label: 'Autoral', colorClass: 'badge-emerald' });
               ['rock', 'pop', 'metal', 'jazz', 'blues', 'sertanejo', 'mpb', 'indie', 'punk', 'reggae', 'funk', 'pagode', 'samba', 'gospel'].forEach(g => {
                 if (combinedText.includes(g) && !stylePills.some(p => p.label.toLowerCase() === g)) {
-                  stylePills.push({ label: g.charAt(0).toUpperCase() + g.slice(1), colorClass: 'badge-violet' });
+                  stylePills.push({ label: g.charAt(0).toUpperCase() + g.slice(1), colorClass: 'badge-sky' });
                 }
               });
             }
@@ -17087,7 +17170,7 @@
 
             // Procura: pills dos musicos procurados
             const searchedInstruments = (ann.instrument || 'Músico')
-              .split(/[,/•;]+/)
+              .split(/[,/•;]+|\be\b/i)
               .map(s => s.trim())
               .filter(Boolean);
 
@@ -17100,7 +17183,7 @@
                 <!-- Floating Header: Nome do Projeto ou banda • Data • Cidade UF Pais -->
                 <div class="announcement-card-floating-header">
                   <h3 class="announcement-card-title">${escapeHtml(projectTitle)}</h3>
-                  <div class="announcement-card-header-meta">
+                  <div class="announcement-card-header-meta desktop-only-meta">
                     ${dateStr ? `<span class="announcement-card-date">${dateStr}</span>` : ''}
                     ${locStr ? `<span class="announcement-card-location"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(locStr)}</span>` : ''}
                   </div>
@@ -17115,6 +17198,12 @@
 
                 <!-- Card Body -->
                 <div class="announcement-card-body">
+                  <!-- Mobile Meta: Data & Local centralizados (como no print do usuário) -->
+                  <div class="announcement-card-mobile-meta">
+                    ${dateStr ? `<span class="announcement-card-date">${dateStr}</span>` : ''}
+                    ${locStr ? `<span class="announcement-card-location"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(locStr)}</span>` : ''}
+                  </div>
+
                   <div class="announcement-card-main-content">
                     ${ann.imageUrl ? `
                       <img class="announcement-card-thumb" src="${escapeHtml(ann.imageUrl)}" alt="${escapeHtml(projectTitle)}" onclick="openImagePreviewModal('${escapeHtml(ann.imageUrl)}')" title="Clique para ampliar"/>
@@ -17123,16 +17212,16 @@
                     <div class="announcement-card-content">
                       <!-- Line 1: Pilulas de cover autoral estilos etc... -->
                       <div class="announcement-card-tags-row">
-                        ${stylePills.slice(0, 6).map(p => `
+                        ${stylePills.map(p => `
                           <span class="badge ${p.colorClass}" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700; border-radius: 9999px;">${escapeHtml(p.label)}</span>
                         `).join('')}
                       </div>
 
-                      <!-- Line 2: Procura: pilulas dos musicos procurados: Baterista -->
+                      <!-- Line 2: Procura: pilulas dos musicos procurados: Baterista, Baixista -->
                       <div class="announcement-card-procura-row">
                         <span class="announcement-procura-label">Procura:</span>
                         ${searchedInstruments.map(inst => `
-                          <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); font-size: 0.78rem; font-weight: 800; padding: 2px 9px; border-radius: 9999px;">
+                          <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.35); font-size: 0.78rem; font-weight: 800; padding: 2px 9px; border-radius: 9999px;">
                             ${escapeHtml(inst)}
                           </span>
                         `).join('')}
@@ -17656,28 +17745,120 @@
       }
     }
 
-    function setAnnProjectType(val, mode) {
-      const valid = (val === 'Autoral') ? 'Autoral' : 'Cover';
-      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnProjectType' : 'annProjectType');
-      if (hiddenInput) hiddenInput.value = valid;
-      const group = document.getElementById(`annProjectTypeGroup_${mode}`);
-      if (group) {
-        group.querySelectorAll('.ann-segment-btn').forEach(btn => {
-          btn.classList.toggle('active', btn.getAttribute('data-val') === valid);
-        });
+    function handleAnnInstrumentTextInput(mode) {
+      const input = document.getElementById(mode === 'edit' ? 'editAnnInstrument' : 'annInstrument');
+      const preview = document.getElementById(mode === 'edit' ? 'annInstrumentPreview_edit' : 'annInstrumentPreview_create');
+      if (!input || !preview) return;
+
+      const raw = input.value.split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean);
+      if (raw.length === 0) {
+        preview.innerHTML = '';
+        return;
+      }
+
+      preview.innerHTML = raw.map((inst, idx) => `
+        <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.35); font-size: 0.76rem; font-weight: 800; padding: 2px 9px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 5px;">
+          <span>${escapeHtml(inst)}</span>
+          <span style="cursor: pointer; opacity: 0.7; font-size: 0.95rem; line-height: 1;" onclick="removeAnnInstrumentTag(${idx}, '${mode}')" title="Remover">&times;</span>
+        </span>
+      `).join('');
+    }
+
+    function removeAnnInstrumentTag(idx, mode) {
+      const input = document.getElementById(mode === 'edit' ? 'editAnnInstrument' : 'annInstrument');
+      if (!input) return;
+      const raw = input.value.split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean);
+      if (idx >= 0 && idx < raw.length) {
+        raw.splice(idx, 1);
+        input.value = raw.join(', ');
+        handleAnnInstrumentTextInput(mode);
       }
     }
 
-    function setAnnInterestLevel(val, mode) {
-      const valid = (val && val.toLowerCase().includes('pro')) ? 'Profissional' : 'Casual';
-      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnInterestLevel' : 'annInterestLevel');
-      if (hiddenInput) hiddenInput.value = valid;
-      const group = document.getElementById(`annInterestLevelGroup_${mode}`);
-      if (group) {
-        group.querySelectorAll('.ann-segment-btn').forEach(btn => {
-          btn.classList.toggle('active', btn.getAttribute('data-val') === valid);
-        });
+    function toggleAnnProjectType(val, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnProjectType' : 'annProjectType');
+      const group = document.getElementById(`annProjectTypeGroup_${mode}`);
+      if (!hiddenInput || !group) return;
+
+      const current = (hiddenInput.value || '').split(',').map(s => s.trim()).filter(Boolean);
+      const set = new Set(current);
+      if (set.has(val)) {
+        if (set.size > 1) {
+          set.delete(val);
+        } else {
+          set.clear();
+          set.add(val === 'Cover' ? 'Autoral' : 'Cover');
+        }
+      } else {
+        set.add(val);
       }
+
+      hiddenInput.value = Array.from(set).join(', ');
+      group.querySelectorAll('.ann-segment-btn').forEach(btn => {
+        btn.classList.toggle('active', set.has(btn.getAttribute('data-val')));
+      });
+    }
+
+    function setAnnProjectType(val, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnProjectType' : 'annProjectType');
+      const group = document.getElementById(`annProjectTypeGroup_${mode}`);
+      if (!hiddenInput || !group) return;
+
+      const rawVals = (val || 'Cover').split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean);
+      const set = new Set();
+      rawVals.forEach(v => {
+        if (v.toLowerCase().includes('auto')) set.add('Autoral');
+        if (v.toLowerCase().includes('cover')) set.add('Cover');
+      });
+      if (set.size === 0) set.add('Cover');
+
+      hiddenInput.value = Array.from(set).join(', ');
+      group.querySelectorAll('.ann-segment-btn').forEach(btn => {
+        btn.classList.toggle('active', set.has(btn.getAttribute('data-val')));
+      });
+    }
+
+    function toggleAnnInterestLevel(val, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnInterestLevel' : 'annInterestLevel');
+      const group = document.getElementById(`annInterestLevelGroup_${mode}`);
+      if (!hiddenInput || !group) return;
+
+      const current = (hiddenInput.value || '').split(',').map(s => s.trim()).filter(Boolean);
+      const set = new Set(current);
+      if (set.has(val)) {
+        if (set.size > 1) {
+          set.delete(val);
+        } else {
+          set.clear();
+          set.add(val === 'Casual' ? 'Profissional' : 'Casual');
+        }
+      } else {
+        set.add(val);
+      }
+
+      hiddenInput.value = Array.from(set).join(', ');
+      group.querySelectorAll('.ann-segment-btn').forEach(btn => {
+        btn.classList.toggle('active', set.has(btn.getAttribute('data-val')));
+      });
+    }
+
+    function setAnnInterestLevel(val, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnInterestLevel' : 'annInterestLevel');
+      const group = document.getElementById(`annInterestLevelGroup_${mode}`);
+      if (!hiddenInput || !group) return;
+
+      const rawVals = (val || 'Casual').split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean);
+      const set = new Set();
+      rawVals.forEach(v => {
+        if (v.toLowerCase().includes('pro')) set.add('Profissional');
+        if (v.toLowerCase().includes('cas')) set.add('Casual');
+      });
+      if (set.size === 0) set.add('Casual');
+
+      hiddenInput.value = Array.from(set).join(', ');
+      group.querySelectorAll('.ann-segment-btn').forEach(btn => {
+        btn.classList.toggle('active', set.has(btn.getAttribute('data-val')));
+      });
     }
 
     // ==========================================================
@@ -17810,6 +17991,7 @@
     function openCreateAnnouncementModal() {
       document.getElementById('annTitle').value = '';
       document.getElementById('annInstrument').value = '';
+      handleAnnInstrumentTextInput('create');
       document.getElementById('annCity').value = currentUser?.city || '';
       document.getElementById('annState').value = currentUser?.state || '';
       document.getElementById('annDescription').value = '';
@@ -17879,6 +18061,7 @@
       document.getElementById('editAnnId').value = ann.id;
       document.getElementById('editAnnTitle').value = ann.title || '';
       document.getElementById('editAnnInstrument').value = ann.instrument || '';
+      handleAnnInstrumentTextInput('edit');
       document.getElementById('editAnnCity').value = ann.city || '';
       document.getElementById('editAnnState').value = ann.state || '';
       document.getElementById('editAnnDescription').value = ann.description || '';
@@ -17922,7 +18105,8 @@
           await loadAnnouncements();
         } else {
           const err = await res.json().catch(() => ({}));
-          showToast(err.message || 'Erro ao atualizar anúncio.', 'error');
+          const errMsg = err.message || (err.errors ? Object.values(err.errors).flat().join(', ') : err.title) || `Erro ao atualizar anúncio (${res.status}).`;
+          showToast(errMsg, 'error');
         }
       } catch {
         showToast('Falha na conexão ao atualizar anúncio.', 'error');
