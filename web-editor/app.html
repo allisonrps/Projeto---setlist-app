@@ -1985,10 +1985,10 @@
       background: rgba(0, 0, 0, 0.38);
       border: 1.5px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
-      padding: 7px 14px;
+      padding: 0 14px;
+      height: 44px;
       display: flex;
-      flex-direction: column;
-      gap: 3px;
+      align-items: center;
       transition: all 0.2s ease;
     }
     .social-filter-input-group:focus-within,
@@ -1997,23 +1997,11 @@
       background: rgba(0, 0, 0, 0.55);
       box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
     }
-    .social-filter-input-header {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .social-loc-icon {
-      font-size: 0.85rem;
+    .social-loc-input-icon {
+      font-size: 1.05rem;
       color: var(--cyan, #06b6d4);
+      margin-right: 8px;
       flex-shrink: 0;
-    }
-    .social-loc-lbl {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      font-weight: 800;
-      color: var(--cyan-light, #67e8f9);
-      letter-spacing: 0.5px;
-      line-height: 1;
     }
     .social-filter-input-wrapper {
       display: flex;
@@ -2027,15 +2015,15 @@
       border: none;
       outline: none;
       color: #ffffff;
-      font-size: 0.92rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: 600;
       padding: 2px 24px 2px 0;
       font-family: inherit;
     }
     .social-open-input::placeholder {
-      color: rgba(255, 255, 255, 0.38);
+      color: rgba(255, 255, 255, 0.45);
       font-weight: 500;
-      font-size: 0.82rem;
+      font-size: 0.88rem;
     }
     .social-input-clear-btn {
       position: absolute;
@@ -2212,22 +2200,14 @@
 
     .profile-bands-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+      width: 100%;
     }
-    @media (max-width: 1240px) {
-      .profile-bands-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    @media (max-width: 860px) {
-      .profile-bands-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-    @media (max-width: 540px) {
+    @media (max-width: 680px) {
       .profile-bands-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
       }
     }
 
@@ -2239,17 +2219,18 @@
       padding: 0;
       cursor: pointer;
       transition: all 0.25s ease;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.025);
+      border-radius: 16px;
+      background: #182234;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 100%;
     }
     .band-card:hover {
       border-color: var(--cyan);
       transform: translateY(-3px);
-      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.18);
+      box-shadow: 0 10px 28px rgba(14, 165, 233, 0.2);
     }
     .band-card-cover {
-      height: 115px;
+      height: 125px;
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3));
       position: relative;
       overflow: hidden;
@@ -5459,45 +5440,36 @@
             </div>
           </div>
 
-          <!-- BASE DO CABEÇALHO: 3 FILTROS ABERTOS DE LOCALIDADE (PAÍS, ESTADO, CIDADE) -->
+          <!-- BASE DO CABEÇALHO: 3 FILTROS ABERTOS (CIDADE, UF, PAÍS) APENAS COM PLACEHOLDER -->
           <div class="social-hero-bottom-bar">
-            <!-- País -->
+            <!-- Cidade -->
             <div class="social-filter-input-group">
-              <div class="social-filter-input-header">
-                <ion-icon name="globe-outline" class="social-loc-icon"></ion-icon>
-                <span class="social-loc-lbl">País</span>
-              </div>
               <div class="social-filter-input-wrapper">
-                <input type="text" id="socialCountryInput" class="social-open-input" placeholder="Todos os países..." list="socialCountryDatalist" oninput="onSocialLocationInputChanged('country')" autocomplete="off">
-                <button type="button" class="social-input-clear-btn" id="socialCountryClearBtn" onclick="clearSocialLocationField('country')" title="Limpar país" style="display: none;">&times;</button>
+                <ion-icon name="location-outline" class="social-loc-input-icon"></ion-icon>
+                <input type="text" id="socialCityInput" class="social-open-input" placeholder="Cidade" list="socialCityDatalist" oninput="onSocialLocationInputChanged('city')" autocomplete="off">
+                <button type="button" class="social-input-clear-btn" id="socialCityClearBtn" onclick="clearSocialLocationField('city')" title="Limpar cidade" style="display: none;">&times;</button>
               </div>
-              <datalist id="socialCountryDatalist"></datalist>
+              <datalist id="socialCityDatalist"></datalist>
             </div>
 
-            <!-- Estado -->
+            <!-- UF -->
             <div class="social-filter-input-group">
-              <div class="social-filter-input-header">
-                <ion-icon name="map-outline" class="social-loc-icon"></ion-icon>
-                <span class="social-loc-lbl">Estado</span>
-              </div>
               <div class="social-filter-input-wrapper">
-                <input type="text" id="socialStateInput" class="social-open-input" placeholder="Todos os estados..." list="socialStateDatalist" oninput="onSocialLocationInputChanged('state')" autocomplete="off">
-                <button type="button" class="social-input-clear-btn" id="socialStateClearBtn" onclick="clearSocialLocationField('state')" title="Limpar estado" style="display: none;">&times;</button>
+                <ion-icon name="map-outline" class="social-loc-input-icon"></ion-icon>
+                <input type="text" id="socialStateInput" class="social-open-input" placeholder="UF" list="socialStateDatalist" oninput="onSocialLocationInputChanged('state')" autocomplete="off">
+                <button type="button" class="social-input-clear-btn" id="socialStateClearBtn" onclick="clearSocialLocationField('state')" title="Limpar UF" style="display: none;">&times;</button>
               </div>
               <datalist id="socialStateDatalist"></datalist>
             </div>
 
-            <!-- Cidade -->
+            <!-- País -->
             <div class="social-filter-input-group">
-              <div class="social-filter-input-header">
-                <ion-icon name="location-outline" class="social-loc-icon"></ion-icon>
-                <span class="social-loc-lbl">Cidade</span>
-              </div>
               <div class="social-filter-input-wrapper">
-                <input type="text" id="socialCityInput" class="social-open-input" placeholder="Todas as cidades..." list="socialCityDatalist" oninput="onSocialLocationInputChanged('city')" autocomplete="off">
-                <button type="button" class="social-input-clear-btn" id="socialCityClearBtn" onclick="clearSocialLocationField('city')" title="Limpar cidade" style="display: none;">&times;</button>
+                <ion-icon name="globe-outline" class="social-loc-input-icon"></ion-icon>
+                <input type="text" id="socialCountryInput" class="social-open-input" placeholder="País" list="socialCountryDatalist" oninput="onSocialLocationInputChanged('country')" autocomplete="off">
+                <button type="button" class="social-input-clear-btn" id="socialCountryClearBtn" onclick="clearSocialLocationField('country')" title="Limpar país" style="display: none;">&times;</button>
               </div>
-              <datalist id="socialCityDatalist"></datalist>
+              <datalist id="socialCountryDatalist"></datalist>
             </div>
           </div>
         </div>
@@ -9426,6 +9398,19 @@
         });
         const locStr = dedupBLocs.join(', ');
 
+        const normDesc = (band.description || '').trim().toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+        const normLoc = locStr.toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+        const normCity = (band.city || '').trim().toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+        const normState = (band.state || '').trim().toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+        const isLocDup = Boolean(band.description && (
+          normDesc === normLoc ||
+          (normCity && normDesc === normCity) ||
+          (normState && normDesc === normState) ||
+          (normCity && normState && (normDesc === `${normCity} ${normState}` || normDesc === `${normState} ${normCity}`)) ||
+          (normLoc && normDesc.includes(normLoc) && normDesc.length <= normLoc.length + 8) ||
+          (normCity && normDesc.includes(normCity) && (!normState || normDesc.includes(normState)) && normDesc.length <= 25)
+        ));
+
         return `
           <div class="card band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${escapeHtml(band.name)}">
             <div class="band-card-cover">
@@ -9447,7 +9432,7 @@
                     <span>${escapeHtml(locStr)}</span>
                   </p>
                 ` : ''}
-                ${band.description ? `
+                ${(band.description && !isLocDup) ? `
                   <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center;">
                     ${escapeHtml(band.description)}
                   </p>
@@ -9497,6 +9482,15 @@
           ? `<img src="${normImg}" alt="${band.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
           : `<span>${initials}</span>`;
 
+        const rawBLocs = [band.city, band.state].map(x => (x || '').trim()).filter(Boolean);
+        const dedupBLocs = [];
+        rawBLocs.forEach(part => {
+          if (!dedupBLocs.some(existing => existing.toLowerCase() === part.toLowerCase())) {
+            dedupBLocs.push(part);
+          }
+        });
+        const locStr = dedupBLocs.join(', ');
+
         return `
           <div class="project-band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${band.name}">
             <div class="project-band-avatar">
@@ -9508,7 +9502,7 @@
                 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;">
                   <span class="badge badge-cyan" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(band.bandType || 'Banda')}</span>
                   ${band.genre ? `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(band.genre)}</span>` : ''}
-                  ${[band.city, band.state].filter(Boolean).length > 0 ? `<span class="badge" style="background: rgba(255,255,255,0.08); color: #cbd5e1; font-size: 0.75rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;"><ion-icon name="location-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${escapeHtml([band.city, band.state].filter(Boolean).join(', '))}</span>` : ''}
+                  ${locStr ? `<span class="badge" style="background: rgba(255,255,255,0.08); color: #cbd5e1; font-size: 0.75rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;"><ion-icon name="location-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${escapeHtml(locStr)}</span>` : ''}
                 </div>
               </div>
               <div class="project-band-metrics-grid">
@@ -15925,18 +15919,18 @@
         }
       });
 
-      // Default on initial load: musician's country, state, and city!
+      // Default on initial load: leave empty so placeholders (Cidade, UF, País) show and all items display
       if (!socialLocationInitialized) {
-        currentSocialCountry = userCountry || 'Brasil';
-        currentSocialState = userState || '';
-        currentSocialCity = userCity || '';
+        currentSocialCountry = '';
+        currentSocialState = '';
+        currentSocialCity = '';
 
         const cIn = document.getElementById('socialCountryInput');
         const sIn = document.getElementById('socialStateInput');
         const ciIn = document.getElementById('socialCityInput');
-        if (cIn) cIn.value = currentSocialCountry;
-        if (sIn) sIn.value = currentSocialState;
-        if (ciIn) ciIn.value = currentSocialCity;
+        if (cIn) cIn.value = '';
+        if (sIn) sIn.value = '';
+        if (ciIn) ciIn.value = '';
 
         socialLocationInitialized = true;
       }
@@ -16307,25 +16301,41 @@
         const res = await fetch(`${API_URL}/Users${qs}`, {
           headers: getAuthHeaders()
         });
-        if (res.ok) {
-          const users = await res.json();
-
-          // Collect locations from musicians
-          const locs = users.map(u => ({ country: u.country || 'Brasil', state: u.state, city: u.city })).filter(l => l.city || l.state || l.country);
-          initSocialLocationFilters(locs);
-
-          const filtered = users.filter(matchesSocialLocation);
-          const countBadge = document.getElementById('socialCountMus');
-          if (countBadge) countBadge.innerText = filtered.length;
-
-          if (filtered.length === 0) {
-            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum músico encontrado${getSocialLocationEmptyText()}.</div>`;
-            return;
+        if (!res.ok) {
+          if (res.status === 401) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 48px 24px; color: var(--text-dim); width: 100%; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+                <ion-icon name="people-outline" style="font-size: 2.5rem; color: var(--cyan); margin-bottom: 8px;"></ion-icon>
+                <h4 style="color: #fff; font-size: 1.15rem; margin-bottom: 6px;">Faça login para ver os músicos na rede</h4>
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">Conecte sua conta para explorar todos os perfis e entrar em contato.</p>
+                <button class="btn btn-primary" onclick="openLoginModal()" style="border-radius: 12px; font-weight: 700;">Entrar na Conta</button>
+              </div>
+            `;
+          } else {
+            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Não foi possível carregar os músicos no momento.</div>`;
           }
+          return;
+        }
+
+        const users = await res.json();
+
+        // Collect locations from musicians
+        const locs = (Array.isArray(users) ? users : []).map(u => ({ country: u.country || 'Brasil', state: u.state, city: u.city })).filter(l => l.city || l.state || l.country);
+        initSocialLocationFilters(locs);
+
+        const filtered = (Array.isArray(users) ? users : []).filter(matchesSocialLocation);
+        const countBadge = document.getElementById('socialCountMus');
+        if (countBadge) countBadge.innerText = filtered.length;
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum músico encontrado${getSocialLocationEmptyText()}.</div>`;
+          return;
+        }
 
           container.innerHTML = filtered.map(u => {
             const displayName = resolveDisplayName(u);
             const username = (u.username || '').replace(/^@+/, '');
+            const age = u.age || calculateAge(u.birthDate);
             const rawLocs = [u.city, u.state, u.country].map(x => (x || '').trim()).filter(Boolean);
             const dedupLocs = [];
             rawLocs.forEach(part => {
@@ -16343,6 +16353,7 @@
             const statusClass = isAvailable ? 'available' : 'unavailable';
             const statusTitle = isAvailable ? 'Disponível' : 'Indisponível';
 
+            const skills = extractUserSkills(u);
             const skillsHtml = skills.length > 0
               ? `<div class="user-card-skills-row">${skills.slice(0, 4).map(s => {
                   const starCount = Math.min(5, Math.max(1, s.stars || 5));
@@ -16393,7 +16404,6 @@
               </div>
             `;
           }).join('');
-        }
       } catch (err) {
         console.error('Error fetching musicians:', err);
       }
@@ -16445,6 +16455,19 @@
             });
             const locStr = dedupBLocs.join(', ');
 
+            const normDesc = (b.description || '').trim().toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+            const normLoc = locStr.toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+            const normCity = (b.city || '').trim().toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+            const normState = (b.state || '').trim().toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+            const isLocDup = Boolean(b.description && (
+              normDesc === normLoc ||
+              (normCity && normDesc === normCity) ||
+              (normState && normDesc === normState) ||
+              (normCity && normState && (normDesc === `${normCity} ${normState}` || normDesc === `${normState} ${normCity}`)) ||
+              (normLoc && normDesc.includes(normLoc) && normDesc.length <= normLoc.length + 8) ||
+              (normCity && normDesc.includes(normCity) && (!normState || normDesc.includes(normState)) && normDesc.length <= 25)
+            ));
+
             return `
               <div class="card band-card" onclick="window.open('/banda?id=${b.id}', '_blank')" title="Clique para ver o perfil público de ${escapeHtml(b.name)}">
                 <div class="band-card-cover">
@@ -16468,7 +16491,7 @@
                         <span>${escapeHtml(locStr)}</span>
                       </p>
                     ` : ''}
-                    ${b.description ? `
+                    ${(b.description && !isLocDup) ? `
                       <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center;">
                         ${escapeHtml(b.description)}
                       </p>
