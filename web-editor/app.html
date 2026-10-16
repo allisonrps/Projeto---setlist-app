@@ -2134,6 +2134,84 @@
     .announcement-interest-btn:active {
       transform: scale(0.96);
     }
+    /* CREATOR TOOLBAR ON ANNOUNCEMENT CARD */
+    .announcement-creator-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .ann-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .ann-btn-candidates {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+    .ann-btn-candidates:hover {
+      background: rgba(34, 197, 94, 0.24);
+      border-color: #22c55e;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+    .ann-btn-scanner {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(168, 85, 247, 0.18));
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .ann-btn-scanner:hover {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(168, 85, 247, 0.3));
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+    }
+    .ann-btn-edit {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .ann-btn-edit:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .ann-btn-delete {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+    .ann-btn-delete:hover {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: #ef4444;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    .announcement-card-thumb {
+      width: 78px;
+      height: 78px;
+      border-radius: 12px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: transform 0.2s ease;
+    }
+    .announcement-card-thumb:hover {
+      transform: scale(1.05);
+    }
     @media (max-width: 768px) {
       .announcement-card-wrapper {
         margin-top: 50px;
@@ -6506,11 +6584,136 @@
           <label>Descrição Detalhada *</label>
           <textarea id="annDescription" class="form-input" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
         </div>
+        <div class="form-group">
+          <label>Foto do Anúncio / Projeto (Opcional)</label>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <input type="text" id="annImageUrl" class="form-input" placeholder="Cole a URL da foto ou use o botão carregar..." style="flex: 1;" oninput="updateAnnPhotoPreview('create')">
+            <button type="button" class="btn btn-outline" style="padding: 8px 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap;" onclick="document.getElementById('annPhotoFileInput').click()">
+              <ion-icon name="image-outline"></ion-icon> Carregar
+            </button>
+            <input type="file" id="annPhotoFileInput" accept="image/*" style="display: none;" onchange="handleAnnPhotoUpload(event, 'create')">
+          </div>
+          <div id="annPhotoPreviewContainer" style="display: none; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 10px;">
+            <img id="annPhotoPreviewImg" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+            <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;">Foto selecionada</span>
+            <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('create')">Remover</button>
+          </div>
+        </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('createAnnouncementModal')">Cancelar</button>
           <button type="submit" class="btn btn-primary">Publicar no Mural</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- EDIT ANNOUNCEMENT MODAL -->
+  <div class="modal-overlay" id="editAnnouncementModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="create-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Editar Anúncio</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('editAnnouncementModal')">&times;</button>
+      </div>
+      <form onsubmit="handleUpdateAnnouncement(event)">
+        <input type="hidden" id="editAnnId">
+        <div class="form-group">
+          <label>Título do Anúncio *</label>
+          <input type="text" id="editAnnTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" required maxlength="200">
+        </div>
+        <div class="form-group">
+          <label>Instrumento / Função Procurada *</label>
+          <input type="text" id="editAnnInstrument" class="form-input" placeholder="Ex: Baixista, Vocalista, Baterista" required maxlength="100">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Cidade</label>
+            <input type="text" id="editAnnCity" class="form-input" placeholder="Ex: Curitiba" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>Estado (UF)</label>
+            <input type="text" id="editAnnState" class="form-input" placeholder="Ex: PR" maxlength="50">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Foto do Anúncio / Projeto (Opcional)</label>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <input type="text" id="editAnnImageUrl" class="form-input" placeholder="Cole a URL da foto ou use o botão carregar..." style="flex: 1;" oninput="updateAnnPhotoPreview('edit')">
+            <button type="button" class="btn btn-outline" style="padding: 8px 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap;" onclick="document.getElementById('editAnnPhotoFileInput').click()">
+              <ion-icon name="image-outline"></ion-icon> Carregar
+            </button>
+            <input type="file" id="editAnnPhotoFileInput" accept="image/*" style="display: none;" onchange="handleAnnPhotoUpload(event, 'edit')">
+          </div>
+          <div id="editAnnPhotoPreviewContainer" style="display: none; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 10px;">
+            <img id="editAnnPhotoPreviewImg" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+            <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;">Foto selecionada</span>
+            <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('edit')">Remover</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descrição Detalhada *</label>
+          <textarea id="editAnnDescription" class="form-input" rows="4" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editAnnouncementModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ANNOUNCEMENT CANDIDATES / INTERESTED MUSICIANS MODAL -->
+  <div class="modal-overlay" id="announcementCandidatesModal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="people" style="color: #22c55e;"></ion-icon>
+          <span>Interessados no Anúncio</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('announcementCandidatesModal')">&times;</button>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="font-weight: 700; color: #fff; font-size: 0.95rem;" id="candidatesModalProjectTitle">Título do Anúncio</div>
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 2px;" id="candidatesModalSubtitle">Músicos que demonstraram interesse nesta vaga</div>
+      </div>
+      <div id="announcementCandidatesList" style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
+        <!-- Filled dynamically -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('announcementCandidatesModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMART IDEAL MUSICIANS SCANNER MODAL -->
+  <div class="modal-overlay" id="idealMusiciansModal">
+    <div class="modal-card" style="max-width: 720px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="sparkles" style="color: #38bdf8;"></ion-icon>
+          <span>Scanner de Músicos Ideais</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('idealMusiciansModal')">&times;</button>
+      </div>
+      <div style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.12)); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 14px 18px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; color: #fff; font-size: 1rem;" id="scannerTargetTitle">Procuramos Baixista</div>
+            <div style="font-size: 0.84rem; color: #bae6fd; margin-top: 2px;" id="scannerTargetCriteria">Critérios: Baixo • Curitiba/PR • Rock/Indie</div>
+          </div>
+          <div id="scannerMatchCountBadge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 9999px;">
+            0 Músicos Compatíveis
+          </div>
+        </div>
+      </div>
+      <div id="idealMusiciansList" style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
+        <!-- Filled dynamically -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('idealMusiciansModal')">Fechar</button>
+      </div>
     </div>
   </div>
 
@@ -16560,11 +16763,22 @@
             return;
           }
 
+          window.currentLoadedAnnouncements = filtered;
+
           container.innerHTML = filtered.map(ann => {
             const creatorUsername = ann.creator?.username || 'músico';
-            const creatorPic = ann.creator?.pictureUrl;
+            const creatorPic = ann.imageUrl || ann.creator?.pictureUrl;
             const projectTitle = ann.title || 'Projeto Musical';
             const initial = (projectTitle || creatorUsername || 'P').charAt(0).toUpperCase();
+
+            const isOwner = currentUser && (
+              (ann.creatorId && currentUser.id && String(ann.creatorId) === String(currentUser.id)) ||
+              (ann.creator?.id && currentUser.id && String(ann.creator.id) === String(currentUser.id)) ||
+              (ann.creator?.username && currentUser.username && ann.creator.username.toLowerCase() === currentUser.username.toLowerCase())
+            );
+
+            const interestedList = getAnnouncementInterests(ann.id);
+            const interestedCount = interestedList.length;
 
             const avatarHtml = creatorPic
               ? `<img src="${creatorPic}" alt="${escapeHtml(projectTitle)}" onerror="this.parentElement.innerHTML='<span class=\\'announcement-card-avatar-initial\\'>${initial}</span>'"/>`
@@ -16624,6 +16838,10 @@
 
                 <!-- Card Body -->
                 <div class="announcement-card-body">
+                  ${ann.imageUrl ? `
+                    <img class="announcement-card-thumb" src="${escapeHtml(ann.imageUrl)}" alt="${escapeHtml(projectTitle)}" onclick="openImagePreviewModal('${escapeHtml(ann.imageUrl)}')" title="Clique para ampliar"/>
+                  ` : ''}
+
                   <div class="announcement-card-content">
                     <!-- Line 1: Pilulas de cover autoral estilos etc... -->
                     <div class="announcement-card-tags-row">
@@ -16648,10 +16866,31 @@
                     ` : ''}
                   </div>
 
-                  <!-- Right Side: Green Circle Button to demonstrate interest -->
-                  <button class="announcement-interest-btn" onclick="openExpressInterestModal(${ann.id}, '${safeTitle}', '${safeInst}', '${safeCreator}', ${ann.bandId || 'null'})" title="Demonstrar Interesse / Enviar Mensagem para a Banda" aria-label="Demonstrar Interesse">
-                    <ion-icon name="paper-plane" style="transform: translate(-1px, 1px);"></ion-icon>
-                  </button>
+                  <!-- Right Side: Creator Actions OR Green Interest Button -->
+                  ${isOwner ? `
+                    <div class="announcement-creator-toolbar">
+                      <button type="button" class="ann-btn ann-btn-candidates" onclick="openAnnouncementCandidatesModal(${ann.id}, '${safeTitle}')" title="Ver músicos interessados">
+                        <ion-icon name="people"></ion-icon>
+                        <span>${interestedCount} Interessado${interestedCount === 1 ? '' : 's'}</span>
+                      </button>
+                      <button type="button" class="ann-btn ann-btn-scanner" onclick="openIdealMusiciansScanner(${ann.id})" title="Escanear músicos ideais na rede">
+                        <ion-icon name="sparkles"></ion-icon>
+                        <span>Escanear Músicos</span>
+                      </button>
+                      <button type="button" class="ann-btn ann-btn-edit" onclick="openEditAnnouncementModal(${ann.id})" title="Editar Anúncio">
+                        <ion-icon name="create-outline"></ion-icon>
+                        <span>Editar</span>
+                      </button>
+                      <button type="button" class="ann-btn ann-btn-delete" onclick="handleDeleteAnnouncement(${ann.id}, '${safeTitle}')" title="Excluir Anúncio">
+                        <ion-icon name="trash-outline"></ion-icon>
+                        <span>Excluir</span>
+                      </button>
+                    </div>
+                  ` : `
+                    <button class="announcement-interest-btn" onclick="openExpressInterestModal(${ann.id}, '${safeTitle}', '${safeInst}', '${safeCreator}', ${ann.bandId || 'null'})" title="Demonstrar Interesse / Enviar Mensagem para a Banda" aria-label="Demonstrar Interesse">
+                      <ion-icon name="paper-plane" style="transform: translate(-1px, 1px);"></ion-icon>
+                    </button>
+                  `}
                 </div>
               </div>
             `;
@@ -17088,6 +17327,7 @@
       document.getElementById('annCity').value = currentUser?.city || '';
       document.getElementById('annState').value = currentUser?.state || '';
       document.getElementById('annDescription').value = '';
+      clearAnnPhoto('create');
       openModal('createAnnouncementModal');
     }
 
@@ -17098,7 +17338,8 @@
         instrument: document.getElementById('annInstrument').value.trim(),
         city: document.getElementById('annCity').value.trim(),
         state: document.getElementById('annState').value.trim(),
-        description: document.getElementById('annDescription').value.trim()
+        description: document.getElementById('annDescription').value.trim(),
+        imageUrl: document.getElementById('annImageUrl').value.trim() || null
       };
 
       try {
@@ -17109,7 +17350,7 @@
         });
 
         if (res.ok) {
-          showToast('Anúncio publicado no Mural!', 'success');
+          showToast('Anúncio publicado no Mural com sucesso!', 'success');
           closeModal('createAnnouncementModal');
           await loadAnnouncements();
         } else {
@@ -17118,6 +17359,360 @@
       } catch {
         showToast('Falha na conexão.', 'error');
       }
+    }
+
+    // ==========================================================
+    // ANNOUNCEMENT CREATOR ACTIONS: EDIT, DELETE, CANDIDATES, SCANNER
+    // ==========================================================
+    function getAnnouncementInterests(annId) {
+      try {
+        const key = 'bandlink_candidate_interests';
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        const list = JSON.parse(raw);
+        return list.filter(item => String(item.announcementId) === String(annId));
+      } catch {
+        return [];
+      }
+    }
+
+    function openEditAnnouncementModal(annId) {
+      const ann = (window.currentLoadedAnnouncements || []).find(a => a.id === annId);
+      if (!ann) {
+        showToast('Anúncio não encontrado.', 'warning');
+        return;
+      }
+      document.getElementById('editAnnId').value = ann.id;
+      document.getElementById('editAnnTitle').value = ann.title || '';
+      document.getElementById('editAnnInstrument').value = ann.instrument || '';
+      document.getElementById('editAnnCity').value = ann.city || '';
+      document.getElementById('editAnnState').value = ann.state || '';
+      document.getElementById('editAnnDescription').value = ann.description || '';
+      document.getElementById('editAnnImageUrl').value = ann.imageUrl || '';
+      updateAnnPhotoPreview('edit');
+      openModal('editAnnouncementModal');
+    }
+
+    async function handleUpdateAnnouncement(e) {
+      e.preventDefault();
+      const annId = document.getElementById('editAnnId').value;
+      const payload = {
+        title: document.getElementById('editAnnTitle').value.trim(),
+        instrument: document.getElementById('editAnnInstrument').value.trim(),
+        city: document.getElementById('editAnnCity').value.trim(),
+        state: document.getElementById('editAnnState').value.trim(),
+        imageUrl: document.getElementById('editAnnImageUrl').value.trim() || null,
+        description: document.getElementById('editAnnDescription').value.trim()
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/Announcements/${annId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('Anúncio atualizado com sucesso!', 'success');
+          closeModal('editAnnouncementModal');
+          await loadAnnouncements();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.message || 'Erro ao atualizar anúncio.', 'error');
+        }
+      } catch {
+        showToast('Falha na conexão ao atualizar anúncio.', 'error');
+      }
+    }
+
+    async function handleDeleteAnnouncement(id, title) {
+      if (!confirm(`Deseja realmente excluir o anúncio "${title || 'este anúncio'}"?`)) return;
+      try {
+        const res = await fetch(`${API_URL}/Announcements/${id}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        if (res.ok) {
+          showToast('Anúncio excluído com sucesso!', 'success');
+          await loadAnnouncements();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.message || 'Erro ao excluir anúncio.', 'error');
+        }
+      } catch {
+        showToast('Falha na conexão ao excluir anúncio.', 'error');
+      }
+    }
+
+    function openAnnouncementCandidatesModal(annId, projectTitle) {
+      const titleEl = document.getElementById('candidatesModalProjectTitle');
+      const subtitleEl = document.getElementById('candidatesModalSubtitle');
+      const listEl = document.getElementById('announcementCandidatesList');
+      if (titleEl) titleEl.textContent = projectTitle || 'Anúncio';
+      
+      const candidates = getAnnouncementInterests(annId);
+      if (subtitleEl) {
+        subtitleEl.textContent = `${candidates.length} músico${candidates.length === 1 ? '' : 's'} interessado${candidates.length === 1 ? '' : 's'} nesta vaga`;
+      }
+
+      if (candidates.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: #94a3b8; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.08);">
+            <ion-icon name="people-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+            <div style="font-weight: 700; color: #cbd5e1; font-size: 1rem; margin-bottom: 4px;">Nenhum interessado ainda</div>
+            <div style="font-size: 0.85rem; color: #64748b;">Assim que outros músicos clicarem em demonstrar interesse, eles aparecerão aqui com mensagem e telefone.</div>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = candidates.map(c => {
+          const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleString('pt-BR') : '';
+          const initial = (c.authorDisplayName || c.authorUsername || 'M').charAt(0).toUpperCase();
+          const avatarHtml = c.authorAvatar
+            ? `<img src="${c.authorAvatar}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">`
+            : `<div style="width: 44px; height: 44px; border-radius: 50%; background: #334155; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">${initial}</div>`;
+          
+          const cleanPhone = (c.phone || '').replace(/\D/g, '');
+          const whatsAppLink = cleanPhone ? `https://wa.me/55${cleanPhone.replace(/^55/, '')}` : null;
+
+          return `
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  ${avatarHtml}
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${escapeHtml(c.authorDisplayName || c.authorUsername)}</span>
+                      <span style="font-size: 0.8rem; color: #94a3b8;">@${escapeHtml(c.authorUsername)}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #4ade80; font-weight: 600;">Interessado para: ${escapeHtml(c.instrument || 'Músico')}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  ${whatsAppLink ? `
+                    <a href="${whatsAppLink}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 6px 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
+                      <ion-icon name="logo-whatsapp"></ion-icon> WhatsApp
+                    </a>
+                  ` : ''}
+                  ${c.phone && !whatsAppLink ? `
+                    <span style="font-size: 0.82rem; color: #cbd5e1; background: rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 8px;">📞 ${escapeHtml(c.phone)}</span>
+                  ` : ''}
+                  <button class="btn btn-sm btn-outline" style="border-radius: 8px; padding: 6px 10px; font-size: 0.8rem;" onclick="closeModal('announcementCandidatesModal'); openPublicMusicianProfile('${escapeHtml(c.authorUsername)}')">
+                    Ver Perfil
+                  </button>
+                </div>
+              </div>
+              <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 0.86rem; color: #cbd5e1; line-height: 1.45; border-left: 3px solid #22c55e;">
+                "${escapeHtml(c.message)}"
+              </div>
+              ${dateStr ? `<div style="font-size: 0.75rem; color: #64748b; text-align: right;">Enviado em ${dateStr}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      openModal('announcementCandidatesModal');
+    }
+
+    async function openIdealMusiciansScanner(annId) {
+      const ann = (window.currentLoadedAnnouncements || []).find(a => a.id === annId);
+      if (!ann) {
+        showToast('Anúncio não encontrado.', 'warning');
+        return;
+      }
+
+      const titleEl = document.getElementById('scannerTargetTitle');
+      const criteriaEl = document.getElementById('scannerTargetCriteria');
+      const badgeEl = document.getElementById('scannerMatchCountBadge');
+      const listEl = document.getElementById('idealMusiciansList');
+
+      if (titleEl) titleEl.textContent = ann.title || 'Anúncio';
+      const neededInstrument = ann.instrument || 'Músico';
+      const targetLocation = [ann.city, ann.state].filter(Boolean).join('/') || 'Qualquer região';
+      if (criteriaEl) criteriaEl.textContent = `Vaga: ${neededInstrument} • Localidade: ${targetLocation}`;
+
+      if (listEl) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #38bdf8;">
+            <ion-icon name="sync-outline" style="font-size: 2.5rem; animation: spin 1.2s linear infinite;"></ion-icon>
+            <div style="margin-top: 10px; font-weight: 700; color: #fff;">Escaneando banco de músicos compatíveis...</div>
+            <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">Analisando instrumentos, estilos e localização</div>
+          </div>
+        `;
+      }
+      openModal('idealMusiciansModal');
+
+      try {
+        const res = await fetch(`${API_URL}/Users`, { headers: getAuthHeaders() });
+        let allMusicians = [];
+        if (res.ok) {
+          allMusicians = await res.json();
+        }
+
+        const targetInstTokens = neededInstrument.toLowerCase().split(/[,/•;\s]+/).filter(Boolean);
+        const targetCity = (ann.city || '').toLowerCase().trim();
+        const targetState = (ann.state || '').toLowerCase().trim();
+        const textCorpus = `${ann.title} ${ann.description || ''}`.toLowerCase();
+
+        const scored = (Array.isArray(allMusicians) ? allMusicians : [])
+          .filter(u => {
+            if (currentUser && (String(u.id) === String(currentUser.id) || (u.username && u.username.toLowerCase() === currentUser.username.toLowerCase()))) {
+              return false;
+            }
+            return true;
+          })
+          .map(u => {
+            let score = 25;
+            const uInst = (u.instruments || '').toLowerCase();
+            const uSkills = extractUserSkills(u).map(s => s.name.toLowerCase()).join(' ');
+            const combinedInst = `${uInst} ${uSkills}`;
+
+            targetInstTokens.forEach(token => {
+              if (token.length > 2 && combinedInst.includes(token)) {
+                score += 45;
+              }
+            });
+
+            if (targetCity && u.city && u.city.toLowerCase().trim() === targetCity) {
+              score += 20;
+            } else if (targetState && u.state && u.state.toLowerCase().trim() === targetState) {
+              score += 10;
+            }
+
+            const uBioAndInfluences = `${u.bio || ''} ${u.influences || ''}`.toLowerCase();
+            ['rock', 'pop', 'metal', 'jazz', 'blues', 'sertanejo', 'mpb', 'indie', 'punk', 'reggae', 'funk', 'pagode', 'samba', 'gospel'].forEach(genre => {
+              if (textCorpus.includes(genre) && uBioAndInfluences.includes(genre)) {
+                score += 5;
+              }
+            });
+
+            if (u.availability && !u.availability.toLowerCase().includes('indispon')) {
+              score += 5;
+            }
+
+            const matchPercent = Math.min(99, Math.max(35, score));
+            return { user: u, score: matchPercent };
+          });
+
+        scored.sort((a, b) => b.score - a.score);
+        const topMatches = scored.slice(0, 20);
+
+        if (badgeEl) badgeEl.textContent = `${topMatches.length} Músico${topMatches.length === 1 ? '' : 's'} Compatíveis`;
+
+        if (topMatches.length === 0) {
+          listEl.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #94a3b8;">
+              <ion-icon name="search-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+              <div style="font-weight: 700; color: #cbd5e1;">Nenhum músico compatível encontrado no momento</div>
+              <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Tente ajustar os critérios de busca ou cidade do anúncio.</div>
+            </div>
+          `;
+          return;
+        }
+
+        listEl.innerHTML = topMatches.map(m => {
+          const u = m.user;
+          const displayName = resolveDisplayName(u);
+          const username = (u.username || '').replace(/^@+/, '');
+          const initial = (displayName || username || 'M').charAt(0).toUpperCase();
+          const avatarHtml = u.pictureUrl
+            ? `<img src="${u.pictureUrl}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">`
+            : `<div style="width: 48px; height: 48px; border-radius: 50%; background: #334155; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">${initial}</div>`;
+          
+          const skills = extractUserSkills(u);
+          const locStr = [u.city, u.state].filter(Boolean).join(' - ') || 'Brasil';
+          const scoreBadgeStyle = m.score >= 80 
+            ? 'background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);' 
+            : (m.score >= 60 
+              ? 'background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);' 
+              : 'background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4);');
+
+          return `
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                ${avatarHtml}
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${escapeHtml(displayName)}</span>
+                    <span style="font-size: 0.8rem; color: #94a3b8;">@${escapeHtml(username)}</span>
+                    <span style="font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px; ${scoreBadgeStyle}">
+                      ${m.score}% Compatível
+                    </span>
+                  </div>
+                  <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 4px;">
+                    <ion-icon name="location-outline"></ion-icon> ${escapeHtml(locStr)}
+                    ${u.availability ? ` • <span style="color: #4ade80;">${escapeHtml(u.availability)}</span>` : ''}
+                  </div>
+                  ${skills.length > 0 ? `
+                    <div style="display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap;">
+                      ${skills.slice(0, 3).map(s => `
+                        <span style="font-size: 0.72rem; background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.25); padding: 1px 7px; border-radius: 9999px; font-weight: 600;">
+                          ${escapeHtml(s.name)}
+                        </span>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="btn btn-sm btn-outline" style="border-radius: 8px; padding: 6px 12px; font-size: 0.82rem;" onclick="closeModal('idealMusiciansModal'); openPublicMusicianProfile('${escapeHtml(username)}')">
+                  Ver Perfil
+                </button>
+                <button class="btn btn-sm" style="background: #38bdf8; color: #0f172a; font-weight: 800; border: none; border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 5px;" onclick="closeModal('idealMusiciansModal'); openPublicMusicianProfile('${escapeHtml(username)}')">
+                  <ion-icon name="mail-outline"></ion-icon> Contatar
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error scanning musicians:', err);
+        listEl.innerHTML = `<div style="text-align: center; padding: 30px; color: #ef4444;">Erro ao escanear músicos. Verifique sua conexão.</div>`;
+      }
+    }
+
+    function updateAnnPhotoPreview(mode) {
+      const prefix = mode === 'edit' ? 'editAnn' : 'ann';
+      const urlInput = document.getElementById(`${prefix}ImageUrl`);
+      const container = document.getElementById(`${prefix}PhotoPreviewContainer`);
+      const img = document.getElementById(`${prefix}PhotoPreviewImg`);
+      const val = urlInput?.value.trim() || '';
+      if (val) {
+        if (img) img.src = val;
+        if (container) container.style.display = 'flex';
+      } else {
+        if (container) container.style.display = 'none';
+      }
+    }
+
+    function handleAnnPhotoUpload(event, mode) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Por favor, selecione um arquivo de imagem válido.', 'warning');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const prefix = mode === 'edit' ? 'editAnn' : 'ann';
+        const urlInput = document.getElementById(`${prefix}ImageUrl`);
+        if (urlInput) urlInput.value = e.target.result;
+        updateAnnPhotoPreview(mode);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearAnnPhoto(mode) {
+      const prefix = mode === 'edit' ? 'editAnn' : 'ann';
+      const urlInput = document.getElementById(`${prefix}ImageUrl`);
+      const fileInput = document.getElementById(`${prefix}PhotoFileInput`);
+      if (urlInput) urlInput.value = '';
+      if (fileInput) fileInput.value = '';
+      updateAnnPhotoPreview(mode);
+    }
+
+    function openImagePreviewModal(url) {
+      if (!url) return;
+      window.open(url, '_blank');
     }
 
     function openModal(modalId) {
