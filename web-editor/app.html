@@ -2134,70 +2134,133 @@
     .announcement-interest-btn:active {
       transform: scale(0.96);
     }
-    /* CREATOR TOOLBAR ON ANNOUNCEMENT CARD */
+    /* CREATOR TOOLBAR ON ANNOUNCEMENT CARD - DISCREET ICON BUTTONS */
     .announcement-creator-toolbar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 6px;
+      flex-wrap: nowrap;
       justify-content: flex-end;
     }
-    .ann-btn {
+    .ann-icon-btn {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .ann-icon-btn:hover {
+      transform: scale(1.12);
+      color: #fff;
+    }
+    .ann-icon-candidates {
+      width: auto;
+      min-width: 35px;
+      padding: 0 9px;
+      border-radius: 9999px;
+      gap: 5px;
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.25);
+      background: rgba(34, 197, 94, 0.08);
+    }
+    .ann-icon-candidates:hover {
+      background: rgba(34, 197, 94, 0.22);
+      border-color: #22c55e;
+      color: #86efac;
+      box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+    }
+    .ann-icon-badge {
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .ann-icon-scanner:hover {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+    }
+    .ann-icon-edit:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+    }
+    .ann-icon-delete:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      color: #f87171;
+      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+    }
+
+    /* SEGMENTED BUTTONS FOR PROJECT TYPE & INTEREST LEVEL */
+    .ann-segments-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 6px;
-      padding: 7px 13px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .ann-segment-btn {
+      padding: 7px 10px;
       font-size: 0.8rem;
       font-weight: 700;
-      border-radius: 10px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
       cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
+      transition: all 0.18s ease;
+      text-align: center;
       white-space: nowrap;
-      text-decoration: none;
     }
-    .ann-btn-candidates {
-      background: rgba(34, 197, 94, 0.12);
-      color: #4ade80;
-      border-color: rgba(34, 197, 94, 0.35);
-    }
-    .ann-btn-candidates:hover {
-      background: rgba(34, 197, 94, 0.24);
-      border-color: #22c55e;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
-    }
-    .ann-btn-scanner {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(168, 85, 247, 0.18));
-      color: #7dd3fc;
-      border-color: rgba(56, 189, 248, 0.4);
-    }
-    .ann-btn-scanner:hover {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(168, 85, 247, 0.3));
-      border-color: #38bdf8;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
-    }
-    .ann-btn-edit {
-      background: rgba(255, 255, 255, 0.06);
-      color: #e2e8f0;
-      border-color: rgba(255, 255, 255, 0.15);
-    }
-    .ann-btn-edit:hover {
-      background: rgba(255, 255, 255, 0.14);
+    .ann-segment-btn:hover {
       color: #fff;
-      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.05);
     }
-    .ann-btn-delete {
-      background: rgba(239, 68, 68, 0.1);
-      color: #f87171;
-      border-color: rgba(239, 68, 68, 0.25);
+    .ann-segment-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
     }
-    .ann-btn-delete:hover {
-      background: rgba(239, 68, 68, 0.22);
-      border-color: #ef4444;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+
+    /* STYLE TAGS CHIPS */
+    .ann-styles-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .ann-style-chip {
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+    .ann-style-chip:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #e2e8f0;
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .ann-style-chip.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #7dd3fc;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
     }
     .announcement-card-thumb {
       width: 78px;
@@ -6580,6 +6643,37 @@
             <input type="text" id="annState" class="form-input" placeholder="Ex: PR" maxlength="50">
           </div>
         </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Tipo de Repertório</label>
+            <div class="ann-segments-grid" id="annProjectTypeGroup_create">
+              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="setAnnProjectType('Cover', 'create')">Cover</button>
+              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="setAnnProjectType('Autoral', 'create')">Autoral</button>
+              <button type="button" class="ann-segment-btn" data-val="Cover & Autoral" onclick="setAnnProjectType('Cover & Autoral', 'create')">Misto</button>
+            </div>
+            <input type="hidden" id="annProjectType" value="Cover">
+          </div>
+          <div class="form-group">
+            <label>Nível de Interesse</label>
+            <div class="ann-segments-grid" id="annInterestLevelGroup_create">
+              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="setAnnInterestLevel('Casual', 'create')">Casual</button>
+              <button type="button" class="ann-segment-btn" data-val="Semiprofissional" onclick="setAnnInterestLevel('Semiprofissional', 'create')">Semipro</button>
+              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="setAnnInterestLevel('Profissional', 'create')">Profissional</button>
+            </div>
+            <input type="hidden" id="annInterestLevel" value="Casual">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Estilos Musicais / Tags</label>
+          <div class="ann-styles-chips" id="annStylesContainer_create">
+            <!-- Chips rendered dynamically -->
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input type="text" id="annCustomStyleInput_create" class="form-input" placeholder="Outro estilo (ex: Blues Rock)..." style="flex: 1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomAnnStyle('create');}">
+            <button type="button" class="btn btn-sm btn-outline" onclick="addCustomAnnStyle('create')">Adicionar</button>
+          </div>
+          <input type="hidden" id="annStyles" value="">
+        </div>
         <div class="form-group">
           <label>Descrição Detalhada *</label>
           <textarea id="annDescription" class="form-input" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
@@ -6596,6 +6690,9 @@
           <div id="annPhotoPreviewContainer" style="display: none; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 10px;">
             <img id="annPhotoPreviewImg" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
             <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;">Foto selecionada</span>
+            <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 10px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;" onclick="reopenAnnCropper('create')">
+              <ion-icon name="crop-outline"></ion-icon> Recortar
+            </button>
             <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('create')">Remover</button>
           </div>
         </div>
@@ -6637,6 +6734,41 @@
             <input type="text" id="editAnnState" class="form-input" placeholder="Ex: PR" maxlength="50">
           </div>
         </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Tipo de Repertório</label>
+            <div class="ann-segments-grid" id="annProjectTypeGroup_edit">
+              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="setAnnProjectType('Cover', 'edit')">Cover</button>
+              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="setAnnProjectType('Autoral', 'edit')">Autoral</button>
+              <button type="button" class="ann-segment-btn" data-val="Cover & Autoral" onclick="setAnnProjectType('Cover & Autoral', 'edit')">Misto</button>
+            </div>
+            <input type="hidden" id="editAnnProjectType" value="Cover">
+          </div>
+          <div class="form-group">
+            <label>Nível de Interesse</label>
+            <div class="ann-segments-grid" id="annInterestLevelGroup_edit">
+              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="setAnnInterestLevel('Casual', 'edit')">Casual</button>
+              <button type="button" class="ann-segment-btn" data-val="Semiprofissional" onclick="setAnnInterestLevel('Semiprofissional', 'edit')">Semipro</button>
+              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="setAnnInterestLevel('Profissional', 'edit')">Profissional</button>
+            </div>
+            <input type="hidden" id="editAnnInterestLevel" value="Casual">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Estilos Musicais / Tags</label>
+          <div class="ann-styles-chips" id="annStylesContainer_edit">
+            <!-- Chips rendered dynamically -->
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input type="text" id="annCustomStyleInput_edit" class="form-input" placeholder="Outro estilo (ex: Blues Rock)..." style="flex: 1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomAnnStyle('edit');}">
+            <button type="button" class="btn btn-sm btn-outline" onclick="addCustomAnnStyle('edit')">Adicionar</button>
+          </div>
+          <input type="hidden" id="editAnnStyles" value="">
+        </div>
+        <div class="form-group">
+          <label>Descrição Detalhada *</label>
+          <textarea id="editAnnDescription" class="form-input" rows="4" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
+        </div>
         <div class="form-group">
           <label>Foto do Anúncio / Projeto (Opcional)</label>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
@@ -6649,18 +6781,43 @@
           <div id="editAnnPhotoPreviewContainer" style="display: none; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 10px;">
             <img id="editAnnPhotoPreviewImg" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
             <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;">Foto selecionada</span>
+            <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 10px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;" onclick="reopenAnnCropper('edit')">
+              <ion-icon name="crop-outline"></ion-icon> Recortar
+            </button>
             <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('edit')">Remover</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label>Descrição Detalhada *</label>
-          <textarea id="editAnnDescription" class="form-input" rows="4" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('editAnnouncementModal')">Cancelar</button>
           <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ANNOUNCEMENT IMAGE CROPPER MODAL -->
+  <div class="modal-overlay" id="annCropModal" style="z-index: 99999;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="crop-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Recortar Foto do Anúncio</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('annCropModal')">&times;</button>
+      </div>
+      <div style="background: #0b0f17; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; height: 220px; border: 1px solid rgba(255,255,255,0.1);">
+        <canvas id="annCropCanvas" width="300" height="190" style="border-radius: 10px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.68); border: 2px solid var(--cyan); cursor: grab;"></canvas>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 14px;">
+        <ion-icon name="remove-circle-outline" style="color: var(--text-dim); font-size: 1.3rem; cursor: pointer;" onclick="adjustAnnCropZoom(-0.1)"></ion-icon>
+        <input type="range" id="annCropZoomSlider" min="1" max="3" step="0.05" value="1" style="flex: 1;" oninput="onAnnCropZoomChanged(this.value)">
+        <ion-icon name="add-circle-outline" style="color: var(--text-dim); font-size: 1.3rem; cursor: pointer;" onclick="adjustAnnCropZoom(0.1)"></ion-icon>
+      </div>
+      <div style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-top: 6px;">Arraste para posicionar e use o slider para ajustar o zoom.</div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('annCropModal')">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="applyAnnCroppedImage()">Aplicar Recorte</button>
+      </div>
     </div>
   </div>
 
@@ -16794,16 +16951,33 @@
             });
             const locStr = dedupLocs.join(' ');
 
-            // Pills de estilos / cover / autoral
+            // Pills de estilos / cover / autoral / nivel de interesse
             const stylePills = [];
-            const combinedText = `${ann.title} ${ann.description || ''}`.toLowerCase();
-            if (combinedText.includes('cover')) stylePills.push({ label: 'Cover', colorClass: 'badge-cyan' });
-            if (combinedText.includes('autoral')) stylePills.push({ label: 'Autoral', colorClass: 'badge-emerald' });
-            ['rock', 'pop', 'metal', 'jazz', 'blues', 'sertanejo', 'mpb', 'indie', 'punk', 'reggae', 'funk', 'pagode', 'samba', 'gospel'].forEach(g => {
-              if (combinedText.includes(g) && !stylePills.some(p => p.label.toLowerCase() === g)) {
-                stylePills.push({ label: g.charAt(0).toUpperCase() + g.slice(1), colorClass: 'badge-violet' });
-              }
-            });
+            if (ann.projectType) {
+              stylePills.push({ label: ann.projectType, colorClass: 'badge-cyan' });
+            }
+            if (ann.interestLevel) {
+              const isPro = ann.interestLevel.toLowerCase().includes('pro');
+              stylePills.push({ label: ann.interestLevel, colorClass: isPro ? 'badge-violet' : 'badge-emerald' });
+            }
+            if (ann.styles) {
+              ann.styles.split(/[,/•;]+/).map(s => s.trim()).filter(Boolean).forEach(s => {
+                if (!stylePills.some(p => p.label.toLowerCase() === s.toLowerCase())) {
+                  stylePills.push({ label: s, colorClass: 'badge-violet' });
+                }
+              });
+            }
+            // Fallback from description / title if not explicitly set
+            if (stylePills.length === 0) {
+              const combinedText = `${ann.title} ${ann.description || ''}`.toLowerCase();
+              if (combinedText.includes('cover')) stylePills.push({ label: 'Cover', colorClass: 'badge-cyan' });
+              if (combinedText.includes('autoral')) stylePills.push({ label: 'Autoral', colorClass: 'badge-emerald' });
+              ['rock', 'pop', 'metal', 'jazz', 'blues', 'sertanejo', 'mpb', 'indie', 'punk', 'reggae', 'funk', 'pagode', 'samba', 'gospel'].forEach(g => {
+                if (combinedText.includes(g) && !stylePills.some(p => p.label.toLowerCase() === g)) {
+                  stylePills.push({ label: g.charAt(0).toUpperCase() + g.slice(1), colorClass: 'badge-violet' });
+                }
+              });
+            }
             if (stylePills.length === 0) {
               stylePills.push({ label: 'Banda & Projeto', colorClass: 'badge-cyan' });
             }
@@ -16845,7 +17019,7 @@
                   <div class="announcement-card-content">
                     <!-- Line 1: Pilulas de cover autoral estilos etc... -->
                     <div class="announcement-card-tags-row">
-                      ${stylePills.slice(0, 4).map(p => `
+                      ${stylePills.slice(0, 5).map(p => `
                         <span class="badge ${p.colorClass}" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700; border-radius: 9999px;">${escapeHtml(p.label)}</span>
                       `).join('')}
                     </div>
@@ -16866,24 +17040,21 @@
                     ` : ''}
                   </div>
 
-                  <!-- Right Side: Creator Actions OR Green Interest Button -->
+                  <!-- Right Side: Discreet Creator Actions OR Green Interest Button -->
                   ${isOwner ? `
                     <div class="announcement-creator-toolbar">
-                      <button type="button" class="ann-btn ann-btn-candidates" onclick="openAnnouncementCandidatesModal(${ann.id}, '${safeTitle}')" title="Ver músicos interessados">
-                        <ion-icon name="people"></ion-icon>
-                        <span>${interestedCount} Interessado${interestedCount === 1 ? '' : 's'}</span>
+                      <button type="button" class="ann-icon-btn ann-icon-candidates" onclick="openAnnouncementCandidatesModal(${ann.id}, '${safeTitle}')" title="${interestedCount} Interessado${interestedCount === 1 ? '' : 's'} neste anúncio">
+                        <ion-icon name="person"></ion-icon>
+                        <span class="ann-icon-badge">${interestedCount}</span>
                       </button>
-                      <button type="button" class="ann-btn ann-btn-scanner" onclick="openIdealMusiciansScanner(${ann.id})" title="Escanear músicos ideais na rede">
-                        <ion-icon name="sparkles"></ion-icon>
-                        <span>Escanear Músicos</span>
+                      <button type="button" class="ann-icon-btn ann-icon-scanner" onclick="openIdealMusiciansScanner(${ann.id})" title="Escanear Músicos Ideais">
+                        <ion-icon name="search-outline"></ion-icon>
                       </button>
-                      <button type="button" class="ann-btn ann-btn-edit" onclick="openEditAnnouncementModal(${ann.id})" title="Editar Anúncio">
+                      <button type="button" class="ann-icon-btn ann-icon-edit" onclick="openEditAnnouncementModal(${ann.id})" title="Editar Anúncio">
                         <ion-icon name="create-outline"></ion-icon>
-                        <span>Editar</span>
                       </button>
-                      <button type="button" class="ann-btn ann-btn-delete" onclick="handleDeleteAnnouncement(${ann.id}, '${safeTitle}')" title="Excluir Anúncio">
+                      <button type="button" class="ann-icon-btn ann-icon-delete" onclick="handleDeleteAnnouncement(${ann.id}, '${safeTitle}')" title="Excluir Anúncio">
                         <ion-icon name="trash-outline"></ion-icon>
-                        <span>Excluir</span>
                       </button>
                     </div>
                   ` : `
@@ -17321,12 +17492,217 @@
       }
     }
 
+    // ==========================================================
+    // ANNOUNCEMENT FORM: STYLES, PROJECT TYPE, INTEREST LEVEL
+    // ==========================================================
+    const AVAILABLE_ANN_STYLES = [
+      'Rock', 'Pop', 'Indie', 'Metal', 'Hard Rock', 'Alternativo', 
+      'Blues', 'Jazz', 'Sertanejo', 'MPB', 'Punk', 'Reggae', 
+      'Funk', 'Pagode', 'Samba', 'Gospel', 'Folk', 'Eletrônico'
+    ];
+
+    function renderAnnStylesChips(mode, selectedList = []) {
+      const container = document.getElementById(`annStylesContainer_${mode}`);
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnStyles' : 'annStyles');
+      if (!container) return;
+
+      const currentStyles = new Set(selectedList.map(s => s.trim()).filter(Boolean));
+      const allStyles = Array.from(new Set([...AVAILABLE_ANN_STYLES, ...currentStyles]));
+
+      container.innerHTML = allStyles.map(st => {
+        const isAct = currentStyles.has(st);
+        return `<span class="ann-style-chip ${isAct ? 'active' : ''}" onclick="toggleAnnStyleChip('${escapeHtml(st)}', '${mode}')">${escapeHtml(st)}</span>`;
+      }).join('');
+
+      if (hiddenInput) {
+        hiddenInput.value = Array.from(currentStyles).join(', ');
+      }
+    }
+
+    function toggleAnnStyleChip(styleName, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnStyles' : 'annStyles');
+      const current = (hiddenInput?.value || '').split(/[,/•;]+/).map(s => s.trim()).filter(Boolean);
+      const set = new Set(current);
+      if (set.has(styleName)) {
+        set.delete(styleName);
+      } else {
+        set.add(styleName);
+      }
+      renderAnnStylesChips(mode, Array.from(set));
+    }
+
+    function addCustomAnnStyle(mode) {
+      const input = document.getElementById(mode === 'edit' ? 'editAnnCustomStyleInput_edit' : 'annCustomStyleInput_create');
+      const val = input?.value.trim();
+      if (!val) return;
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnStyles' : 'annStyles');
+      const current = (hiddenInput?.value || '').split(/[,/•;]+/).map(s => s.trim()).filter(Boolean);
+      const set = new Set(current);
+      set.add(val);
+      renderAnnStylesChips(mode, Array.from(set));
+      if (input) input.value = '';
+    }
+
+    function setAnnProjectType(val, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnProjectType' : 'annProjectType');
+      if (hiddenInput) hiddenInput.value = val;
+      const group = document.getElementById(`annProjectTypeGroup_${mode}`);
+      if (group) {
+        group.querySelectorAll('.ann-segment-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-val') === val);
+        });
+      }
+    }
+
+    function setAnnInterestLevel(val, mode) {
+      const hiddenInput = document.getElementById(mode === 'edit' ? 'editAnnInterestLevel' : 'annInterestLevel');
+      if (hiddenInput) hiddenInput.value = val;
+      const group = document.getElementById(`annInterestLevelGroup_${mode}`);
+      if (group) {
+        group.querySelectorAll('.ann-segment-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-val') === val);
+        });
+      }
+    }
+
+    // ==========================================================
+    // ANNOUNCEMENT IMAGE CROPPER
+    // ==========================================================
+    let annCropperImage = new Image();
+    let annCropZoom = 1;
+    let annCropPanX = 0;
+    let annCropPanY = 0;
+    let isDraggingAnnCrop = false;
+    let annDragStartX = 0;
+    let annDragStartY = 0;
+    let currentAnnCropMode = 'create';
+
+    function openAnnImageCropper(imageSrc, mode = 'create') {
+      currentAnnCropMode = mode;
+      annCropperImage = new Image();
+      annCropperImage.onload = function() {
+        annCropZoom = 1;
+        annCropPanX = 0;
+        annCropPanY = 0;
+        const slider = document.getElementById('annCropZoomSlider');
+        if (slider) slider.value = 1;
+        drawAnnCropperCanvas();
+        setupAnnCropperEvents();
+        openModal('annCropModal');
+      };
+      annCropperImage.src = imageSrc;
+    }
+
+    function setupAnnCropperEvents() {
+      const canvas = document.getElementById('annCropCanvas');
+      if (!canvas || canvas.dataset.hasEvents) return;
+      canvas.dataset.hasEvents = 'true';
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDraggingAnnCrop = true;
+        annDragStartX = e.clientX - annCropPanX;
+        annDragStartY = e.clientY - annCropPanY;
+        canvas.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingAnnCrop) return;
+        annCropPanX = e.clientX - annDragStartX;
+        annCropPanY = e.clientY - annDragStartY;
+        drawAnnCropperCanvas();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDraggingAnnCrop) {
+          isDraggingAnnCrop = false;
+          if (canvas) canvas.style.cursor = 'grab';
+        }
+      });
+
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDraggingAnnCrop = true;
+          annDragStartX = e.touches[0].clientX - annCropPanX;
+          annDragStartY = e.touches[0].clientY - annCropPanY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isDraggingAnnCrop || e.touches.length !== 1) return;
+        annCropPanX = e.touches[0].clientX - annDragStartX;
+        annCropPanY = e.touches[0].clientY - annDragStartY;
+        drawAnnCropperCanvas();
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => {
+        isDraggingAnnCrop = false;
+      });
+    }
+
+    function drawAnnCropperCanvas() {
+      const canvas = document.getElementById('annCropCanvas');
+      if (!canvas || !annCropperImage.src) return;
+      const ctx = canvas.getContext('2d');
+      const cw = canvas.width;
+      const ch = canvas.height;
+      ctx.clearRect(0, 0, cw, ch);
+
+      const scale = Math.max(cw / annCropperImage.width, ch / annCropperImage.height) * annCropZoom;
+      const w = annCropperImage.width * scale;
+      const h = annCropperImage.height * scale;
+      const x = (cw - w) / 2 + annCropPanX;
+      const y = (ch - h) / 2 + annCropPanY;
+
+      ctx.drawImage(annCropperImage, x, y, w, h);
+    }
+
+    function adjustAnnCropZoom(delta) {
+      const slider = document.getElementById('annCropZoomSlider');
+      if (!slider) return;
+      const next = Math.max(1, Math.min(3, parseFloat(slider.value) + delta));
+      slider.value = next;
+      onAnnCropZoomChanged(next);
+    }
+
+    function onAnnCropZoomChanged(val) {
+      annCropZoom = parseFloat(val);
+      drawAnnCropperCanvas();
+    }
+
+    function applyAnnCroppedImage() {
+      const canvas = document.getElementById('annCropCanvas');
+      if (!canvas) return;
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.88);
+      const prefix = currentAnnCropMode === 'edit' ? 'editAnn' : 'ann';
+      const urlInput = document.getElementById(`${prefix}ImageUrl`);
+      if (urlInput) urlInput.value = croppedBase64;
+      updateAnnPhotoPreview(currentAnnCropMode);
+      closeModal('annCropModal');
+      showToast('Recorte da foto aplicado!', 'success');
+    }
+
+    function reopenAnnCropper(mode) {
+      const prefix = mode === 'edit' ? 'editAnn' : 'ann';
+      const urlInput = document.getElementById(`${prefix}ImageUrl`);
+      const val = urlInput?.value.trim();
+      if (val) {
+        openAnnImageCropper(val, mode);
+      } else {
+        showToast('Nenhuma imagem carregada para recortar.', 'warning');
+      }
+    }
+
     function openCreateAnnouncementModal() {
       document.getElementById('annTitle').value = '';
       document.getElementById('annInstrument').value = '';
       document.getElementById('annCity').value = currentUser?.city || '';
       document.getElementById('annState').value = currentUser?.state || '';
       document.getElementById('annDescription').value = '';
+      setAnnProjectType('Cover', 'create');
+      setAnnInterestLevel('Casual', 'create');
+      renderAnnStylesChips('create', []);
+      const customInput = document.getElementById('annCustomStyleInput_create');
+      if (customInput) customInput.value = '';
       clearAnnPhoto('create');
       openModal('createAnnouncementModal');
     }
@@ -17339,7 +17715,10 @@
         city: document.getElementById('annCity').value.trim(),
         state: document.getElementById('annState').value.trim(),
         description: document.getElementById('annDescription').value.trim(),
-        imageUrl: document.getElementById('annImageUrl').value.trim() || null
+        imageUrl: document.getElementById('annImageUrl').value.trim() || null,
+        projectType: document.getElementById('annProjectType')?.value || 'Cover',
+        interestLevel: document.getElementById('annInterestLevel')?.value || 'Casual',
+        styles: document.getElementById('annStyles')?.value || ''
       };
 
       try {
@@ -17389,6 +17768,14 @@
       document.getElementById('editAnnState').value = ann.state || '';
       document.getElementById('editAnnDescription').value = ann.description || '';
       document.getElementById('editAnnImageUrl').value = ann.imageUrl || '';
+      
+      setAnnProjectType(ann.projectType || 'Cover', 'edit');
+      setAnnInterestLevel(ann.interestLevel || 'Casual', 'edit');
+      const selectedStyles = (ann.styles || '').split(/[,/•;]+/).map(s => s.trim()).filter(Boolean);
+      renderAnnStylesChips('edit', selectedStyles);
+      const customInput = document.getElementById('editAnnCustomStyleInput_edit');
+      if (customInput) customInput.value = '';
+
       updateAnnPhotoPreview('edit');
       openModal('editAnnouncementModal');
     }
@@ -17402,7 +17789,10 @@
         city: document.getElementById('editAnnCity').value.trim(),
         state: document.getElementById('editAnnState').value.trim(),
         imageUrl: document.getElementById('editAnnImageUrl').value.trim() || null,
-        description: document.getElementById('editAnnDescription').value.trim()
+        description: document.getElementById('editAnnDescription').value.trim(),
+        projectType: document.getElementById('editAnnProjectType')?.value || 'Cover',
+        interestLevel: document.getElementById('editAnnInterestLevel')?.value || 'Casual',
+        styles: document.getElementById('editAnnStyles')?.value || ''
       };
 
       try {
@@ -17551,7 +17941,7 @@
         const targetInstTokens = neededInstrument.toLowerCase().split(/[,/•;\s]+/).filter(Boolean);
         const targetCity = (ann.city || '').toLowerCase().trim();
         const targetState = (ann.state || '').toLowerCase().trim();
-        const textCorpus = `${ann.title} ${ann.description || ''}`.toLowerCase();
+        const textCorpus = `${ann.title} ${ann.description || ''} ${ann.styles || ''}`.toLowerCase();
 
         const scored = (Array.isArray(allMusicians) ? allMusicians : [])
           .filter(u => {
@@ -17581,9 +17971,13 @@
             const uBioAndInfluences = `${u.bio || ''} ${u.influences || ''}`.toLowerCase();
             ['rock', 'pop', 'metal', 'jazz', 'blues', 'sertanejo', 'mpb', 'indie', 'punk', 'reggae', 'funk', 'pagode', 'samba', 'gospel'].forEach(genre => {
               if (textCorpus.includes(genre) && uBioAndInfluences.includes(genre)) {
-                score += 5;
+                score += 6;
               }
             });
+
+            if (ann.interestLevel && u.interestLevel && ann.interestLevel.toLowerCase() === u.interestLevel.toLowerCase()) {
+              score += 8;
+            }
 
             if (u.availability && !u.availability.toLowerCase().includes('indispon')) {
               score += 5;
@@ -17693,10 +18087,7 @@
       }
       const reader = new FileReader();
       reader.onload = function(e) {
-        const prefix = mode === 'edit' ? 'editAnn' : 'ann';
-        const urlInput = document.getElementById(`${prefix}ImageUrl`);
-        if (urlInput) urlInput.value = e.target.result;
-        updateAnnPhotoPreview(mode);
+        openAnnImageCropper(e.target.result, mode);
       };
       reader.readAsDataURL(file);
     }
