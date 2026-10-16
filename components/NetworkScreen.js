@@ -1097,11 +1097,20 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           parsedInfluences = u.influences.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
         }
 
+        const isMe = Boolean(currentUser && (u.id === currentUser.id || u.username?.toLowerCase() === currentUser.username?.toLowerCase()));
+        let resolvedName = isMe ? (currentUser.displayName || currentUser.name || u.displayName || u.username) : (u.displayName || u.name || u.fullName);
+        if (!resolvedName || resolvedName.trim() === u.username) {
+          const raw = String(u.username || 'Músico').replace(/^@+/, '');
+          resolvedName = (raw.includes('.') || raw.includes('_') || raw.includes('-'))
+            ? raw.split(/[._-]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+            : (raw.charAt(0).toUpperCase() + raw.slice(1));
+        }
+
         list.push({
           id: 'mus-' + u.id,
           cloudId: u.id,
-          isMe: false,
-          name: u.displayName || u.username || 'Músico',
+          isMe: isMe,
+          name: resolvedName,
           username: (u.username || '').replace(/^@+/, ''),
           primaryInstruments: instruments,
           primaryInstrument: instruments[0]?.name || 'Músico',
@@ -2444,14 +2453,21 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                 const rawInsts = m.primaryInstruments || (m.primaryInstrument ? [m.primaryInstrument] : []);
                 (Array.isArray(rawInsts) ? rawInsts : [rawInsts]).forEach(i => {
                   const name = typeof i === 'object' && i !== null ? (i.name || i.instrument) : String(i || '');
-                  if (name && !skillList.includes(name)) skillList.push(name);
+                  const stars = typeof i === 'object' && i !== null ? Number(i.stars || i.level || 5) : 5;
+                  if (name && !skillList.some(s => s.name === name)) {
+                    skillList.push({ name, stars });
+                  }
                 });
                 if (Array.isArray(m.influences)) {
                   m.influences.forEach(inf => {
                     const infName = typeof inf === 'string' ? inf.replace(/^#+/, '').trim() : (inf?.name || inf?.tag || '');
-                    if (infName && !skillList.includes(infName)) skillList.push(infName);
+                    if (infName && !skillList.some(s => s.name === infName)) {
+                      skillList.push({ name: infName, stars: 5 });
+                    }
                   });
                 }
+
+                const isAvail = m.availability !== 'Indisponível' && String(m.availability).toLowerCase() !== 'unavailable';
 
                 return (
                   <Pressable
@@ -2471,7 +2487,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                         }
                       ]}
                     >
-                      {/* Floating Header: Nome de exibição + badges */}
+                      {/* Floating Header: Nome de exibição (Sem badge redundante) */}
                       <View style={styles.userCardFloatingHeader}>
                         <Text style={[styles.userDisplayNameText, { color: colors.text }]} numberOfLines={1}>
                           {m.name || m.displayName || m.username || 'Músico'}
@@ -2518,18 +2534,21 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                             </Text>
                           )}
                         </View>
-                        {/* Green status circle badge at bottom-left */}
+                        {/* Status circle badge at bottom-left: Verde (Disponível) ou Vermelho (Indisponível) */}
                         <View
                           style={[
                             styles.userStatusGreenDot,
-                            { borderColor: colors.cardBackground }
+                            {
+                              backgroundColor: isAvail ? '#10b981' : '#ef4444',
+                              borderColor: colors.cardBackground
+                            }
                           ]}
                         />
                       </View>
 
                       {/* Card Details on the Right */}
                       <View style={styles.userCardContent}>
-                        {/* Line 1: username  idade */}
+                        {/* Line 1: username • idade • status icon */}
                         <View style={styles.userMetaRow}>
                           <Text style={[styles.userUsernameText, { color: colors.primary }]}>
                             @{m.username}
@@ -2539,9 +2558,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                               {m.age} {t('yearsOld') || 'anos'}
                             </Text>
                           ) : null}
-                          {(m.availability || 'Disponível') === 'Disponível' && (
-                            <Ionicons name="checkmark-circle" size={13} color="#10b981" />
-                          )}
+                          <Ionicons
+                            name={isAvail ? "checkmark-circle" : "close-circle"}
+                            size={14}
+                            color={isAvail ? "#10b981" : "#ef4444"}
+                          />
                         </View>
 
                         {/* Line 2: Cidade UF Pais */}
@@ -2554,7 +2575,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                           </View>
                         ) : null}
 
-                        {/* Line 3: Pílulas de Habilidades */}
+                        {/* Line 3: Pílulas de Habilidades com estrelas */}
                         {skillList.length > 0 && (
                           <View style={styles.userSkillsRow}>
                             {skillList.slice(0, 4).map((skill, sIdx) => (
@@ -2569,8 +2590,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                                 ]}
                               >
                                 <Text style={[styles.userSkillPillText, { color: isDark ? 'rgba(255,255,255,0.9)' : colors.text }]} numberOfLines={1}>
-                                  {skill}
+                                  {skill.name}
                                 </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 3 }}>
+                                  {[...Array(Math.min(5, Math.max(1, skill.stars || 5)))].map((_, starI) => (
+                                    <Ionicons key={starI} name="star" size={9} color="#fbbf24" style={{ marginLeft: 0.5 }} />
+                                  ))}
+                                </View>
                               </View>
                             ))}
                           </View>
@@ -3499,20 +3525,20 @@ const styles = StyleSheet.create({
 
   // User Card (Mockup Layout: horizontal retangular com avatar sobreposto)
   userCardWrapper: {
-    marginTop: 34,
+    marginTop: 40,
     marginBottom: 10,
     marginHorizontal: 16,
     position: 'relative',
   },
   userCardBody: {
     position: 'relative',
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     paddingTop: 16,
     paddingBottom: 16,
     paddingRight: 16,
-    paddingLeft: 110,
-    minHeight: 100,
+    paddingLeft: 130,
+    minHeight: 108,
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -3522,15 +3548,15 @@ const styles = StyleSheet.create({
   },
   userCardFloatingHeader: {
     position: 'absolute',
-    top: -28,
-    left: 110,
+    top: -30,
+    left: 130,
     right: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   userDisplayNameText: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
     letterSpacing: -0.3,
     flex: 1,
@@ -3538,40 +3564,39 @@ const styles = StyleSheet.create({
   },
   userAvatarFloatingCol: {
     position: 'absolute',
-    top: -26,
+    top: -28,
     left: 14,
-    width: 80,
-    height: 80,
+    width: 98,
+    height: 98,
     zIndex: 10,
   },
   userAvatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3.5,
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    borderWidth: 4,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   userAvatarImg: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
   },
   userAvatarLetter: {
-    fontSize: 30,
+    fontSize: 36,
     fontWeight: '800',
     color: '#ffffff',
   },
   userStatusGreenDot: {
     position: 'absolute',
-    bottom: 1,
-    left: 1,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#10b981',
-    borderWidth: 3,
+    bottom: 2,
+    left: 2,
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    borderWidth: 3.5,
     zIndex: 15,
   },
   userCardContent: {

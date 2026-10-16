@@ -1771,26 +1771,26 @@
     .user-cards-vertical-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
       width: 100%;
     }
     .user-card-horizontal-wrapper {
       position: relative;
-      margin-top: 34px;
-      margin-bottom: 6px;
+      margin-top: 42px;
+      margin-bottom: 10px;
       width: 100%;
     }
     .user-card-horizontal-body {
       position: relative;
       background: #18202c;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 16px 18px 16px 114px;
-      min-height: 100px;
+      border-radius: 20px;
+      padding: 18px 22px 18px 146px;
+      min-height: 110px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 5px;
+      gap: 6px;
       cursor: pointer;
       transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -1798,19 +1798,19 @@
     .user-card-horizontal-body:hover {
       border-color: var(--cyan, #06b6d4);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.15);
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.18);
     }
     .user-card-floating-header {
       position: absolute;
-      top: -28px;
-      left: 114px;
-      right: 18px;
+      top: -32px;
+      left: 146px;
+      right: 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
     .user-card-display-name {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: #ffffff;
       white-space: nowrap;
@@ -1820,23 +1820,23 @@
     }
     .user-card-floating-avatar {
       position: absolute;
-      top: -24px;
+      top: -30px;
       left: 16px;
-      width: 80px;
-      height: 80px;
+      width: 110px;
+      height: 110px;
       z-index: 5;
     }
     .user-card-avatar-circle {
-      width: 80px;
-      height: 80px;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
-      border: 3.5px solid #121822;
+      border: 4.5px solid #121822;
       overflow: hidden;
       background: linear-gradient(135deg, var(--cyan, #06b6d4), var(--violet, #8b5cf6));
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
     }
     .user-card-avatar-circle img {
       width: 100%;
@@ -1844,43 +1844,50 @@
       object-fit: cover;
     }
     .user-card-avatar-initial {
-      font-size: 2rem;
+      font-size: 2.8rem;
       font-weight: 800;
       color: #fff;
     }
     .user-card-status-dot {
       position: absolute;
-      bottom: 0px;
-      left: 2px;
-      width: 22px;
-      height: 22px;
+      bottom: 2px;
+      left: 4px;
+      width: 25px;
+      height: 25px;
       border-radius: 50%;
-      background: #10b981;
-      border: 3px solid #18202c;
+      border: 3.5px solid #18202c;
       z-index: 6;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .user-card-status-dot.available {
+      background: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    }
+    .user-card-status-dot.unavailable {
+      background: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
     }
     .user-card-meta-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .user-card-handle {
-      font-size: 0.92rem;
+      font-size: 0.94rem;
       font-weight: 700;
       color: var(--cyan-light, #67e8f9);
     }
     .user-card-age {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: var(--text-muted, #94a3b8);
     }
     .user-card-location {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.85rem;
+      gap: 5px;
+      font-size: 0.86rem;
       color: var(--text-dim, #64748b);
     }
     .user-card-skills-row {
@@ -1891,13 +1898,97 @@
       margin-top: 4px;
     }
     .user-card-skill-pill {
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.08);
       color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .user-card-skill-stars {
+      color: #fbbf24;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* SOCIAL / REDE HERO BANNER (MATCHING FIGMA PROFILE HERO) */
+    .social-hero {
+      background: #233144;
+      border-bottom: 2px solid #1a2432;
+      padding: 34px 40px 24px 40px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 0;
+      position: relative;
+    }
+    .social-hero-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 20;
+    }
+    .social-hero-avatar {
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan, #06b6d4), var(--violet, #8b5cf6));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 8px 32px rgba(6, 182, 212, 0.35);
+      border: 4px solid #233144;
+      position: relative;
+      z-index: 30;
+    }
+    .social-hero-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      line-height: 1.15;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .social-tabs-strip {
+      background: #19202f;
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-start;
+      padding-left: 40px;
+      padding-right: 40px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 10;
+      min-height: 56px;
+      gap: 6px;
+    }
+    .social-tabs-strip .profile-tab-btn {
+      padding: 14px 24px;
+      border-top: 2px solid transparent;
+    }
+    .social-tabs-strip .profile-tab-btn.active {
+      background: #161b2c;
+      border-top-color: var(--cyan, #06b6d4);
+    }
+    .social-tabs-strip .profile-tab-btn.active .tab-icon,
+    .social-tabs-strip .profile-tab-btn.active .tab-name-label {
+      color: var(--cyan, #06b6d4);
+      filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.6));
+    }
+    .social-content-container {
+      background: #161b2c;
+      padding: 30px 24px 60px 24px;
+      min-height: 500px;
     }
 
     .profile-bands-grid {
@@ -5127,54 +5218,84 @@
       </section>
 
       <!-- ============================================================== -->
-      <!-- MAIN VIEW 3: SOCIAL / REDE BANDLINK                            -->
+      <!-- MAIN VIEW 3: SOCIAL / REDE BANDLINK (HERO & PROFILE-MOLD TABS)  -->
       <!-- ============================================================== -->
-      <section class="main-view" id="view-social" style="max-width: 860px; margin: 0 auto; width: 100%; padding-bottom: 40px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
-          <div>
-            <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px;">
-              <ion-icon name="planet" style="color: var(--cyan);"></ion-icon>
-              <span>Rede Musical BandLink</span>
-              <span class="badge badge-cyan" style="font-size: 0.75rem;">Comunidade</span>
-            </h1>
-            <p style="color: var(--text-muted); font-size: 0.88rem;">Mural de vagas, busca de músicos e catálogo de bandas públicas.</p>
+      <section class="main-view" id="view-social" style="padding: 0; margin: 0; width: 100%;">
+        
+        <!-- SOCIAL HERO BANNER (MATCHING FIGMA PROFILE HERO) -->
+        <div class="social-hero">
+          <div class="social-hero-left">
+            <div class="social-hero-avatar">
+              <ion-icon name="planet" style="font-size: 3.2rem; color: #fff;"></ion-icon>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
+                <h1 class="social-hero-title">REDE MUSICAL</h1>
+                <span class="badge badge-cyan" style="font-size: 0.75rem; font-weight: 700; border-radius: 9999px;">BandLink Network</span>
+              </div>
+              <div class="profile-hero-handle-row">
+                <span class="profile-hero-handle" style="background: rgba(6, 182, 212, 0.12); color: var(--cyan-light); border: 1px solid rgba(6, 182, 212, 0.3);">
+                  <ion-icon name="earth-outline"></ion-icon>
+                  <span>Comunidade Ativa</span>
+                </span>
+                <span class="profile-hero-age-pill">
+                  <ion-icon name="radio-outline"></ion-icon>
+                  <span>Músicos & Projetos</span>
+                </span>
+              </div>
+              <div class="profile-hero-location" style="font-size: 0.95rem;">
+                <ion-icon name="location-outline" style="color: var(--cyan);"></ion-icon>
+                <span>Conecte-se com músicos, bandas e oportunidades</span>
+              </div>
+            </div>
           </div>
-          <button class="btn btn-primary" onclick="openCreateAnnouncementModal()">
-            <ion-icon name="megaphone-outline"></ion-icon>
-            <span>Criar Anúncio</span>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="openCreateAnnouncementModal()" style="border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; padding: 10px 18px; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);">
+              <ion-icon name="megaphone-outline" style="font-size: 1.15rem;"></ion-icon>
+              <span>Criar Anúncio</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TABS STRIP (MOLD OF MUSICIAN PROFILE TABS) -->
+        <div class="profile-tabs-strip social-tabs-strip">
+          <button class="profile-tab-btn active" id="socialSubMus" onclick="switchSocialSub('mus')" title="Músicos na Rede">
+            <ion-icon name="people" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Músicos</span>
+            <span class="badge" id="socialCountMus" style="background: rgba(255,255,255,0.18); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
+          </button>
+          <button class="profile-tab-btn" id="socialSubAnn" onclick="switchSocialSub('ann')" title="Anúncios & Vagas">
+            <ion-icon name="megaphone" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Anúncios</span>
+            <span class="badge" id="socialCountAnn" style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
+          </button>
+          <button class="profile-tab-btn" id="socialSubBands" onclick="switchSocialSub('bands')" title="Bandas Públicas">
+            <ion-icon name="musical-notes" class="tab-icon"></ion-icon>
+            <span class="tab-name-label">Bandas</span>
+            <span class="badge" id="socialCountBands" style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
           </button>
         </div>
 
-        <!-- BOTÕES COM ÍCONES: USUÁRIOS | ANÚNCIOS | BANDAS -->
-        <div class="social-tabs-bar" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-          <button class="btn btn-sm btn-primary active" id="socialSubMus" onclick="switchSocialSub('mus')" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-weight: 700; transition: all 0.2s ease;">
-            <ion-icon name="people" style="font-size: 1.15rem;"></ion-icon>
-            <span>Usuários</span>
-            <span class="badge" id="socialCountMus" style="background: rgba(255,255,255,0.22); color: #fff; font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;">0</span>
-          </button>
-          <button class="btn btn-sm btn-outline" id="socialSubAnn" onclick="switchSocialSub('ann')" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-weight: 700; transition: all 0.2s ease;">
-            <ion-icon name="megaphone-outline" style="font-size: 1.15rem;"></ion-icon>
-            <span>Anúncios</span>
-            <span class="badge" id="socialCountAnn" style="background: rgba(255,255,255,0.12); color: var(--text-dim); font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;">0</span>
-          </button>
-          <button class="btn btn-sm btn-outline" id="socialSubBands" onclick="switchSocialSub('bands')" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-weight: 700; transition: all 0.2s ease;">
-            <ion-icon name="musical-notes-outline" style="font-size: 1.15rem;"></ion-icon>
-            <span>Bandas</span>
-            <span class="badge" id="socialCountBands" style="background: rgba(255,255,255,0.12); color: var(--text-dim); font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;">0</span>
-          </button>
-        </div>
+        <!-- SOCIAL CONTENT CONTAINER (MATCHING #161b2c PROFILE BACKGROUND) -->
+        <div class="social-content-container">
+          <div style="max-width: 860px; margin: 0 auto; width: 100%;">
+            <!-- SEARCH BAR -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
+              <div style="position: relative; flex: 1; min-width: 240px;">
+                <ion-icon name="search-outline" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 1.15rem;"></ion-icon>
+                <input type="text" id="socialSearchInput" class="form-input" style="padding-left: 42px; border-radius: 12px;" placeholder="Buscar por nome, instrumento, estilo ou cidade..." oninput="triggerSocialSearch()">
+              </div>
+              <button class="btn btn-outline" onclick="triggerSocialSearch()" style="border-radius: 12px;">
+                <ion-icon name="search-outline"></ion-icon>
+                <span>Buscar</span>
+              </button>
+            </div>
 
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-          <input type="text" id="socialSearchInput" class="form-input" style="flex: 1; min-width: 220px;" placeholder="Buscar por termo, instrumento, estilo ou cidade..." oninput="triggerSocialSearch()">
-          <button class="btn btn-outline" onclick="triggerSocialSearch()">
-            <ion-icon name="search-outline"></ion-icon>
-            <span>Buscar</span>
-          </button>
+            <div id="socialViewMus" class="user-cards-vertical-list" style="display: flex; flex-direction: column; gap: 18px;"></div>
+            <div id="socialViewAnn" class="grid-cards" style="display: none;"></div>
+            <div id="socialViewBands" class="grid-cards" style="display: none;"></div>
+          </div>
         </div>
-
-        <div id="socialViewMus" class="user-cards-vertical-list" style="display: flex; flex-direction: column; gap: 16px;"></div>
-        <div id="socialViewAnn" class="grid-cards" style="display: none;"></div>
-        <div id="socialViewBands" class="grid-cards" style="display: none;"></div>
       </section>
 
     </main>
@@ -15494,10 +15615,7 @@
       currentSocialSub = sub;
       ['socialSubMus', 'socialSubAnn', 'socialSubBands'].forEach(id => {
         const b = document.getElementById(id);
-        if (b) {
-          b.classList.remove('active', 'btn-primary');
-          b.classList.add('btn-outline');
-        }
+        if (b) b.classList.remove('active');
       });
 
       ['socialViewMus', 'socialViewAnn', 'socialViewBands'].forEach(id => {
@@ -15507,17 +15625,17 @@
 
       if (sub === 'mus') {
         const b = document.getElementById('socialSubMus');
-        if (b) { b.classList.add('active', 'btn-primary'); b.classList.remove('btn-outline'); }
+        if (b) b.classList.add('active');
         const v = document.getElementById('socialViewMus');
         if (v) v.style.display = 'flex';
       } else if (sub === 'ann') {
         const b = document.getElementById('socialSubAnn');
-        if (b) { b.classList.add('active', 'btn-primary'); b.classList.remove('btn-outline'); }
+        if (b) b.classList.add('active');
         const v = document.getElementById('socialViewAnn');
         if (v) v.style.display = 'grid';
       } else if (sub === 'bands') {
         const b = document.getElementById('socialSubBands');
-        if (b) { b.classList.add('active', 'btn-primary'); b.classList.remove('btn-outline'); }
+        if (b) b.classList.add('active');
         const v = document.getElementById('socialViewBands');
         if (v) v.style.display = 'grid';
       }
@@ -15602,25 +15720,69 @@
       }
     }
 
-    function extractUserSkills(u) {
-      let list = [];
-      if (u.instruments) {
-        try {
-          const parsed = typeof u.instruments === 'string' ? JSON.parse(u.instruments) : u.instruments;
-          if (Array.isArray(parsed)) {
-            list = parsed.map(x => typeof x === 'string' ? x : (x.name || x.instrument || '')).filter(Boolean);
-          }
-        } catch {
-          if (typeof u.instruments === 'string') {
-            list = u.instruments.split(/[,•;]+/).map(s => s.trim()).filter(Boolean);
-          }
+    function resolveDisplayName(u) {
+      const isMe = currentUser && (
+        (u.id && currentUser.id && String(u.id) === String(currentUser.id)) ||
+        (u.username && currentUser.username && String(u.username).toLowerCase() === String(currentUser.username).toLowerCase())
+      );
+      if (isMe) {
+        const saved = (typeof localStorage !== 'undefined') ? localStorage.getItem(DISPLAY_NAME_KEY) : null;
+        if (currentUser.displayName && currentUser.displayName.trim() && currentUser.displayName !== currentUser.username) {
+          return currentUser.displayName.trim();
+        }
+        if (saved && saved.trim() && saved !== currentUser.username) {
+          return saved.trim();
         }
       }
-      if (list.length === 0 && u.skillsJson) {
+
+      if (u.displayName && u.displayName.trim() && u.displayName !== u.username) {
+        return u.displayName.trim();
+      }
+      if (u.name && u.name.trim() && u.name !== u.username) {
+        return u.name.trim();
+      }
+      if (u.fullName && u.fullName.trim() && u.fullName !== u.username) {
+        return u.fullName.trim();
+      }
+
+      if (typeof localStorage !== 'undefined') {
         try {
-          const parsed = JSON.parse(u.skillsJson);
-          if (Array.isArray(parsed)) list = parsed.map(x => typeof x === 'string' ? x : (x.name || '')).filter(Boolean);
+          const cached = JSON.parse(localStorage.getItem('bandlink_cached_display_names') || '{}');
+          const cleanUser = String(u.username || '').toLowerCase().replace('@', '');
+          if (cached[cleanUser] && cached[cleanUser].trim() && cached[cleanUser] !== u.username) {
+            return cached[cleanUser].trim();
+          }
         } catch {}
+      }
+
+      const raw = String(u.username || 'Músico').replace(/^@+/, '');
+      if (raw.includes('.') || raw.includes('_') || raw.includes('-')) {
+        return raw.split(/[._-]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      }
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    }
+
+    function extractUserSkills(u) {
+      let list = [];
+      const raw = u.instruments || u.skillsJson;
+      if (raw) {
+        try {
+          const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          if (Array.isArray(parsed)) {
+            list = parsed.map(x => {
+              if (typeof x === 'string') {
+                return { name: x.trim(), stars: 5 };
+              }
+              const name = x.name || x.instrument || '';
+              const stars = Number(x.stars || x.level || 5);
+              return { name, stars };
+            }).filter(x => x.name);
+          }
+        } catch {
+          if (typeof raw === 'string') {
+            list = raw.split(/[,•;]+/).map(s => ({ name: s.trim(), stars: 5 })).filter(x => x.name);
+          }
+        }
       }
       return list;
     }
@@ -15646,7 +15808,7 @@
           }
 
           container.innerHTML = users.map(u => {
-            const displayName = u.displayName || u.username || 'Músico';
+            const displayName = resolveDisplayName(u);
             const username = (u.username || '').replace(/^@+/, '');
             const age = u.age || calculateUserAge(u.birthDate);
             const locationStr = [u.city, u.state, u.country].filter(Boolean).join(' • ') || (u.city || u.state || 'Brasil');
@@ -15656,17 +15818,29 @@
               ? `<img src="${u.pictureUrl}" alt="${displayName}" onerror="this.parentElement.innerHTML='<span class=\\'user-card-avatar-initial\\'>${initial}</span>'"/>`
               : `<span class="user-card-avatar-initial">${initial}</span>`;
 
+            const isAvailable = (u.availability !== 'Indisponível' && String(u.availability || '').toLowerCase() !== 'unavailable');
+            const statusClass = isAvailable ? 'available' : 'unavailable';
+            const statusTitle = isAvailable ? 'Disponível' : 'Indisponível';
+
             const skillsHtml = skills.length > 0
-              ? `<div class="user-card-skills-row">${skills.slice(0, 4).map(s => `<span class="user-card-skill-pill">${s}</span>`).join('')}</div>`
+              ? `<div class="user-card-skills-row">${skills.slice(0, 4).map(s => {
+                  const starCount = Math.min(5, Math.max(1, s.stars || 5));
+                  const starsString = '★'.repeat(starCount);
+                  return `
+                    <span class="user-card-skill-pill">
+                      <span>${s.name}</span>
+                      <span class="user-card-skill-stars" title="${starCount} estrelas">${starsString}</span>
+                    </span>
+                  `;
+                }).join('')}</div>`
               : '';
 
             return `
               <div class="user-card-horizontal-wrapper">
                 <div class="user-card-horizontal-body" onclick="openPublicMusicianProfile('${username}')" title="Ver perfil de @${username}">
-                  <!-- Floating Header: Nome de exibição + badges -->
+                  <!-- Floating Header: Nome de exibição (Sem badge redundante) -->
                   <div class="user-card-floating-header">
                     <span class="user-card-display-name">${displayName}</span>
-                    <span class="badge badge-cyan" style="font-size: 0.72rem; padding: 2px 8px;">${u.availability || 'Disponível'}</span>
                   </div>
 
                   <!-- Floating Avatar Protruding Top/Left -->
@@ -15674,14 +15848,14 @@
                     <div class="user-card-avatar-circle">
                       ${avatarHtml}
                     </div>
-                    <div class="user-card-status-dot" title="Online / Disponível"></div>
+                    <div class="user-card-status-dot ${statusClass}" title="${statusTitle}"></div>
                   </div>
 
-                  <!-- Details Row 1: @username • Idade • Ícone -->
+                  <!-- Details Row 1: @username • Idade • Ícone de Status -->
                   <div class="user-card-meta-row">
                     <span class="user-card-handle">@${username}</span>
                     ${age ? `<span class="user-card-age">${age} anos</span>` : ''}
-                    <ion-icon name="checkmark-circle" style="color: #10b981; font-size: 14px;"></ion-icon>
+                    ${isAvailable ? `<ion-icon name="checkmark-circle" style="color: #10b981; font-size: 15px;" title="Disponível"></ion-icon>` : `<ion-icon name="close-circle" style="color: #ef4444; font-size: 15px;" title="Indisponível"></ion-icon>`}
                   </div>
 
                   <!-- Details Row 2: Location -->
@@ -15692,7 +15866,7 @@
                     </div>
                   ` : ''}
 
-                  <!-- Details Row 3: Skills -->
+                  <!-- Details Row 3: Skills com estrelas -->
                   ${skillsHtml}
                 </div>
               </div>
