@@ -76,6 +76,23 @@ const getBandInitials = (name) => {
 const DEFAULT_PROJECTS = [];
 const NETWORK_MOCK_BANDS = [];
 
+const calculateAge = (birthDateOrAge) => {
+  if (!birthDateOrAge) return null;
+  if (typeof birthDateOrAge === 'number') return birthDateOrAge;
+  const num = parseInt(birthDateOrAge, 10);
+  if (!isNaN(num) && String(num) === String(birthDateOrAge).trim() && num > 0 && num < 120) {
+    return num;
+  }
+  const date = new Date(birthDateOrAge);
+  if (isNaN(date.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const m = today.getMonth() - date.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+    age--;
+  }
+  return age > 0 && age < 120 ? age : null;
+};
 
 export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const { colors } = useTheme();
@@ -161,8 +178,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfileImage, setUserProfileImage] = useState(null);
 
-  // Sub-tabs: 'projects' | 'musicians'
-  const [subTab, setSubTab] = useState('projects');
+  // Sub-tabs: 'musicians' | 'projects' | 'bands'
+  const [subTab, setSubTab] = useState('musicians');
   const [searchQuery, setSearchQuery] = useState('');
 
   // City filter state
@@ -1024,83 +1041,95 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         availability: currentUser.availability || 'Disponível',
         influences: userInfluences,
         bio: currentUser.bio || 'Músico cadastrado na plataforma.',
-        imageUri: userProfileImage || currentUser.imageUri || null
+        imageUri: userProfileImage || currentUser.imageUri || null,
+        age: currentUser.age || calculateAge(currentUser.birthDate)
       };
 
       list.push(myProfileMusician);
     }
 
-    (cloudMusicians || []).forEach(u => {
-      if (currentUser && (u.id === currentUser.id || u.username?.toLowerCase() === currentUser.username?.toLowerCase())) {
-        return;
-      }
-      let instruments = [];
-      if (typeof u.instruments === 'string' && u.instruments.trim()) {
-        try {
-          const parsed = JSON.parse(u.instruments);
-          if (Array.isArray(parsed)) {
-            instruments = parsed.map(item => {
-              if (typeof item === 'object' && item !== null) {
-                return { name: item.name || item.instrument || 'Instrumento', stars: item.stars || 5 };
-              }
-              return { name: String(item), stars: 5 };
-            });
-          } else {
-            instruments = [{ name: String(parsed), stars: 5 }];
-          }
-        } catch {
-          instruments = [{ name: u.instruments, stars: 5 }];
+    if (cloudMusicians && cloudMusicians.length > 0) {
+      cloudMusicians.forEach(u => {
+        if (currentUser && (u.id === currentUser.id || u.username?.toLowerCase() === currentUser.username?.toLowerCase())) {
+          return;
         }
-      } else if (Array.isArray(u.instruments)) {
-        instruments = u.instruments.map(item => {
-          if (typeof item === 'object' && item !== null) {
-            return { name: item.name || item.instrument || 'Instrumento', stars: item.stars || 5 };
+        let instruments = [];
+        if (typeof u.instruments === 'string' && u.instruments.trim()) {
+          try {
+            const parsed = JSON.parse(u.instruments);
+            if (Array.isArray(parsed)) {
+              instruments = parsed.map(item => {
+                if (typeof item === 'object' && item !== null) {
+                  return { name: item.name || item.instrument || 'Instrumento', stars: item.stars || 5 };
+                }
+                return { name: String(item), stars: 5 };
+              });
+            } else {
+              instruments = [{ name: String(parsed), stars: 5 }];
+            }
+          } catch {
+            instruments = [{ name: u.instruments, stars: 5 }];
           }
-          return { name: String(item), stars: 5 };
+        } else if (Array.isArray(u.instruments)) {
+          instruments = u.instruments.map(item => {
+            if (typeof item === 'object' && item !== null) {
+              return { name: item.name || item.instrument || 'Instrumento', stars: item.stars || 5 };
+            }
+            return { name: String(item), stars: 5 };
+          });
+        } else {
+          instruments = [{ name: 'Músico', stars: 5 }];
+        }
+
+        let parsedInfluences = [];
+        if (typeof u.influences === 'string' && u.influences.trim()) {
+          try {
+            const jsonInf = JSON.parse(u.influences);
+            if (Array.isArray(jsonInf)) {
+              parsedInfluences = jsonInf.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
+            } else {
+              parsedInfluences = [String(jsonInf)];
+            }
+          } catch {
+            parsedInfluences = u.influences.split(',').map(s => s.trim()).filter(Boolean);
+          }
+        } else if (Array.isArray(u.influences)) {
+          parsedInfluences = u.influences.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
+        }
+
+        list.push({
+          id: 'mus-' + u.id,
+          cloudId: u.id,
+          isMe: false,
+          name: u.displayName || u.username || 'Músico',
+          username: (u.username || '').replace(/^@+/, ''),
+          primaryInstruments: instruments,
+          primaryInstrument: instruments[0]?.name || 'Músico',
+          stars: 5,
+          city: u.city || '',
+          state: u.state || '',
+          country: u.country || 'Brasil',
+          availability: u.availability || 'Disponível',
+          influences: parsedInfluences,
+          bio: u.bio || 'Músico na rede BandLink.',
+          imageUri: u.pictureUrl || u.imageUri || null,
+          instagram: u.instagram,
+          youtube: u.youtube,
+          spotify: u.spotify,
+          tiktok: u.tiktok,
+          age: u.age || calculateAge(u.birthDate)
         });
-      } else {
-        instruments = [{ name: 'Músico', stars: 5 }];
-      }
-
-      let parsedInfluences = [];
-      if (typeof u.influences === 'string' && u.influences.trim()) {
-        try {
-          const jsonInf = JSON.parse(u.influences);
-          if (Array.isArray(jsonInf)) {
-            parsedInfluences = jsonInf.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
-          } else {
-            parsedInfluences = [String(jsonInf)];
-          }
-        } catch {
-          parsedInfluences = u.influences.split(',').map(s => s.trim()).filter(Boolean);
-        }
-      } else if (Array.isArray(u.influences)) {
-        parsedInfluences = u.influences.map(item => typeof item === 'object' && item !== null ? (item.name || item.tag || '') : String(item)).filter(Boolean);
-      }
-
-      list.push({
-        id: 'mus-' + u.id,
-        cloudId: u.id,
-        isMe: false,
-        name: u.displayName || u.username || 'Músico',
-        username: (u.username || '').replace(/^@+/, ''),
-        primaryInstruments: instruments,
-        primaryInstrument: instruments[0]?.name || 'Músico',
-        stars: 5,
-        city: u.city || '',
-        state: u.state || '',
-        country: u.country || 'Brasil',
-        availability: u.availability || 'Disponível',
-        influences: parsedInfluences,
-        bio: u.bio || 'Músico na rede BandLink.',
-        imageUri: u.pictureUrl || u.imageUri || null,
-        instagram: u.instagram,
-        youtube: u.youtube,
-        spotify: u.spotify,
-        tiktok: u.tiktok,
-        age: u.age
       });
-    });
+    } else {
+      // Fallback para músicos de exemplo quando a nuvem ainda não tiver usuários carregados
+      const sampleMusicians = musiciansService.getMusicians() || [];
+      sampleMusicians.forEach((s, idx) => {
+        list.push({
+          ...s,
+          age: s.age || calculateAge(s.birthDate) || (23 + ((idx * 4) % 13))
+        });
+      });
+    }
 
     return list;
   }, [currentUser, userProfileImage, cloudMusicians]);
@@ -1562,204 +1591,290 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── CABEÇALHO COM TÍTULO "EXPLORAR" (SEM SUBTEXTO) E AVATAR ── */}
       <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
-        <View style={styles.headerTopRow}>
-          {/* Logo e Título "Explorar" */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <View style={[styles.networkIconCircle, { backgroundColor: colors.primary + '18' }]}>
-              <Ionicons name="globe-outline" size={22} color={colors.primary} />
+        <View style={styles.webContainer}>
+          <View style={styles.headerTopRow}>
+            {/* Logo e Título "Explorar" */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={[styles.networkIconCircle, { backgroundColor: colors.primary + '18' }]}>
+                <Ionicons name="globe-outline" size={22} color={colors.primary} />
+              </View>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>{t('network') || 'Rede'}</Text>
             </View>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('network') || 'Rede'}</Text>
+
+            {/* Ações da Direita: Botão Anunciar + Avatar para Perfil */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.newProjectHeaderBtn,
+                  { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
+                ]}
+                onPress={openNewProjectModal}
+              >
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={styles.newProjectBtnText}>{t('announce') || 'Anunciar'}</Text>
+              </Pressable>
+
+              {/* AVATAR DO USUÁRIO */}
+              <Pressable
+                onPress={onOpenProfile}
+                style={({ pressed }) => [
+                  styles.userAvatarBtn,
+                  { borderColor: colors.primary, opacity: pressed ? 0.8 : 1 }
+                ]}
+                accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
+              >
+                {userProfileImage ? (
+                  <Image source={{ uri: userProfileImage }} style={styles.userAvatarImg} />
+                ) : (
+                  <View style={[styles.userAvatarPlaceholder, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.userAvatarInitial}>
+                      {userDisplayName.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <View style={[styles.statusDot, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
+              </Pressable>
+            </View>
           </View>
 
-          {/* Ações da Direita: Botão Anunciar + Avatar para Perfil */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.newProjectHeaderBtn,
-                { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
-              ]}
-              onPress={openNewProjectModal}
-            >
-              <Ionicons name="add" size={18} color="#fff" />
-              <Text style={styles.newProjectBtnText}>{t('announce') || 'Anunciar'}</Text>
-            </Pressable>
-
-            {/* AVATAR DO USUÁRIO */}
-            <Pressable
-              onPress={onOpenProfile}
-              style={({ pressed }) => [
-                styles.userAvatarBtn,
-                { borderColor: colors.primary, opacity: pressed ? 0.8 : 1 }
-              ]}
-              accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
-            >
-              {userProfileImage ? (
-                <Image source={{ uri: userProfileImage }} style={styles.userAvatarImg} />
-              ) : (
-                <View style={[styles.userAvatarPlaceholder, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.userAvatarInitial}>
-                    {userDisplayName.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <View style={[styles.statusDot, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}
-        <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f1f5f9', borderColor: colors.border }]}>
-          <Ionicons name="search" size={17} color={colors.textMuted} style={{ marginLeft: 4 }} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoComplete="off"
-            maxLength={100}
-          />
-          {searchQuery ? (
-            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
-            </Pressable>
-          ) : null}
-        </View>
-
-        {/* BARRA DE PESQUISA DE CIDADE ABERTA COM BOTÕES TODAS E MINHA CIDADE */}
-        <View style={styles.citySearchRow}>
-          <View
-            style={[
-              styles.citySearchInputBox,
-              {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                borderColor: selectedCity ? colors.primary : colors.border
-              }
-            ]}
-          >
-            <Ionicons
-              name="location-outline"
-              size={15}
-              color={selectedCity ? colors.primary : colors.textMuted}
-            />
+          {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}
+          <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f1f5f9', borderColor: colors.border }]}>
+            <Ionicons name="search" size={17} color={colors.textMuted} style={{ marginLeft: 4 }} />
             <TextInput
-              style={[styles.citySearchInput, { color: colors.text }]}
-              value={selectedCity}
-              onChangeText={setSelectedCity}
-              placeholder={t('searchCityPlaceholder') || 'Buscar por cidade...'}
-              placeholderTextColor={colors.textMuted}
+              style={[styles.searchInput, { color: colors.text }]}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
               autoComplete="off"
               maxLength={100}
             />
-            {selectedCity ? (
-              <Pressable onPress={() => setSelectedCity('')} hitSlop={8}>
+            {searchQuery ? (
+              <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
                 <Ionicons name="close-circle" size={16} color={colors.textMuted} />
               </Pressable>
             ) : null}
           </View>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.cityFilterPill,
-              {
-                backgroundColor: !selectedCity ? colors.primary + '20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                borderColor: !selectedCity ? colors.primary : colors.border,
-                opacity: pressed ? 0.75 : 1,
-              }
-            ]}
-            onPress={() => setSelectedCity('')}
-          >
-            <Text style={[styles.cityFilterPillText, { color: !selectedCity ? colors.primary : colors.textMuted }]}>
-              {t('allCitiesPill') || 'Todas'}
-            </Text>
-          </Pressable>
+          {/* BARRA DE PESQUISA DE CIDADE ABERTA COM BOTÕES TODAS E MINHA CIDADE */}
+          <View style={styles.citySearchRow}>
+            <View
+              style={[
+                styles.citySearchInputBox,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: selectedCity ? colors.primary : colors.border
+                }
+              ]}
+            >
+              <Ionicons
+                name="location-outline"
+                size={15}
+                color={selectedCity ? colors.primary : colors.textMuted}
+              />
+              <TextInput
+                style={[styles.citySearchInput, { color: colors.text }]}
+                value={selectedCity}
+                onChangeText={setSelectedCity}
+                placeholder={t('searchCityPlaceholder') || 'Buscar por cidade...'}
+                placeholderTextColor={colors.textMuted}
+                autoComplete="off"
+                maxLength={100}
+              />
+              {selectedCity ? (
+                <Pressable onPress={() => setSelectedCity('')} hitSlop={8}>
+                  <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
 
-          {currentUser?.city ? (
             <Pressable
               style={({ pressed }) => [
                 styles.cityFilterPill,
                 {
-                  backgroundColor: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary + '20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                  borderColor: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.border,
+                  backgroundColor: !selectedCity ? colors.primary + '20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                  borderColor: !selectedCity ? colors.primary : colors.border,
                   opacity: pressed ? 0.75 : 1,
                 }
               ]}
-              onPress={() => setSelectedCity(currentUser.city)}
+              onPress={() => setSelectedCity('')}
             >
-              <Ionicons
-                name="navigate-outline"
-                size={12}
-                color={selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.textMuted}
-              />
-              <Text style={[styles.cityFilterPillText, { color: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.textMuted }]}>
-                {t('myCityPill') || 'Minha Cidade'}
+              <Text style={[styles.cityFilterPillText, { color: !selectedCity ? colors.primary : colors.textMuted }]}>
+                {t('allCitiesPill') || 'Todas'}
               </Text>
             </Pressable>
-          ) : null}
-        </View>
 
-        {/* SUB-ABAS: ANÚNCIOS | MÚSICOS COM CONTADORES EM PÍLULA */}
-        <View style={styles.subTabBar}>
-          <Pressable
-            style={[styles.subTabItem, subTab === 'projects' && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }]}
-            onPress={() => setSubTab('projects')}
-          >
-            <Ionicons name="megaphone-outline" size={16} color={subTab === 'projects' ? colors.primary : colors.textMuted} />
-            <Text style={[styles.subTabText, { color: subTab === 'projects' ? colors.primary : colors.textMuted, fontWeight: subTab === 'projects' ? '700' : '500' }]}>
-              {t('announcements') || 'Anúncios'}
-            </Text>
-            <View style={[
-              styles.subTabBadgePill,
-              { backgroundColor: subTab === 'projects' ? colors.primary : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') }
-            ]}>
-              <Text style={[
-                styles.subTabBadgeText,
-                { color: subTab === 'projects' ? '#ffffff' : colors.textMuted }
-              ]}>
-                {filteredProjects.length}
-              </Text>
-            </View>
-          </Pressable>
+            {currentUser?.city ? (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.cityFilterPill,
+                  {
+                    backgroundColor: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary + '20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                    borderColor: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.border,
+                    opacity: pressed ? 0.75 : 1,
+                  }
+                ]}
+                onPress={() => setSelectedCity(currentUser.city)}
+              >
+                <Ionicons
+                  name="navigate-outline"
+                  size={12}
+                  color={selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.textMuted}
+                />
+                <Text style={[styles.cityFilterPillText, { color: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.textMuted }]}>
+                  {t('myCityPill') || 'Minha Cidade'}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
 
-          <Pressable
-            style={[styles.subTabItem, subTab === 'musicians' && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }]}
-            onPress={() => setSubTab('musicians')}
-          >
-            <Ionicons name="people-outline" size={16} color={subTab === 'musicians' ? colors.primary : colors.textMuted} />
-            <Text style={[styles.subTabText, { color: subTab === 'musicians' ? colors.primary : colors.textMuted, fontWeight: subTab === 'musicians' ? '700' : '500' }]}>
-              {t('musicians') || 'Músicos'}
-            </Text>
-            <View style={[
-              styles.subTabBadgePill,
-              { backgroundColor: subTab === 'musicians' ? colors.primary : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') }
-            ]}>
-              <Text style={[
-                styles.subTabBadgeText,
-                { color: subTab === 'musicians' ? '#ffffff' : colors.textMuted }
-              ]}>
-                {displayedMusicians.length}
+          {/* BOTÕES COM ÍCONES: USUÁRIOS | ANÚNCIOS | BANDAS */}
+          <View style={styles.tabButtonsContainer}>
+            {/* Botão Usuários */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.tabButton,
+                subTab === 'musicians'
+                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
+                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
+                pressed && { opacity: 0.85 }
+              ]}
+              onPress={() => setSubTab('musicians')}
+            >
+              <Ionicons
+                name={subTab === 'musicians' ? 'people' : 'people-outline'}
+                size={17}
+                color={subTab === 'musicians' ? '#ffffff' : colors.textMuted}
+              />
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  {
+                    color: subTab === 'musicians' ? '#ffffff' : colors.text,
+                    fontWeight: subTab === 'musicians' ? '700' : '600'
+                  }
+                ]}
+                numberOfLines={1}
+              >
+                {t('usersTab') || t('musicians') || 'Usuários'}
               </Text>
-            </View>
-          </Pressable>
+              <View
+                style={[
+                  styles.tabButtonBadge,
+                  {
+                    backgroundColor: subTab === 'musicians'
+                      ? 'rgba(255,255,255,0.25)'
+                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonBadgeText,
+                    { color: subTab === 'musicians' ? '#ffffff' : colors.textMuted }
+                  ]}
+                >
+                  {displayedMusicians.length}
+                </Text>
+              </View>
+            </Pressable>
 
-          <Pressable
-            style={[styles.subTabItem, subTab === 'bands' && { borderBottomColor: colors.primary, borderBottomWidth: 2.5 }]}
-            onPress={() => setSubTab('bands')}
-          >
-            <Ionicons name="musical-notes-outline" size={16} color={subTab === 'bands' ? colors.primary : colors.textMuted} />
-            <Text style={[styles.subTabText, { color: subTab === 'bands' ? colors.primary : colors.textMuted, fontWeight: subTab === 'bands' ? '700' : '500' }]} numberOfLines={1}>
-              {t('bandsTab') || 'Bandas'}
-            </Text>
-            <View style={[
-              styles.subTabBadgePill,
-              { backgroundColor: subTab === 'bands' ? colors.primary : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') }
-            ]}>
-              <Text style={[
-                styles.subTabBadgeText,
-                { color: subTab === 'bands' ? '#ffffff' : colors.textMuted }
-              ]}>
-                {filteredBands.length}
+            {/* Botão Anúncios */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.tabButton,
+                subTab === 'projects'
+                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
+                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
+                pressed && { opacity: 0.85 }
+              ]}
+              onPress={() => setSubTab('projects')}
+            >
+              <Ionicons
+                name={subTab === 'projects' ? 'megaphone' : 'megaphone-outline'}
+                size={17}
+                color={subTab === 'projects' ? '#ffffff' : colors.textMuted}
+              />
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  {
+                    color: subTab === 'projects' ? '#ffffff' : colors.text,
+                    fontWeight: subTab === 'projects' ? '700' : '600'
+                  }
+                ]}
+                numberOfLines={1}
+              >
+                {t('announcements') || 'Anúncios'}
               </Text>
-            </View>
-          </Pressable>
+              <View
+                style={[
+                  styles.tabButtonBadge,
+                  {
+                    backgroundColor: subTab === 'projects'
+                      ? 'rgba(255,255,255,0.25)'
+                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonBadgeText,
+                    { color: subTab === 'projects' ? '#ffffff' : colors.textMuted }
+                  ]}
+                >
+                  {filteredProjects.length}
+                </Text>
+              </View>
+            </Pressable>
+
+            {/* Botão Bandas */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.tabButton,
+                subTab === 'bands'
+                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
+                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
+                pressed && { opacity: 0.85 }
+              ]}
+              onPress={() => setSubTab('bands')}
+            >
+              <Ionicons
+                name={subTab === 'bands' ? 'musical-notes' : 'musical-notes-outline'}
+                size={17}
+                color={subTab === 'bands' ? '#ffffff' : colors.textMuted}
+              />
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  {
+                    color: subTab === 'bands' ? '#ffffff' : colors.text,
+                    fontWeight: subTab === 'bands' ? '700' : '600'
+                  }
+                ]}
+                numberOfLines={1}
+              >
+                {t('bandsTab') || 'Bandas'}
+              </Text>
+              <View
+                style={[
+                  styles.tabButtonBadge,
+                  {
+                    backgroundColor: subTab === 'bands'
+                      ? 'rgba(255,255,255,0.25)'
+                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonBadgeText,
+                    { color: subTab === 'bands' ? '#ffffff' : colors.textMuted }
+                  ]}
+                >
+                  {filteredBands.length}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
         </View>
       </View>
 
@@ -1777,11 +1892,12 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           />
         }
       >
-        {subTab === 'projects' ? (
+        <View style={styles.webContainer}>
+          {subTab === 'projects' ? (
           /* ── FEED DE ANÚNCIOS ── */
           <View>
             {filteredProjects.length === 0 ? (
-              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
                 <Ionicons name="search-outline" size={40} color={colors.textMuted} />
                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                   {t('noAnnouncementsFound') || 'Nenhum anúncio encontrado.'}
@@ -1811,8 +1927,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                       styles.projectCard,
                       {
                         backgroundColor: colors.cardBackground,
-                        borderTopColor: colors.border,
-                        borderBottomColor: colors.border,
+                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border,
                       }
                     ]}
                   >
@@ -2054,7 +2169,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           /* ── FEED DE BANDAS VISÍVEIS ── */
           <View>
             {filteredBands.length === 0 ? (
-              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
                 <Ionicons name="musical-notes-outline" size={40} color={colors.textMuted} />
                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                   {selectedCity
@@ -2093,8 +2208,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                       styles.projectCard,
                       {
                         backgroundColor: colors.cardBackground,
-                        borderTopColor: colors.border,
-                        borderBottomColor: colors.border,
+                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border,
                         opacity: pressed ? 0.92 : 1,
                       }
                     ]}
@@ -2276,7 +2390,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           <View>
             {/* Banner de candidatos do anúncio escaneado */}
             {selectedScanProject && (
-              <View style={[styles.filterBanner, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+              <View style={[styles.filterBanner, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
                 <View style={{ flex: 1, marginRight: 10 }}>
                   <Text style={[styles.filterBannerTitle, { color: colors.text }]} numberOfLines={1}>
                     {(t('candidatesOf') || 'Candidatos {band}').replace('{band}', selectedScanProject.bandName || selectedScanProject.name || 'Banda')}
@@ -2305,7 +2419,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
             )}
 
             {displayedMusicians.length === 0 ? (
-              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
                 <Ionicons name="people-outline" size={40} color={colors.textMuted} />
                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                   {selectedScanProject
@@ -2322,164 +2436,169 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                 )}
               </View>
             ) : (
-              paginatedMusicians.map(m => (
-                <Pressable
-                  key={m.id}
-                  onPress={() => handleOpenMusicianProfile(m)}
-                  style={({ pressed }) => [
-                    styles.musicianCard,
-                    {
-                      backgroundColor: colors.cardBackground,
-                      borderTopColor: colors.border,
-                      borderBottomColor: colors.border,
-                      opacity: pressed ? 0.92 : 1,
-                    }
-                  ]}
-                >
-                  {/* Topo do Card: Avatar e Selo de Porcentagem + 3 Linhas de Informações */}
-                  <View style={styles.musicianCardTop}>
-                    {/* Avatar com Selo de Porcentagem abaixo */}
-                    <View style={styles.musicianAvatarCol}>
-                      <View style={[styles.musicianAvatar, { backgroundColor: colors.primary }]}>
-                        {m.imageUri ? (
-                          <Image source={{ uri: m.imageUri }} style={styles.musicianAvatarImg} />
-                        ) : (
-                          <Text style={{ color: '#fff', fontSize: 25, fontWeight: 'bold' }}>
-                            {(m.name || m.username || 'M').charAt(0).toUpperCase()}
-                          </Text>
-                        )}
+              paginatedMusicians.map(m => {
+                const locationParts = [m.city, m.state, m.country].filter(Boolean);
+                const locationStr = locationParts.length > 0 ? locationParts.join(', ') : '';
+
+                const skillList = [];
+                const rawInsts = m.primaryInstruments || (m.primaryInstrument ? [m.primaryInstrument] : []);
+                (Array.isArray(rawInsts) ? rawInsts : [rawInsts]).forEach(i => {
+                  const name = typeof i === 'object' && i !== null ? (i.name || i.instrument) : String(i || '');
+                  if (name && !skillList.includes(name)) skillList.push(name);
+                });
+                if (Array.isArray(m.influences)) {
+                  m.influences.forEach(inf => {
+                    const infName = typeof inf === 'string' ? inf.replace(/^#+/, '').trim() : (inf?.name || inf?.tag || '');
+                    if (infName && !skillList.includes(infName)) skillList.push(infName);
+                  });
+                }
+
+                return (
+                  <Pressable
+                    key={m.id}
+                    onPress={() => handleOpenMusicianProfile(m)}
+                    style={({ pressed }) => [
+                      styles.userCardWrapper,
+                      { opacity: pressed ? 0.94 : 1 }
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.userCardBody,
+                        {
+                          backgroundColor: colors.cardBackground,
+                          borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border,
+                        }
+                      ]}
+                    >
+                      {/* Floating Header: Nome de exibição + badges */}
+                      <View style={styles.userCardFloatingHeader}>
+                        <Text style={[styles.userDisplayNameText, { color: colors.text }]} numberOfLines={1}>
+                          {m.name || m.displayName || m.username || 'Músico'}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          {m.isMe ? (
+                            <View style={[styles.meBadge, { backgroundColor: colors.primary + '20' }]}>
+                              <Text style={[styles.meBadgeText, { color: colors.primary }]}>{t('youBadge') || 'Você'}</Text>
+                            </View>
+                          ) : null}
+                          {m.matchScore ? (
+                            <View
+                              style={[
+                                styles.matchScoreBadge,
+                                {
+                                  backgroundColor: m.matchScore >= 80 ? '#10b981' : colors.primary,
+                                  borderColor: colors.cardBackground,
+                                }
+                              ]}
+                            >
+                              <Ionicons name="sparkles" size={9} color="#fff" />
+                              <Text style={styles.matchScoreBadgeText}>{m.matchScore}%</Text>
+                            </View>
+                          ) : null}
+                        </View>
                       </View>
 
-                      {/* Selo de compatibilidade sobreposto na parte de baixo do círculo */}
-                      {m.matchScore ? (
+                      {/* Floating Avatar (Protruding above and to the left of the card) */}
+                      <View style={styles.userAvatarFloatingCol}>
                         <View
                           style={[
-                            styles.matchScoreBadge,
+                            styles.userAvatarCircle,
                             {
-                              backgroundColor: m.matchScore >= 80 ? '#10b981' : colors.primary,
+                              backgroundColor: colors.primary,
                               borderColor: colors.cardBackground,
                             }
                           ]}
                         >
-                          <Ionicons
-                            name="sparkles"
-                            size={9}
-                            color="#fff"
-                          />
-                          <Text style={styles.matchScoreBadgeText}>
-                            {m.matchScore}%
-                          </Text>
+                          {m.imageUri ? (
+                            <Image source={{ uri: m.imageUri }} style={styles.userAvatarImg} />
+                          ) : (
+                            <Text style={styles.userAvatarLetter}>
+                              {(m.name || m.username || 'M').charAt(0).toUpperCase()}
+                            </Text>
+                          )}
                         </View>
-                      ) : null}
-                    </View>
+                        {/* Green status circle badge at bottom-left */}
+                        <View
+                          style={[
+                            styles.userStatusGreenDot,
+                            { borderColor: colors.cardBackground }
+                          ]}
+                        />
+                      </View>
 
-                    {/* 3 Linhas de Informações */}
-                    <View style={{ flex: 1, justifyContent: 'space-between', minHeight: 69 }}>
-                      {/* Linha 1: Nome de exibição na frente do @username com ícone verdinho de disponível */}
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <Text style={[styles.musicianName, { color: colors.text }]} numberOfLines={1}>
-                          {m.name}
-                        </Text>
-                        <Text style={[styles.musicianUsername, { color: colors.primary }]}>
-                          @{m.username}
-                        </Text>
-                        {(m.availability || 'Disponível') === 'Disponível' && (
-                          <Ionicons name="checkmark-circle" size={14.5} color="#10b981" />
-                        )}
-                        {m.isMe ? (
-                          <View style={[styles.meBadge, { backgroundColor: colors.primary + '18' }]}>
-                            <Text style={[styles.meBadgeText, { color: colors.primary }]}>{t('youBadge') || 'Você'}</Text>
+                      {/* Card Details on the Right */}
+                      <View style={styles.userCardContent}>
+                        {/* Line 1: username  idade */}
+                        <View style={styles.userMetaRow}>
+                          <Text style={[styles.userUsernameText, { color: colors.primary }]}>
+                            @{m.username}
+                          </Text>
+                          {m.age ? (
+                            <Text style={[styles.userAgeText, { color: colors.textMuted }]}>
+                              {m.age} {t('yearsOld') || 'anos'}
+                            </Text>
+                          ) : null}
+                          {(m.availability || 'Disponível') === 'Disponível' && (
+                            <Ionicons name="checkmark-circle" size={13} color="#10b981" />
+                          )}
+                        </View>
+
+                        {/* Line 2: Cidade UF Pais */}
+                        {locationStr ? (
+                          <View style={styles.userLocationRow}>
+                            <Ionicons name="location-outline" size={12} color={colors.textMuted} />
+                            <Text style={[styles.userLocationText, { color: colors.textMuted }]} numberOfLines={1}>
+                              {locationStr}
+                            </Text>
                           </View>
                         ) : null}
-                      </View>
 
-                      {/* Linha 2: 2 instrumentos principais em pílulas individuais com estrela e número */}
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-                        {(m.primaryInstruments || [m.primaryInstrument]).filter(Boolean).slice(0, 2).map((rawInst, idx) => {
-                          const instData = getInstInfo(rawInst, m.stars || 5);
-                          return (
-                            <View
-                              key={idx}
-                              style={[
-                                styles.primaryInstPill,
-                                {
-                                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-                                }
-                              ]}
-                            >
-                              {/* Estrela nítida com nota numérica lado a lado */}
-                              <View style={styles.starRatingBadge}>
-                                <Ionicons name="star" size={11} color="#f59e0b" />
-                                <Text style={styles.starRatingNumber}>
-                                  {instData.stars}
+                        {/* Line 3: Pílulas de Habilidades */}
+                        {skillList.length > 0 && (
+                          <View style={styles.userSkillsRow}>
+                            {skillList.slice(0, 4).map((skill, sIdx) => (
+                              <View
+                                key={sIdx}
+                                style={[
+                                  styles.userSkillPill,
+                                  {
+                                    backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)',
+                                  }
+                                ]}
+                              >
+                                <Text style={[styles.userSkillPillText, { color: isDark ? 'rgba(255,255,255,0.9)' : colors.text }]} numberOfLines={1}>
+                                  {skill}
                                 </Text>
                               </View>
+                            ))}
+                          </View>
+                        )}
 
-                              {/* Nome do Instrumento */}
-                              <Text style={[styles.primaryInstText, { color: colors.text }]}>
-                                {instData.name}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-
-                      {/* Linha 3: Cidade */}
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3.5, marginTop: 4 }}>
-                        <Ionicons name="location-outline" size={12.5} color={colors.textMuted} />
-                        <Text style={[styles.musicianMetaText, { color: colors.textMuted }]} numberOfLines={1}>
-                          {[m.city, m.state].filter(Boolean).join(', ') || m.country || ''}
-                        </Text>
+                        {/* Botão de Convidar ao escanear candidatos */}
+                        {selectedScanProject && !m.isMe && (
+                          <Pressable
+                            style={({ pressed }) => [
+                              styles.inviteCandidateCardBtn,
+                              { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
+                            ]}
+                            onPress={() => handleOpenCandidateInviteModal(m, selectedScanProject)}
+                          >
+                            <Ionicons name="paper-plane" size={13} color="#fff" />
+                            <Text style={styles.inviteCandidateCardText}>{t('inviteMusician') || 'Convidar Músico'}</Text>
+                          </Pressable>
+                        )}
                       </View>
                     </View>
-                  </View>
-
-                  {/* Linha 4: Descrição / Bio */}
-                  {m.bio ? (
-                    <Text style={[styles.musicianBio, { color: isDark ? 'rgba(255,255,255,0.85)' : '#334155' }]}>
-                      {m.bio}
-                    </Text>
-                  ) : null}
-
-                  {/* Linha 5: Tags de estilos (5 de forma responsiva, menorzinho, sem contorno) */}
-                  <View style={styles.musicianGenresRow}>
-                    {(m.influences || []).slice(0, 5).map((inf, idx) => (
-                      <View
-                        key={idx}
-                        style={[
-                          styles.genrePillSmall,
-                          { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }
-                        ]}
-                      >
-                        <Text style={[styles.genrePillSmallText, { color: colors.textMuted }]}>
-                          {String(typeof inf === 'string' 
-                            ? inf.replace(/[{}\"]/g, '').replace(/^name:\s*/, '').replace(/^#+/, '').trim() 
-                            : (inf?.name || inf?.tag || '')).replace(/^#+/, '')}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  {/* Botão de Convidar ao escanear candidatos */}
-                  {selectedScanProject && !m.isMe && (
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.inviteCandidateCardBtn,
-                        { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
-                      ]}
-                      onPress={() => handleOpenCandidateInviteModal(m, selectedScanProject)}
-                    >
-                      <Ionicons name="paper-plane" size={13} color="#fff" />
-                      <Text style={styles.inviteCandidateCardText}>{t('inviteMusician') || 'Convidar Músico'}</Text>
-                    </Pressable>
-                  )}
-                </Pressable>
-              ))
+                  </Pressable>
+                );
+              })
             )}
             {renderPagination(musiciansPage, totalMusiciansPages, displayedMusicians.length, setMusiciansPage)}
           </View>
         )}
+        </View>
       </ScrollView>
 
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -3031,6 +3150,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  webContainer: {
+    width: '100%',
+    maxWidth: 820,
+    alignSelf: 'center',
+  },
   header: { 
     borderBottomWidth: 1, 
     paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 10 : 44, 
@@ -3079,42 +3203,63 @@ const styles = StyleSheet.create({
   },
   searchInput: { flex: 1, fontSize: 13, paddingVertical: 0 },
 
-  // Sub tabs
-  subTabBar: { flexDirection: 'row', width: '100%' },
-  subTabItem: {
+  // Tab Buttons com ícones (Usuários, Anúncios, Bandas)
+  tabButtonsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 6,
+    width: '100%',
+  },
+  tabButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 7,
-    paddingBottom: 11,
+    gap: 6,
+    paddingVertical: 9,
+    paddingHorizontal: 6,
+    borderRadius: 14,
+    borderWidth: 1,
   },
-  subTabText: { fontSize: 14, letterSpacing: -0.2 },
-  subTabBadgePill: {
-    paddingHorizontal: 7,
+  tabButtonActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  tabButtonInactive: {},
+  tabButtonText: {
+    fontSize: 13,
+    letterSpacing: -0.2,
+  },
+  tabButtonBadge: {
+    paddingHorizontal: 6,
     paddingVertical: 1.5,
     borderRadius: 10,
-    minWidth: 20,
+    minWidth: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  subTabBadgeText: {
-    fontSize: 11,
+  tabButtonBadgeText: {
+    fontSize: 10.5,
     fontWeight: '800',
   },
 
-  scrollContent: { paddingBottom: 40, paddingTop: 6, paddingHorizontal: 0 },
+  scrollContent: { paddingBottom: 60, paddingTop: 14, paddingHorizontal: 0 },
 
-  // Project card (estendido de ponta a ponta nas laterais)
+  // Project card
   projectCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    marginBottom: 10,
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   projectCardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   bandLogoCircle: {
@@ -3289,12 +3434,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    marginBottom: 8,
+    marginHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
   },
   filterBannerTitle: {
     fontSize: 14,
@@ -3354,52 +3497,128 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Musician Card (estendido de ponta a ponta nas laterais)
-  musicianCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
+  // User Card (Mockup Layout: horizontal retangular com avatar sobreposto)
+  userCardWrapper: {
+    marginTop: 34,
     marginBottom: 10,
+    marginHorizontal: 16,
+    position: 'relative',
   },
-  musicianCardTop: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 },
-  musicianAvatarCol: { alignItems: 'center', marginRight: 14, position: 'relative' },
-  musicianAvatar: { width: 69, height: 69, borderRadius: 34.5, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  musicianAvatarImg: { width: 69, height: 69, borderRadius: 34.5 },
-  musicianAvatarSmall: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center' },
-  musicianName: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
-  musicianUsername: { fontSize: 13, fontWeight: '600' },
-  musicianMetaText: { fontSize: 12, fontWeight: '500' },
-
-  // Pílula de instrumento com estrela e número
-  primaryInstPill: {
+  userCardBody: {
+    position: 'relative',
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingRight: 16,
+    paddingLeft: 110,
+    minHeight: 100,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  userCardFloatingHeader: {
+    position: 'absolute',
+    top: -28,
+    left: 110,
+    right: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  userDisplayNameText: {
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    flex: 1,
+    marginRight: 8,
+  },
+  userAvatarFloatingCol: {
+    position: 'absolute',
+    top: -26,
+    left: 14,
+    width: 80,
+    height: 80,
+    zIndex: 10,
+  },
+  userAvatarCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  userAvatarImg: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+  },
+  userAvatarLetter: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  userStatusGreenDot: {
+    position: 'absolute',
+    bottom: 1,
+    left: 1,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#10b981',
+    borderWidth: 3,
+    zIndex: 15,
+  },
+  userCardContent: {
+    justifyContent: 'center',
+    gap: 4,
+  },
+  userMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  userUsernameText: {
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  userAgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  userLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  userLocationText: {
+    fontSize: 12.5,
+    fontWeight: '500',
+  },
+  userSkillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+  },
+  userSkillPill: {
     paddingVertical: 3.5,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingHorizontal: 9,
+    borderRadius: 10,
     borderWidth: 1,
   },
-  starRatingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2.5,
-    marginRight: 5,
-  },
-  starRatingNumber: {
+  userSkillPillText: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#f59e0b',
+    fontWeight: '600',
   },
-  primaryInstText: { fontSize: 11.5, fontWeight: '700' },
 
-  musicianBio: { fontSize: 13.5, lineHeight: 19.5, marginTop: 10, letterSpacing: -0.1 },
-  musicianGenresRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 10 },
-  genrePillSmall: { paddingVertical: 3, paddingHorizontal: 8, borderRadius: 6, borderWidth: 0 },
-  genrePillSmallText: { fontSize: 11, fontWeight: '600' },
   meBadge: { paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 5, borderWidth: 0 },
   meBadgeText: { fontSize: 10, fontWeight: '800' },
   availableBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4 },
@@ -3425,16 +3644,15 @@ const styles = StyleSheet.create({
   // Applicant Card (sem contorno)
   applicantCard: { padding: 14, borderRadius: 14, borderWidth: 0, marginBottom: 8 },
 
-  // Empty state (estendido nas laterais)
+  // Empty state
   emptyContainer: { 
     alignItems: 'center', 
     paddingVertical: 40, 
     paddingHorizontal: 20, 
-    borderRadius: 0, 
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
+    marginHorizontal: 16,
+    borderRadius: 16, 
+    borderWidth: 1,
+    marginVertical: 12,
   },
   emptyText: { textAlign: 'center', fontSize: 14, marginTop: 12, marginBottom: 16 },
   emptyBtn: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },

@@ -1767,6 +1767,139 @@
       gap: 18px;
     }
 
+    /* HORIZONTAL USER CARD (MOCKUP WITH FLOATING OVERLAPPING AVATAR) */
+    .user-cards-vertical-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    .user-card-horizontal-wrapper {
+      position: relative;
+      margin-top: 34px;
+      margin-bottom: 6px;
+      width: 100%;
+    }
+    .user-card-horizontal-body {
+      position: relative;
+      background: #18202c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 16px 18px 16px 114px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+    .user-card-horizontal-body:hover {
+      border-color: var(--cyan, #06b6d4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.15);
+    }
+    .user-card-floating-header {
+      position: absolute;
+      top: -28px;
+      left: 114px;
+      right: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .user-card-display-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.2px;
+    }
+    .user-card-floating-avatar {
+      position: absolute;
+      top: -24px;
+      left: 16px;
+      width: 80px;
+      height: 80px;
+      z-index: 5;
+    }
+    .user-card-avatar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3.5px solid #121822;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--cyan, #06b6d4), var(--violet, #8b5cf6));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+    .user-card-avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .user-card-avatar-initial {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .user-card-status-dot {
+      position: absolute;
+      bottom: 0px;
+      left: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #10b981;
+      border: 3px solid #18202c;
+      z-index: 6;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+    .user-card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .user-card-handle {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--cyan-light, #67e8f9);
+    }
+    .user-card-age {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted, #94a3b8);
+    }
+    .user-card-location {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.85rem;
+      color: var(--text-dim, #64748b);
+    }
+    .user-card-skills-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .user-card-skill-pill {
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+    }
+
     .profile-bands-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -3632,15 +3765,15 @@
     /* COMPREHENSIVE MOBILE RESPONSIVENESS & ICON-ONLY TABS (< 768px) */
     /* ============================================================== */
     @media (max-width: 768px) {
-      /* Mobile Viewport Edge Alignment (Cards & Tables touch closer to screen border) */
+      /* Mobile Viewport Spacing (Clean padding away from screen borders) */
       .main-viewport {
         margin-left: 0 !important;
-        padding: 12px 6px !important;
+        padding: 14px 14px 40px 14px !important;
       }
       .mobile-topbar {
         display: flex !important;
-        margin: -12px -6px 14px -6px !important;
-        padding: 10px 12px !important;
+        margin: -14px -14px 16px -14px !important;
+        padding: 10px 14px !important;
       }
       .profile-content-container,
       .band-page-content {
@@ -4996,8 +5129,8 @@
       <!-- ============================================================== -->
       <!-- MAIN VIEW 3: SOCIAL / REDE BANDLINK                            -->
       <!-- ============================================================== -->
-      <section class="main-view" id="view-social">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+      <section class="main-view" id="view-social" style="max-width: 860px; margin: 0 auto; width: 100%; padding-bottom: 40px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
           <div>
             <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="planet" style="color: var(--cyan);"></ion-icon>
@@ -5012,13 +5145,26 @@
           </button>
         </div>
 
-        <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 16px;">
-          <button class="btn btn-sm btn-outline active" id="socialSubAnn" onclick="switchSocialSub('ann')">Mural de Anúncios</button>
-          <button class="btn btn-sm btn-outline" id="socialSubMus" onclick="switchSocialSub('mus')">Músicos na Rede</button>
-          <button class="btn btn-sm btn-outline" id="socialSubBands" onclick="switchSocialSub('bands')">Bandas Públicas</button>
+        <!-- BOTÕES COM ÍCONES: USUÁRIOS | ANÚNCIOS | BANDAS -->
+        <div class="social-tabs-bar" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary active" id="socialSubMus" onclick="switchSocialSub('mus')" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-weight: 700; transition: all 0.2s ease;">
+            <ion-icon name="people" style="font-size: 1.15rem;"></ion-icon>
+            <span>Usuários</span>
+            <span class="badge" id="socialCountMus" style="background: rgba(255,255,255,0.22); color: #fff; font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;">0</span>
+          </button>
+          <button class="btn btn-sm btn-outline" id="socialSubAnn" onclick="switchSocialSub('ann')" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-weight: 700; transition: all 0.2s ease;">
+            <ion-icon name="megaphone-outline" style="font-size: 1.15rem;"></ion-icon>
+            <span>Anúncios</span>
+            <span class="badge" id="socialCountAnn" style="background: rgba(255,255,255,0.12); color: var(--text-dim); font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;">0</span>
+          </button>
+          <button class="btn btn-sm btn-outline" id="socialSubBands" onclick="switchSocialSub('bands')" style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-weight: 700; transition: all 0.2s ease;">
+            <ion-icon name="musical-notes-outline" style="font-size: 1.15rem;"></ion-icon>
+            <span>Bandas</span>
+            <span class="badge" id="socialCountBands" style="background: rgba(255,255,255,0.12); color: var(--text-dim); font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;">0</span>
+          </button>
         </div>
 
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
           <input type="text" id="socialSearchInput" class="form-input" style="flex: 1; min-width: 220px;" placeholder="Buscar por termo, instrumento, estilo ou cidade..." oninput="triggerSocialSearch()">
           <button class="btn btn-outline" onclick="triggerSocialSearch()">
             <ion-icon name="search-outline"></ion-icon>
@@ -5026,8 +5172,8 @@
           </button>
         </div>
 
-        <div id="socialViewAnn" class="grid-cards"></div>
-        <div id="socialViewMus" class="grid-cards" style="display: none;"></div>
+        <div id="socialViewMus" class="user-cards-vertical-list" style="display: flex; flex-direction: column; gap: 16px;"></div>
+        <div id="socialViewAnn" class="grid-cards" style="display: none;"></div>
         <div id="socialViewBands" class="grid-cards" style="display: none;"></div>
       </section>
 
@@ -6430,7 +6576,7 @@
     let myExtraSkills = [];
     let myGear = [];
     let selectedSong = null;
-    let currentSocialSub = 'ann';
+    let currentSocialSub = 'mus';
     let agendaProfileFilterMode = 'all';
 
     const TOKEN_KEY = "jwt_token";
@@ -15346,25 +15492,34 @@
 
     function switchSocialSub(sub) {
       currentSocialSub = sub;
-      ['socialSubAnn', 'socialSubMus', 'socialSubBands'].forEach(id => {
+      ['socialSubMus', 'socialSubAnn', 'socialSubBands'].forEach(id => {
         const b = document.getElementById(id);
-        if (b) b.classList.remove('active');
+        if (b) {
+          b.classList.remove('active', 'btn-primary');
+          b.classList.add('btn-outline');
+        }
       });
 
-      ['socialViewAnn', 'socialViewMus', 'socialViewBands'].forEach(id => {
+      ['socialViewMus', 'socialViewAnn', 'socialViewBands'].forEach(id => {
         const v = document.getElementById(id);
         if (v) v.style.display = 'none';
       });
 
-      if (sub === 'ann') {
-        document.getElementById('socialSubAnn').classList.add('active');
-        document.getElementById('socialViewAnn').style.display = 'grid';
-      } else if (sub === 'mus') {
-        document.getElementById('socialSubMus').classList.add('active');
-        document.getElementById('socialViewMus').style.display = 'grid';
+      if (sub === 'mus') {
+        const b = document.getElementById('socialSubMus');
+        if (b) { b.classList.add('active', 'btn-primary'); b.classList.remove('btn-outline'); }
+        const v = document.getElementById('socialViewMus');
+        if (v) v.style.display = 'flex';
+      } else if (sub === 'ann') {
+        const b = document.getElementById('socialSubAnn');
+        if (b) { b.classList.add('active', 'btn-primary'); b.classList.remove('btn-outline'); }
+        const v = document.getElementById('socialViewAnn');
+        if (v) v.style.display = 'grid';
       } else if (sub === 'bands') {
-        document.getElementById('socialSubBands').classList.add('active');
-        document.getElementById('socialViewBands').style.display = 'grid';
+        const b = document.getElementById('socialSubBands');
+        if (b) { b.classList.add('active', 'btn-primary'); b.classList.remove('btn-outline'); }
+        const v = document.getElementById('socialViewBands');
+        if (v) v.style.display = 'grid';
       }
       loadSocialData();
     }
@@ -15383,6 +15538,8 @@
         if (res.ok) {
           const data = await res.json();
           const items = data.data || [];
+          const countBadge = document.getElementById('socialCountAnn');
+          if (countBadge) countBadge.innerText = items.length;
 
           if (items.length === 0) {
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhum anúncio encontrado.</div>`;
@@ -15421,7 +15578,54 @@
       }
     }
 
-    // CLICKABLE MUSICIAN CARDS IN "MÚSICOS NA REDE"
+    function calculateUserAge(birthDateOrAge) {
+      if (!birthDateOrAge) return null;
+      if (typeof birthDateOrAge === 'number') return birthDateOrAge;
+      const str = String(birthDateOrAge).trim();
+      if (/^\d{1,3}$/.test(str)) return parseInt(str, 10);
+      try {
+        let birth;
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+          const parts = str.split('/');
+          birth = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        } else {
+          birth = new Date(str);
+        }
+        if (isNaN(birth.getTime())) return null;
+        const now = new Date();
+        let age = now.getFullYear() - birth.getFullYear();
+        const m = now.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+        return (age >= 5 && age <= 120) ? age : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function extractUserSkills(u) {
+      let list = [];
+      if (u.instruments) {
+        try {
+          const parsed = typeof u.instruments === 'string' ? JSON.parse(u.instruments) : u.instruments;
+          if (Array.isArray(parsed)) {
+            list = parsed.map(x => typeof x === 'string' ? x : (x.name || x.instrument || '')).filter(Boolean);
+          }
+        } catch {
+          if (typeof u.instruments === 'string') {
+            list = u.instruments.split(/[,•;]+/).map(s => s.trim()).filter(Boolean);
+          }
+        }
+      }
+      if (list.length === 0 && u.skillsJson) {
+        try {
+          const parsed = JSON.parse(u.skillsJson);
+          if (Array.isArray(parsed)) list = parsed.map(x => typeof x === 'string' ? x : (x.name || '')).filter(Boolean);
+        } catch {}
+      }
+      return list;
+    }
+
+    // CLICKABLE MUSICIAN CARDS IN "MÚSICOS NA REDE" (HORIZONTAL CARD MATCHING MOCKUP)
     async function loadMusiciansNetwork() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
       const qs = search ? `?search=${encodeURIComponent(search)}` : '';
@@ -15433,28 +15637,67 @@
         });
         if (res.ok) {
           const users = await res.json();
+          const countBadge = document.getElementById('socialCountMus');
+          if (countBadge) countBadge.innerText = users.length;
+
           if (users.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhum músico encontrado.</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum músico encontrado.</div>`;
             return;
           }
 
-          container.innerHTML = users.map(u => `
-            <div class="card clickable-card" onclick="openPublicMusicianProfile('${u.username}')" title="Clique para ver o perfil público de @${u.username}" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="margin: 0 auto 12px auto; display: inline-block;">
-                  ${renderAvatarHtml(u.pictureUrl, u.username, 76)}
+          container.innerHTML = users.map(u => {
+            const displayName = u.displayName || u.username || 'Músico';
+            const username = (u.username || '').replace(/^@+/, '');
+            const age = u.age || calculateUserAge(u.birthDate);
+            const locationStr = [u.city, u.state, u.country].filter(Boolean).join(' • ') || (u.city || u.state || 'Brasil');
+            const skills = extractUserSkills(u);
+            const initial = (displayName || username || 'M').charAt(0).toUpperCase();
+            const avatarHtml = u.pictureUrl
+              ? `<img src="${u.pictureUrl}" alt="${displayName}" onerror="this.parentElement.innerHTML='<span class=\\'user-card-avatar-initial\\'>${initial}</span>'"/>`
+              : `<span class="user-card-avatar-initial">${initial}</span>`;
+
+            const skillsHtml = skills.length > 0
+              ? `<div class="user-card-skills-row">${skills.slice(0, 4).map(s => `<span class="user-card-skill-pill">${s}</span>`).join('')}</div>`
+              : '';
+
+            return `
+              <div class="user-card-horizontal-wrapper">
+                <div class="user-card-horizontal-body" onclick="openPublicMusicianProfile('${username}')" title="Ver perfil de @${username}">
+                  <!-- Floating Header: Nome de exibição + badges -->
+                  <div class="user-card-floating-header">
+                    <span class="user-card-display-name">${displayName}</span>
+                    <span class="badge badge-cyan" style="font-size: 0.72rem; padding: 2px 8px;">${u.availability || 'Disponível'}</span>
+                  </div>
+
+                  <!-- Floating Avatar Protruding Top/Left -->
+                  <div class="user-card-floating-avatar">
+                    <div class="user-card-avatar-circle">
+                      ${avatarHtml}
+                    </div>
+                    <div class="user-card-status-dot" title="Online / Disponível"></div>
+                  </div>
+
+                  <!-- Details Row 1: @username • Idade • Ícone -->
+                  <div class="user-card-meta-row">
+                    <span class="user-card-handle">@${username}</span>
+                    ${age ? `<span class="user-card-age">${age} anos</span>` : ''}
+                    <ion-icon name="checkmark-circle" style="color: #10b981; font-size: 14px;"></ion-icon>
+                  </div>
+
+                  <!-- Details Row 2: Location -->
+                  ${locationStr ? `
+                    <div class="user-card-location">
+                      <ion-icon name="location-outline" style="font-size: 13px;"></ion-icon>
+                      <span>${locationStr}</span>
+                    </div>
+                  ` : ''}
+
+                  <!-- Details Row 3: Skills -->
+                  ${skillsHtml}
                 </div>
-                <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff;">@${u.username}</h4>
-                <p style="color: var(--cyan-light); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">${parseInstrumentsList(u.instruments).map(x => x.name).join(' • ') || 'Músico'}</p>
-                <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 12px;">${[u.city, u.state].filter(Boolean).join(', ') || 'Brasil'}</p>
-                <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; max-height: 60px; overflow: hidden; margin-bottom: 14px;">${u.bio || 'Sem biografia informada.'}</p>
               </div>
-              <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.8rem; color: var(--cyan-light); font-weight: 700;">Ver Perfil Completo</span>
-                <ion-icon name="chevron-forward-outline" style="color: var(--cyan);"></ion-icon>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         }
       } catch (err) {
         console.error('Error fetching musicians:', err);
@@ -15471,6 +15714,8 @@
         const res = await fetch(`${API_URL}/Bands/public${qs}`);
         if (res.ok) {
           const bands = await res.json();
+          const countBadge = document.getElementById('socialCountBands');
+          if (countBadge) countBadge.innerText = bands.length;
           if (bands.length === 0) {
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhuma banda pública encontrada.</div>`;
             return;
