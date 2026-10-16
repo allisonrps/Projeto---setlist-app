@@ -1,7 +1,67 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
 // Live Azure Cloud API for BandLink
 const API_URL = "https://bandlink-api.azurewebsites.net/api";
+
+// Lazy load SecureStore safely for native platforms (Android Keystore / iOS Keychain)
+let SecureStore = null;
+try {
+  if (Platform?.OS !== 'web') {
+    SecureStore = require('expo-secure-store');
+  }
+} catch (e) {
+  SecureStore = null;
+}
+
+const isSecureStoreAvailable = async () => {
+  try {
+    if (SecureStore && typeof SecureStore.isAvailableAsync === 'function') {
+      return await SecureStore.isAvailableAsync();
+    }
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+export const secureToken = {
+  get: async (key) => {
+    try {
+      if (await isSecureStoreAvailable()) {
+        const val = await SecureStore.getItemAsync(key);
+        if (val) return val;
+      }
+    } catch (e) {
+      console.log('SecureStore get error:', e);
+    }
+    // Fallback & migration from AsyncStorage
+    return await AsyncStorage.getItem(key);
+  },
+  set: async (key, value) => {
+    try {
+      if (await isSecureStoreAvailable()) {
+        await SecureStore.setItemAsync(key, value);
+        // Clear plaintext copy from AsyncStorage for enhanced security
+        await AsyncStorage.removeItem(key).catch(() => {});
+        return;
+      }
+    } catch (e) {
+      console.log('SecureStore set error:', e);
+    }
+    await AsyncStorage.setItem(key, value);
+  },
+  remove: async (key) => {
+    try {
+      if (await isSecureStoreAvailable()) {
+        await SecureStore.deleteItemAsync(key);
+      }
+    } catch {}
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch {}
+  }
+};
 
 const fetchWithTimeout = async (url, options = {}, timeout = 15000) => {
   const controller = new AbortController();
@@ -20,7 +80,7 @@ const fetchWithTimeout = async (url, options = {}, timeout = 15000) => {
 };
 
 const getHeaders = async () => {
-  const token = await AsyncStorage.getItem("jwt_token");
+  const token = await secureToken.get("jwt_token");
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -63,7 +123,7 @@ export const api = {
     }
     
     const data = await response.json();
-    await AsyncStorage.setItem("jwt_token", data.token);
+    await secureToken.set("jwt_token", data.token);
     await AsyncStorage.setItem("user_info", JSON.stringify(data));
     return data;
   },
@@ -129,7 +189,7 @@ export const api = {
     }
 
     const data = await response.json();
-    await AsyncStorage.setItem("jwt_token", data.token);
+    await secureToken.set("jwt_token", data.token);
     await AsyncStorage.setItem("user_info", JSON.stringify(data));
     return data;
   },
@@ -220,14 +280,14 @@ export const api = {
     }
 
     const data = await response.json();
-    await AsyncStorage.setItem("jwt_token", data.token);
+    await secureToken.set("jwt_token", data.token);
     await AsyncStorage.setItem("user_info", JSON.stringify(data));
     return data;
   },
 
   logout: async () => {
-    // Remove all auth-related data
-    await AsyncStorage.removeItem("jwt_token");
+    // Remove all auth-related data with hardware secure wipe
+    await secureToken.remove("jwt_token");
     await AsyncStorage.removeItem("user_info");
     await AsyncStorage.removeItem("user_profile_cache");
     // Clean up legacy plaintext credentials if they exist
@@ -244,7 +304,7 @@ export const api = {
     }
 
     if (response.status === 401) {
-      await AsyncStorage.removeItem("jwt_token");
+      await secureToken.remove("jwt_token");
       await AsyncStorage.removeItem("user_info");
       const err = new Error("Sessão expirada. Faça login novamente.");
       err.isAuthError = true;
@@ -283,7 +343,7 @@ export const api = {
     }
 
     if (response.status === 401) {
-      await AsyncStorage.removeItem("jwt_token");
+      await secureToken.remove("jwt_token");
       await AsyncStorage.removeItem("user_info");
       const err = new Error("Sessão expirada. Faça login novamente.");
       err.isAuthError = true;
@@ -296,7 +356,7 @@ export const api = {
 
   isLoggedIn: async () => {
     try {
-      const token = await AsyncStorage.getItem("jwt_token");
+      const token = await secureToken.get("jwt_token");
       return !!token;
     } catch {
       return false;
@@ -353,7 +413,11 @@ export const api = {
         description: announcementData.description || '',
         instrument: announcementData.instrument || announcementData.soughtRole || '',
         city: announcementData.city || '',
-        state: announcementData.state || ''
+        state: announcementData.state || '',
+        imageUrl: announcementData.imageUrl || announcementData.imageUri || null,
+        styles: announcementData.styles || (announcementData.genres ? announcementData.genres.join(', ') : ''),
+        interestLevel: announcementData.interestLevel || (announcementData.options ? announcementData.options.join(', ') : 'Casual'),
+        projectType: announcementData.projectType || (announcementData.isCover ? 'Cover' : 'Autoral') || 'Cover'
       })
     });
     if (!response.ok) {
@@ -367,16 +431,126 @@ export const api = {
     return response.json();
   },
 
+  updateAnnouncement: async (id, announcementData) => {
+    const headers = await getHeaders();
+    const payload = {
+      title: announcementData.title || announcementData.bandName,
+      description: announcementData.description || '',
+      instrument: announcementData.instrument || announcementData.soughtRole || '',
+      city: announcementData.city || '',
+      state: announcementData.state || '',
+      imageUrl: announcementData.imageUrl || announcementData.imageUri || null,
+      styles: announcementData.styles || (announcementData.genres ? announcementData.genres.join(', ') : ''),
+      interestLevel: announcementData.interestLevel || (announcementData.options ? announcementData.options.join(', ') : 'Casual'),
+      projectType: announcementData.projectType || 'Cover',
+      status: announcementData.status || 'Open'
+    };
+
+    let response = await fetchWithTimeout(`${API_URL}/Announcements/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(payload)
+    });
+
+    // 405 Method Not Allowed fallback for proxies/IIS WebDAV
+    if (response.status === 405) {
+      response = await fetchWithTimeout(`${API_URL}/Announcements/${id}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (!response.ok) {
+      let errMsg = 'Erro ao atualizar anúncio.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
   deleteAnnouncement: async (id) => {
     try {
       const headers = await getHeaders();
-      const response = await fetchWithTimeout(`${API_URL}/Announcements/${id}`, {
+      let response = await fetchWithTimeout(`${API_URL}/Announcements/${id}`, {
         method: "DELETE",
         headers
       });
+
+      // 405 Method Not Allowed fallback
+      if (response.status === 405) {
+        response = await fetchWithTimeout(`${API_URL}/Announcements/${id}/delete`, {
+          method: "POST",
+          headers
+        });
+      }
+
       return response.ok;
     } catch (err) {
       console.log('Error deleting cloud announcement:', err);
+      return false;
+    }
+  },
+
+  applyToAnnouncement: async (announcementId, candidateData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Announcements/${announcementId}/apply`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        applicantName: candidateData.applicantName || candidateData.name || '',
+        instrument: candidateData.instrument || candidateData.role || '',
+        message: candidateData.message || candidateData.notes || '',
+        contactInfo: candidateData.contactInfo || candidateData.phone || '',
+        pictureUrl: candidateData.pictureUrl || candidateData.avatar || null
+      })
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao registrar candidatura no servidor.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  getAnnouncementApplicants: async (announcementId) => {
+    try {
+      const headers = await getHeaders();
+      const response = await fetchWithTimeout(`${API_URL}/Announcements/${announcementId}/applicants`, {
+        headers
+      });
+      if (response.ok) {
+        const res = await response.json();
+        return res.data || [];
+      }
+    } catch (err) {
+      console.log('Error fetching applicants:', err);
+    }
+    return [];
+  },
+
+  deleteAnnouncementApplicant: async (announcementId, applicantId) => {
+    try {
+      const headers = await getHeaders();
+      let response = await fetchWithTimeout(`${API_URL}/Announcements/${announcementId}/applicants/${applicantId}`, {
+        method: "DELETE",
+        headers
+      });
+      if (response.status === 405) {
+        response = await fetchWithTimeout(`${API_URL}/Announcements/${announcementId}/applicants/${applicantId}/delete`, {
+          method: "POST",
+          headers
+        });
+      }
+      return response.ok;
+    } catch (err) {
+      console.log('Error deleting applicant:', err);
       return false;
     }
   },

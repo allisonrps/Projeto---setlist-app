@@ -447,26 +447,44 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     try {
       const cloudList = await api.getAnnouncements();
       if (Array.isArray(cloudList)) {
-        const cloudFormatted = cloudList.map(ca => ({
-          id: 'cloud-' + ca.id,
-          cloudId: ca.id,
-          creatorId: ca.creator?.id || 'me',
-          creatorName: ca.creator?.username || 'Músico',
-          creatorUsername: ca.creator?.username || 'musico',
-          bandName: ca.title,
-          imageUri: '',
-          soughtRole: ca.instrument || 'Músico',
-          options: ['Cover', 'Profissional'],
-          isCover: 1,
-          isAutoral: 0,
-          genres: ['Rock'],
-          city: ca.city || '',
-          state: ca.state || '',
-          country: 'Brasil',
-          description: ca.description || '',
-          createdAt: ca.createdAt ? new Date(ca.createdAt).toLocaleDateString() : 'Recente',
-          applicants: []
-        }));
+        const cloudFormatted = cloudList.map(ca => {
+          const projectType = ca.projectType || 'Cover';
+          const interestLevel = ca.interestLevel || 'Casual';
+          const stylesList = ca.styles ? ca.styles.split(',').map(s => s.trim()).filter(Boolean) : ['Geral'];
+          const applicantsList = Array.isArray(ca.applicants) ? ca.applicants.map(ap => ({
+            id: ap.id,
+            name: ap.applicantName || 'Músico Interessado',
+            role: ap.instrument || 'Músico',
+            notes: ap.message || '',
+            phone: ap.contactInfo || '',
+            avatar: ap.pictureUrl || '',
+            status: ap.status || 'pending',
+            createdAt: ap.createdAt ? new Date(ap.createdAt).toLocaleDateString() : 'Recente'
+          })) : [];
+
+          return {
+            id: 'cloud-' + ca.id,
+            cloudId: ca.id,
+            creatorId: ca.creator?.id || 'me',
+            creatorName: ca.creator?.username || 'Músico',
+            creatorUsername: ca.creator?.username || 'musico',
+            bandName: ca.title,
+            imageUri: ca.imageUrl || '',
+            soughtRole: ca.instrument || 'Músico',
+            options: [projectType, interestLevel].filter(Boolean),
+            projectType: projectType,
+            interestLevel: interestLevel,
+            isCover: projectType.toLowerCase().includes('cover') ? 1 : 0,
+            isAutoral: projectType.toLowerCase().includes('autoral') ? 1 : 0,
+            genres: stylesList,
+            city: ca.city || '',
+            state: ca.state || '',
+            country: 'Brasil',
+            description: ca.description || '',
+            createdAt: ca.createdAt ? new Date(ca.createdAt).toLocaleDateString() : 'Recente',
+            applicants: applicantsList
+          };
+        });
         setProjects(cloudFormatted);
         AsyncStorage.setItem('network_projects', JSON.stringify(cloudFormatted)).catch(() => {});
       } else {
@@ -666,6 +684,27 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
 
     // Se estiver editando um anúncio existente
     if (editingProjectId) {
+      const existingProj = projects.find(p => p.id === editingProjectId);
+      const cloudId = existingProj?.cloudId || (editingProjectId.startsWith('cloud-') ? editingProjectId.replace('cloud-', '') : null);
+
+      if (cloudId) {
+        try {
+          await api.updateAnnouncement(cloudId, {
+            title: formBandName.trim(),
+            description: formDescription.trim(),
+            instrument: formSoughtRole.trim(),
+            city: formCity.trim(),
+            state: formState || '',
+            imageUrl: formBandImage || null,
+            styles: formGenres.map(g => String(g).replace(/^#+/, '')).join(', '),
+            projectType: (isCoverVal && isAutoralVal) ? 'Cover, Autoral' : (isCoverVal ? 'Cover' : (isAutoralVal ? 'Autoral' : 'Cover')),
+            interestLevel: formOptions.join(', ') || 'Casual'
+          });
+        } catch (apiErr) {
+          console.log('Error updating announcement on cloud API:', apiErr);
+        }
+      }
+
       const updated = projects.map(p => {
         if (p.id === editingProjectId) {
           return {
@@ -723,7 +762,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           description: formDescription.trim(),
           instrument: formSoughtRole.trim(),
           city: formCity.trim(),
-          state: formState || ''
+          state: formState || '',
+          imageUrl: formBandImage || null,
+          styles: formGenres.map(g => String(g).replace(/^#+/, '')).join(', '),
+          projectType: (isCoverVal && isAutoralVal) ? 'Cover, Autoral' : (isCoverVal ? 'Cover' : (isAutoralVal ? 'Autoral' : 'Cover')),
+          interestLevel: formOptions.join(', ') || 'Casual'
         });
         if (cloudRes?.data?.id) {
           cloudId = cloudRes.data.id;
@@ -772,10 +815,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           style: 'destructive',
           onPress: async () => {
             const toDel = projects.find(p => p.id === projId);
-            if (toDel?.cloudId) {
+            const cloudId = toDel?.cloudId || (toDel?.id && String(toDel.id).startsWith('cloud-') ? String(toDel.id).replace('cloud-', '') : null);
+            if (cloudId) {
               try {
-                await api.deleteAnnouncement(toDel.cloudId);
-              } catch (e) {}
+                await api.deleteAnnouncement(cloudId);
+              } catch (e) {
+                console.log('Error deleting cloud announcement:', e);
+              }
             }
             const updated = projects.filter(p => p.id !== projId);
             await saveProjects(updated);
@@ -962,13 +1008,32 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const handleSubmitInterest = async () => {
     if (!selectedInterestProject) return;
     const applicantName = currentUser?.displayName || currentUser?.username || 'Músico';
+    const instrumentChosen = interestInstrument.trim() || selectedInterestProject.soughtRole;
+    const messageContent = interestMessage.trim() || t('defaultInterestMsg') || 'Tenho muito interesse em participar deste projeto!';
+
     const newApplicant = {
       id: 'app-' + Date.now(),
       name: applicantName,
-      instrument: interestInstrument.trim() || selectedInterestProject.soughtRole,
-      message: interestMessage.trim() || t('defaultInterestMsg') || 'Tenho muito interesse em participar deste projeto!',
+      instrument: instrumentChosen,
+      message: messageContent,
       date: 'Agora'
     };
+
+    // Save to Cloud API
+    const annCloudId = selectedInterestProject.cloudId || (selectedInterestProject.id && String(selectedInterestProject.id).startsWith('cloud-') ? String(selectedInterestProject.id).replace('cloud-', '') : null);
+    if (annCloudId) {
+      try {
+        await api.applyToAnnouncement(annCloudId, {
+          applicantName: applicantName,
+          instrument: instrumentChosen,
+          message: messageContent,
+          contactInfo: currentUser?.email || '',
+          pictureUrl: userProfileImage || currentUser?.pictureUrl || null
+        });
+      } catch (err) {
+        console.log('Error submitting interest to cloud API:', err);
+      }
+    }
 
     const updated = projects.map(p => {
       if (p.id === selectedInterestProject.id) {

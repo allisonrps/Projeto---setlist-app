@@ -26,7 +26,7 @@ import { ThemeProvider, useTheme } from './hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from './services/api';
+import { api, secureToken } from './services/api';
 import { bandService } from './services/bandService';
 import { songService } from './services/songService';
 import { setlistService } from './services/setlistService';
@@ -768,7 +768,7 @@ function MainApp() {
       console.log('Banco de dados inicializado com sucesso.');
       await reloadAllData();
       try {
-        const token = await AsyncStorage.getItem('jwt_token');
+        const token = await secureToken.get('jwt_token');
         if (token) {
           // Check if JWT is expired by decoding the payload
           try {
@@ -799,12 +799,12 @@ function MainApp() {
               } catch (e) {}
             } else {
               // Token expired, clean up
-              await AsyncStorage.removeItem('jwt_token');
+              await secureToken.remove('jwt_token');
               await AsyncStorage.removeItem('user_info');
             }
           } catch (decodeErr) {
             // Invalid token format, clean up
-            await AsyncStorage.removeItem('jwt_token');
+            await secureToken.remove('jwt_token');
             await AsyncStorage.removeItem('user_info');
           }
         }
@@ -939,7 +939,7 @@ function MainApp() {
       }
       await loadReceivedInvites();
       try {
-        const token = await AsyncStorage.getItem('jwt_token');
+        const token = await secureToken.get('jwt_token');
         if (token) {
           const cbList = await api.getMyCloudBands();
           if (Array.isArray(cbList)) {

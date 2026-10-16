@@ -17358,6 +17358,21 @@
 
       saveInterestMessageForBand(interestItem);
 
+      // Persist candidate application directly to the Cloud API
+      if (annId) {
+        fetch(`${API_URL}/Announcements/${annId}/apply`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            applicantName: currentUser.displayName || currentUser.username || 'Músico',
+            instrument: instrument,
+            message: message,
+            contactInfo: phone || currentUser.email || '',
+            pictureUrl: currentUser.pictureUrl || ''
+          })
+        }).catch(err => console.log('API application save note:', err));
+      }
+
       if (currentBandSyncData && (!bandId || String(currentBandData?.id) === String(bandId))) {
         if (!currentBandSyncData.activityLogs) currentBandSyncData.activityLogs = [];
         currentBandSyncData.activityLogs.unshift({
@@ -18093,11 +18108,20 @@
       };
 
       try {
-        const res = await fetch(`${API_URL}/Announcements/${annId}`, {
+        let res = await fetch(`${API_URL}/Announcements/${annId}`, {
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify(payload)
         });
+
+        // 405 Method Not Allowed fallback for proxies/IIS WebDAV
+        if (res.status === 405) {
+          res = await fetch(`${API_URL}/Announcements/${annId}`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+          });
+        }
 
         if (res.ok) {
           showToast('Anúncio atualizado com sucesso!', 'success');
@@ -18116,10 +18140,19 @@
     async function handleDeleteAnnouncement(id, title) {
       if (!confirm(`Deseja realmente excluir o anúncio "${title || 'este anúncio'}"?`)) return;
       try {
-        const res = await fetch(`${API_URL}/Announcements/${id}`, {
+        let res = await fetch(`${API_URL}/Announcements/${id}`, {
           method: 'DELETE',
           headers: getAuthHeaders()
         });
+
+        // 405 Method Not Allowed fallback
+        if (res.status === 405) {
+          res = await fetch(`${API_URL}/Announcements/${id}/delete`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+          });
+        }
+
         if (res.ok) {
           showToast('Anúncio excluído com sucesso!', 'success');
           await loadAnnouncements();
@@ -18132,73 +18165,116 @@
       }
     }
 
-    function openAnnouncementCandidatesModal(annId, projectTitle) {
+    async function openAnnouncementCandidatesModal(annId, projectTitle) {
       const titleEl = document.getElementById('candidatesModalProjectTitle');
       const subtitleEl = document.getElementById('candidatesModalSubtitle');
       const listEl = document.getElementById('announcementCandidatesList');
       if (titleEl) titleEl.textContent = projectTitle || 'Anúncio';
       
-      const candidates = getAnnouncementInterests(annId);
-      if (subtitleEl) {
-        subtitleEl.textContent = `${candidates.length} músico${candidates.length === 1 ? '' : 's'} interessado${candidates.length === 1 ? '' : 's'} nesta vaga`;
-      }
+      let candidates = getAnnouncementInterests(annId);
 
-      if (candidates.length === 0) {
-        listEl.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; color: #94a3b8; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.08);">
-            <ion-icon name="people-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <div style="font-weight: 700; color: #cbd5e1; font-size: 1rem; margin-bottom: 4px;">Nenhum interessado ainda</div>
-            <div style="font-size: 0.85rem; color: #64748b;">Assim que outros músicos clicarem em demonstrar interesse, eles aparecerão aqui com mensagem e telefone.</div>
-          </div>
-        `;
-      } else {
-        listEl.innerHTML = candidates.map(c => {
-          const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleString('pt-BR') : '';
-          const initial = (c.authorDisplayName || c.authorUsername || 'M').charAt(0).toUpperCase();
-          const avatarHtml = c.authorAvatar
-            ? `<img src="${c.authorAvatar}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">`
-            : `<div style="width: 44px; height: 44px; border-radius: 50%; background: #334155; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">${initial}</div>`;
-          
-          const cleanPhone = (c.phone || '').replace(/\D/g, '');
-          const whatsAppLink = cleanPhone ? `https://wa.me/55${cleanPhone.replace(/^55/, '')}` : null;
+      const renderCandidates = (list) => {
+        if (subtitleEl) {
+          subtitleEl.textContent = `${list.length} músico${list.length === 1 ? '' : 's'} interessado${list.length === 1 ? '' : 's'} nesta vaga`;
+        }
 
-          return `
-            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  ${avatarHtml}
-                  <div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${escapeHtml(c.authorDisplayName || c.authorUsername)}</span>
-                      <span style="font-size: 0.8rem; color: #94a3b8;">@${escapeHtml(c.authorUsername)}</span>
-                    </div>
-                    <div style="font-size: 0.8rem; color: #4ade80; font-weight: 600;">Interessado para: ${escapeHtml(c.instrument || 'Músico')}</div>
-                  </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  ${whatsAppLink ? `
-                    <a href="${whatsAppLink}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 6px 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
-                      <ion-icon name="logo-whatsapp"></ion-icon> WhatsApp
-                    </a>
-                  ` : ''}
-                  ${c.phone && !whatsAppLink ? `
-                    <span style="font-size: 0.82rem; color: #cbd5e1; background: rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 8px;">📞 ${escapeHtml(c.phone)}</span>
-                  ` : ''}
-                  <button class="btn btn-sm btn-outline" style="border-radius: 8px; padding: 6px 10px; font-size: 0.8rem;" onclick="closeModal('announcementCandidatesModal'); openPublicMusicianProfile('${escapeHtml(c.authorUsername)}')">
-                    Ver Perfil
-                  </button>
-                </div>
-              </div>
-              <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 0.86rem; color: #cbd5e1; line-height: 1.45; border-left: 3px solid #22c55e;">
-                "${escapeHtml(c.message)}"
-              </div>
-              ${dateStr ? `<div style="font-size: 0.75rem; color: #64748b; text-align: right;">Enviado em ${dateStr}</div>` : ''}
+        if (list.length === 0) {
+          listEl.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #94a3b8; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.08);">
+              <ion-icon name="people-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
+              <div style="font-weight: 700; color: #cbd5e1; font-size: 1rem; margin-bottom: 4px;">Nenhum interessado ainda</div>
+              <div style="font-size: 0.85rem; color: #64748b;">Assim que outros músicos clicarem em demonstrar interesse, eles aparecerão aqui com mensagem e telefone.</div>
             </div>
           `;
-        }).join('');
-      }
+        } else {
+          listEl.innerHTML = list.map(c => {
+            const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleString('pt-BR') : '';
+            const initial = (c.authorDisplayName || c.applicantName || c.authorUsername || 'M').charAt(0).toUpperCase();
+            const avatarHtml = (c.authorAvatar || c.pictureUrl)
+              ? `<img src="${c.authorAvatar || c.pictureUrl}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">`
+              : `<div style="width: 44px; height: 44px; border-radius: 50%; background: #334155; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">${initial}</div>`;
+            
+            const rawPhone = c.phone || c.contactInfo || '';
+            const cleanPhone = rawPhone.replace(/\D/g, '');
+            const whatsAppLink = cleanPhone ? `https://wa.me/55${cleanPhone.replace(/^55/, '')}` : null;
+            const displayName = c.authorDisplayName || c.applicantName || c.authorUsername || 'Músico Interessado';
+            const username = c.authorUsername || (c.userId ? `user_${c.userId}` : '');
 
+            return `
+              <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    ${avatarHtml}
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${escapeHtml(displayName)}</span>
+                        ${username ? `<span style="font-size: 0.8rem; color: #94a3b8;">@${escapeHtml(username)}</span>` : ''}
+                      </div>
+                      <div style="font-size: 0.8rem; color: #4ade80; font-weight: 600;">Interessado para: ${escapeHtml(c.instrument || 'Músico')}</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    ${whatsAppLink ? `
+                      <a href="${whatsAppLink}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 6px 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
+                        <ion-icon name="logo-whatsapp"></ion-icon> WhatsApp
+                      </a>
+                    ` : ''}
+                    ${rawPhone && !whatsAppLink ? `
+                      <span style="font-size: 0.82rem; color: #cbd5e1; background: rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 8px;">📞 ${escapeHtml(rawPhone)}</span>
+                    ` : ''}
+                    ${username ? `
+                      <button class="btn btn-sm btn-outline" style="border-radius: 8px; padding: 6px 10px; font-size: 0.8rem;" onclick="closeModal('announcementCandidatesModal'); openPublicMusicianProfile('${escapeHtml(username)}')">
+                        Ver Perfil
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 0.86rem; color: #cbd5e1; line-height: 1.45; border-left: 3px solid #22c55e;">
+                  "${escapeHtml(c.message || 'Tenho interesse nesta vaga!')}"
+                </div>
+                ${dateStr ? `<div style="font-size: 0.75rem; color: #64748b; text-align: right;">Enviado em ${dateStr}</div>` : ''}
+              </div>
+            `;
+          }).join('');
+        }
+      };
+
+      renderCandidates(candidates);
       openModal('announcementCandidatesModal');
+
+      // Sync with cloud API
+      try {
+        const res = await fetch(`${API_URL}/Announcements/${annId}/applicants`, {
+          headers: getAuthHeaders()
+        });
+        if (res.ok) {
+          const cloudRes = await res.json();
+          if (cloudRes.data && Array.isArray(cloudRes.data)) {
+            const cloudFormatted = cloudRes.data.map(ap => ({
+              id: 'cloud_' + ap.id,
+              announcementId: ap.announcementId,
+              authorDisplayName: ap.applicantName,
+              applicantName: ap.applicantName,
+              authorUsername: ap.user?.username || '',
+              authorAvatar: ap.pictureUrl || '',
+              instrument: ap.instrument,
+              message: ap.message,
+              phone: ap.contactInfo,
+              createdAt: ap.createdAt
+            }));
+
+            const merged = [...cloudFormatted];
+            candidates.forEach(localC => {
+              if (!merged.some(m => m.message === localC.message && (m.authorDisplayName === localC.authorDisplayName || m.authorDisplayName === localC.authorUsername))) {
+                merged.push(localC);
+              }
+            });
+            renderCandidates(merged);
+          }
+        }
+      } catch (err) {
+        console.log('Error fetching applicants from cloud:', err);
+      }
     }
 
     async function openIdealMusiciansScanner(annId) {
