@@ -2253,7 +2253,7 @@
       box-shadow: 0 10px 24px rgba(14, 165, 233, 0.18);
     }
     .band-card-cover {
-      height: 95px;
+      height: 115px;
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3));
       position: relative;
       overflow: hidden;
@@ -2281,11 +2281,12 @@
       border: 2px solid rgba(255, 255, 255, 0.2);
     }
     .band-card-body {
-      padding: 12px 14px 14px 14px;
+      padding: 14px 14px 14px 14px;
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      text-align: center;
     }
 
     /* BUTTONS */
@@ -5545,7 +5546,7 @@
 
             <div id="socialViewMus" class="user-cards-vertical-list" style="display: flex; flex-direction: column; gap: 18px;"></div>
             <div id="socialViewAnn" class="grid-cards" style="display: none;"></div>
-            <div id="socialViewBands" class="projects-bands-social-list" style="display: none;"></div>
+            <div id="socialViewBands" class="profile-bands-grid" style="display: none;"></div>
           </div>
         </div>
       </section>
@@ -9406,33 +9407,40 @@
           ? genreList.map(g => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">${escapeHtml(g)}</span>`).join('')
           : `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">Geral</span>`;
 
+        const locStr = [band.city, band.state].filter(Boolean).join(', ');
+
         return `
-          <div class="card band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${band.name}">
+          <div class="card band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${escapeHtml(band.name)}">
             <div class="band-card-cover">
               ${normImg ? `
-                <img src="${normImg}" alt="${band.name}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="${normImg}" alt="${escapeHtml(band.name)}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="band-card-fallback-avatar" style="display: none;">${initials}</div>
               ` : `
                 <div class="band-card-fallback-avatar">${initials}</div>
               `}
             </div>
-            <div class="band-card-body">
-              <div>
-                <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(band.name)}">${escapeHtml(band.name)}</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;">
+            <div class="band-card-body" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; width: 100%;" title="${escapeHtml(band.name)}">${escapeHtml(band.name)}</h4>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; margin-bottom: 8px;">
                   ${genrePillsHtml}
                 </div>
+                ${locStr ? `
+                  <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <span>${escapeHtml(locStr)}</span>
+                  </p>
+                ` : ''}
                 ${band.description ? `
-                  <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                  <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center;">
                     ${escapeHtml(band.description)}
                   </p>
                 ` : ''}
               </div>
-              <div style="display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.75rem; color: var(--cyan-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
+              <div style="display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: center; text-align: center;">
+                <span style="font-size: 0.78rem; color: var(--cyan-light); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                   <ion-icon name="open-outline"></ion-icon> Ver Agenda & Painel
+                  <ion-icon name="chevron-forward-outline" style="color: var(--text-dim); font-size: 0.85rem;"></ion-icon>
                 </span>
-                <ion-icon name="chevron-forward-outline" style="color: var(--text-dim); font-size: 0.85rem;"></ion-icon>
               </div>
             </div>
           </div>
@@ -16105,7 +16113,7 @@
         const b = document.getElementById('socialSubBands');
         if (b) b.classList.add('active');
         const v = document.getElementById('socialViewBands');
-        if (v) v.style.display = 'flex';
+        if (v) v.style.display = 'grid';
       }
       loadSocialData();
     }
@@ -16416,83 +16424,48 @@
           container.innerHTML = filtered.map(b => {
             const initials = (b.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
             const normImg = normalizeImageUri(b.imageUri);
-            const avatarHtml = normImg
-              ? `<img src="${normImg}" alt="${escapeHtml(b.name)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
-              : `<span>${initials}</span>`;
-
             const genreList = getBandGenrePills(b.genre);
-            const genrePillsHtml = genreList.map(g => 
-              `<span class="badge badge-cyan" style="font-size: 0.72rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;">${escapeHtml(g)}</span>`
-            ).join('');
+            const genrePillsHtml = genreList.length > 0
+              ? genreList.map(g => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('')
+              : `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700; border-radius: 9999px;">Geral</span>`;
 
-            const locationStr = [b.city, b.state, b.country].filter(Boolean).join(', ') || 'Brasil';
+            const locStr = [b.city, b.state].filter(Boolean).join(', ');
 
             return `
-              <div class="project-band-card" onclick="window.open('/banda?id=${b.id}', '_blank')" title="Clique para ver o perfil público de ${escapeHtml(b.name)}">
-                <div class="project-band-avatar">
-                  ${avatarHtml}
+              <div class="card band-card" onclick="window.open('/banda?id=${b.id}', '_blank')" title="Clique para ver o perfil público de ${escapeHtml(b.name)}">
+                <div class="band-card-cover">
+                  ${normImg ? `
+                    <img src="${normImg}" alt="${escapeHtml(b.name)}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="band-card-fallback-avatar" style="display: none;">${initials}</div>
+                  ` : `
+                    <div class="band-card-fallback-avatar">${initials}</div>
+                  `}
                 </div>
-                <div class="project-band-content" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%;">
-                  
-                  <!-- HEADER: TITLE & PILLS ALL CENTERED -->
-                  <div class="project-band-header" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; margin-bottom: 12px;">
-                    <h3 class="project-band-title" style="margin-left: 0; margin-bottom: 8px; justify-content: center; text-align: center; font-size: 1.55rem; width: 100%;">
+                <div class="band-card-body" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; width: 100%;" title="${escapeHtml(b.name)}">
                       ${escapeHtml(b.name)}
-                    </h3>
-                    
-                    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
-                      <span class="badge badge-cyan" style="font-size: 0.75rem; padding: 4px 12px; font-weight: 800; border-radius: 9999px;">
-                        <ion-icon name="musical-notes-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${escapeHtml(b.bandType || 'Banda')}
-                      </span>
-                      <span class="badge badge-emerald" style="font-size: 0.75rem; padding: 4px 12px; font-weight: 800; border-radius: 9999px;">
-                        <ion-icon name="people-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${b.membersCount || 1} Membros
-                      </span>
+                    </h4>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; margin-bottom: 8px;">
                       ${genrePillsHtml}
-                      <span class="badge" style="background: rgba(255,255,255,0.08); color: #cbd5e1; font-size: 0.75rem; padding: 4px 12px; font-weight: 700; border-radius: 9999px;">
-                        <ion-icon name="location-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${escapeHtml(locationStr)}
-                      </span>
                     </div>
-
+                    ${locStr ? `
+                      <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <span>${escapeHtml(locStr)}</span>
+                      </p>
+                    ` : ''}
                     ${b.description ? `
-                      <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 4px 0 0 0; text-align: center; max-width: 680px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                      <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center;">
                         ${escapeHtml(b.description)}
                       </p>
                     ` : ''}
                   </div>
-
-                  <!-- METRICS GRID (MATCHING FIGMA PRINT 2 / PROJETOS) -->
-                  <div class="project-band-metrics-grid" style="width: 100%;">
-                    <div class="project-metric-box">
-                      <div class="project-metric-val">
-                        <ion-icon name="musical-note-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>
-                        ${escapeHtml(b.genre || 'Variado')}
-                      </div>
-                      <div class="project-metric-lbl">Estilo Musical</div>
-                    </div>
-                    <div class="project-metric-box">
-                      <div class="project-metric-val">
-                        <ion-icon name="people-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>
-                        ${b.membersCount || 1}
-                      </div>
-                      <div class="project-metric-lbl">Integrantes</div>
-                    </div>
-                    <div class="project-metric-box">
-                      <div class="project-metric-val">
-                        <ion-icon name="location-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>
-                        ${escapeHtml([b.city, b.state].filter(Boolean).join(', ') || 'Brasil')}
-                      </div>
-                      <div class="project-metric-lbl">Cidade / Estado</div>
-                    </div>
-                  </div>
-
-                  <!-- ACTION FOOTER: VER PERFIL PÚBLICO -->
-                  <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); width: 100%; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 0.85rem; color: var(--cyan-light); font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                      <ion-icon name="open-outline" style="font-size: 1.05rem;"></ion-icon> Ver Perfil Público da Banda
-                      <ion-icon name="chevron-forward-outline" style="font-size: 0.95rem; color: var(--text-dim);"></ion-icon>
+                  <div style="display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: center; text-align: center;">
+                    <span style="font-size: 0.78rem; color: var(--cyan-light); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                      <ion-icon name="open-outline"></ion-icon> Ver Perfil Público
+                      <ion-icon name="chevron-forward-outline" style="color: var(--text-dim); font-size: 0.85rem;"></ion-icon>
                     </span>
                   </div>
-
                 </div>
               </div>
             `;
