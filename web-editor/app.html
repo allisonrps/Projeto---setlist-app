@@ -1919,14 +1919,20 @@
     .social-hero {
       background: #233144;
       border-bottom: 2px solid #1a2432;
-      padding: 34px 40px 24px 40px;
+      padding: 34px 40px 22px 40px;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
+      flex-direction: column;
+      gap: 20px;
       margin-bottom: 0;
       position: relative;
+    }
+    .social-hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 20px;
     }
     .social-hero-left {
       display: flex;
@@ -1967,41 +1973,37 @@
       max-width: 520px;
       line-height: 1.45;
     }
-    .social-hero-actions {
-      display: flex;
-      align-items: center;
+    /* 3 FILTROS ABERTOS DE LOCALIDADE NA BASE DO CABEÇALHO */
+    .social-hero-bottom-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 14px;
-      flex-wrap: wrap;
+      width: 100%;
+      margin-top: 2px;
     }
-    .social-location-filter-box {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1.5px solid rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 6px 14px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease;
-    }
-    .social-location-filter-box:hover,
-    .social-location-filter-box:focus-within {
-      border-color: var(--cyan, #06b6d4);
-      background: rgba(0, 0, 0, 0.55);
-      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.18);
-    }
-    .social-location-picker-item {
+    .social-filter-input-group {
+      background: rgba(0, 0, 0, 0.38);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 7px 14px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
+      transition: all 0.2s ease;
     }
-    .social-location-picker-header {
+    .social-filter-input-group:focus-within,
+    .social-filter-input-group:hover {
+      border-color: var(--cyan, #06b6d4);
+      background: rgba(0, 0, 0, 0.55);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+    }
+    .social-filter-input-header {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
     .social-loc-icon {
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       color: var(--cyan, #06b6d4);
       flex-shrink: 0;
     }
@@ -2013,29 +2015,50 @@
       letter-spacing: 0.5px;
       line-height: 1;
     }
-    .social-loc-select {
+    .social-filter-input-wrapper {
+      display: flex;
+      align-items: center;
+      position: relative;
+      width: 100%;
+    }
+    .social-open-input {
+      width: 100%;
       background: transparent;
       border: none;
-      color: #ffffff;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
       outline: none;
-      padding: 0 4px 0 0;
-      max-width: 145px;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    .social-loc-select option {
-      background: #18202c;
       color: #ffffff;
-      font-weight: 600;
-      padding: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 2px 24px 2px 0;
+      font-family: inherit;
     }
-    .social-location-sep {
-      width: 1px;
-      height: 26px;
-      background: rgba(255, 255, 255, 0.12);
+    .social-open-input::placeholder {
+      color: rgba(255, 255, 255, 0.38);
+      font-weight: 500;
+      font-size: 0.82rem;
+    }
+    .social-input-clear-btn {
+      position: absolute;
+      right: 0;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .social-input-clear-btn:hover {
+      background: rgba(239, 68, 68, 0.85);
+      transform: scale(1.1);
     }
 
     .projects-bands-social-list {
@@ -2155,7 +2178,7 @@
 
     @media (max-width: 768px) {
       .social-hero {
-        padding: 22px 18px;
+        padding: 22px 18px 16px 18px;
         gap: 16px;
       }
       .social-hero-avatar {
@@ -2165,36 +2188,9 @@
       .social-hero-title {
         font-size: 1.5rem;
       }
-      .social-hero-actions {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
+      .social-hero-bottom-bar {
+        grid-template-columns: 1fr;
         gap: 10px;
-      }
-      .social-location-filter-box {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        padding: 10px;
-      }
-      .social-location-sep {
-        display: none;
-      }
-      .social-location-picker-item {
-        width: 100%;
-        min-width: unset;
-      }
-      .social-loc-select {
-        width: 100%;
-        max-width: unset;
-        font-size: 0.8rem;
-      }
-      @media (max-width: 480px) {
-        .social-location-filter-box {
-          grid-template-columns: 1fr;
-          gap: 10px;
-        }
       }
       .social-tabs-strip {
         padding-left: 12px;
@@ -5451,59 +5447,58 @@
         
         <!-- SOCIAL HERO BANNER (MATCHING FIGMA PROFILE HERO) -->
         <div class="social-hero">
-          <div class="social-hero-left">
-            <div class="social-hero-avatar">
-              <ion-icon name="planet" style="font-size: 3rem; color: #fff;"></ion-icon>
-            </div>
-            <div>
-              <h1 class="social-hero-title">REDE MUSICAL</h1>
-              <p class="social-hero-subtitle">Conecte-se com músicos, bandas e oportunidades da sua cena musical</p>
+          <div class="social-hero-top">
+            <div class="social-hero-left">
+              <div class="social-hero-avatar">
+                <ion-icon name="planet" style="font-size: 3rem; color: #fff;"></ion-icon>
+              </div>
+              <div>
+                <h1 class="social-hero-title">REDE MUSICAL</h1>
+                <p class="social-hero-subtitle">Conecte-se com músicos, bandas e oportunidades da sua cena musical</p>
+              </div>
             </div>
           </div>
 
-          <!-- ACTIONS IN HEADER: LOCALIDADE HIERÁRQUICA (PAÍS, ESTADO, CIDADE) + CRIAR ANÚNCIO -->
-          <div class="social-hero-actions">
-            <!-- SELETOR DE LOCALIDADE NO CABEÇALHO (POR PADRÃO PAÍS, ESTADO E CIDADE DO MÚSICO) -->
-            <div class="social-location-filter-box" title="Filtrar por camada: País, Estado e Cidade">
-              <div class="social-location-picker-item">
-                <div class="social-location-picker-header">
-                  <ion-icon name="globe-outline" class="social-loc-icon"></ion-icon>
-                  <span class="social-loc-lbl">País</span>
-                </div>
-                <select id="socialCountrySelect" onchange="onSocialCountryChange()" class="social-loc-select">
-                  <option value="">Carregando...</option>
-                </select>
+          <!-- BASE DO CABEÇALHO: 3 FILTROS ABERTOS DE LOCALIDADE (PAÍS, ESTADO, CIDADE) -->
+          <div class="social-hero-bottom-bar">
+            <!-- País -->
+            <div class="social-filter-input-group">
+              <div class="social-filter-input-header">
+                <ion-icon name="globe-outline" class="social-loc-icon"></ion-icon>
+                <span class="social-loc-lbl">País</span>
               </div>
-
-              <div class="social-location-sep"></div>
-
-              <div class="social-location-picker-item">
-                <div class="social-location-picker-header">
-                  <ion-icon name="map-outline" class="social-loc-icon"></ion-icon>
-                  <span class="social-loc-lbl">Estado</span>
-                </div>
-                <select id="socialStateSelect" onchange="onSocialStateChange()" class="social-loc-select">
-                  <option value="">Carregando...</option>
-                </select>
+              <div class="social-filter-input-wrapper">
+                <input type="text" id="socialCountryInput" class="social-open-input" placeholder="Todos os países..." list="socialCountryDatalist" oninput="onSocialLocationInputChanged('country')" autocomplete="off">
+                <button type="button" class="social-input-clear-btn" id="socialCountryClearBtn" onclick="clearSocialLocationField('country')" title="Limpar país" style="display: none;">&times;</button>
               </div>
-
-              <div class="social-location-sep"></div>
-
-              <div class="social-location-picker-item">
-                <div class="social-location-picker-header">
-                  <ion-icon name="location-outline" class="social-loc-icon"></ion-icon>
-                  <span class="social-loc-lbl">Cidade</span>
-                </div>
-                <select id="socialCitySelect" onchange="onSocialCityChange()" class="social-loc-select">
-                  <option value="">Carregando...</option>
-                </select>
-              </div>
+              <datalist id="socialCountryDatalist"></datalist>
             </div>
 
-            <button class="btn btn-primary" onclick="openCreateAnnouncementModal()" style="border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3); white-space: nowrap;">
-              <ion-icon name="megaphone-outline" style="font-size: 1.15rem;"></ion-icon>
-              <span>Criar Anúncio</span>
-            </button>
+            <!-- Estado -->
+            <div class="social-filter-input-group">
+              <div class="social-filter-input-header">
+                <ion-icon name="map-outline" class="social-loc-icon"></ion-icon>
+                <span class="social-loc-lbl">Estado</span>
+              </div>
+              <div class="social-filter-input-wrapper">
+                <input type="text" id="socialStateInput" class="social-open-input" placeholder="Todos os estados..." list="socialStateDatalist" oninput="onSocialLocationInputChanged('state')" autocomplete="off">
+                <button type="button" class="social-input-clear-btn" id="socialStateClearBtn" onclick="clearSocialLocationField('state')" title="Limpar estado" style="display: none;">&times;</button>
+              </div>
+              <datalist id="socialStateDatalist"></datalist>
+            </div>
+
+            <!-- Cidade -->
+            <div class="social-filter-input-group">
+              <div class="social-filter-input-header">
+                <ion-icon name="location-outline" class="social-loc-icon"></ion-icon>
+                <span class="social-loc-lbl">Cidade</span>
+              </div>
+              <div class="social-filter-input-wrapper">
+                <input type="text" id="socialCityInput" class="social-open-input" placeholder="Todas as cidades..." list="socialCityDatalist" oninput="onSocialLocationInputChanged('city')" autocomplete="off">
+                <button type="button" class="social-input-clear-btn" id="socialCityClearBtn" onclick="clearSocialLocationField('city')" title="Limpar cidade" style="display: none;">&times;</button>
+              </div>
+              <datalist id="socialCityDatalist"></datalist>
+            </div>
           </div>
         </div>
 
@@ -5541,6 +5536,21 @@
               <button class="btn btn-primary social-search-submit-btn" onclick="triggerSocialSearch()">
                 <ion-icon name="search-outline"></ion-icon>
                 <span>Buscar</span>
+              </button>
+            </div>
+
+            <!-- TOOLBAR DE ANÚNCIOS (DENTRO DA PÁGINA DE ANÚNCIOS) -->
+            <div id="socialAnnouncementsToolbar" style="display: none; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 20px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                  <ion-icon name="megaphone-outline" style="color: var(--cyan); font-size: 1.3rem;"></ion-icon>
+                  <span>Oportunidades & Vagas</span>
+                </h3>
+                <p style="margin: 3px 0 0 0; font-size: 0.85rem; color: var(--text-dim);">Encontre vagas em bandas ou anuncie sua disponibilidade na rede</p>
+              </div>
+              <button class="btn btn-primary" onclick="openCreateAnnouncementModal()" style="border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3); white-space: nowrap;">
+                <ion-icon name="add-circle-outline" style="font-size: 1.25rem;"></ion-icon>
+                <span>Novo Anúncio</span>
               </button>
             </div>
 
@@ -9407,7 +9417,14 @@
           ? genreList.map(g => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">${escapeHtml(g)}</span>`).join('')
           : `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700;">Geral</span>`;
 
-        const locStr = [band.city, band.state].filter(Boolean).join(', ');
+        const rawBLocs = [band.city, band.state].map(x => (x || '').trim()).filter(Boolean);
+        const dedupBLocs = [];
+        rawBLocs.forEach(part => {
+          if (!dedupBLocs.some(existing => existing.toLowerCase() === part.toLowerCase())) {
+            dedupBLocs.push(part);
+          }
+        });
+        const locStr = dedupBLocs.join(', ');
 
         return `
           <div class="card band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${escapeHtml(band.name)}">
@@ -15871,6 +15888,7 @@
     let currentSocialCity = '';
     let socialLocationInitialized = false;
     let knownSocialLocations = [];
+    let socialLocationDebounceTimer = null;
 
     function initSocialLocationFilters(newLocations = []) {
       const userCountry = (currentUser && currentUser.country) ? currentUser.country.trim() : 'Brasil';
@@ -15912,40 +15930,50 @@
         currentSocialCountry = userCountry || 'Brasil';
         currentSocialState = userState || '';
         currentSocialCity = userCity || '';
+
+        const cIn = document.getElementById('socialCountryInput');
+        const sIn = document.getElementById('socialStateInput');
+        const ciIn = document.getElementById('socialCityInput');
+        if (cIn) cIn.value = currentSocialCountry;
+        if (sIn) sIn.value = currentSocialState;
+        if (ciIn) ciIn.value = currentSocialCity;
+
         socialLocationInitialized = true;
       }
 
-      renderSocialLocationDropdowns();
+      updateSocialLocationClearBtns();
+      updateSocialLocationDatalists();
     }
 
-    function renderSocialLocationDropdowns() {
-      const countrySel = document.getElementById('socialCountrySelect');
-      const stateSel = document.getElementById('socialStateSelect');
-      const citySel = document.getElementById('socialCitySelect');
-      if (!countrySel || !stateSel || !citySel) return;
+    function updateSocialLocationClearBtns() {
+      const cIn = document.getElementById('socialCountryInput');
+      const sIn = document.getElementById('socialStateInput');
+      const ciIn = document.getElementById('socialCityInput');
+      const cBtn = document.getElementById('socialCountryClearBtn');
+      const sBtn = document.getElementById('socialStateClearBtn');
+      const ciBtn = document.getElementById('socialCityClearBtn');
 
-      const userCountry = (currentUser && currentUser.country) ? currentUser.country.trim() : 'Brasil';
-      const userState = (currentUser && currentUser.state) ? currentUser.state.trim() : '';
-      const userCity = (currentUser && currentUser.city) ? currentUser.city.trim() : '';
+      if (cBtn && cIn) cBtn.style.display = cIn.value.trim() ? 'inline-flex' : 'none';
+      if (sBtn && sIn) sBtn.style.display = sIn.value.trim() ? 'inline-flex' : 'none';
+      if (ciBtn && ciIn) ciBtn.style.display = ciIn.value.trim() ? 'inline-flex' : 'none';
+    }
 
-      // 1. COUNTRIES
+    function updateSocialLocationDatalists() {
+      const countryDl = document.getElementById('socialCountryDatalist');
+      const stateDl = document.getElementById('socialStateDatalist');
+      const cityDl = document.getElementById('socialCityDatalist');
+      if (!countryDl || !stateDl || !cityDl) return;
+
+      // 1. Countries
       const countries = Array.from(new Set(
         knownSocialLocations.map(l => l.country).filter(Boolean)
       )).sort((a, b) => a.localeCompare(b));
-
-      if (userCountry && !countries.some(c => c.toLowerCase() === userCountry.toLowerCase())) {
-        countries.unshift(userCountry);
+      if (!countries.some(c => c.toLowerCase() === 'brasil')) {
+        countries.unshift('Brasil');
       }
+      countryDl.innerHTML = countries.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
 
-      let countryHtml = `<option value="">🌎 Todos os Países</option>`;
-      countries.forEach(c => {
-        const isUser = userCountry && c.toLowerCase() === userCountry.toLowerCase();
-        const isSelected = (currentSocialCountry && currentSocialCountry.toLowerCase() === c.toLowerCase());
-        countryHtml += `<option value="${escapeHtml(c)}" ${isSelected ? 'selected' : ''}>${isUser ? '📍 ' : ''}${escapeHtml(c)}${isUser ? ' (Meu País)' : ''}</option>`;
-      });
-      countrySel.innerHTML = countryHtml;
-
-      // 2. STATES (Hierarchically filtered by selected country)
+      // 2. States (Filtered by country if typed)
       let statePool = knownSocialLocations;
       if (currentSocialCountry) {
         statePool = statePool.filter(l => (l.country || 'Brasil').toLowerCase() === currentSocialCountry.toLowerCase());
@@ -15953,22 +15981,9 @@
       const states = Array.from(new Set(
         statePool.map(l => l.state).filter(Boolean)
       )).sort((a, b) => a.localeCompare(b));
+      stateDl.innerHTML = states.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
 
-      if (userState && (!currentSocialCountry || userCountry.toLowerCase() === currentSocialCountry.toLowerCase())) {
-        if (!states.some(s => s.toLowerCase() === userState.toLowerCase())) {
-          states.unshift(userState);
-        }
-      }
-
-      let stateHtml = `<option value="">🗺️ Todos os Estados</option>`;
-      states.forEach(s => {
-        const isUser = userState && s.toLowerCase() === userState.toLowerCase();
-        const isSelected = (currentSocialState && currentSocialState.toLowerCase() === s.toLowerCase());
-        stateHtml += `<option value="${escapeHtml(s)}" ${isSelected ? 'selected' : ''}>${isUser ? '📍 ' : ''}${escapeHtml(s)}${isUser ? ' (Meu Estado)' : ''}</option>`;
-      });
-      stateSel.innerHTML = stateHtml;
-
-      // 3. CITIES (Hierarchically filtered by selected country & state)
+      // 3. Cities (Filtered by country and state if typed)
       let cityPool = knownSocialLocations;
       if (currentSocialCountry) {
         cityPool = cityPool.filter(l => (l.country || 'Brasil').toLowerCase() === currentSocialCountry.toLowerCase());
@@ -15979,71 +15994,44 @@
       const cities = Array.from(new Set(
         cityPool.map(l => l.city).filter(Boolean)
       )).sort((a, b) => a.localeCompare(b));
-
-      if (userCity) {
-        const matchCountry = !currentSocialCountry || userCountry.toLowerCase() === currentSocialCountry.toLowerCase();
-        const matchState = !currentSocialState || userState.toLowerCase() === currentSocialState.toLowerCase();
-        if (matchCountry && matchState && !cities.some(c => c.toLowerCase() === userCity.toLowerCase())) {
-          cities.unshift(userCity);
-        }
-      }
-
-      let cityHtml = `<option value="">🏙️ Todas as Cidades</option>`;
-      cities.forEach(c => {
-        const isUser = userCity && c.toLowerCase() === userCity.toLowerCase();
-        const isSelected = (currentSocialCity && currentSocialCity.toLowerCase() === c.toLowerCase());
-        cityHtml += `<option value="${escapeHtml(c)}" ${isSelected ? 'selected' : ''}>${isUser ? '📍 ' : ''}${escapeHtml(c)}${isUser ? ' (Minha Cidade)' : ''}</option>`;
-      });
-      citySel.innerHTML = cityHtml;
+      cityDl.innerHTML = cities.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
     }
 
-    function onSocialCountryChange() {
-      const sel = document.getElementById('socialCountrySelect');
-      currentSocialCountry = sel ? sel.value.trim() : '';
-      
-      // Layer cascade: if state doesn't belong to new country, reset state
-      if (currentSocialState && currentSocialCountry) {
-        const stateValid = knownSocialLocations.some(l => 
-          (l.country || 'Brasil').toLowerCase() === currentSocialCountry.toLowerCase() &&
-          (l.state || '').toLowerCase() === currentSocialState.toLowerCase()
-        );
-        if (!stateValid) currentSocialState = '';
-      }
-      // Layer cascade: if city doesn't belong to new country, reset city
-      if (currentSocialCity && currentSocialCountry) {
-        const cityValid = knownSocialLocations.some(l => 
-          (l.country || 'Brasil').toLowerCase() === currentSocialCountry.toLowerCase() &&
-          (l.city || '').toLowerCase() === currentSocialCity.toLowerCase()
-        );
-        if (!cityValid) currentSocialCity = '';
-      }
+    function onSocialLocationInputChanged(field) {
+      const cIn = document.getElementById('socialCountryInput');
+      const sIn = document.getElementById('socialStateInput');
+      const ciIn = document.getElementById('socialCityInput');
 
-      renderSocialLocationDropdowns();
-      loadSocialData();
+      currentSocialCountry = cIn ? cIn.value.trim() : '';
+      currentSocialState = sIn ? sIn.value.trim() : '';
+      currentSocialCity = ciIn ? ciIn.value.trim() : '';
+
+      updateSocialLocationClearBtns();
+
+      clearTimeout(socialLocationDebounceTimer);
+      socialLocationDebounceTimer = setTimeout(() => {
+        updateSocialLocationDatalists();
+        loadSocialData(false);
+      }, 350);
     }
 
-    function onSocialStateChange() {
-      const sel = document.getElementById('socialStateSelect');
-      currentSocialState = sel ? sel.value.trim() : '';
-
-      // Layer cascade: if city doesn't belong to new state, reset city
-      if (currentSocialCity && currentSocialState) {
-        const cityValid = knownSocialLocations.some(l => 
-          (l.state || '').toLowerCase() === currentSocialState.toLowerCase() &&
-          (l.city || '').toLowerCase() === currentSocialCity.toLowerCase()
-        );
-        if (!cityValid) currentSocialCity = '';
+    function clearSocialLocationField(field) {
+      if (field === 'country') {
+        const el = document.getElementById('socialCountryInput');
+        if (el) el.value = '';
+        currentSocialCountry = '';
+      } else if (field === 'state') {
+        const el = document.getElementById('socialStateInput');
+        if (el) el.value = '';
+        currentSocialState = '';
+      } else if (field === 'city') {
+        const el = document.getElementById('socialCityInput');
+        if (el) el.value = '';
+        currentSocialCity = '';
       }
-
-      renderSocialLocationDropdowns();
-      loadSocialData();
-    }
-
-    function onSocialCityChange() {
-      const sel = document.getElementById('socialCitySelect');
-      currentSocialCity = sel ? sel.value.trim() : '';
-      renderSocialLocationDropdowns();
-      loadSocialData();
+      updateSocialLocationClearBtns();
+      updateSocialLocationDatalists();
+      loadSocialData(false);
     }
 
     function matchesSocialLocation(item) {
@@ -16051,12 +16039,12 @@
       // 1. City Filter (most specific)
       if (currentSocialCity) {
         const c = (item.city || '').trim().toLowerCase();
-        if (!c || c !== currentSocialCity.toLowerCase()) return false;
+        if (!c || !c.includes(currentSocialCity.toLowerCase())) return false;
       }
       // 2. State Filter
       if (currentSocialState) {
         const s = (item.state || '').trim().toLowerCase();
-        if (!s || s !== currentSocialState.toLowerCase()) return false;
+        if (!s || !s.includes(currentSocialState.toLowerCase())) return false;
       }
       // 3. Country Filter (layer)
       if (currentSocialCountry) {
@@ -16064,7 +16052,7 @@
         if (!co && (currentSocialCountry.toLowerCase() === 'brasil' || currentSocialCountry.toLowerCase() === 'brazil')) {
           co = 'brasil';
         }
-        if (co && co !== currentSocialCountry.toLowerCase()) return false;
+        if (co && !co.includes(currentSocialCountry.toLowerCase())) return false;
       }
       return true;
     }
@@ -16076,8 +16064,17 @@
       return '';
     }
 
-    async function loadSocialData() {
-      initSocialLocationFilters();
+    async function loadSocialData(reinit = true) {
+      if (reinit) {
+        initSocialLocationFilters();
+      }
+      const cIn = document.getElementById('socialCountryInput');
+      const sIn = document.getElementById('socialStateInput');
+      const ciIn = document.getElementById('socialCityInput');
+      if (cIn) currentSocialCountry = cIn.value.trim();
+      if (sIn) currentSocialState = sIn.value.trim();
+      if (ciIn) currentSocialCity = ciIn.value.trim();
+
       if (currentSocialSub === 'ann') {
         await loadAnnouncements();
       } else if (currentSocialSub === 'mus') {
@@ -16099,6 +16096,11 @@
         if (v) v.style.display = 'none';
       });
 
+      const annToolbar = document.getElementById('socialAnnouncementsToolbar');
+      if (annToolbar) {
+        annToolbar.style.display = (sub === 'ann') ? 'flex' : 'none';
+      }
+
       if (sub === 'mus') {
         const b = document.getElementById('socialSubMus');
         if (b) b.classList.add('active');
@@ -16115,7 +16117,7 @@
         const v = document.getElementById('socialViewBands');
         if (v) v.style.display = 'grid';
       }
-      loadSocialData();
+      loadSocialData(false);
     }
 
     function triggerSocialSearch() {
@@ -16324,9 +16326,14 @@
           container.innerHTML = filtered.map(u => {
             const displayName = resolveDisplayName(u);
             const username = (u.username || '').replace(/^@+/, '');
-            const age = u.age || calculateUserAge(u.birthDate);
-            const locationStr = [u.city, u.state, u.country].filter(Boolean).join(' • ') || (u.city || u.state || 'Brasil');
-            const skills = extractUserSkills(u);
+            const rawLocs = [u.city, u.state, u.country].map(x => (x || '').trim()).filter(Boolean);
+            const dedupLocs = [];
+            rawLocs.forEach(part => {
+              if (!dedupLocs.some(existing => existing.toLowerCase() === part.toLowerCase())) {
+                dedupLocs.push(part);
+              }
+            });
+            const locationStr = dedupLocs.join(' • ') || 'Brasil';
             const initial = (displayName || username || 'M').charAt(0).toUpperCase();
             const avatarHtml = u.pictureUrl
               ? `<img src="${u.pictureUrl}" alt="${displayName}" onerror="this.parentElement.innerHTML='<span class=\\'user-card-avatar-initial\\'>${initial}</span>'"/>`
@@ -16429,7 +16436,14 @@
               ? genreList.map(g => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('')
               : `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 700; border-radius: 9999px;">Geral</span>`;
 
-            const locStr = [b.city, b.state].filter(Boolean).join(', ');
+            const rawBLocs = [b.city, b.state].map(x => (x || '').trim()).filter(Boolean);
+            const dedupBLocs = [];
+            rawBLocs.forEach(part => {
+              if (!dedupBLocs.some(existing => existing.toLowerCase() === part.toLowerCase())) {
+                dedupBLocs.push(part);
+              }
+            });
+            const locStr = dedupBLocs.join(', ');
 
             return `
               <div class="card band-card" onclick="window.open('/banda?id=${b.id}', '_blank')" title="Clique para ver o perfil público de ${escapeHtml(b.name)}">
