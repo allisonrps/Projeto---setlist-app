@@ -126,6 +126,10 @@
       flex-direction: column;
       padding: 24px 18px;
       gap: 16px;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-musician.collapsed {
+      transform: translateX(-100%);
     }
 
     .sidebar-brand {
@@ -139,6 +143,32 @@
       max-width: 190px;
       object-fit: contain;
       cursor: pointer;
+    }
+    .sidebar-collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .sidebar-collapse-btn:hover {
+      background: rgba(6, 182, 212, 0.18);
+      border-color: var(--cyan, #06b6d4);
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+    @media (max-width: 960px) {
+      .sidebar-collapse-btn {
+        display: none !important;
+      }
     }
     .sidebar-close-btn {
       display: none;
@@ -322,6 +352,44 @@
       flex-direction: column;
       padding: 0;
       background: #121822;
+      transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .main-viewport.sidebar-collapsed {
+      margin-left: 0 !important;
+    }
+
+    .sidebar-expand-floating-btn {
+      position: fixed;
+      top: 16px;
+      left: 18px;
+      z-index: 99;
+      background: #182232;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #ffffff;
+      padding: 7px 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+      transition: all 0.2s ease;
+    }
+    .sidebar-expand-floating-btn:hover {
+      background: #233144;
+      border-color: var(--cyan, #06b6d4);
+      transform: translateY(-1px);
+    }
+    .sidebar-expand-floating-btn ion-icon {
+      font-size: 1.15rem;
+      color: var(--cyan, #06b6d4);
+    }
+    @media (max-width: 960px) {
+      .sidebar-expand-floating-btn {
+        display: none !important;
+      }
     }
 
     /* MOBILE TOPBAR */
@@ -1915,6 +1983,186 @@
       letter-spacing: 0.5px;
     }
 
+    /* ANNOUNCEMENT CARD - MATCHING MOCKUP DESIGN */
+    .announcement-card-wrapper {
+      position: relative;
+      margin-top: 38px;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+    .announcement-card-floating-header {
+      position: absolute;
+      top: -30px;
+      left: 135px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .announcement-card-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: -0.2px;
+    }
+    .announcement-card-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 0.88rem;
+    }
+    .announcement-card-date {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .announcement-card-location {
+      color: #cbd5e1;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .announcement-card-floating-avatar {
+      position: absolute;
+      top: -26px;
+      left: 14px;
+      width: 105px;
+      height: 105px;
+      z-index: 5;
+    }
+    .announcement-card-avatar-circle {
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      border: 4.5px solid #121822;
+      overflow: hidden;
+      background: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    }
+    .announcement-card-avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .announcement-card-avatar-initial {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #1e293b;
+    }
+    .announcement-card-body {
+      position: relative;
+      background: #18202c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 16px 24px 16px 135px;
+      min-height: 98px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+    .announcement-card-body:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.18);
+    }
+    .announcement-card-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .announcement-card-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .announcement-card-procura-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+    }
+    .announcement-procura-label {
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .announcement-card-desc {
+      color: #94a3b8;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      margin: 2px 0 0 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* VIBRANT GREEN CIRCULAR INTEREST BUTTON */
+    .announcement-interest-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #22c55e;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(34, 197, 94, 0.45);
+      transition: all 0.22s ease;
+    }
+    .announcement-interest-btn:hover {
+      background: #16a34a;
+      transform: scale(1.1);
+      box-shadow: 0 6px 22px rgba(34, 197, 94, 0.65);
+    }
+    .announcement-interest-btn:active {
+      transform: scale(0.96);
+    }
+    @media (max-width: 768px) {
+      .announcement-card-wrapper {
+        margin-top: 50px;
+      }
+      .announcement-card-floating-header {
+        left: 95px;
+        top: -38px;
+      }
+      .announcement-card-title {
+        font-size: 1.05rem;
+      }
+      .announcement-card-floating-avatar {
+        width: 75px;
+        height: 75px;
+        left: 10px;
+        top: -20px;
+      }
+      .announcement-card-avatar-circle {
+        width: 75px;
+        height: 75px;
+      }
+      .announcement-card-avatar-initial {
+        font-size: 2rem;
+      }
+      .announcement-card-body {
+        padding: 14px 16px 14px 95px;
+      }
+    }
+
     /* SOCIAL / REDE HERO BANNER (MATCHING FIGMA PROFILE HERO) */
     .social-hero {
       background: #233144;
@@ -2200,11 +2448,21 @@
 
     .profile-bands-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
       width: 100%;
     }
-    @media (max-width: 680px) {
+    @media (max-width: 1240px) {
+      .profile-bands-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 860px) {
+      .profile-bands-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 540px) {
       .profile-bands-grid {
         grid-template-columns: 1fr;
         gap: 14px;
@@ -2230,7 +2488,7 @@
       box-shadow: 0 10px 28px rgba(14, 165, 233, 0.2);
     }
     .band-card-cover {
-      height: 125px;
+      height: 110px;
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(139, 92, 246, 0.3));
       position: relative;
       overflow: hidden;
@@ -2713,37 +2971,51 @@
     }
 
     /* ============================================================== */
-    /* PÁGINA DA BANDA (HERO + TABS COM ÍCONES IGUAL PERFIL)          */
+    /* PÁGINA DA BANDA (HERO + TABS NOS MESMOS PADRÕES DO PERFIL)     */
     /* ============================================================== */
     .band-page-hero {
-      background: #1e2638;
-      padding: 30px 40px 18px 40px;
+      background: #233144;
+      border-bottom: 2px solid #1a2432;
+      padding: 34px 40px 18px 40px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 0;
       position: relative;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
     .band-page-hero-inner {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 32px;
+      flex-wrap: wrap;
       position: relative;
+      z-index: 20;
     }
     .band-page-hero-avatar {
-      width: 145px;
-      height: 145px;
+      width: 175px;
+      height: 175px;
       border-radius: 50%;
       background: #cbd5e1;
-      border: 4px solid #161b2c;
+      border: 4px solid #233144;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      font-size: 3.2rem;
+      font-size: 4.2rem;
       font-weight: 900;
       color: #1e293b;
       flex-shrink: 0;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      margin-bottom: -45px;
-      z-index: 15;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      margin-bottom: -55px;
+      position: relative;
+      z-index: 30;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .band-page-hero-avatar:hover {
+      transform: scale(1.03);
     }
     .band-page-hero-avatar img {
       width: 100%;
@@ -2751,7 +3023,7 @@
       object-fit: cover;
     }
     .band-page-hero-title {
-      font-size: 2.3rem;
+      font-size: 2.2rem;
       font-weight: 800;
       color: #ffffff;
       text-transform: uppercase;
@@ -2762,8 +3034,8 @@
     .band-page-hero-handle-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 5px;
+      gap: 12px;
+      margin-top: 4px;
       margin-bottom: 6px;
       flex-wrap: wrap;
     }
@@ -2771,14 +3043,15 @@
       background: rgba(56, 189, 248, 0.12);
       color: var(--cyan-light);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 3px 12px;
-      border-radius: 9999px;
-      font-size: 0.85rem;
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.4px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       cursor: default;
       user-select: none;
     }
@@ -2786,20 +3059,20 @@
       background: rgba(34, 197, 94, 0.12);
       color: #34d399;
       border: 1px solid rgba(34, 197, 94, 0.3);
-      padding: 3px 12px;
-      border-radius: 9999px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.3px;
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       cursor: default;
       user-select: none;
     }
     .band-page-hero-location {
-      font-size: 0.95rem;
-      color: #94a3b8;
+      font-size: 1.05rem;
+      color: #cbd5e1;
       font-weight: 500;
       display: flex;
       align-items: center;
@@ -2810,76 +3083,84 @@
       background: #19202f;
       display: flex;
       align-items: stretch;
-      gap: 6px;
-      padding-left: 225px; /* Offset past the 145px avatar */
+      justify-content: flex-start;
+      padding-left: 245px; /* Offset exactly past the 175px avatar + left margin */
       padding-right: 40px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       position: relative;
       z-index: 10;
-      min-height: 52px;
+      min-height: 58px;
     }
     @media (max-width: 900px) {
       .band-page-tabs-strip {
         padding-left: 16px;
+        justify-content: flex-start;
         overflow-x: auto;
       }
       .band-page-hero-avatar {
-        margin-bottom: 0;
-        width: 95px;
-        height: 95px;
-        font-size: 2rem;
+        margin-bottom: -20px;
+        width: 120px;
+        height: 120px;
+        font-size: 2.8rem;
       }
     }
     .band-tab-btn {
+      padding: 12px 18px;
       background: transparent;
       border: none;
       color: #94a3b8;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 10px 22px;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      transition: all 0.2s ease;
       position: relative;
-      transition: all 0.15s ease;
-      user-select: none;
+      white-space: nowrap;
+      border-top: 2px solid transparent;
       font-family: inherit;
-      border-top: 3px solid transparent;
-      border-radius: 6px 6px 0 0;
     }
     .band-tab-btn .tab-icon {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       color: #94a3b8;
-      transition: color 0.15s;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
     }
     .band-tab-btn .tab-name-label {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 700;
       letter-spacing: 0.3px;
+      color: #94a3b8;
+      transition: all 0.2s ease;
     }
     .band-tab-btn:hover {
-      background: rgba(255, 255, 255, 0.03);
-      color: #ffffff;
+      background: rgba(255, 255, 255, 0.04);
     }
-    .band-tab-btn:hover .tab-icon {
-      color: var(--cyan-light);
+    .band-tab-btn:hover .tab-icon,
+    .band-tab-btn:hover .tab-name-label {
+      color: #e2e8f0;
     }
     .band-tab-btn.active {
       background: #161b2c;
-      color: #ffffff;
-      border-top-color: #38bdf8;
+      box-shadow: none;
+      border-top: 2px solid #38bdf8;
     }
     .band-tab-btn#bTabBtn-L.active { border-top-color: #38bdf8; }
-    .band-tab-btn#bTabBtn-L.active .tab-icon { color: #38bdf8; }
+    .band-tab-btn#bTabBtn-L.active .tab-icon,
+    .band-tab-btn#bTabBtn-L.active .tab-name-label { color: #38bdf8; }
     .band-tab-btn#bTabBtn-M.active { border-top-color: #c084fc; }
-    .band-tab-btn#bTabBtn-M.active .tab-icon { color: #c084fc; }
+    .band-tab-btn#bTabBtn-M.active .tab-icon,
+    .band-tab-btn#bTabBtn-M.active .tab-name-label { color: #c084fc; }
     .band-tab-btn#bTabBtn-R.active { border-top-color: #34d399; }
-    .band-tab-btn#bTabBtn-R.active .tab-icon { color: #34d399; }
+    .band-tab-btn#bTabBtn-R.active .tab-icon,
+    .band-tab-btn#bTabBtn-R.active .tab-name-label { color: #34d399; }
     .band-tab-btn#bTabBtn-F.active { border-top-color: #fbbf24; }
-    .band-tab-btn#bTabBtn-F.active .tab-icon { color: #fbbf24; }
+    .band-tab-btn#bTabBtn-F.active .tab-icon,
+    .band-tab-btn#bTabBtn-F.active .tab-name-label { color: #fbbf24; }
     .band-tab-btn#bTabBtn-A.active { border-top-color: #60a5fa; }
-    .band-tab-btn#bTabBtn-A.active .tab-icon { color: #60a5fa; }
+    .band-tab-btn#bTabBtn-A.active .tab-icon,
+    .band-tab-btn#bTabBtn-A.active .tab-name-label { color: #60a5fa; }
 
     @media (max-width: 768px) {
       .band-tab-btn {
@@ -4471,14 +4752,19 @@
     <!-- LATERAL SIDEBAR -->
     <aside class="sidebar-musician" id="sidebarMusician">
       
-      <!-- Brand Logo (BandLink Wide Transparent Logo) & Mobile Close Button -->
+      <!-- Brand Logo (BandLink Wide Transparent Logo) & Close/Collapse Buttons -->
       <div class="sidebar-brand">
         <a href="/" title="BandLink Home" style="display: flex; align-items: center; text-decoration: none;">
           <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" class="sidebar-logo">
         </a>
-        <button class="sidebar-close-btn" onclick="toggleMobileSidebar(false)" title="Fechar Menu" aria-label="Fechar Menu">
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleDesktopSidebar(false)" title="Ocultar Menu Lateral" aria-label="Ocultar Menu Lateral">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </button>
+          <button class="sidebar-close-btn" onclick="toggleMobileSidebar(false)" title="Fechar Menu" aria-label="Fechar Menu">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
       </div>
 
       <!-- Musician Mini Card (Centered Avatar, Display Name, Username, Red Logout Circle & Status Bar) -->
@@ -4526,8 +4812,14 @@
     </aside>
 
     <!-- MAIN VIEWPORT -->
-    <main class="main-viewport">
+    <main class="main-viewport" id="mainViewport">
       
+      <!-- FLOATING DESKTOP SIDEBAR EXPAND BUTTON (VISIBLE WHEN MENU IS HIDDEN) -->
+      <button class="sidebar-expand-floating-btn" id="sidebarExpandBtn" onclick="toggleDesktopSidebar(true)" title="Abrir Menu Lateral" aria-label="Abrir Menu Lateral">
+        <ion-icon name="menu-outline"></ion-icon>
+        <span>Menu</span>
+      </button>
+
       <!-- Mobile Topbar (< 960px) -->
       <div class="mobile-topbar">
         <a href="/" title="BandLink Home" style="display: flex; align-items: center; text-decoration: none;">
@@ -5352,10 +5644,6 @@
               <ion-icon name="create-outline"></ion-icon>
               <span>Editar Banda</span>
             </button>
-            <button class="btn btn-sm btn-outline" onclick="switchMainView('projects')" style="border-radius: 9999px; background: rgba(0,0,0,0.3); font-size: 0.82rem; padding: 6px 14px;">
-              <ion-icon name="arrow-back-outline"></ion-icon>
-              <span>Voltar aos Projetos</span>
-            </button>
           </div>
 
           <div class="band-page-hero-inner">
@@ -5527,7 +5815,7 @@
             </div>
 
             <div id="socialViewMus" class="user-cards-vertical-list" style="display: flex; flex-direction: column; gap: 18px;"></div>
-            <div id="socialViewAnn" class="grid-cards" style="display: none;"></div>
+            <div id="socialViewAnn" class="announcements-vertical-list" style="display: none; flex-direction: column; gap: 20px;"></div>
             <div id="socialViewBands" class="profile-bands-grid" style="display: none;"></div>
           </div>
         </div>
@@ -6221,6 +6509,48 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('createAnnouncementModal')">Cancelar</button>
           <button type="submit" class="btn btn-primary">Publicar no Mural</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EXPRESS INTEREST IN ANNOUNCEMENT MODAL -->
+  <div class="modal-overlay" id="expressInterestModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="paper-plane" style="color: #22c55e;"></ion-icon>
+          <span>Demonstrar Interesse</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('expressInterestModal')">&times;</button>
+      </div>
+      <form onsubmit="handleSendInterestMessage(event)">
+        <input type="hidden" id="interestAnnId">
+        <input type="hidden" id="interestBandId">
+        <input type="hidden" id="interestCreatorUsername">
+        <input type="hidden" id="interestInstrument">
+        
+        <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+          <div style="font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 4px;" id="interestProjectTitle">Nome do Projeto</div>
+          <div style="font-size: 0.85rem; color: #86efac;" id="interestSubtitle">Vaga: Baterista • Anunciante: @criador</div>
+        </div>
+
+        <div class="form-group">
+          <label>Sua Mensagem para a Banda *</label>
+          <textarea id="interestMessageText" class="form-input" rows="4" placeholder="Apresente-se, fale sobre sua experiência, instrumentos e disponibilidade..." required maxlength="1000"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Seu Contato / Telefone (Opcional)</label>
+          <input type="text" id="interestPhone" class="form-input" placeholder="(DDD) 99999-9999" maxlength="30">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('expressInterestModal')">Cancelar</button>
+          <button type="submit" class="btn" style="background: #22c55e; color: #fff; font-weight: 800; border: none; border-radius: 10px; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35); cursor: pointer;">
+            <ion-icon name="send"></ion-icon>
+            <span>Enviar Mensagem</span>
+          </button>
         </div>
       </form>
     </div>
@@ -7905,6 +8235,33 @@
         document.body.style.overflow = '';
       }
     }
+
+    function toggleDesktopSidebar(open) {
+      const sb = document.getElementById('sidebarMusician');
+      const vp = document.getElementById('mainViewport');
+      const expandBtn = document.getElementById('sidebarExpandBtn');
+      if (!sb) return;
+
+      const shouldOpen = (open !== undefined) ? !!open : sb.classList.contains('collapsed');
+      if (shouldOpen) {
+        sb.classList.remove('collapsed');
+        if (vp) vp.classList.remove('sidebar-collapsed');
+        if (expandBtn) expandBtn.style.display = 'none';
+        try { localStorage.setItem('sidebar_collapsed', '0'); } catch {}
+      } else {
+        sb.classList.add('collapsed');
+        if (vp) vp.classList.add('sidebar-collapsed');
+        if (expandBtn) expandBtn.style.display = 'inline-flex';
+        try { localStorage.setItem('sidebar_collapsed', '1'); } catch {}
+      }
+    }
+
+    // Auto-restore desktop sidebar state
+    try {
+      if (localStorage.getItem('sidebar_collapsed') === '1' && window.innerWidth > 960) {
+        setTimeout(() => toggleDesktopSidebar(false), 50);
+      }
+    } catch {}
 
     // ==========================================
     // ROBUST DATA PARSERS & HELPERS
@@ -9816,6 +10173,7 @@
       if (!sub) return;
 
       const logs = syncData?.activityLogs || [];
+      const candidateInterests = getBandCandidateInterests(band.id, band.ownerUsername);
 
       let html = `
         <div style="margin-bottom: 24px;">
@@ -9823,17 +10181,32 @@
             <ion-icon name="time" style="color: var(--cyan);"></ion-icon>
             <span>Linha do Tempo de Alterações</span>
           </h2>
-          <p style="color: #94a3b8; font-size: 0.88rem;">Registro de atividades, atualizações de setlists e histórico da banda.</p>
+          <p style="color: #94a3b8; font-size: 0.88rem;">Registro de atividades, mensagens de candidatos interessados e histórico da banda.</p>
         </div>
         <div style="position: relative; padding-left: 8px;">
       `;
 
       const timelineEvents = [];
 
+      // 1. Mensagens de candidatos interessados (do Mural de Anúncios)
+      candidateInterests.forEach(ci => {
+        timelineEvents.push({
+          isInterest: true,
+          icon: 'paper-plane',
+          color: '#22c55e',
+          title: `${ci.authorDisplayName || ci.authorUsername} (@${ci.authorUsername}) demonstrou interesse na vaga de ${ci.instrument || 'Músico'}!`,
+          message: ci.message,
+          phone: ci.phone,
+          username: ci.authorUsername,
+          date: ci.createdAt ? new Date(ci.createdAt).toLocaleString('pt-BR') : 'Recente'
+        });
+      });
+
+      // 2. Logs de atividade
       logs.forEach(l => {
         timelineEvents.push({
-          icon: l.actionType?.includes('delete') ? 'trash-outline' : 'create-outline',
-          color: l.actionType?.includes('delete') ? '#f43f5e' : '#38bdf8',
+          icon: l.actionType?.includes('delete') ? 'trash-outline' : (l.actionType === 'candidate_interest' ? 'paper-plane' : 'create-outline'),
+          color: l.actionType?.includes('delete') ? '#f43f5e' : (l.actionType === 'candidate_interest' ? '#22c55e' : '#38bdf8'),
           title: `${l.authorName || 'Integrante'} ${l.description || 'realizou uma alteração'}`,
           date: l.createdAt ? new Date(l.createdAt).toLocaleString('pt-BR') : 'Recente'
         });
@@ -9854,18 +10227,42 @@
       });
 
       timelineEvents.forEach((ev, idx) => {
-        html += `
-          <div class="band-timeline-item">
-            ${idx < timelineEvents.length - 1 ? '<div class="band-timeline-line"></div>' : ''}
-            <div class="band-timeline-dot" style="border-color: ${ev.color}; color: ${ev.color};">
-              <ion-icon name="${ev.icon}"></ion-icon>
+        if (ev.isInterest) {
+          html += `
+            <div class="band-timeline-item" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;">
+              <div class="band-timeline-dot" style="border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.15);">
+                <ion-icon name="paper-plane"></ion-icon>
+              </div>
+              <div style="flex: 1; padding-top: 2px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                  <span class="badge" style="background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.72rem; font-weight: 800; border-radius: 9999px;">Candidato Interessado</span>
+                  <span style="font-size: 0.78rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.date}</span>
+                </div>
+                <h4 style="font-size: 1rem; font-weight: 800; color: #fff; margin: 6px 0 4px 0;">${ev.title}</h4>
+                <div style="background: rgba(0,0,0,0.3); border-left: 3px solid #22c55e; padding: 8px 12px; border-radius: 6px; margin: 8px 0; color: #e2e8f0; font-size: 0.88rem; line-height: 1.45;">
+                  "${escapeHtml(ev.message)}"
+                </div>
+                ${ev.phone ? `<div style="font-size: 0.82rem; color: #86efac; margin-bottom: 8px;"><ion-icon name="call-outline"></ion-icon> Contato: <strong>${escapeHtml(ev.phone)}</strong></div>` : ''}
+                <button class="btn btn-sm btn-outline" onclick="openPublicMusicianProfile('${ev.username}')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 8px;">
+                  <ion-icon name="person-outline"></ion-icon> Ver Perfil do Músico
+                </button>
+              </div>
             </div>
-            <div style="flex: 1; padding-top: 6px;">
-              <h4 style="font-size: 0.98rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">${ev.title}</h4>
-              <span style="font-size: 0.8rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.date}</span>
+          `;
+        } else {
+          html += `
+            <div class="band-timeline-item">
+              ${idx < timelineEvents.length - 1 ? '<div class="band-timeline-line"></div>' : ''}
+              <div class="band-timeline-dot" style="border-color: ${ev.color}; color: ${ev.color};">
+                <ion-icon name="${ev.icon}"></ion-icon>
+              </div>
+              <div style="flex: 1; padding-top: 6px;">
+                <h4 style="font-size: 0.98rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">${ev.title}</h4>
+                <span style="font-size: 0.8rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.date}</span>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       });
 
       html += `</div>`;
@@ -15919,18 +16316,18 @@
         }
       });
 
-      // Default on initial load: leave empty so placeholders (Cidade, UF, País) show and all items display
+      // Default on initial load: prefilled with musician's location by default!
       if (!socialLocationInitialized) {
-        currentSocialCountry = '';
-        currentSocialState = '';
-        currentSocialCity = '';
+        currentSocialCountry = userCountry || 'Brasil';
+        currentSocialState = userState || '';
+        currentSocialCity = userCity || '';
 
         const cIn = document.getElementById('socialCountryInput');
         const sIn = document.getElementById('socialStateInput');
         const ciIn = document.getElementById('socialCityInput');
-        if (cIn) cIn.value = '';
-        if (sIn) sIn.value = '';
-        if (ciIn) ciIn.value = '';
+        if (cIn) cIn.value = currentSocialCountry;
+        if (sIn) sIn.value = currentSocialState;
+        if (ciIn) ciIn.value = currentSocialCity;
 
         socialLocationInitialized = true;
       }
@@ -16104,7 +16501,7 @@
         const b = document.getElementById('socialSubAnn');
         if (b) b.classList.add('active');
         const v = document.getElementById('socialViewAnn');
-        if (v) v.style.display = 'grid';
+        if (v) v.style.display = 'flex';
       } else if (sub === 'bands') {
         const b = document.getElementById('socialSubBands');
         if (b) b.classList.add('active');
@@ -16166,25 +16563,95 @@
           container.innerHTML = filtered.map(ann => {
             const creatorUsername = ann.creator?.username || 'músico';
             const creatorPic = ann.creator?.pictureUrl;
+            const projectTitle = ann.title || 'Projeto Musical';
+            const initial = (projectTitle || creatorUsername || 'P').charAt(0).toUpperCase();
+
+            const avatarHtml = creatorPic
+              ? `<img src="${creatorPic}" alt="${escapeHtml(projectTitle)}" onerror="this.parentElement.innerHTML='<span class=\\'announcement-card-avatar-initial\\'>${initial}</span>'"/>`
+              : `<span class="announcement-card-avatar-initial">${initial}</span>`;
+
+            const dateStr = ann.createdAt ? new Date(ann.createdAt).toLocaleDateString('pt-BR') : '';
+            const rawLocs = [ann.city, ann.state, ann.country || 'Brasil'].map(x => (x || '').trim()).filter(Boolean);
+            const dedupLocs = [];
+            rawLocs.forEach(part => {
+              if (!dedupLocs.some(existing => existing.toLowerCase() === part.toLowerCase())) {
+                dedupLocs.push(part);
+              }
+            });
+            const locStr = dedupLocs.join(' ');
+
+            // Pills de estilos / cover / autoral
+            const stylePills = [];
+            const combinedText = `${ann.title} ${ann.description || ''}`.toLowerCase();
+            if (combinedText.includes('cover')) stylePills.push({ label: 'Cover', colorClass: 'badge-cyan' });
+            if (combinedText.includes('autoral')) stylePills.push({ label: 'Autoral', colorClass: 'badge-emerald' });
+            ['rock', 'pop', 'metal', 'jazz', 'blues', 'sertanejo', 'mpb', 'indie', 'punk', 'reggae', 'funk', 'pagode', 'samba', 'gospel'].forEach(g => {
+              if (combinedText.includes(g) && !stylePills.some(p => p.label.toLowerCase() === g)) {
+                stylePills.push({ label: g.charAt(0).toUpperCase() + g.slice(1), colorClass: 'badge-violet' });
+              }
+            });
+            if (stylePills.length === 0) {
+              stylePills.push({ label: 'Banda & Projeto', colorClass: 'badge-cyan' });
+            }
+
+            // Procura: pills dos musicos procurados
+            const searchedInstruments = (ann.instrument || 'Músico')
+              .split(/[,/•;]+/)
+              .map(s => s.trim())
+              .filter(Boolean);
+
+            const safeTitle = escapeHtml(projectTitle).replace(/'/g, "\\'");
+            const safeInst = escapeHtml(ann.instrument || 'Músico').replace(/'/g, "\\'");
+            const safeCreator = escapeHtml(creatorUsername).replace(/'/g, "\\'");
+
             return `
-              <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <span class="badge badge-cyan">${ann.instrument || 'Geral'}</span>
-                    <span style="font-size: 0.75rem; color: var(--text-dim);">${new Date(ann.createdAt).toLocaleDateString()}</span>
+              <div class="announcement-card-wrapper">
+                <!-- Floating Header: Nome do Projeto ou banda • Data • Cidade UF Pais -->
+                <div class="announcement-card-floating-header">
+                  <h3 class="announcement-card-title">${escapeHtml(projectTitle)}</h3>
+                  <div class="announcement-card-header-meta">
+                    ${dateStr ? `<span class="announcement-card-date">${dateStr}</span>` : ''}
+                    ${locStr ? `<span class="announcement-card-location"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(locStr)}</span>` : ''}
                   </div>
-                  <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">${ann.title}</h4>
-                  <p style="color: var(--text-dim); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; margin-bottom: 10px;">
-                    <ion-icon name="location-outline"></ion-icon> ${ann.city || 'Brasil'} ${ann.state ? '- ' + ann.state : ''}
-                  </p>
-                  <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; white-space: pre-line;">${ann.description}</p>
                 </div>
-                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
-                  <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="openPublicMusicianProfile('${creatorUsername}')" title="Ver perfil de @${creatorUsername}">
-                    ${renderAvatarHtml(creatorPic, creatorUsername, 30)}
-                    <span style="font-size: 0.82rem; color: var(--cyan-light); font-weight: 700;">@${creatorUsername}</span>
+
+                <!-- Floating Avatar Protruding Top/Left -->
+                <div class="announcement-card-floating-avatar">
+                  <div class="announcement-card-avatar-circle" onclick="openPublicMusicianProfile('${creatorUsername}')" style="cursor: pointer;" title="Criado por @${creatorUsername}">
+                    ${avatarHtml}
                   </div>
-                  <a href="mailto:${ann.creator?.email || ''}" class="btn btn-sm btn-outline">Contatar</a>
+                </div>
+
+                <!-- Card Body -->
+                <div class="announcement-card-body">
+                  <div class="announcement-card-content">
+                    <!-- Line 1: Pilulas de cover autoral estilos etc... -->
+                    <div class="announcement-card-tags-row">
+                      ${stylePills.slice(0, 4).map(p => `
+                        <span class="badge ${p.colorClass}" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700; border-radius: 9999px;">${escapeHtml(p.label)}</span>
+                      `).join('')}
+                    </div>
+
+                    <!-- Line 2: Procura: pilulas dos musicos procurados: Baterista -->
+                    <div class="announcement-card-procura-row">
+                      <span class="announcement-procura-label">Procura:</span>
+                      ${searchedInstruments.map(inst => `
+                        <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); font-size: 0.78rem; font-weight: 800; padding: 2px 9px; border-radius: 9999px;">
+                          ${escapeHtml(inst)}
+                        </span>
+                      `).join('')}
+                    </div>
+
+                    <!-- Line 3: Descrição do projeto -->
+                    ${ann.description ? `
+                      <p class="announcement-card-desc">${escapeHtml(ann.description)}</p>
+                    ` : ''}
+                  </div>
+
+                  <!-- Right Side: Green Circle Button to demonstrate interest -->
+                  <button class="announcement-interest-btn" onclick="openExpressInterestModal(${ann.id}, '${safeTitle}', '${safeInst}', '${safeCreator}', ${ann.bandId || 'null'})" title="Demonstrar Interesse / Enviar Mensagem para a Banda" aria-label="Demonstrar Interesse">
+                    <ion-icon name="paper-plane" style="transform: translate(-1px, 1px);"></ion-icon>
+                  </button>
                 </div>
               </div>
             `;
@@ -16193,6 +16660,108 @@
       } catch (err) {
         console.error('Error fetching announcements:', err);
       }
+    }
+
+    function openExpressInterestModal(annId, projectTitle, instrument, creatorUsername, bandId) {
+      if (!currentUser || !currentUser.username) {
+        showToast('Faça login para demonstrar interesse no anúncio.', 'warning');
+        openLoginModal();
+        return;
+      }
+
+      document.getElementById('interestAnnId').value = annId || '';
+      document.getElementById('interestBandId').value = bandId || '';
+      document.getElementById('interestCreatorUsername').value = creatorUsername || '';
+      document.getElementById('interestInstrument').value = instrument || '';
+
+      document.getElementById('interestProjectTitle').textContent = projectTitle || 'Projeto Musical';
+      document.getElementById('interestSubtitle').textContent = `Vaga: ${instrument || 'Músico'} • Anunciante: @${creatorUsername}`;
+
+      const userInstrument = (currentUser.instruments && currentUser.instruments.length) 
+        ? (Array.isArray(currentUser.instruments) ? currentUser.instruments[0].name : currentUser.instruments) 
+        : '';
+      const defaultMsg = `Olá! Vi o anúncio procurando ${instrument || 'músico'} e tenho muito interesse em participar do projeto. Sou ${currentUser.displayName || currentUser.username}, toco ${userInstrument || 'instrumento'} e estou disponível!`;
+      
+      const msgInput = document.getElementById('interestMessageText');
+      if (msgInput) msgInput.value = defaultMsg;
+
+      const phoneInput = document.getElementById('interestPhone');
+      if (phoneInput) phoneInput.value = currentUser.phone || '';
+
+      openModal('expressInterestModal');
+    }
+
+    function saveInterestMessageForBand(item) {
+      try {
+        const key = 'bandlink_candidate_interests';
+        const raw = localStorage.getItem(key);
+        const list = raw ? JSON.parse(raw) : [];
+        list.unshift(item);
+        localStorage.setItem(key, JSON.stringify(list));
+      } catch (err) {
+        console.warn('Erro ao salvar interesse:', err);
+      }
+    }
+
+    function getBandCandidateInterests(bandId, creatorUsername) {
+      try {
+        const key = 'bandlink_candidate_interests';
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        const list = JSON.parse(raw);
+        return list.filter(item => {
+          if (bandId && item.bandId && String(item.bandId) === String(bandId)) return true;
+          if (creatorUsername && item.creatorUsername && item.creatorUsername.toLowerCase() === creatorUsername.toLowerCase()) return true;
+          if (currentBandData && currentBandData.id && item.bandId && String(item.bandId) === String(currentBandData.id)) return true;
+          return true;
+        });
+      } catch {
+        return [];
+      }
+    }
+
+    async function handleSendInterestMessage(e) {
+      e.preventDefault();
+      const annId = document.getElementById('interestAnnId').value;
+      const bandId = document.getElementById('interestBandId').value;
+      const creatorUsername = document.getElementById('interestCreatorUsername').value;
+      const instrument = document.getElementById('interestInstrument').value;
+      const message = document.getElementById('interestMessageText').value.trim();
+      const phone = document.getElementById('interestPhone').value.trim();
+
+      if (!message) {
+        showToast('Por favor, escreva uma mensagem.', 'warning');
+        return;
+      }
+
+      const interestItem = {
+        id: 'int_' + Date.now(),
+        announcementId: annId,
+        bandId: bandId || null,
+        creatorUsername: creatorUsername,
+        instrument: instrument,
+        authorUsername: currentUser.username,
+        authorDisplayName: currentUser.displayName || currentUser.username,
+        authorAvatar: currentUser.pictureUrl || '',
+        message: message,
+        phone: phone,
+        createdAt: new Date().toISOString()
+      };
+
+      saveInterestMessageForBand(interestItem);
+
+      if (currentBandSyncData && (!bandId || String(currentBandData?.id) === String(bandId))) {
+        if (!currentBandSyncData.activityLogs) currentBandSyncData.activityLogs = [];
+        currentBandSyncData.activityLogs.unshift({
+          actionType: 'candidate_interest',
+          authorName: '@' + currentUser.username,
+          description: `demonstrou interesse na vaga de ${instrument}: "${message.slice(0, 80)}${message.length > 80 ? '...' : ''}"`,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      closeModal('expressInterestModal');
+      showToast('Mensagem enviada com sucesso! A banda receberá seu contato no histórico.', 'success');
     }
 
     function calculateUserAge(birthDateOrAge) {
