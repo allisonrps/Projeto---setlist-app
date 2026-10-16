@@ -1924,7 +1924,7 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 28px;
+      gap: 24px;
       margin-bottom: 0;
       position: relative;
     }
@@ -1937,8 +1937,8 @@
       z-index: 20;
     }
     .social-hero-avatar {
-      width: 105px;
-      height: 105px;
+      width: 95px;
+      height: 95px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--cyan, #06b6d4), var(--violet, #8b5cf6));
       display: flex;
@@ -1951,14 +1951,129 @@
       z-index: 30;
     }
     .social-hero-title {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 800;
       letter-spacing: 0.5px;
       color: #ffffff;
       line-height: 1.15;
       text-transform: uppercase;
-      margin-bottom: 4px;
+      margin: 0 0 6px 0;
     }
+    .social-hero-subtitle {
+      margin: 0;
+      font-size: 0.98rem;
+      color: #cbd5e1;
+      font-weight: 500;
+      max-width: 520px;
+      line-height: 1.45;
+    }
+    .social-hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .social-city-picker-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.32);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 7px 14px;
+      transition: all 0.2s ease;
+    }
+    .social-city-picker-box:hover,
+    .social-city-picker-box:focus-within {
+      border-color: var(--cyan, #06b6d4);
+      background: rgba(0, 0, 0, 0.45);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+    }
+    .social-city-select {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      padding-right: 4px;
+      min-width: 170px;
+    }
+    .social-city-select option {
+      background: #18202c;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 6px;
+    }
+
+    /* SEARCH BAR (INTEGRATED FULL-WIDTH RESPONSIVE) */
+    .social-search-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 26px;
+    }
+    .social-search-bar-input-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .social-search-icon {
+      position: absolute;
+      left: 16px;
+      color: var(--cyan, #06b6d4);
+      font-size: 1.25rem;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .social-search-input {
+      width: 100%;
+      background: #1a2232;
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 14px 44px 14px 48px;
+      color: #fff;
+      font-size: 0.98rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+    .social-search-input:focus {
+      border-color: var(--cyan, #06b6d4);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.18);
+      outline: none;
+      background: #1c2638;
+    }
+    .social-search-clear-btn {
+      position: absolute;
+      right: 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      z-index: 2;
+      padding: 2px;
+    }
+    .social-search-clear-btn:hover {
+      color: #ffffff;
+    }
+    .social-search-submit-btn {
+      padding: 13px 24px;
+      border-radius: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25);
+    }
+
     .social-tabs-strip {
       background: #19202f;
       display: flex;
@@ -1989,6 +2104,49 @@
       background: #161b2c;
       padding: 30px 24px 60px 24px;
       min-height: 500px;
+    }
+
+    @media (max-width: 768px) {
+      .social-hero {
+        padding: 22px 18px;
+        gap: 16px;
+      }
+      .social-hero-avatar {
+        width: 72px;
+        height: 72px;
+      }
+      .social-hero-title {
+        font-size: 1.5rem;
+      }
+      .social-hero-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .social-city-picker-box {
+        width: 100%;
+      }
+      .social-city-select {
+        width: 100%;
+        min-width: unset;
+      }
+      .social-tabs-strip {
+        padding-left: 12px;
+        padding-right: 12px;
+        overflow-x: auto;
+      }
+      .social-search-bar-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .social-search-submit-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .social-content-container {
+        padding: 20px 14px 60px 14px;
+      }
     }
 
     .profile-bands-grid {
@@ -5226,31 +5384,28 @@
         <div class="social-hero">
           <div class="social-hero-left">
             <div class="social-hero-avatar">
-              <ion-icon name="planet" style="font-size: 3.2rem; color: #fff;"></ion-icon>
+              <ion-icon name="planet" style="font-size: 3rem; color: #fff;"></ion-icon>
             </div>
             <div>
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
-                <h1 class="social-hero-title">REDE MUSICAL</h1>
-                <span class="badge badge-cyan" style="font-size: 0.75rem; font-weight: 700; border-radius: 9999px;">BandLink Network</span>
-              </div>
-              <div class="profile-hero-handle-row">
-                <span class="profile-hero-handle" style="background: rgba(6, 182, 212, 0.12); color: var(--cyan-light); border: 1px solid rgba(6, 182, 212, 0.3);">
-                  <ion-icon name="earth-outline"></ion-icon>
-                  <span>Comunidade Ativa</span>
-                </span>
-                <span class="profile-hero-age-pill">
-                  <ion-icon name="radio-outline"></ion-icon>
-                  <span>Músicos & Projetos</span>
-                </span>
-              </div>
-              <div class="profile-hero-location" style="font-size: 0.95rem;">
-                <ion-icon name="location-outline" style="color: var(--cyan);"></ion-icon>
-                <span>Conecte-se com músicos, bandas e oportunidades</span>
-              </div>
+              <h1 class="social-hero-title">REDE MUSICAL</h1>
+              <p class="social-hero-subtitle">Conecte-se com músicos, bandas e oportunidades da sua cena musical</p>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="openCreateAnnouncementModal()" style="border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; padding: 10px 18px; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);">
+
+          <!-- ACTIONS IN HEADER: LOCALIDADE PICKER + CRIAR ANÚNCIO -->
+          <div class="social-hero-actions">
+            <!-- SELETOR DE LOCALIDADE NO CABEÇALHO (PADRÃO NA CIDADE DO USUÁRIO) -->
+            <div class="social-city-picker-box" title="Filtrar por cidade">
+              <ion-icon name="location" style="color: var(--cyan); font-size: 1.25rem; flex-shrink: 0;"></ion-icon>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 800; color: var(--cyan-light); letter-spacing: 0.5px; line-height: 1;">Localidade</span>
+                <select id="socialCitySelect" onchange="onSocialCityChange()" class="social-city-select">
+                  <option value="">Carregando cidades...</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="openCreateAnnouncementModal()" style="border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3); white-space: nowrap;">
               <ion-icon name="megaphone-outline" style="font-size: 1.15rem;"></ion-icon>
               <span>Criar Anúncio</span>
             </button>
@@ -5276,16 +5431,19 @@
           </button>
         </div>
 
-        <!-- SOCIAL CONTENT CONTAINER (MATCHING #161b2c PROFILE BACKGROUND) -->
+        <!-- SOCIAL CONTENT CONTAINER (EXPANDED TO FULL LINE WIDTH & RESPONSIVE) -->
         <div class="social-content-container">
-          <div style="max-width: 860px; margin: 0 auto; width: 100%;">
-            <!-- SEARCH BAR -->
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-              <div style="position: relative; flex: 1; min-width: 240px;">
-                <ion-icon name="search-outline" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 1.15rem;"></ion-icon>
-                <input type="text" id="socialSearchInput" class="form-input" style="padding-left: 42px; border-radius: 12px;" placeholder="Buscar por nome, instrumento, estilo ou cidade..." oninput="triggerSocialSearch()">
+          <div style="max-width: 960px; margin: 0 auto; width: 100%;">
+            <!-- SEARCH BAR LINHA COMPLETA INTEGRADA E RESPONSIVA -->
+            <div class="social-search-bar-row">
+              <div class="social-search-bar-input-wrap">
+                <ion-icon name="search-outline" class="social-search-icon"></ion-icon>
+                <input type="text" id="socialSearchInput" class="social-search-input" placeholder="Buscar músicos por instrumento, nome, estilo musical..." oninput="triggerSocialSearch()">
+                <button class="social-search-clear-btn" id="socialSearchClearBtn" onclick="clearSocialSearch()" style="display: none;" title="Limpar busca">
+                  <ion-icon name="close-circle"></ion-icon>
+                </button>
               </div>
-              <button class="btn btn-outline" onclick="triggerSocialSearch()" style="border-radius: 12px;">
+              <button class="btn btn-primary social-search-submit-btn" onclick="triggerSocialSearch()">
                 <ion-icon name="search-outline"></ion-icon>
                 <span>Buscar</span>
               </button>
@@ -15601,7 +15759,56 @@
     // ==========================================
     // SOCIAL / REDE
     // ==========================================
+    let currentSocialCity = '';
+    let socialCityInitialized = false;
+
+    function initSocialCityPicker(loadedCities = []) {
+      const sel = document.getElementById('socialCitySelect');
+      if (!sel) return;
+
+      const userCity = (currentUser && currentUser.city) ? currentUser.city.trim() : '';
+
+      // Default to user's city on first load
+      if (!socialCityInitialized && userCity) {
+        currentSocialCity = userCity;
+        socialCityInitialized = true;
+      }
+
+      const options = [];
+      if (userCity) {
+        const isSelected = (currentSocialCity.toLowerCase() === userCity.toLowerCase());
+        options.push(`<option value="${escapeHtml(userCity)}" ${isSelected ? 'selected' : ''}>📍 ${escapeHtml(userCity)} (Minha Cidade)</option>`);
+      }
+
+      const isAllSelected = (!currentSocialCity);
+      options.push(`<option value="" ${isAllSelected ? 'selected' : ''}>🌎 Todas as Cidades</option>`);
+
+      // Add other unique cities from network dataset
+      const seen = new Set();
+      if (userCity) seen.add(userCity.toLowerCase());
+
+      (loadedCities || []).forEach(c => {
+        const clean = (c || '').trim();
+        if (clean && !seen.has(clean.toLowerCase())) {
+          seen.add(clean.toLowerCase());
+          const isSel = (currentSocialCity.toLowerCase() === clean.toLowerCase());
+          options.push(`<option value="${escapeHtml(clean)}" ${isSel ? 'selected' : ''}>📍 ${escapeHtml(clean)}</option>`);
+        }
+      });
+
+      sel.innerHTML = options.join('');
+    }
+
+    function onSocialCityChange() {
+      const sel = document.getElementById('socialCitySelect');
+      if (sel) {
+        currentSocialCity = sel.value.trim();
+      }
+      loadSocialData();
+    }
+
     async function loadSocialData() {
+      initSocialCityPicker();
       if (currentSocialSub === 'ann') {
         await loadAnnouncements();
       } else if (currentSocialSub === 'mus') {
@@ -15643,12 +15850,31 @@
     }
 
     function triggerSocialSearch() {
+      const input = document.getElementById('socialSearchInput');
+      const clearBtn = document.getElementById('socialSearchClearBtn');
+      if (clearBtn && input) {
+        clearBtn.style.display = input.value.trim() ? 'flex' : 'none';
+      }
+      loadSocialData();
+    }
+
+    function clearSocialSearch() {
+      const input = document.getElementById('socialSearchInput');
+      const clearBtn = document.getElementById('socialSearchClearBtn');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      if (clearBtn) clearBtn.style.display = 'none';
       loadSocialData();
     }
 
     async function loadAnnouncements() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
-      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (currentSocialCity) params.append('city', currentSocialCity);
+      const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewAnn');
 
       try {
@@ -15659,8 +15885,12 @@
           const countBadge = document.getElementById('socialCountAnn');
           if (countBadge) countBadge.innerText = items.length;
 
+          // Populate cities into picker
+          const cities = items.map(a => a.city).filter(Boolean);
+          initSocialCityPicker(cities);
+
           if (items.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhum anúncio encontrado.</div>`;
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhum anúncio encontrado${currentSocialCity ? ' em ' + currentSocialCity : ''}.</div>`;
             return;
           }
 
@@ -15790,7 +16020,10 @@
     // CLICKABLE MUSICIAN CARDS IN "MÚSICOS NA REDE" (HORIZONTAL CARD MATCHING MOCKUP)
     async function loadMusiciansNetwork() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
-      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (currentSocialCity) params.append('city', currentSocialCity);
+      const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewMus');
 
       try {
@@ -15802,8 +16035,12 @@
           const countBadge = document.getElementById('socialCountMus');
           if (countBadge) countBadge.innerText = users.length;
 
+          // Populate cities into picker
+          const cities = users.map(u => u.city).filter(Boolean);
+          initSocialCityPicker(cities);
+
           if (users.length === 0) {
-            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum músico encontrado.</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum músico encontrado${currentSocialCity ? ' em ' + currentSocialCity : ''}.</div>`;
             return;
           }
 
@@ -15881,7 +16118,10 @@
     // CLICKABLE BAND CARDS IN "BANDAS PÚBLICAS"
     async function loadPublicBands() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
-      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (currentSocialCity) params.append('city', currentSocialCity);
+      const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewBands');
 
       try {
@@ -15890,6 +16130,9 @@
           const bands = await res.json();
           const countBadge = document.getElementById('socialCountBands');
           if (countBadge) countBadge.innerText = bands.length;
+
+          const cities = bands.map(b => b.city).filter(Boolean);
+          initSocialCityPicker(cities);
           if (bands.length === 0) {
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px; color: var(--text-dim);">Nenhuma banda pública encontrada.</div>`;
             return;
