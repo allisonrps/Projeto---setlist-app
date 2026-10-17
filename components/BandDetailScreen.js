@@ -2444,6 +2444,29 @@ export default function BandDetailScreen({
               >
                 <Ionicons name="swap-vertical" size={20} color={colors.primary} />
               </Pressable>
+
+              {/* Botão de Adicionar Músicas do Songbook no Repertório */}
+              {isUserLeader && (
+                <Pressable
+                  style={[
+                    styles.roundIconButton,
+                    {
+                      backgroundColor: colors.primary,
+                      borderColor: colors.primary,
+                      borderWidth: 1,
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }
+                  ]}
+                  onPress={handleOpenSongPicker}
+                  accessibilityLabel="Adicionar Músicas do Songbook"
+                >
+                  <Ionicons name="add" size={24} color="#ffffff" />
+                </Pressable>
+              )}
             </View>
 
             {showStyleFilters && uniqueBandStyles.length > 0 && (
@@ -2508,6 +2531,31 @@ export default function BandDetailScreen({
                   <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
                     {t('bandSongsSubtitle')}
                   </Text>
+                  {isUserLeader && (
+                    <Pressable
+                      style={{
+                        backgroundColor: colors.primary,
+                        marginTop: 16,
+                        paddingHorizontal: 20,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8,
+                        elevation: 2,
+                        shadowColor: colors.primary,
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4
+                      }}
+                      onPress={handleOpenSongPicker}
+                    >
+                      <Ionicons name="add-circle" size={20} color="#ffffff" />
+                      <Text style={{ color: '#ffffff', fontWeight: 'bold', fontSize: 14 }}>
+                        Adicionar Músicas do Songbook
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
               ) : (
                 filteredBandSongs.map(song => (

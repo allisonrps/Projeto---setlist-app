@@ -7844,6 +7844,49 @@
     </div>
   </div>
 
+  <!-- MODAL: ADICIONAR MÚSICAS DO SONGBOOK AO REPERTÓRIO DA BANDA -->
+  <div class="modal-overlay" id="addSongsToBandModal">
+    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+            <ion-icon name="musical-notes"></ion-icon>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.2rem;">Adicionar Músicas do Songbook</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;" id="addSongsToBandSubtitle">Selecione as músicas do seu acervo para incluir no repertório oficial da banda.</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('addSongsToBandModal')">&times;</button>
+      </div>
+
+      <!-- Barra de Pesquisa e Seleção Rápida -->
+      <div style="padding: 14px 0 10px 0; display: flex; gap: 10px; align-items: center;">
+        <div style="flex: 1; display: flex; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; height: 40px;">
+          <ion-icon name="search-outline" style="font-size: 1.1rem; color: #94a3b8; margin-right: 8px;"></ion-icon>
+          <input type="text" id="addSongsFilterInput" placeholder="Buscar por música, artista ou estilo..." oninput="filterAddSongsToBandList(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none;">
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="toggleSelectAllAddSongs()" id="btnToggleSelectAllAddSongs" style="font-size: 0.8rem; white-space: nowrap; height: 40px; border-radius: 10px;">
+          Selecionar Todas
+        </button>
+      </div>
+
+      <!-- Lista de Músicas do Songbook -->
+      <div id="addSongsListContainer" style="flex: 1; overflow-y: auto; max-height: 48vh; padding-right: 4px; display: flex; flex-direction: column; gap: 6px;">
+        <!-- Preenchido via JavaScript -->
+      </div>
+
+      <!-- Rodapé com Ações -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <span id="selectedAddSongsCountLabel" style="font-size: 0.85rem; color: #94a3b8;">0 músicas selecionadas</span>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('addSongsToBandModal')">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="confirmAddSongsToBand()" id="btnConfirmAddSongsToBand">Adicionar ao Repertório</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- BANDLINK GLOBAL LOADER OVERLAY (Active on initial load / F5 refresh) -->
   <div id="bandlinkGlobalLoader" class="global-loader-overlay active" style="display: flex; opacity: 1;">
     <div class="global-loader-box">
@@ -10902,18 +10945,24 @@
         });
       });
 
-      timelineEvents.push({
-        icon: 'cloud-done-outline',
-        color: '#4ade80',
-        title: 'Sincronização de Repertório Completo: 63 músicas e 14 setlists sincronizados na nuvem.',
-        date: syncData?.syncedAt ? new Date(syncData.syncedAt).toLocaleString('pt-BR') : '13/10/2026'
-      });
+      // 3. Registro real de sincronização do repertório (apenas se a banda tiver músicas reais)
+      const bandSongsCount = (syncData?.songs || []).length;
+      const bandSetlistsCount = (syncData?.setlists || []).length;
+      if (bandSongsCount > 0 || bandSetlistsCount > 0) {
+        timelineEvents.push({
+          icon: 'cloud-done-outline',
+          color: '#4ade80',
+          title: `Repertório da Banda: ${bandSongsCount} música${bandSongsCount === 1 ? '' : 's'} e ${bandSetlistsCount} setlist${bandSetlistsCount === 1 ? '' : 's'} no repertório da banda.`,
+          date: syncData?.syncedAt ? new Date(syncData.syncedAt).toLocaleString('pt-BR') : 'Recente'
+        });
+      }
 
+      // 4. Criação do projeto / banda
       timelineEvents.push({
         icon: 'flag-outline',
         color: '#a855f7',
-        title: `Fundação da banda ${band.name} em ${band.city || 'Franca'}/${band.state || 'SP'}.`,
-        date: `Ano de ${band.sinceYear || '2018'}`
+        title: `Criação do projeto ${band.name}${band.city ? ` em ${band.city}${band.state ? '/' + band.state : ''}` : ''}.`,
+        date: band.sinceYear ? `Ano de ${band.sinceYear}` : (band.createdAt ? new Date(band.createdAt).toLocaleDateString('pt-BR') : 'Início recente')
       });
 
       timelineEvents.forEach((ev, idx) => {
@@ -11492,7 +11541,11 @@
             </h2>
             <p style="color: #94a3b8; font-size: 0.88rem;">Catálogo consolidado de músicas, letras, cifras e tablaturas da banda.</p>
           </div>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="openAddSongsToBandModal(${band.id})" style="border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; padding: 7px 16px;">
+              <ion-icon name="add-circle" style="font-size: 1.15rem;"></ion-icon>
+              <span>Adicionar do Songbook</span>
+            </button>
             <span class="badge badge-cyan" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
               <ion-icon name="disc-outline"></ion-icon> ${songs.length} Músicas no Catálogo
             </span>
@@ -11551,8 +11604,12 @@
         html += `
           <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
             <ion-icon name="disc-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música encontrada</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem;">Tente ajustar os filtros de busca ou etiquetas de estilo.</p>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música no repertório desta banda</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione músicas do seu Songbook / Coleção Geral ao repertório oficial da banda.</p>
+            <button type="button" class="btn btn-primary" onclick="openAddSongsToBandModal(${band.id})" style="border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; margin: 0 auto;">
+              <ion-icon name="add-circle" style="font-size: 1.15rem;"></ion-icon>
+              <span>Adicionar Músicas do Songbook</span>
+            </button>
           </div>
         `;
       } else {
@@ -11606,6 +11663,10 @@
                 <span class="badge ${song.status === 'rehearsal' ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.68rem; font-weight: 800; padding: 3px 8px;">
                   ${song.status === 'rehearsal' ? 'REPERTÓRIO' : 'PRONTA'}
                 </span>
+
+                <button type="button" onclick="removeSongFromBandRepertoire('${song.id}', event)" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171; border-radius: 8px; padding: 5px 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Remover do repertório da banda">
+                  <ion-icon name="trash-outline" style="font-size: 1rem;"></ion-icon>
+                </button>
               </div>
             </div>
           `;
@@ -11616,6 +11677,206 @@
       html += `</div>`;
 
       sub.innerHTML = html;
+    }
+
+    // ==============================================================
+    // ADICIONAR MÚSICAS DO SONGBOOK AO REPERTÓRIO DA BANDA
+    // ==============================================================
+    let addSongsSelectedSet = new Set();
+    let addSongsCurrentFilter = '';
+
+    function openAddSongsToBandModal(bandId) {
+      if (!currentBandData && bandId) {
+        currentBandData = (myBands || []).find(b => b.id === bandId);
+      }
+      if (!currentBandData) {
+        showToast('Banda não selecionada.', 'warning');
+        return;
+      }
+      if (!currentBandSyncData) {
+        currentBandSyncData = parseJsonSafe(currentBandData.syncDataJson) || { members: [], setlists: [], songs: [], finances: [] };
+      }
+
+      addSongsSelectedSet.clear();
+      addSongsCurrentFilter = '';
+      const input = document.getElementById('addSongsFilterInput');
+      if (input) input.value = '';
+
+      const subTitle = document.getElementById('addSongsToBandSubtitle');
+      if (subTitle) {
+        subTitle.innerText = `Selecione as músicas do seu Songbook para incluir em "${currentBandData.name}".`;
+      }
+
+      renderAddSongsToBandList();
+      openModal('addSongsToBandModal');
+    }
+
+    function filterAddSongsToBandList(val) {
+      addSongsCurrentFilter = (val || '').toLowerCase().trim();
+      renderAddSongsToBandList();
+    }
+
+    function renderAddSongsToBandList() {
+      const container = document.getElementById('addSongsListContainer');
+      if (!container) return;
+
+      const bandSongs = currentBandSyncData?.songs || [];
+      const bandSongNames = new Set(bandSongs.map(s => (s.name || '').toLowerCase().trim()));
+      const bandSongIds = new Set(bandSongs.map(s => String(s.id)));
+
+      let list = [...mySongs];
+
+      // Filtro de busca
+      if (addSongsCurrentFilter) {
+        list = list.filter(s =>
+          (s.name && s.name.toLowerCase().includes(addSongsCurrentFilter)) ||
+          (s.originalBand && s.originalBand.toLowerCase().includes(addSongsCurrentFilter)) ||
+          (s.style && s.style.toLowerCase().includes(addSongsCurrentFilter))
+        );
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 36px 16px; color: #94a3b8;">
+            <ion-icon name="musical-notes-outline" style="font-size: 2rem; margin-bottom: 6px;"></ion-icon>
+            <p style="margin: 0; font-size: 0.9rem;">${mySongs.length === 0 ? 'Seu Songbook ainda não possui músicas cadastradas.' : 'Nenhuma música corresponde à busca.'}</p>
+          </div>
+        `;
+        updateAddSongsCounter();
+        return;
+      }
+
+      container.innerHTML = list.map(song => {
+        const sId = String(song.id);
+        const isAlreadyInBand = bandSongIds.has(sId) || bandSongNames.has((song.name || '').toLowerCase().trim());
+        const isSelected = addSongsSelectedSet.has(sId);
+
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: ${isSelected ? 'rgba(56, 189, 248, 0.12)' : (isAlreadyInBand ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)')}; border: 1px solid ${isSelected ? 'var(--cyan)' : (isAlreadyInBand ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)')}; border-radius: 10px; cursor: ${isAlreadyInBand ? 'default' : 'pointer'}; opacity: ${isAlreadyInBand ? '0.65' : '1'}; transition: all 0.15s ease;"
+               ${!isAlreadyInBand ? `onclick="toggleAddSongSelection('${sId}')"` : ''}>
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} ${isAlreadyInBand ? 'checked disabled' : ''} style="accent-color: var(--cyan); width: 18px; height: 18px; cursor: pointer;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 700; color: #fff; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(song.name || 'Sem título')}
+                  ${song.originalBand ? `<span style="color: #64748b; font-weight: 400; margin: 0 4px;">•</span><span style="color: var(--cyan); font-weight: 600;">${escapeHtml(song.originalBand)}</span>` : ''}
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                  ${song.style ? `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(song.style)}</span>` : ''}
+                  ${song.duration ? `<span style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">${song.duration}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            ${isAlreadyInBand ? `
+              <span class="badge badge-emerald" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">Já no repertório</span>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      updateAddSongsCounter();
+    }
+
+    function toggleAddSongSelection(songId) {
+      if (addSongsSelectedSet.has(songId)) {
+        addSongsSelectedSet.delete(songId);
+      } else {
+        addSongsSelectedSet.add(songId);
+      }
+      renderAddSongsToBandList();
+    }
+
+    function toggleSelectAllAddSongs() {
+      const bandSongs = currentBandSyncData?.songs || [];
+      const bandSongNames = new Set(bandSongs.map(s => (s.name || '').toLowerCase().trim()));
+      const bandSongIds = new Set(bandSongs.map(s => String(s.id)));
+
+      const eligible = mySongs.filter(s => !bandSongIds.has(String(s.id)) && !bandSongNames.has((s.name || '').toLowerCase().trim()));
+      
+      const allSelected = eligible.every(s => addSongsSelectedSet.has(String(s.id)));
+      if (allSelected) {
+        eligible.forEach(s => addSongsSelectedSet.delete(String(s.id)));
+      } else {
+        eligible.forEach(s => addSongsSelectedSet.add(String(s.id)));
+      }
+      renderAddSongsToBandList();
+    }
+
+    function updateAddSongsCounter() {
+      const label = document.getElementById('selectedAddSongsCountLabel');
+      const btn = document.getElementById('btnConfirmAddSongsToBand');
+      const count = addSongsSelectedSet.size;
+      if (label) label.innerText = `${count} música${count === 1 ? '' : 's'} selecionada${count === 1 ? '' : 's'}`;
+      if (btn) btn.disabled = count === 0;
+    }
+
+    async function confirmAddSongsToBand() {
+      if (addSongsSelectedSet.size === 0) return;
+      if (!currentBandData || !currentBandSyncData) return;
+
+      currentBandSyncData.songs = currentBandSyncData.songs || [];
+      const bandSongNames = new Set(currentBandSyncData.songs.map(s => (s.name || '').toLowerCase().trim()));
+      const bandSongIds = new Set(currentBandSyncData.songs.map(s => String(s.id)));
+
+      let addedCount = 0;
+      addSongsSelectedSet.forEach(sId => {
+        const found = mySongs.find(s => String(s.id) === String(sId));
+        if (found && !bandSongIds.has(String(found.id)) && !bandSongNames.has((found.name || '').toLowerCase().trim())) {
+          currentBandSyncData.songs.push({
+            id: found.id,
+            name: found.name,
+            originalBand: found.originalBand || '',
+            style: found.style || '',
+            duration: found.duration || '',
+            lyrics: found.lyrics || '',
+            chords: found.chords || '',
+            tabs: found.tabs || '',
+            status: 'ready',
+            isFavorite: false,
+            addedAt: new Date().toISOString()
+          });
+          addedCount++;
+        }
+      });
+
+      if (addedCount > 0) {
+        currentBandSyncData.activityLogs = currentBandSyncData.activityLogs || [];
+        currentBandSyncData.activityLogs.unshift({
+          actionType: 'add_songs',
+          authorName: currentUser?.displayName || currentUser?.username || 'Você',
+          description: `adicionou ${addedCount} música${addedCount === 1 ? '' : 's'} do Songbook ao repertório`,
+          createdAt: new Date().toISOString()
+        });
+
+        await persistCurrentBandSync();
+        renderBandRepertoireTab(currentBandData, currentBandSyncData);
+        renderBandTimelineTab(currentBandData, currentBandSyncData);
+        closeModal('addSongsToBandModal');
+        showToast(`${addedCount} música${addedCount === 1 ? '' : 's'} adicionada${addedCount === 1 ? '' : 's'} ao repertório da banda!`, 'success');
+      } else {
+        closeModal('addSongsToBandModal');
+      }
+    }
+
+    async function removeSongFromBandRepertoire(songId, ev) {
+      if (ev) ev.stopPropagation();
+      if (!confirm('Deseja remover esta música do repertório da banda? (A música continuará preservada no seu Songbook)')) return;
+      if (!currentBandData || !currentBandSyncData || !currentBandSyncData.songs) return;
+
+      const removedSong = currentBandSyncData.songs.find(s => String(s.id) === String(songId));
+      currentBandSyncData.songs = currentBandSyncData.songs.filter(s => String(s.id) !== String(songId));
+      currentBandSyncData.activityLogs = currentBandSyncData.activityLogs || [];
+      currentBandSyncData.activityLogs.unshift({
+        actionType: 'delete_song',
+        authorName: currentUser?.displayName || currentUser?.username || 'Você',
+        description: `removeu "${removedSong?.name || 'música'}" do repertório`,
+        createdAt: new Date().toISOString()
+      });
+
+      await persistCurrentBandSync();
+      renderBandRepertoireTab(currentBandData, currentBandSyncData);
+      renderBandTimelineTab(currentBandData, currentBandSyncData);
+      showToast('Música removida do repertório da banda.', 'info');
     }
 
     // ==============================================================
