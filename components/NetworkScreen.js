@@ -465,9 +465,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           return {
             id: 'cloud-' + ca.id,
             cloudId: ca.id,
-            creatorId: ca.creator?.id || 'me',
-            creatorName: ca.creator?.username || 'Músico',
-            creatorUsername: ca.creator?.username || 'musico',
+            creatorId: ca.creatorId || ca.creator?.id || null,
+            creatorName: ca.creator?.displayName || ca.creator?.username || 'Músico',
+            creatorUsername: ca.creator?.username || '',
             bandName: ca.title,
             imageUri: ca.imageUrl || '',
             soughtRole: ca.instrument || 'Músico',
@@ -1985,7 +1985,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
               </View>
             ) : (
               paginatedProjects.map(proj => {
-                const isMyProject = proj.creatorId === currentUserId || proj.creatorId === 'me' || (currentUser?.username && proj.creatorUsername === currentUser.username);
+                const isMyProject = Boolean(
+                  (currentUser?.id && proj.creatorId && String(proj.creatorId) === String(currentUser.id)) ||
+                  (currentUser?.username && proj.creatorUsername && proj.creatorUsername.toLowerCase() === currentUser.username.toLowerCase()) ||
+                  (!proj.cloudId && (proj.creatorId === 'me' || proj.creatorId === currentUserId))
+                );
                 const hasApplicants = (proj.applicants || []).length > 0;
                 const projOptions = proj.options || [
                   proj.isCover === 1 ? 'Cover' : null,

@@ -2152,16 +2152,81 @@
     .announcement-card-bottom-row {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
       width: 100%;
       padding-top: 10px;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       margin-top: 2px;
+      gap: 10px;
+    }
+    .announcement-card-creator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+      min-width: 0;
+      flex-shrink: 1;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .announcement-card-creator:hover {
+      color: var(--cyan-light, #38bdf8);
+      background: rgba(14, 165, 233, 0.08);
+      border-color: rgba(14, 165, 233, 0.25);
+    }
+    .ann-creator-avatar-mini {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(14, 165, 233, 0.15);
+      color: var(--cyan, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .ann-creator-name {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
     }
     .announcement-visitor-toolbar {
       display: flex;
       align-items: center;
       justify-content: flex-end;
+      flex-shrink: 0;
+    }
+    .announcement-interest-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      border: none;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .announcement-interest-pill-btn:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+    }
+    .announcement-interest-pill-btn:active {
+      transform: translateY(0);
     }
     /* VIBRANT GREEN CIRCULAR INTEREST BUTTON */
     .announcement-interest-btn {
@@ -2437,30 +2502,30 @@
         width: 100%;
       }
       .announcement-card-bottom-row {
-        justify-content: center;
+        justify-content: space-between;
         width: 100%;
-        padding-top: 14px;
+        padding-top: 12px;
+        gap: 8px;
       }
       .announcement-creator-toolbar {
-        width: 100%;
-        justify-content: center;
-        gap: 16px;
+        width: auto;
+        justify-content: flex-end;
+        gap: 8px;
       }
       .ann-icon-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 1.25rem;
+        width: 38px;
+        height: 38px;
+        font-size: 1.15rem;
       }
       .ann-icon-candidates {
-        min-width: 44px;
-        height: 44px;
-        padding: 0 12px;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 10px;
       }
       .announcement-interest-btn {
-        width: 46px;
-        height: 46px;
-        font-size: 1.3rem;
-        margin: 0 auto;
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
       }
       .ann-two-col-grid {
         grid-template-columns: 1fr !important;
@@ -17202,9 +17267,15 @@
             const interestedList = getAnnouncementInterests(ann.id);
             const interestedCount = interestedList.length;
 
-            const avatarHtml = creatorPic
-              ? `<img src="${creatorPic}" alt="${escapeHtml(projectTitle)}" onerror="this.parentElement.innerHTML='<span class=\\'announcement-card-avatar-initial\\'>${initial}</span>'"/>`
+            const displayImage = ann.imageUrl || creatorPic;
+            const avatarHtml = displayImage
+              ? `<img src="${displayImage}" alt="${escapeHtml(projectTitle)}" onerror="this.parentElement.innerHTML='<span class=\\'announcement-card-avatar-initial\\'>${initial}</span>'"/>`
               : `<span class="announcement-card-avatar-initial">${initial}</span>`;
+
+            const circleAction = ann.imageUrl 
+              ? `openImagePreviewModal('${escapeHtml(ann.imageUrl).replace(/'/g, "\\'")}')`
+              : `openPublicMusicianProfile('${safeCreator}')`;
+            const circleTitle = ann.imageUrl ? 'Ver foto do anúncio' : `Criado por @${escapeHtml(creatorUsername)}`;
 
             const dateStr = ann.createdAt ? new Date(ann.createdAt).toLocaleDateString('pt-BR') : '';
             const rawLocs = [ann.city, ann.state, ann.country || 'Brasil'].map(x => (x || '').trim()).filter(Boolean);
@@ -17275,25 +17346,21 @@
 
                 <!-- Floating Avatar Protruding Top/Left -->
                 <div class="announcement-card-floating-avatar">
-                  <div class="announcement-card-avatar-circle" onclick="openPublicMusicianProfile('${creatorUsername}')" style="cursor: pointer;" title="Criado por @${creatorUsername}">
+                  <div class="announcement-card-avatar-circle" onclick="${circleAction}" style="cursor: pointer;" title="${circleTitle}">
                     ${avatarHtml}
                   </div>
                 </div>
 
                 <!-- Card Body -->
                 <div class="announcement-card-body">
-                  <!-- Mobile Meta: Data & Local centralizados (como no print do usuário) -->
+                  <!-- Mobile Meta: Data & Local centralizados -->
                   <div class="announcement-card-mobile-meta">
                     ${dateStr ? `<span class="announcement-card-date">${dateStr}</span>` : ''}
                     ${locStr ? `<span class="announcement-card-location"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(locStr)}</span>` : ''}
                   </div>
 
                   <div class="announcement-card-main-content">
-                    ${ann.imageUrl ? `
-                      <img class="announcement-card-thumb" src="${escapeHtml(ann.imageUrl)}" alt="${escapeHtml(projectTitle)}" onclick="openImagePreviewModal('${escapeHtml(ann.imageUrl)}')" title="Clique para ampliar"/>
-                    ` : ''}
-
-                    <div class="announcement-card-content">
+                    <div class="announcement-card-content" style="width: 100%;">
                       <!-- Line 1: Pilulas de cover autoral estilos etc... -->
                       <div class="announcement-card-tags-row">
                         ${stylePills.map(p => `
@@ -17318,8 +17385,17 @@
                     </div>
                   </div>
 
-                  <!-- Last Line: Action Icons (Toolbar do criador OU Botão de interesse da visita) -->
+                  <!-- Last Line: Criador à esquerda | Ações ou Interesse à direita -->
                   <div class="announcement-card-bottom-row">
+                    <!-- Criador do Anúncio (Lado Esquerdo) -->
+                    <div class="announcement-card-creator" onclick="openPublicMusicianProfile('${safeCreator}')" title="Ver perfil do criador (${isOwner ? 'você' : '@' + safeCreator})">
+                      <div class="ann-creator-avatar-mini">
+                        <ion-icon name="${isOwner ? 'person' : 'person-outline'}"></ion-icon>
+                      </div>
+                      <span class="ann-creator-name">${isOwner ? 'Você' : (ann.creator?.displayName || (ann.creator?.username ? '@' + ann.creator.username : creatorUsername))}</span>
+                    </div>
+
+                    <!-- Botões de Ação do Criador OU Botão de Interesse (Lado Direito) -->
                     ${isOwner ? `
                       <div class="announcement-creator-toolbar">
                         <button type="button" class="ann-icon-btn ann-icon-candidates" onclick="openAnnouncementCandidatesModal(${ann.id}, '${safeTitle}')" title="${interestedCount} Interessado${interestedCount === 1 ? '' : 's'} neste anúncio">
@@ -17338,8 +17414,9 @@
                       </div>
                     ` : `
                       <div class="announcement-visitor-toolbar">
-                        <button class="announcement-interest-btn" onclick="openExpressInterestModal(${ann.id}, '${safeTitle}', '${safeInst}', '${safeCreator}', ${ann.bandId || 'null'})" title="Demonstrar Interesse / Enviar Mensagem para a Banda" aria-label="Demonstrar Interesse">
-                          <ion-icon name="paper-plane" style="transform: translate(-1px, 1px);"></ion-icon>
+                        <button type="button" class="announcement-interest-pill-btn" onclick="openExpressInterestModal(${ann.id}, '${safeTitle}', '${safeInst}', '${safeCreator}', ${ann.bandId || 'null'})" title="Demonstrar Interesse">
+                          <ion-icon name="hand-right-outline"></ion-icon>
+                          <span>Tenho Interesse</span>
                         </button>
                       </div>
                     `}
