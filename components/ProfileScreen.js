@@ -642,19 +642,42 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       const initialPic = savedImage || cloudPic || null;
       if (initialPic) setProfileImage(initialPic);
       const savedDisplayName = await AsyncStorage.getItem('user_display_name');
+      const resolvedDisplayName = data.displayName || data.name || savedDisplayName || data.username || '';
+      if (data.displayName) {
+        await AsyncStorage.setItem('user_display_name', data.displayName);
+      } else if (savedDisplayName && savedDisplayName.trim()) {
+        api.updateProfile({ displayName: savedDisplayName }).catch(() => {});
+      }
+      setDisplayName(resolvedDisplayName);
+
       const savedCustomBg = await AsyncStorage.getItem('agenda_custom_bg');
       if (savedCustomBg) setCustomBgUri(savedCustomBg);
 
-      // Load Gear from AsyncStorage
-      const savedGear = await AsyncStorage.getItem('user_gear');
+      // Load Gear from API (priority) or AsyncStorage
       let parsedGear = [];
-      if (savedGear) {
-        try { parsedGear = JSON.parse(savedGear); } catch (e) {}
+      if (data.gearJson) {
+        try {
+          const parsed = typeof data.gearJson === 'string' ? JSON.parse(data.gearJson) : data.gearJson;
+          if (Array.isArray(parsed)) parsedGear = parsed;
+        } catch (e) {}
+      }
+      if (!parsedGear || parsedGear.length === 0) {
+        const savedGear = await AsyncStorage.getItem('user_gear');
+        if (savedGear) {
+          try { parsedGear = JSON.parse(savedGear); } catch (e) {}
+          // Push existing local gear to cloud API so it's persisted forever
+          if (parsedGear && parsedGear.length > 0) {
+            api.updateProfile({ gearJson: JSON.stringify(parsedGear) }).catch(() => {});
+          }
+        }
       }
       setGear(parsedGear || []);
+      if (parsedGear && parsedGear.length > 0) {
+        await AsyncStorage.setItem('user_gear', JSON.stringify(parsedGear));
+      }
 
       let parsedSkills = null;
-      const rawInst = data.instruments || data.skillsJson || data.skills;
+      const rawInst = data.skillsJson || data.instruments || data.skills;
       if (rawInst) {
         try {
           const parsed = typeof rawInst === 'string' ? JSON.parse(rawInst) : rawInst;
@@ -1128,6 +1151,11 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const saveGearList = async (updatedGear) => {
     setGear(updatedGear);
     await AsyncStorage.setItem('user_gear', JSON.stringify(updatedGear));
+    try {
+      await api.updateProfile({ gearJson: JSON.stringify(updatedGear) });
+    } catch (err) {
+      console.log('Error syncing gear to cloud API:', err);
+    }
   };
 
   const togglePrimaryGear = (gearId) => {

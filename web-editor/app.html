@@ -7950,6 +7950,23 @@
         localStorage.setItem(`bandlink_user_gear_${currentUser.username}`, JSON.stringify(myGear));
       }
       renderGearTab();
+      syncGearToApi();
+    }
+
+    async function syncGearToApi() {
+      if (!currentUser || !myGear) return;
+      try {
+        await fetch(`${API_URL}/Users/profile`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ 
+            gear: JSON.stringify(myGear),
+            gearJson: JSON.stringify(myGear)
+          })
+        });
+      } catch (e) {
+        console.warn('Error syncing gear to API:', e);
+      }
     }
 
     function getAuthHeaders() {
@@ -7973,9 +7990,20 @@
 
         if (res.ok) {
           currentUser = await res.json();
-          // Restore saved display name from local storage if not provided by backend
-          const savedDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
-          if (savedDisplayName) currentUser.displayName = savedDisplayName;
+          // Restore saved display name from backend or fallback to local storage & sync
+          if (currentUser.displayName && currentUser.displayName.trim()) {
+            localStorage.setItem(DISPLAY_NAME_KEY, currentUser.displayName);
+          } else {
+            const savedDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
+            if (savedDisplayName && savedDisplayName.trim()) {
+              currentUser.displayName = savedDisplayName;
+              fetch(`${API_URL}/Users/profile`, {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ displayName: savedDisplayName })
+              }).catch(() => {});
+            }
+          }
 
           // Restore saved profile picture from local storage if not returned by backend
           const savedPic = localStorage.getItem('bandlink_user_picture');
@@ -8010,6 +8038,58 @@
             currentUser.instruments = JSON.stringify(mySkills);
             currentUser.skillsJson = JSON.stringify(mySkills);
             syncSkillsToApi();
+          }
+
+          // Restore saved gear: prioritize API gear if present, else fallback to local cache & sync to DB
+          const serverGear = currentUser.gearJson || currentUser.gear;
+          const userGearKey = currentUser?.username ? `bandlink_user_gear_${currentUser.username}` : null;
+          const savedGearRaw = (userGearKey && localStorage.getItem(userGearKey)) || localStorage.getItem(GEAR_CACHE_KEY);
+          let localGear = [];
+          if (savedGearRaw) {
+            try {
+              const parsed = JSON.parse(savedGearRaw);
+              if (Array.isArray(parsed) && parsed.length > 0) localGear = parsed;
+            } catch (e) {}
+          }
+
+          if (serverGear) {
+            try {
+              const parsed = typeof serverGear === 'string' ? JSON.parse(serverGear) : serverGear;
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                myGear = parsed;
+                localStorage.setItem(GEAR_CACHE_KEY, JSON.stringify(myGear));
+                if (userGearKey) localStorage.setItem(userGearKey, JSON.stringify(myGear));
+              }
+            } catch (e) {}
+          } else if (localGear.length > 0) {
+            myGear = localGear;
+            currentUser.gearJson = JSON.stringify(myGear);
+            syncGearToApi();
+          }
+
+          // Restore extra skills: prioritize API extraSkills if present, else fallback to local cache & sync to DB
+          const serverExtra = currentUser.extraSkillsJson || currentUser.extraSkills;
+          const savedExtraRaw = localStorage.getItem(EXTRA_SKILLS_CACHE_KEY);
+          let localExtra = [];
+          if (savedExtraRaw) {
+            try {
+              const parsed = JSON.parse(savedExtraRaw);
+              if (Array.isArray(parsed) && parsed.length > 0) localExtra = parsed;
+            } catch (e) {}
+          }
+
+          if (serverExtra) {
+            try {
+              const parsed = typeof serverExtra === 'string' ? JSON.parse(serverExtra) : serverExtra;
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                myExtraSkills = parsed;
+                localStorage.setItem(EXTRA_SKILLS_CACHE_KEY, JSON.stringify(myExtraSkills));
+              }
+            } catch (e) {}
+          } else if (localExtra.length > 0) {
+            myExtraSkills = localExtra;
+            currentUser.extraSkillsJson = JSON.stringify(myExtraSkills);
+            saveExtraSkillsOnline();
           }
 
           localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
@@ -9722,12 +9802,16 @@
       localStorage.setItem(EXTRA_SKILLS_CACHE_KEY, JSON.stringify(myExtraSkills));
       if (currentUser) {
         currentUser.extraSkills = JSON.stringify(myExtraSkills);
+        currentUser.extraSkillsJson = JSON.stringify(myExtraSkills);
         localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
         try {
           await fetch(`${API_URL}/Users/profile`, {
             method: "PUT",
             headers: getAuthHeaders(),
-            body: JSON.stringify({ extraSkills: JSON.stringify(myExtraSkills) })
+            body: JSON.stringify({ 
+              extraSkills: JSON.stringify(myExtraSkills),
+              extraSkillsJson: JSON.stringify(myExtraSkills)
+            })
           });
         } catch (err) {
           console.warn('Erro ao sincronizar habilidades extras na API:', err);
