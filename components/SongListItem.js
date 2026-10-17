@@ -33,7 +33,7 @@ export default function SongListItem({
   };
 
   const tagsList = song.style
-    ? song.style.split(',').map(s => s.trim()).filter(Boolean)
+    ? song.style.split(/[,/•;]+/).map(s => s.trim()).filter(Boolean)
     : [];
 
   const hasLyrics = !!(song.lyrics && song.lyrics.trim());

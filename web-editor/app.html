@@ -6033,6 +6033,7 @@
                 <ion-icon name="location-outline"></ion-icon>
                 <span>Cidade, UF, País</span>
               </div>
+              <div id="bHeroGenres" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center;"></div>
             </div>
           </div>
         </div>
@@ -10183,16 +10184,14 @@
 
       const bandId = band?.id;
       if (!syncData && bandId) {
-        const cached = localStorage.getItem(`bandlink_band_${bandId}_sync`) || (bandId === 2 ? localStorage.getItem('bandlink_band_2_sync') : null);
+        const cached = localStorage.getItem(`bandlink_band_${bandId}_sync`);
         if (cached) syncData = parseJsonSafe(cached);
       }
 
-      const isBB = bandId === 2 || (band?.name && band.name.toLowerCase().includes('badger'));
-
-      const repertoireCount = syncData?.songs?.length || (isBB ? 63 : 0);
+      const repertoireCount = syncData?.songs?.length || 0;
       const membersCount = (syncData?.members && syncData.members.length > 0)
         ? syncData.members.length
-        : (band?.membersCount || band?.members?.length || (isBB ? 5 : 1));
+        : (band?.membersCount || band?.members?.length || 0);
 
       const setlists = syncData?.setlists || [];
       const finances = Array.isArray(syncData?.finances) ? syncData.finances : [];
@@ -10254,13 +10253,6 @@
             }
           }
         });
-      } else if (isBB) {
-        showsCount = 9;
-        rehearsalsCount = 5;
-        totalCache = 10000;
-        totalBandFundFromShows = 0;
-        totalMusiciansPaid = 10000;
-        individualIncome = membersCount > 0 ? (totalMusiciansPaid / membersCount) : 2000;
       }
 
       // Processa lançamentos manuais da banda (Entradas e Despesas)
@@ -10319,24 +10311,6 @@
           console.warn('Error fetching /my-bands:', e);
         }
 
-        // Ensure Bad Badgers (id 2) is present
-        const hasBadBadgers = Array.isArray(cloudBands) && cloudBands.some(b => b.id === 2 || (b.name && b.name.toLowerCase().includes('bad badger')));
-        if (!hasBadBadgers) {
-          try {
-            const pubRes = await fetch(`${API_URL}/Bands/public/2`);
-            if (pubRes.ok) {
-              const bbData = await pubRes.json();
-              if (Array.isArray(cloudBands)) {
-                cloudBands.push(bbData);
-              } else {
-                cloudBands = [bbData];
-              }
-            }
-          } catch (e) {
-            console.warn('Could not fetch public Bad Badgers:', e);
-          }
-        }
-
         myBands = Array.isArray(cloudBands) ? cloudBands : [];
 
         // Pull full sync data for each band if missing
@@ -10363,7 +10337,7 @@
           }
 
           const localSavedAt = parseInt(localStorage.getItem(`bandlink_band_${band.id}_savedAt`) || '0', 10);
-          const localCached = localStorage.getItem(`bandlink_band_${band.id}_sync`) || (band.id === 2 ? localStorage.getItem('bandlink_band_2_sync') : null);
+          const localCached = localStorage.getItem(`bandlink_band_${band.id}_sync`);
 
           if (localCached && localSavedAt > 0) {
             band.syncDataJson = localCached;
@@ -10380,9 +10354,6 @@
             }
           } else if (band.syncDataJson) {
             localStorage.setItem(`bandlink_band_${band.id}_sync`, band.syncDataJson);
-            if (band.id === 2) {
-              try { localStorage.setItem('bandlink_band_2_sync', band.syncDataJson); } catch (e) {}
-            }
           }
         }
 
@@ -10390,11 +10361,6 @@
         const cloudEvents = [];
         for (const band of myBands) {
           let syncData = parseJsonSafe(band.syncDataJson);
-          if (!syncData && band.id === 2) {
-            const cached = localStorage.getItem('bandlink_band_2_sync');
-            if (cached) syncData = parseJsonSafe(cached);
-          }
-
           if (syncData) {
             const bandSetlists = syncData.setlists || syncData.events || [];
             bandSetlists.forEach(s => {
@@ -10591,7 +10557,7 @@
                 <h3 class="project-band-title" style="margin-left: 0; margin-bottom: 8px; justify-content: center; text-align: center; width: 100%;">${band.name}</h3>
                 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;">
                   <span class="badge badge-cyan" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(band.bandType || 'Banda')}</span>
-                  ${band.genre ? `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(band.genre)}</span>` : ''}
+                  ${getBandGenrePills(band.genre || band.genresJson).map(g => `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('')}
                   ${locStr ? `<span class="badge" style="background: rgba(255,255,255,0.08); color: #cbd5e1; font-size: 0.75rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;"><ion-icon name="location-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${escapeHtml(locStr)}</span>` : ''}
                 </div>
               </div>
@@ -10633,6 +10599,8 @@
     async function openBandProfileView(bandId) {
       showLoading('Carregando informações da banda...');
       currentActiveBandId = bandId;
+      currentBandSyncData = null;
+      currentBandData = null;
       let band = (myBands || []).find(b => b.id === bandId);
 
       if (!band || !band.syncDataJson) {
@@ -10641,9 +10609,6 @@
           if (res.ok) {
             const fullData = await res.json();
             band = { ...(band || {}), ...fullData };
-            if (bandId === 2) {
-              localStorage.setItem('bandlink_band_2_sync', fullData.syncDataJson || '');
-            }
           }
         } catch (e) {
           console.warn('Error fetching band full details:', e);
@@ -10656,7 +10621,7 @@
       }
 
       currentBandData = band;
-      const localCached = localStorage.getItem(`bandlink_band_${bandId}_sync`) || (bandId === 2 ? localStorage.getItem('bandlink_band_2_sync') : null);
+      const localCached = localStorage.getItem(`bandlink_band_${bandId}_sync`);
       if (localCached) {
         const parsedLocal = parseJsonSafe(localCached);
         if (parsedLocal) {
@@ -10709,6 +10674,12 @@
       const state = band.state || 'SP';
       const country = band.country || 'Brasil';
       if (hLoc) hLoc.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${city}, ${state}, ${country}</span>`;
+
+      const hGenres = document.getElementById('bHeroGenres');
+      if (hGenres) {
+        const gList = getBandGenrePills(band.genre || band.genresJson);
+        hGenres.innerHTML = gList.map(g => `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('');
+      }
 
       // Abre por padrão na aba de Agenda (A) e rola imediatamente para o topo
       switchBandPageTab('A');
@@ -10853,14 +10824,16 @@
       if (hSince) hSince.textContent = `[ DESDE ${updatedSince} ]`;
       const hLoc = document.getElementById('bHeroLocation');
       if (hLoc) hLoc.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${updatedCity}, ${updatedState}, ${updatedCountry}</span>`;
+      const hGenres = document.getElementById('bHeroGenres');
+      if (hGenres) {
+        const gList = getBandGenrePills(updatedGenre);
+        hGenres.innerHTML = gList.map(g => `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('');
+      }
 
       // Atualizar no array local myBands
       const idx = (myBands || []).findIndex(b => b.id === currentBandData.id);
       if (idx !== -1) {
         myBands[idx] = { ...myBands[idx], ...currentBandData };
-      }
-      if (currentBandData.id === 2) {
-        localStorage.setItem('bandlink_band_2_profile', JSON.stringify(currentBandData));
       }
 
       // Tentar persistir na API
@@ -11020,14 +10993,6 @@
       if (!currentBandSyncData.membersInitialized && (!currentBandSyncData.members || currentBandSyncData.members.length === 0)) {
         if (currentBandData?.members?.length > 0) {
           currentBandSyncData.members = JSON.parse(JSON.stringify(currentBandData.members));
-        } else if (!currentBandData || currentBandData.id === 2 || (currentBandData.name && currentBandData.name.toLowerCase().includes('badger'))) {
-          currentBandSyncData.members = [
-            { id: 'm_0', name: "Allison", role: "Baixo", isLeader: true, phone: "16991153733", startDate: "01/07/2026", username: "allison_xd", avatarUri: "", extraSkills: "Van própria, Técnico de Som, Design" },
-            { id: 'm_1', name: "André", role: "Guitarra, Vocal", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "", extraSkills: "Vídeo & Reels" },
-            { id: 'm_2', name: "Caixa", role: "Caixa", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "" },
-            { id: 'm_3', name: "Danilo", role: "Bateria", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "" },
-            { id: 'm_4', name: "Salatiel", role: "Vocal, Guitarra", isLeader: false, phone: "", startDate: "", username: "", avatarUri: "", extraSkills: "Booking & Shows" }
-          ];
         } else {
           currentBandSyncData.members = [];
         }
@@ -11062,9 +11027,6 @@
       if (bandId) {
         localStorage.setItem(`bandlink_band_${bandId}_sync`, serialized);
         localStorage.setItem(`bandlink_band_${bandId}_savedAt`, Date.now().toString());
-        if (bandId === 2) {
-          localStorage.setItem('bandlink_band_2_sync', serialized);
-        }
       }
 
       // Sincroniza em background com o backend cloud
@@ -11459,9 +11421,7 @@
       const s = currentBandSyncData.songs.find(x => String(x.id) === String(songId));
       if (s) {
         s.isFavorite = !s.isFavorite;
-        if (currentBandData.id === 2) {
-          localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
-        }
+        persistCurrentBandSync();
         renderBandRepertoireTab(currentBandData, currentBandSyncData);
       }
     }
@@ -11485,20 +11445,11 @@
       const setlists = m.setlists || [];
       let songs = syncData?.songs || [];
 
-      if (songs.length === 0 && (band.id === 2 || (band.name && band.name.toLowerCase().includes('badger')))) {
-        const cached = localStorage.getItem('bandlink_band_2_sync');
-        if (cached) {
-          const parsed = parseJsonSafe(cached);
-          if (parsed?.songs) songs = parsed.songs;
-        }
-      }
-
       // Estilos únicos de repertório
       const allStylesSet = new Set();
       songs.forEach(s => {
         if (s.style) {
-          s.style.split(',').forEach(st => {
-            const clean = st.trim();
+          getBandGenrePills(s.style).forEach(clean => {
             if (clean) allStylesSet.add(clean);
           });
         }
@@ -11615,7 +11566,7 @@
       } else {
         html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
         filteredSongs.forEach(song => {
-          const tags = song.style ? song.style.split(',').map(s => s.trim()).filter(Boolean) : [];
+          const tags = getBandGenrePills(song.style);
           const hasLyrics = !!(song.lyrics && song.lyrics.trim());
           const hasChords = !!(song.chords && song.chords.trim());
           const hasTabs = !!(song.tabs && song.tabs.trim());
@@ -11761,9 +11712,9 @@
                   ${escapeHtml(song.name || 'Sem título')}
                   ${song.originalBand ? `<span style="color: #64748b; font-weight: 400; margin: 0 4px;">•</span><span style="color: var(--cyan); font-weight: 600;">${escapeHtml(song.originalBand)}</span>` : ''}
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                  ${song.style ? `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(song.style)}</span>` : ''}
-                  ${song.duration ? `<span style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono);">${song.duration}</span>` : ''}
+                <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px; flex-wrap: wrap;">
+                  ${getBandGenrePills(song.style).map(st => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 6px; font-weight: 600;">${escapeHtml(st)}</span>`).join('')}
+                  ${song.duration ? `<span style="font-size: 0.75rem; color: #94a3b8; font-family: var(--font-mono); margin-left: 4px;">${song.duration}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -11978,15 +11929,6 @@
           isLeader: m.isLeader === 1 || m.role?.toLowerCase()?.includes('líder') || m.role?.toLowerCase()?.includes('admin'),
           username: m.username || ''
         }));
-      }
-      if (!band || band.id === 2 || band.name?.toLowerCase().includes('badger')) {
-        return [
-          { id: 'm_0', name: "Allison", role: "Baixo", isLeader: true, phone: "16991153733", startDate: "01/07/2026", username: "allison_xd" },
-          { id: 'm_1', name: "André", role: "Guitarra, Vocal", isLeader: false, phone: "", startDate: "", username: "" },
-          { id: 'm_2', name: "Caixa", role: "Caixa", isLeader: false, phone: "", startDate: "", username: "" },
-          { id: 'm_3', name: "Danilo", role: "Bateria", isLeader: false, phone: "", startDate: "", username: "" },
-          { id: 'm_4', name: "Salatiel", role: "Vocal, Guitarra", isLeader: false, phone: "", startDate: "", username: "" }
-        ];
       }
       return [{ id: 'm_0', name: band?.ownerUsername || 'Líder', role: 'Vocal / Líder', isLeader: true }];
     }
@@ -13065,11 +13007,11 @@
         const modal = document.getElementById('editEventPlaylistModal');
         if (!modal) return;
 
-        if (!currentBandData) {
-          currentBandData = (myBands || []).find(b => b.id === currentActiveBandId) || { id: 2, name: 'Bad Badgers' };
+        if (!currentBandData && currentActiveBandId) {
+          currentBandData = (myBands || []).find(b => b.id === currentActiveBandId);
         }
-        if (!currentBandSyncData) {
-          const cached = localStorage.getItem('bandlink_band_2_sync');
+        if (!currentBandSyncData && currentBandData?.id) {
+          const cached = localStorage.getItem(`bandlink_band_${currentBandData.id}_sync`);
           currentBandSyncData = cached ? parseJsonSafe(cached) : { setlists: [], songs: [] };
         }
         if (!currentBandSyncData) currentBandSyncData = { setlists: [], songs: [] };
@@ -13916,10 +13858,6 @@
         currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
       }
 
-      if (!currentBandData || currentBandData.id === 2) {
-        localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
-      }
-
       persistCurrentBandSync();
 
       closeModal('editEventPlaylistModal');
@@ -13942,9 +13880,6 @@
         currentBandSyncData.setlists.splice(editingEventIndex, 1);
         if (currentBandData) {
           currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
-        }
-        if (!currentBandData || currentBandData.id === 2) {
-          localStorage.setItem('bandlink_band_2_sync', JSON.stringify(currentBandSyncData));
         }
         persistCurrentBandSync();
       }
@@ -15282,18 +15217,11 @@
 
       // 1. Coleta todas as bandas disponíveis
       const bandsToCheck = [...(myBands || [])];
-      const hasBadBadgers = bandsToCheck.some(b => b.id === 2 || (b.name && b.name.toLowerCase().includes('badger')));
-      if (!hasBadBadgers) {
-        const cachedBB = localStorage.getItem('bandlink_band_2_sync');
-        if (cachedBB) {
-          bandsToCheck.push({ id: 2, name: 'Bad Badgers', syncDataJson: cachedBB });
-        }
-      }
 
       bandsToCheck.forEach(band => {
         const m = getBandMetrics(band);
         const setlists = m.setlists || [];
-        const activeMemCount = m.membersCount || (band.name && band.name.toLowerCase().includes('badger') ? 5 : 1);
+        const activeMemCount = m.membersCount || 1;
 
         setlists.forEach(sl => {
           const sName = sl.name || sl.title || '';

@@ -841,10 +841,10 @@ export default function BandDetailScreen({
       try {
         const parsed = typeof band.genres === 'string' && band.genres.startsWith('[')
           ? JSON.parse(band.genres)
-          : String(band.genres).split(',').map(s => s.trim()).filter(Boolean);
-        return parsed.slice(0, 4);
+          : String(band.genres).split(/[,/•;]+/).map(s => s.trim()).filter(Boolean);
+        return parsed.slice(0, 6);
       } catch (e) {
-        return String(band.genres).split(',').map(s => s.trim()).filter(Boolean).slice(0, 4);
+        return String(band.genres).split(/[,/•;]+/).map(s => s.trim()).filter(Boolean).slice(0, 6);
       }
     }
     return [];
@@ -1240,7 +1240,7 @@ export default function BandDetailScreen({
 
   // Extract unique tags for repertoire filter
   const uniqueBandStyles = Array.from(new Set(
-    bandSongs.flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean))
+    bandSongs.flatMap(s => (s.style || '').split(/[,/•;]+/).map(tag => tag.trim()).filter(Boolean))
   ));
 
   // Calculate style breakdown percentages for the Statistics Dedicated Page
@@ -1251,7 +1251,7 @@ export default function BandDetailScreen({
 
     bandSongs.forEach(song => {
       if (song.style && song.style.trim()) {
-        const tags = song.style.split(',').map(t => t.trim()).filter(Boolean);
+        const tags = song.style.split(/[,/•;]+/).map(t => t.trim()).filter(Boolean);
         tags.forEach(tag => {
           counts[tag] = (counts[tag] || 0) + 1;
           totalTags += 1;
@@ -3811,9 +3811,18 @@ export default function BandDetailScreen({
                       />
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.songItemName, { color: colors.text }]}>{song.name}</Text>
-                        <Text style={[styles.songItemBand, { color: colors.textMuted }]}>
-                          {song.originalBand || ''}
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 3 }}>
+                          {song.originalBand ? (
+                            <Text style={[styles.songItemBand, { color: colors.textMuted, marginRight: 4 }]}>
+                              {song.originalBand}
+                            </Text>
+                          ) : null}
+                          {(song.style ? song.style.split(/[,/•;]+/).map(s => s.trim()).filter(Boolean) : []).map((tag, tIdx) => (
+                            <View key={tIdx} style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, borderWidth: 0.5, borderColor: colors.primary + '40' }}>
+                              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
+                            </View>
+                          ))}
+                        </View>
                       </View>
                     </Pressable>
                   );
