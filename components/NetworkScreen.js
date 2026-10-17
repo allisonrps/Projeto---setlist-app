@@ -182,11 +182,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const [subTab, setSubTab] = useState('musicians');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // City filter state
-  const [selectedCity, setSelectedCity] = useState('');
-  const hasInitializedCity = useRef(false);
-  const [showCityFilterModal, setShowCityFilterModal] = useState(false);
-  const [cityFilterInput, setCityFilterInput] = useState('');
+  // Location filter state (Cidade, UF, País)
+  const [filterCity, setFilterCity] = useState('');
+  const [filterState, setFilterState] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
+  const hasInitializedLocation = useRef(false);
 
   // Pagination state
   const [projectsPage, setProjectsPage] = useState(1);
@@ -271,12 +271,12 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     loadUserBands();
   }, []);
 
-  // Reset pagination when search, city filter, or tab changes
+  // Reset pagination when search, location filters, or tab changes
   useEffect(() => {
     setProjectsPage(1);
     setMusiciansPage(1);
     setBandsPage(1);
-  }, [searchQuery, selectedCity, subTab]);
+  }, [searchQuery, filterCity, filterState, filterCountry, subTab]);
 
   // Candidate Scanner: looping magnifying glass animation
   useEffect(() => {
@@ -413,9 +413,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         setFormCity(normalizedUser.city || '');
         setFormState(normalizedUser.state || '');
         setFormCountry(normalizedUser.country || '');
-        if (!hasInitializedCity.current && normalizedUser.city) {
-          hasInitializedCity.current = true;
-          setSelectedCity(normalizedUser.city);
+        if (!hasInitializedLocation.current && (normalizedUser.city || normalizedUser.state || normalizedUser.country)) {
+          hasInitializedLocation.current = true;
+          setFilterCity(normalizedUser.city || '');
+          setFilterState(normalizedUser.state || '');
+          setFilterCountry(normalizedUser.country || 'Brasil');
         }
 
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
@@ -1295,10 +1297,17 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const currentUserId = currentUser?.id || currentUser?.username || 'me';
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      if (selectedCity.trim()) {
-        const c = selectedCity.trim().toLowerCase();
-        const inCity = (p.city || '').toLowerCase().includes(c);
-        if (!inCity) return false;
+      if (filterCity.trim()) {
+        const c = filterCity.trim().toLowerCase();
+        if (!(p.city || '').toLowerCase().includes(c)) return false;
+      }
+      if (filterState.trim()) {
+        const st = filterState.trim().toLowerCase();
+        if (!(p.state || '').toLowerCase().includes(st)) return false;
+      }
+      if (filterCountry.trim()) {
+        const co = filterCountry.trim().toLowerCase();
+        if (!(p.country || '').toLowerCase().includes(co)) return false;
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -1311,7 +1320,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       }
       return true;
     });
-  }, [projects, searchQuery, selectedCity]);
+  }, [projects, searchQuery, filterCity, filterState, filterCountry]);
 
   // Helper to extract instrument name and individual star rating
   const getInstInfo = (inst, defaultStars = 5) => {
@@ -1330,10 +1339,17 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   // Filtered musicians by search text and city
   const filteredMusicians = useMemo(() => {
     return allMusicians.filter(m => {
-      if (selectedCity.trim()) {
-        const c = selectedCity.trim().toLowerCase();
-        const inCity = (m.city || '').toLowerCase().includes(c);
-        if (!inCity) return false;
+      if (filterCity.trim()) {
+        const c = filterCity.trim().toLowerCase();
+        if (!(m.city || '').toLowerCase().includes(c)) return false;
+      }
+      if (filterState.trim()) {
+        const st = filterState.trim().toLowerCase();
+        if (!(m.state || '').toLowerCase().includes(st)) return false;
+      }
+      if (filterCountry.trim()) {
+        const co = filterCountry.trim().toLowerCase();
+        if (!(m.country || '').toLowerCase().includes(co)) return false;
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -1349,15 +1365,23 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       }
       return true;
     });
-  }, [allMusicians, searchQuery, selectedCity]);
+  }, [allMusicians, searchQuery, filterCity, filterState, filterCountry]);
 
   // Displayed musicians: if scanning a project, show matching candidates; otherwise all filtered musicians
   const displayedMusicians = useMemo(() => {
     if (selectedScanProject) {
       let list = scannedCandidates;
-      if (selectedCity.trim()) {
-        const c = selectedCity.trim().toLowerCase();
+      if (filterCity.trim()) {
+        const c = filterCity.trim().toLowerCase();
         list = list.filter(m => (m.city || '').toLowerCase().includes(c));
+      }
+      if (filterState.trim()) {
+        const st = filterState.trim().toLowerCase();
+        list = list.filter(m => (m.state || '').toLowerCase().includes(st));
+      }
+      if (filterCountry.trim()) {
+        const co = filterCountry.trim().toLowerCase();
+        list = list.filter(m => (m.country || '').toLowerCase().includes(co));
       }
       if (!searchQuery.trim()) return list;
       const q = searchQuery.toLowerCase();
@@ -1374,7 +1398,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       });
     }
     return filteredMusicians;
-  }, [selectedScanProject, scannedCandidates, filteredMusicians, searchQuery, selectedCity]);
+  }, [selectedScanProject, scannedCandidates, filteredMusicians, searchQuery, filterCity, filterState, filterCountry]);
 
   // Pagination calculations
   const totalProjectsPages = Math.max(1, Math.ceil(filteredProjects.length / ITEMS_PER_PAGE));
@@ -1521,11 +1545,17 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   // Filtered bands by city and search query
   const filteredBands = useMemo(() => {
     return allBands.filter(b => {
-      // 1. Filtro por cidade (por padrão da sua cidade, ou todas se o usuário limpar)
-      if (selectedCity.trim()) {
-        const c = selectedCity.trim().toLowerCase();
-        const inCity = (b.city || '').toLowerCase().includes(c);
-        if (!inCity) return false;
+      if (filterCity.trim()) {
+        const c = filterCity.trim().toLowerCase();
+        if (!(b.city || '').toLowerCase().includes(c)) return false;
+      }
+      if (filterState.trim()) {
+        const st = filterState.trim().toLowerCase();
+        if (!(b.state || '').toLowerCase().includes(st)) return false;
+      }
+      if (filterCountry.trim()) {
+        const co = filterCountry.trim().toLowerCase();
+        if (!(b.country || '').toLowerCase().includes(co)) return false;
       }
 
       // 2. Filtro por busca de texto (nome da banda, gênero, cidade, etc.)
@@ -1542,7 +1572,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
 
       return true;
     });
-  }, [allBands, searchQuery, selectedCity]);
+  }, [allBands, searchQuery, filterCity, filterState, filterCountry]);
 
   const totalBandsPages = Math.max(1, Math.ceil(filteredBands.length / ITEMS_PER_PAGE));
   const paginatedBands = useMemo(() => {
@@ -1669,48 +1699,42 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
         <View style={styles.webContainer}>
           <View style={styles.headerTopRow}>
-            {/* Logo e Título "Explorar" */}
+            {/* Logo e Título "Social" */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <View style={[styles.networkIconCircle, { backgroundColor: colors.primary + '18' }]}>
                 <Ionicons name="globe-outline" size={22} color={colors.primary} />
               </View>
-              <Text style={[styles.headerTitle, { color: colors.text }]}>{t('network') || 'Rede'}</Text>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>{t('socialTab') || 'Social'}</Text>
             </View>
 
-            {/* Ações da Direita: Botão Anunciar + Avatar para Perfil */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.newProjectHeaderBtn,
-                  { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }
-                ]}
-                onPress={openNewProjectModal}
-              >
-                <Ionicons name="add" size={18} color="#fff" />
-                <Text style={styles.newProjectBtnText}>{t('announce') || 'Anunciar'}</Text>
-              </Pressable>
-
-              {/* AVATAR DO USUÁRIO */}
-              <Pressable
-                onPress={onOpenProfile}
-                style={({ pressed }) => [
-                  styles.userAvatarBtn,
-                  { borderColor: colors.primary, opacity: pressed ? 0.8 : 1 }
-                ]}
-                accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
-              >
+            {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" */}
+            <Pressable
+              onPress={onOpenProfile}
+              style={({ pressed }) => [
+                styles.unifiedProfileBtn,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
+                  opacity: pressed ? 0.8 : 1
+                }
+              ]}
+              accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
+            >
+              <View style={styles.unifiedAvatarBox}>
                 {userProfileImage ? (
-                  <Image source={{ uri: userProfileImage }} style={styles.userAvatarImg} />
+                  <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
                 ) : (
-                  <View style={[styles.userAvatarPlaceholder, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.userAvatarInitial}>
+                  <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.unifiedAvatarInitial}>
                       {userDisplayName.charAt(0).toUpperCase()}
                     </Text>
                   </View>
                 )}
-                <View style={[styles.statusDot, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
-              </Pressable>
-            </View>
+                <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
+              </View>
+              <Text style={[styles.unifiedProfileText, { color: colors.text }]}>Perfil</Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
+            </Pressable>
           </View>
 
           {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}
@@ -1730,74 +1754,114 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
             ) : null}
           </View>
 
-          {/* BARRA DE PESQUISA DE CIDADE ABERTA COM BOTÕES TODAS E MINHA CIDADE */}
-          <View style={styles.citySearchRow}>
+          {/* FILTRO DE LOCALIDADE EM 3 CAMPOS: CIDADE, UF (2 LETRAS), PAÍS */}
+          <View style={styles.locationFilterRow}>
+            {/* 1. Cidade */}
             <View
               style={[
-                styles.citySearchInputBox,
+                styles.locationInputBox,
                 {
+                  flex: 1.8,
                   backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                  borderColor: selectedCity ? colors.primary : colors.border
+                  borderColor: filterCity ? colors.primary : colors.border
                 }
               ]}
             >
               <Ionicons
                 name="location-outline"
-                size={15}
-                color={selectedCity ? colors.primary : colors.textMuted}
+                size={14}
+                color={filterCity ? colors.primary : colors.textMuted}
+                style={{ marginRight: 4 }}
               />
               <TextInput
-                style={[styles.citySearchInput, { color: colors.text }]}
-                value={selectedCity}
-                onChangeText={setSelectedCity}
-                placeholder={t('searchCityPlaceholder') || 'Buscar por cidade...'}
+                style={[styles.locationTextInput, { color: colors.text }]}
+                value={filterCity}
+                onChangeText={setFilterCity}
+                placeholder={t('cityPlaceholder') || 'Cidade'}
                 placeholderTextColor={colors.textMuted}
                 autoComplete="off"
-                maxLength={100}
+                maxLength={60}
               />
-              {selectedCity ? (
-                <Pressable onPress={() => setSelectedCity('')} hitSlop={8}>
-                  <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+              {filterCity ? (
+                <Pressable onPress={() => setFilterCity('')} hitSlop={6}>
+                  <Ionicons name="close-circle" size={14} color={colors.textMuted} />
                 </Pressable>
               ) : null}
             </View>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.cityFilterPill,
+            {/* 2. UF (2 letras) */}
+            <View
+              style={[
+                styles.locationInputBox,
                 {
-                  backgroundColor: !selectedCity ? colors.primary + '20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                  borderColor: !selectedCity ? colors.primary : colors.border,
-                  opacity: pressed ? 0.75 : 1,
+                  width: 58,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: filterState ? colors.primary : colors.border,
+                  justifyContent: 'center',
+                  paddingHorizontal: 6
                 }
               ]}
-              onPress={() => setSelectedCity('')}
             >
-              <Text style={[styles.cityFilterPillText, { color: !selectedCity ? colors.primary : colors.textMuted }]}>
-                {t('allCitiesPill') || 'Todas'}
-              </Text>
-            </Pressable>
+              <TextInput
+                style={[styles.locationTextInput, { color: colors.text, textAlign: 'center', fontWeight: '700' }]}
+                value={filterState}
+                onChangeText={(val) => setFilterState(val.toUpperCase())}
+                placeholder="UF"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="characters"
+                autoComplete="off"
+                maxLength={2}
+              />
+              {filterState ? (
+                <Pressable onPress={() => setFilterState('')} hitSlop={4}>
+                  <Ionicons name="close-circle" size={12} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
 
-            {currentUser?.city ? (
+            {/* 3. País */}
+            <View
+              style={[
+                styles.locationInputBox,
+                {
+                  flex: 1.3,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: filterCountry ? colors.primary : colors.border
+                }
+              ]}
+            >
+              <TextInput
+                style={[styles.locationTextInput, { color: colors.text }]}
+                value={filterCountry}
+                onChangeText={setFilterCountry}
+                placeholder={t('countryPlaceholder') || 'País'}
+                placeholderTextColor={colors.textMuted}
+                autoComplete="off"
+                maxLength={40}
+              />
+              {filterCountry ? (
+                <Pressable onPress={() => setFilterCountry('')} hitSlop={6}>
+                  <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
+
+            {/* Botão limpar todos os 3 campos */}
+            {(filterCity || filterState || filterCountry) ? (
               <Pressable
+                onPress={() => {
+                  setFilterCity('');
+                  setFilterState('');
+                  setFilterCountry('');
+                }}
                 style={({ pressed }) => [
-                  styles.cityFilterPill,
-                  {
-                    backgroundColor: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary + '20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                    borderColor: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.border,
-                    opacity: pressed ? 0.75 : 1,
-                  }
+                  styles.clearLocationBtn,
+                  { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.7 : 1 }
                 ]}
-                onPress={() => setSelectedCity(currentUser.city)}
+                hitSlop={6}
+                title="Limpar filtros de localidade"
               >
-                <Ionicons
-                  name="navigate-outline"
-                  size={12}
-                  color={selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.textMuted}
-                />
-                <Text style={[styles.cityFilterPillText, { color: selectedCity.toLowerCase() === currentUser.city.toLowerCase() ? colors.primary : colors.textMuted }]}>
-                  {t('myCityPill') || 'Minha Cidade'}
-                </Text>
+                <Ionicons name="trash-outline" size={15} color={colors.textMuted} />
               </Pressable>
             ) : null}
           </View>
@@ -1972,6 +2036,28 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           {subTab === 'projects' ? (
           /* ── FEED DE ANÚNCIOS ── */
           <View>
+            {/* BOTÃO PUBLICAR ANÚNCIO (NA PRIMEIRA LINHA DA ABA DE ANÚNCIOS) */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.postAdTopBanner,
+                { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 }
+              ]}
+              onPress={openNewProjectModal}
+            >
+              <View style={styles.postAdTopBannerIcon}>
+                <Ionicons name="add" size={20} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.postAdTopBannerTitle}>
+                  {t('createAnnouncement') || 'Publicar Anúncio'}
+                </Text>
+                <Text style={styles.postAdTopBannerSubtitle}>
+                  Procurando músicos ou divulgando sua banda? Anuncie aqui
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
+            </Pressable>
+
             {filteredProjects.length === 0 ? (
               <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
                 <Ionicons name="search-outline" size={40} color={colors.textMuted} />
@@ -2252,14 +2338,14 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
               <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
                 <Ionicons name="musical-notes-outline" size={40} color={colors.textMuted} />
                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                  {selectedCity
-                    ? (t('noBandsInCity') || 'Nenhuma banda encontrada em {city}.').replace('{city}', selectedCity)
+                  {(filterCity || filterState || filterCountry)
+                    ? (t('noBandsInCity') || 'Nenhuma banda encontrada em {city}.').replace('{city}', [filterCity, filterState, filterCountry].filter(Boolean).join(', '))
                     : (t('noBandsFound') || 'Nenhuma banda encontrada.')}
                 </Text>
-                {selectedCity ? (
+                {(filterCity || filterState || filterCountry) ? (
                   <Pressable
                     style={[styles.emptyBtn, { backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', gap: 6 }]}
-                    onPress={() => setSelectedCity('')}
+                    onPress={() => { setFilterCity(''); setFilterState(''); setFilterCountry(''); }}
                   >
                     <Ionicons name="globe-outline" size={15} color="#fff" />
                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>
@@ -3897,5 +3983,111 @@ const styles = StyleSheet.create({
   },
   pageNumberText: {
     fontSize: 12,
+  },
+  /* ── UNIFIED PROFILE BUTTON ── */
+  unifiedProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  unifiedAvatarBox: {
+    position: 'relative',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unifiedAvatarImg: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
+  unifiedAvatarPlaceholder: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unifiedAvatarInitial: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  statusDotSmall: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1.5,
+  },
+  unifiedProfileText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  /* ── 3-FIELD LOCATION FILTER ── */
+  locationFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  locationInputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    height: 38,
+  },
+  locationTextInput: {
+    flex: 1,
+    fontSize: 13,
+    paddingVertical: 0,
+  },
+  clearLocationBtn: {
+    padding: 6,
+    borderRadius: 6,
+  },
+  /* ── POST AD TOP BANNER ── */
+  postAdTopBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 14,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  postAdTopBannerIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postAdTopBannerTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  postAdTopBannerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 2,
   },
 });

@@ -655,6 +655,7 @@ function MainApp() {
   const [selectedBandId, setSelectedBandId] = useState(null);
   const [showStats, setShowStats] = useState(false);
   const [statsBandId, setStatsBandId] = useState(null);
+  const [showOfflineSocialModal, setShowOfflineSocialModal] = useState(false);
 
   // Estados dos dados
   const [bands, setBands] = useState([]);
@@ -3742,7 +3743,7 @@ function MainApp() {
             <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
               <Text style={[styles.headerCountText, { color: colors.primary }]}>{bands.length}</Text>
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('bands')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('projectsTab') || t('bands') || 'Projetos'}</Text>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -4314,7 +4315,7 @@ function MainApp() {
             <View style={[styles.headerCountBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]}>
               <Text style={[styles.headerCountText, { color: colors.primary }]}>{songs.length}</Text>
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('songs')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('songbookTab') || t('songs') || 'Songbook'}</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Pressable 
@@ -5451,12 +5452,22 @@ function MainApp() {
             {socialView === 'feed' ? (
               <NetworkScreen 
                 onOpenProfile={() => setSocialView('profile')} 
-                onLogout={async () => { await api.logout(); setIsLoggedIn(false); }} 
+                onLogout={async () => {
+                  await api.logout();
+                  setIsLoggedIn(false);
+                  setCurrentTab('home');
+                  await reloadAllData();
+                }} 
               />
             ) : (
               <ProfileScreen 
                 onBack={() => setSocialView('feed')} 
-                onLogout={async () => { await api.logout(); setIsLoggedIn(false); }} 
+                onLogout={async () => {
+                  await api.logout();
+                  setIsLoggedIn(false);
+                  setCurrentTab('home');
+                  await reloadAllData();
+                }} 
                 onOpenBandProfile={handleOpenBandPublicProfile}
               />
             )}
@@ -5493,7 +5504,7 @@ function MainApp() {
             {currentTab === 'social' && renderSocialTab()}
           </View>
 
-          {/* Barra de Navegação Inferior (Ordem: Home -> Bandas -> Rede (Destacada) -> Músicas -> Opções) */}
+          {/* Barra de Navegação Inferior (Ordem: Home -> Projetos -> Social (Central) -> Songbook -> Opções) */}
           <View style={[styles.bottomNav, { backgroundColor: colors.cardBackground, borderTopColor: colors.border }]}>
             <Pressable style={styles.tabItem} onPress={() => setCurrentTab('home')}>
               <Ionicons name={currentTab === 'home' ? 'home' : 'home-outline'} size={23} color={currentTab === 'home' ? colors.primary : colors.textMuted} />
@@ -5502,15 +5513,15 @@ function MainApp() {
             
             <Pressable style={styles.tabItem} onPress={() => setCurrentTab('bands')}>
               <Ionicons name={currentTab === 'bands' ? 'people' : 'people-outline'} size={23} color={currentTab === 'bands' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: currentTab === 'bands' ? colors.primary : colors.textMuted }]}>{t('bandsTab') || 'Bandas'}</Text>
+              <Text style={[styles.tabText, { color: currentTab === 'bands' ? colors.primary : colors.textMuted }]}>{t('projectsTab') || t('bandsTab') || 'Projetos'}</Text>
             </Pressable>
 
-            {/* ABA CENTRAL DESTACADA: REDE (Círculo sobressaindo à barra) */}
+            {/* ABA CENTRAL DESTACADA: SOCIAL (Vivo quando logado, Morto/Muted quando offline) */}
             <Pressable
               style={styles.tabItemRaised}
               onPress={async () => {
-                setCurrentTab('social');
                 if (isLoggedIn) {
+                  setCurrentTab('social');
                   try {
                     const isCompleted = await AsyncStorage.getItem('user_profile_completed');
                     if (isCompleted === 'true') {
@@ -5530,38 +5541,48 @@ function MainApp() {
                   } catch (e) {
                     setSocialView('profile');
                   }
+                } else {
+                  setShowOfflineSocialModal(true);
                 }
               }}
             >
               <View style={[
                 styles.tabRaisedCircle,
-                {
+                isLoggedIn ? {
                   backgroundColor: currentTab === 'social' ? colors.primary : colors.cardBackground,
-                  borderColor: currentTab === 'social' ? colors.cardBackground : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'),
+                  borderColor: currentTab === 'social' ? colors.cardBackground : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'),
                   shadowColor: colors.primary,
+                  elevation: 5,
+                } : {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                  shadowOpacity: 0,
+                  elevation: 0,
+                  opacity: 0.55,
                 }
               ]}>
                 <Ionicons
-                  name={currentTab === 'social' ? 'globe' : 'globe-outline'}
-                  size={25}
-                  color={currentTab === 'social' ? '#ffffff' : colors.primary}
+                  name={isLoggedIn ? (currentTab === 'social' ? 'globe' : 'globe-outline') : 'cloud-offline-outline'}
+                  size={24}
+                  color={isLoggedIn ? (currentTab === 'social' ? '#ffffff' : colors.primary) : colors.textMuted}
                 />
               </View>
               <Text style={[
                 styles.tabText,
                 {
                   color: currentTab === 'social' ? colors.primary : colors.textMuted,
-                  fontWeight: currentTab === 'social' ? '900' : '800',
+                  fontWeight: currentTab === 'social' ? '900' : '700',
                   marginTop: 1,
+                  opacity: isLoggedIn ? 1 : 0.6,
                 }
               ]}>
-                {t('networkTab') || 'Rede'}
+                {t('socialTab') || 'Social'}
               </Text>
             </Pressable>
 
             <Pressable style={styles.tabItem} onPress={() => setCurrentTab('songs')}>
               <Ionicons name={currentTab === 'songs' ? 'musical-notes' : 'musical-notes-outline'} size={23} color={currentTab === 'songs' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: currentTab === 'songs' ? colors.primary : colors.textMuted }]}>{t('songs')}</Text>
+              <Text style={[styles.tabText, { color: currentTab === 'songs' ? colors.primary : colors.textMuted }]}>{t('songbookTab') || 'Songbook'}</Text>
             </Pressable>
 
             <Pressable style={styles.tabItem} onPress={() => setCurrentTab('options')}>
@@ -5573,6 +5594,112 @@ function MainApp() {
       )}
 
       {/* Modais do Aplicativo */}
+
+      {/* Modal de Conexão Social / Nuvem quando está Offline */}
+      <Modal
+        visible={showOfflineSocialModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowOfflineSocialModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            width: '100%',
+            maxWidth: 400,
+            backgroundColor: colors.cardBackground,
+            borderRadius: 20,
+            padding: 24,
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.border,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.25,
+            shadowRadius: 16,
+            elevation: 10,
+            alignItems: 'center'
+          }}>
+            <View style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: colors.primary + '18',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 16
+            }}>
+              <Ionicons name="globe-outline" size={32} color={colors.primary} />
+            </View>
+
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '800',
+              color: colors.text,
+              textAlign: 'center',
+              marginBottom: 8
+            }}>
+              {t('socialModalTitle') || 'Modo Social & Nuvem'}
+            </Text>
+
+            <Text style={{
+              fontSize: 14,
+              color: colors.textMuted,
+              textAlign: 'center',
+              lineHeight: 20,
+              marginBottom: 24
+            }}>
+              {t('socialModalDesc') || 'Você está atualmente no Modo Offline Local. Conecte-se para interagir na rede social, publicar anúncios de músicos ou bandas e sincronizar seu repertório na nuvem.'}
+            </Text>
+
+            <View style={{ width: '100%', gap: 10 }}>
+              <Pressable
+                style={({ pressed }) => [{
+                  backgroundColor: colors.primary,
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  opacity: pressed ? 0.9 : 1
+                }]}
+                onPress={() => {
+                  setShowOfflineSocialModal(false);
+                  setCurrentTab('social');
+                }}
+              >
+                <Ionicons name="log-in-outline" size={18} color="#ffffff" />
+                <Text style={{ color: '#ffffff', fontWeight: 'bold', fontSize: 15 }}>
+                  {t('connectCloudAccount') || 'Entrar ou Criar Conta'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [{
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  paddingVertical: 13,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.border,
+                  opacity: pressed ? 0.7 : 1
+                }]}
+                onPress={() => setShowOfflineSocialModal(false)}
+              >
+                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>
+                  {t('stayOffline') || 'Continuar no Modo Offline'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
       
       <SyncModal
         visible={showSyncModal}
