@@ -731,14 +731,16 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
       return;
     }
 
-    // If new independent project and user checked "Add to Bands tab"
-    if (linkOption === 'new' && formAddToBands) {
-      try {
+    // Automatically create project in creator's Bands/Projects tab
+    try {
+      const existingBands = await bandService.getAll();
+      const alreadyInBands = existingBands && existingBands.some(b => (b.name || '').trim().toLowerCase() === formBandName.trim().toLowerCase());
+      if (!alreadyInBands) {
         await bandService.insert(
           formBandName.trim(),
           formBandImage || '',
           '',
-          '',
+          formDescription.trim(),
           isCoverVal && isAutoralVal ? 'ambos' : (isCoverVal ? 'cover' : 'autoral'),
           isCoverVal,
           isAutoralVal,
@@ -747,10 +749,10 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
           formCountry,
           JSON.stringify(formGenres.map(g => String(g).replace(/^#+/, '')))
         );
-        loadUserBands();
-      } catch (err) {
-        console.log('Error adding new project to Bands tab:', err);
       }
+      loadUserBands();
+    } catch (err) {
+      console.log('Error adding new project to Bands tab:', err);
     }
 
     let cloudId = null;

@@ -18202,9 +18202,12 @@
         });
 
         if (res.ok) {
-          showToast('Anúncio publicado no Mural com sucesso!', 'success');
+          showToast('Anúncio publicado e adicionado aos seus projetos!', 'success');
           closeModal('createAnnouncementModal');
-          await loadAnnouncements();
+          await Promise.all([
+            loadAnnouncements(),
+            loadMyBands()
+          ]);
         } else {
           showToast('Erro ao publicar anúncio.', 'error');
         }
