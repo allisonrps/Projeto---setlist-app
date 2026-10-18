@@ -209,7 +209,7 @@ const STANDARD_CATEGORIES = [
   'Bateria',
   'Teclado',
   'Amplificador',
-  'Pedal/Efeito',
+  'Pedal',
   'Microfone',
   'Outros'
 ];
@@ -305,7 +305,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       case 'Teclado': return t('catKeyboard') || 'Teclado';
       case 'Voz / Microfone': return t('catVocals') || 'Voz / Microfone';
       case 'Amplificador': return t('catAmp') || 'Amplificador';
-      case 'Pedal / Pedaleira': return t('catPedal') || 'Pedal / Pedaleira';
+      case 'Pedal':
+      case 'Pedal/Efeito':
+      case 'Pedal / Pedaleira': return t('catPedal') || 'Pedal';
       case 'Acessório': return t('catAccessory') || 'Acessório';
       case 'Outro': return t('catOther') || 'Outro';
       default: return cat;

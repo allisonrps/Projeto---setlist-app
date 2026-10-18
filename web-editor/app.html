@@ -20,6 +20,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
@@ -4762,6 +4763,69 @@
       background: rgba(255, 255, 255, 0.06);
       border-color: rgba(255, 255, 255, 0.15);
     }
+    /* Gear Item Card (Responsive for Mobile & Desktop) */
+    .gear-card-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      transition: all 0.15s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .gear-card-row:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .gear-card-icon-col {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .gear-card-icon-col i {
+      color: var(--violet);
+      font-size: 1.35rem;
+    }
+    .gear-card-content-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .gear-card-row-1 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      width: 100%;
+    }
+    .gear-card-row-2 {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gear-card-row-3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-width: 0;
+      width: 100%;
+      margin-top: 2px;
+    }
     .clean-chip-del-btn {
       background: none;
       border: none;
@@ -5452,7 +5516,7 @@
             <span class="tab-name-label">Habilidade</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('gear')" id="pTab-gear" title="Equipamentos (Gear)">
-            <ion-icon name="hardware-chip-outline" class="tab-icon"></ion-icon>
+            <i class="fa-solid fa-guitar tab-icon"></i>
             <span class="tab-name-label">Equipamentos</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('songbook_p')" id="pTab-songbook_p" title="Songbook">
@@ -5711,7 +5775,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
-                    <ion-icon name="hardware-chip-outline" style="color: var(--violet);"></ion-icon>
+                    <i class="fa-solid fa-guitar" style="color: var(--violet); font-size: 1.25rem;"></i>
                     <span>Meus Equipamentos (Gear)</span>
                   </h3>
                 </div>
@@ -6737,7 +6801,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title">
-          <ion-icon name="hardware-chip-outline" style="color: var(--violet);"></ion-icon>
+          <i class="fa-solid fa-guitar" style="color: var(--violet); font-size: 1.25rem;"></i>
           <span id="gearModalTitle">Adicionar Equipamento / Gear</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addGearModal')">&times;</button>
@@ -6752,7 +6816,7 @@
             <option value="Bateria">Bateria / Percussão</option>
             <option value="Teclado / Synth">Teclado / Sintetizador</option>
             <option value="Amplificador">Amplificador</option>
-            <option value="Pedal / Pedaleira">Pedal / Pedaleira</option>
+            <option value="Pedal">Pedal</option>
             <option value="Microfone">Microfone</option>
             <option value="Outros">Outros</option>
           </select>
@@ -6770,13 +6834,13 @@
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
           <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
             <input type="checkbox" id="gearIsNegotiableInput" onchange="toggleGearPriceInput(this.checked)" style="width: 18px; height: 18px; accent-color: #22c55e; cursor: pointer;">
-            <span style="font-weight: 700; color: #fff; font-size: 0.9rem;">Item Negociável (Disponível para venda ou troca)</span>
+            <span style="font-weight: 700; color: #fff; font-size: 0.9rem;">Negociável</span>
           </label>
           <div id="gearPriceWrapper" style="display: none; margin-top: 10px;">
-            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px; font-weight: 600;">Valor Pretendido (R$)</label>
+            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px; font-weight: 600;">Valor Pretendido ($)</label>
             <div style="position: relative; max-width: 200px;">
-              <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 0.9rem; color: #34d399;">R$</span>
-              <input type="text" id="gearPriceInput" class="form-input" placeholder="0,00" style="padding-left: 36px; font-weight: 800; color: #34d399;">
+              <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 0.9rem; color: #34d399;">$</span>
+              <input type="text" id="gearPriceInput" class="form-input" placeholder="0,00" style="padding-left: 28px; font-weight: 800; color: #34d399;">
             </div>
           </div>
         </div>
@@ -10291,7 +10355,7 @@
         container.style.display = 'block';
         container.innerHTML = `
           <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-            <ion-icon name="hardware-chip-outline" style="font-size: 2rem; color: var(--text-dim); margin-bottom: 4px;"></ion-icon>
+            <i class="fa-solid fa-guitar" style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 8px; display: inline-block;"></i>
             <h4 style="color: #fff; font-size: 0.95rem;">Nenhum equipamento cadastrado</h4>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
             <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">Adicionar</button>
@@ -10306,27 +10370,52 @@
       container.innerHTML = myGear.map((item, idx) => {
         let negBadge = '';
         if (item.isNegotiable) {
-          const priceDisplay = item.price ? (String(item.price).trim().startsWith('R$') ? String(item.price).trim() : `R$ ${String(item.price).trim()}`) : '';
+          let cleanPrice = String(item.price || '').replace(/^R\$\s*/i, '').replace(/^\$\s*/i, '').trim();
+          const priceDisplay = cleanPrice ? `$ ${cleanPrice}` : '$ Negociável';
           negBadge = `
-            <span class="badge" style="font-size: 0.68rem; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700;">
+            <span class="badge" style="font-size: 0.68rem; padding: 2px 7px; display: inline-flex; align-items: center; gap: 4px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700; white-space: nowrap;">
               <ion-icon name="pricetag-outline"></ion-icon>
-              <span>${escapeHtml(priceDisplay || 'R$ 0,00')}</span>
+              <span>${escapeHtml(priceDisplay)}</span>
             </span>
           `;
         }
+        const rawCat = item.category || 'Gear';
+        const displayCategory = (rawCat === 'Pedal / Pedaleira' || rawCat === 'Pedal/Efeito') ? 'Pedal' : rawCat;
+
         return `
-          <div class="profile-clean-row">
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <ion-icon name="hardware-chip-outline" style="color: var(--violet); font-size: 1.15rem; flex-shrink: 0;"></ion-icon>
-              <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 8px;">${escapeHtml(item.category || 'Gear')}</span>
-              <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(item.name)}</span>
-              ${negBadge}
+          <div class="gear-card-row">
+            <!-- Ícone maior do lado esquerdo -->
+            <div class="gear-card-icon-col">
+              <i class="fa-solid fa-guitar"></i>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <button type="button" onclick="openEditGearModal(${idx})" title="Editar equipamento" class="clean-chip-del-btn" style="color: #94a3b8; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;">
-                <ion-icon name="create-outline"></ion-icon>
-              </button>
-              <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn">&times;</button>
+
+            <!-- Divisão em linhas do lado direito -->
+            <div class="gear-card-content-col">
+              <!-- 1ª Linha: Pílula do tipo e Nome responsivos para caber em uma linha -->
+              <div class="gear-card-row-1">
+                <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 7px; flex-shrink: 0; white-space: nowrap;">${escapeHtml(displayCategory)}</span>
+                <span style="font-weight: 800; font-size: 0.92rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+              </div>
+
+              <!-- 2ª Linha: Descrição se houver com texto de menor tamanho -->
+              ${item.details ? `
+                <div class="gear-card-row-2" title="${escapeHtml(item.details)}">
+                  ${escapeHtml(item.details)}
+                </div>
+              ` : ''}
+
+              <!-- 3ª Linha: Pílula de valor e botões de ação tudo responsivo para caber em uma linha -->
+              <div class="gear-card-row-3">
+                <div style="min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis;">
+                  ${negBadge}
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;">
+                  <button type="button" onclick="openEditGearModal(${idx})" title="Editar equipamento" class="clean-chip-del-btn" style="color: #94a3b8; font-size: 0.95rem; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </button>
+                  <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn" style="color: #f87171; font-size: 1.15rem; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); line-height: 1;">&times;</button>
+                </div>
+              </div>
             </div>
           </div>
         `;
@@ -10432,14 +10521,15 @@
       const submitBtn = document.getElementById('gearModalSubmitBtn');
       if (submitBtn) submitBtn.textContent = 'Salvar Alterações';
 
-      document.getElementById('gearCategoryInput').value = item.category || 'Guitarra';
+      const rawCat = item.category || 'Guitarra';
+      document.getElementById('gearCategoryInput').value = (rawCat === 'Pedal / Pedaleira' || rawCat === 'Pedal/Efeito') ? 'Pedal' : rawCat;
       document.getElementById('gearNameInput').value = item.name || '';
       document.getElementById('gearDetailsInput').value = item.details || '';
       const isNeg = !!item.isNegotiable;
       const negCheckbox = document.getElementById('gearIsNegotiableInput');
       if (negCheckbox) negCheckbox.checked = isNeg;
       const priceInput = document.getElementById('gearPriceInput');
-      if (priceInput) priceInput.value = item.price || '';
+      if (priceInput) priceInput.value = (item.price || '').replace(/^R\$\s*/i, '').replace(/^\$\s*/i, '').trim();
       const priceWrapper = document.getElementById('gearPriceWrapper');
       if (priceWrapper) priceWrapper.style.display = isNeg ? 'block' : 'none';
       openModal('addGearModal');
@@ -10451,7 +10541,8 @@
       const name = document.getElementById('gearNameInput').value.trim();
       const details = document.getElementById('gearDetailsInput').value.trim();
       const isNegotiable = !!document.getElementById('gearIsNegotiableInput')?.checked;
-      const price = document.getElementById('gearPriceInput')?.value.trim() || '';
+      let price = document.getElementById('gearPriceInput')?.value.trim() || '';
+      price = price.replace(/^R\$\s*/i, '').replace(/^\$\s*/i, '').trim();
       if (!name) return;
 
       if (editingGearIndex !== null && editingGearIndex >= 0 && editingGearIndex < myGear.length) {
