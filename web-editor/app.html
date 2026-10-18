@@ -8239,90 +8239,62 @@
 
   <!-- MODAL DE INTEGRANTE DA BANDA (ADICIONAR / EDITAR) -->
   <div class="modal-overlay" id="editBandMemberModal">
-    <div class="modal-card" style="max-width: 520px;">
+    <div class="modal-card" style="max-width: 440px;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: var(--cyan);">
             <ion-icon name="person-outline" style="font-size: 1.25rem;"></ion-icon>
           </div>
-          <div>
-            <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0;">Integrante da Banda</h3>
-            <span style="font-size: 0.78rem; color: #94a3b8;">Gerencie os dados e função do músico</span>
-          </div>
+          <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0; font-size: 1.15rem;">Integrante da Banda</h3>
         </div>
         <button class="modal-close" onclick="closeModal('editBandMemberModal')">&times;</button>
       </div>
 
       <form id="editBandMemberForm" onsubmit="saveBandMemberModal(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
-        <!-- Username com Busca Automática -->
+        <!-- Username com Busca em Tempo Real -->
         <div class="form-group" style="margin-bottom: 0;">
-          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span>Nome de Usuário (@username)</span>
-            <span style="font-size: 0.75rem; color: #38bdf8; font-weight: normal;">Puxa nome e avatar automaticamente</span>
+          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
+            Nome de Usuário (@username) *
           </label>
-          <div style="position: relative;">
-            <input type="text" id="mMemberUsername" class="form-input" placeholder="Ex: allison_xd" oninput="handleMemberUsernameInput(this.value)" autocomplete="off">
-          </div>
+          <input type="text" id="mMemberUsername" class="form-input" placeholder="Ex: allison_xd" oninput="handleMemberUsernameInput(this.value)" autocomplete="off" required>
           <div id="mMemberUserStatus" style="margin-top: 4px; min-height: 18px;"></div>
         </div>
 
-        <!-- Avatar Preview + Nome de Exibição -->
-        <div style="display: flex; gap: 14px; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
-          <!-- Avatar Preview -->
-          <div id="mMemberAvatarPreviewBox" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #6366f1); border: 2px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; color: #fff; overflow: hidden; flex-shrink: 0;">
+        <!-- Card Enquadrado com Prévia do Usuário Identificado (Avatar + Nome da Conta) -->
+        <div id="mMemberPreviewCard" style="display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 10px 14px; border-radius: 10px;">
+          <div id="mMemberAvatarPreviewBox" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #6366f1); border: 1.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 800; color: #fff; overflow: hidden; flex-shrink: 0;">
             <span id="mMemberAvatarInitial">M</span>
           </div>
           <div style="flex: 1; min-width: 0;">
-            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: block; margin-bottom: 4px;">
-              Nome de Exibição *
-            </label>
-            <input type="text" id="mMemberName" class="form-input" placeholder="Ex: Allison" required oninput="updateMemberModalAvatarPreview(document.getElementById('mMemberAvatarUri')?.value, this.value)">
+            <div id="mMemberResolvedName" style="font-size: 0.95rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Aguardando @usuário</div>
+            <div id="mMemberResolvedHandle" style="font-size: 0.78rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Digite o nome de usuário acima</div>
           </div>
         </div>
 
+        <!-- Campos ocultos sincronizados com os dados reais do usuário da API -->
+        <input type="hidden" id="mMemberName" value="">
         <input type="hidden" id="mMemberAvatarUri" value="">
+        <input type="hidden" id="mMemberUserId" value="">
 
-        <!-- Função na Banda (Tags separadas por vírgula) -->
+        <!-- Função / Instrumento -->
         <div class="form-group" style="margin-bottom: 0;">
-          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span>Função na Banda (Tags)</span>
-            <span style="font-size: 0.72rem; color: #94a3b8;">Separe múltiplos por vírgula</span>
+          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
+            Função / Instrumento
           </label>
-          <input type="text" id="mMemberRole" class="form-input" placeholder="Ex: Guitarra, Vocal, Backing Vocal" oninput="renderMemberRolePreviewTags(this.value)">
-          <div style="margin-top: 6px;">
-            <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 4px;">Prévia das Pílulas:</span>
-            <div id="mMemberRolePillsPreview" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
-          </div>
-        </div>
-
-        <!-- Habilidades Extra-Musicais do Integrante (Opcional) -->
-        <div class="form-group" style="margin-bottom: 0;">
-          <label style="font-size: 0.85rem; font-weight: 700; color: #fbbf24; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="display: flex; align-items: center; gap: 4px;">
-              <ion-icon name="sparkles"></ion-icon>
-              <span>Habilidades Extra-Musicais (Importantes p/ Banda)</span>
-            </span>
-            <span style="font-size: 0.72rem; color: #94a3b8;">Opcional • Separe por vírgula</span>
-          </label>
-          <input type="text" id="mMemberExtraSkills" class="form-input" placeholder="Ex: Van própria, Técnico de Som, Design, Fotos, Redes">
-          <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 3px;">
-            Destaques que o integrante soma à banda além de tocar (transporte, som, roadie, marketing, etc.).
-          </div>
+          <input type="text" id="mMemberRole" class="form-input" placeholder="Ex: Guitarra, Vocal, Bateria" oninput="renderMemberRolePreviewTags(this.value)">
+          <div id="mMemberRolePillsPreview" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;"></div>
         </div>
 
         <!-- Cargo de Líder -->
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
-          <input type="checkbox" id="mMemberIsLeader" style="width: 18px; height: 18px; accent-color: var(--cyan); cursor: pointer;">
-          <div>
-            <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">Líder / Administrador da Banda</div>
-            <div style="font-size: 0.75rem; color: #94a3b8;">Permite gerenciar permissões e dados oficiais da banda</div>
-          </div>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+          <input type="checkbox" id="mMemberIsLeader" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
+          <div style="font-size: 0.88rem; font-weight: 600; color: #e2e8f0;">Líder / Administrador da Banda</div>
         </label>
 
         <!-- Ações do Modal -->
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
           <button type="button" class="btn btn-outline" onclick="closeModal('editBandMemberModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Integrante</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveBandMember">Salvar Integrante</button>
         </div>
       </form>
     </div>
@@ -9300,7 +9272,10 @@
         }
         renderSongbookSplitView();
       }
-      if (viewId === 'projects') renderProjectsMainView();
+      if (viewId === 'projects') {
+        renderProjectsMainView();
+        loadMyBands();
+      }
       if (viewId === 'band-profile') {
         const pBtn = document.getElementById('mainNav-projects');
         if (pBtn) pBtn.classList.add('active');
@@ -11990,32 +11965,39 @@
       editingBandMemberIndex = idx;
       const members = getBandMembersArray();
       const modalTitle = document.getElementById('editBandMemberModalTitle');
-      const nameInput = document.getElementById('mMemberName');
       const usernameInput = document.getElementById('mMemberUsername');
+      const nameHidden = document.getElementById('mMemberName');
+      const avatarHidden = document.getElementById('mMemberAvatarUri');
+      const userIdHidden = document.getElementById('mMemberUserId');
       const roleInput = document.getElementById('mMemberRole');
-      const extraSkillsInput = document.getElementById('mMemberExtraSkills');
       const leaderCheckbox = document.getElementById('mMemberIsLeader');
-      const avatarInput = document.getElementById('mMemberAvatarUri');
       const statusDiv = document.getElementById('mMemberUserStatus');
+      const resolvedNameEl = document.getElementById('mMemberResolvedName');
+      const resolvedHandleEl = document.getElementById('mMemberResolvedHandle');
 
       if (idx >= 0 && idx < members.length) {
         const mem = members[idx];
         if (modalTitle) modalTitle.textContent = 'Editar Integrante';
-        if (nameInput) nameInput.value = mem.name || '';
-        if (usernameInput) usernameInput.value = mem.username ? `@${mem.username.replace(/^@+/, '')}` : '';
+        const cleanU = mem.username ? `@${mem.username.replace(/^@+/, '')}` : '';
+        if (usernameInput) usernameInput.value = cleanU;
+        if (nameHidden) nameHidden.value = mem.name || mem.username || '';
+        if (avatarHidden) avatarHidden.value = mem.avatarUri || '';
+        if (userIdHidden) userIdHidden.value = mem.userId || '';
         if (roleInput) roleInput.value = mem.role || '';
-        if (extraSkillsInput) extraSkillsInput.value = mem.extraSkills || '';
         if (leaderCheckbox) leaderCheckbox.checked = !!mem.isLeader;
-        if (avatarInput) avatarInput.value = mem.avatarUri || '';
-        updateMemberModalAvatarPreview(mem.avatarUri, mem.name);
+        if (resolvedNameEl) resolvedNameEl.textContent = mem.name || mem.username || 'Músico';
+        if (resolvedHandleEl) resolvedHandleEl.textContent = cleanU || 'Sem @username';
+        updateMemberModalAvatarPreview(mem.avatarUri, mem.name || mem.username);
       } else {
         if (modalTitle) modalTitle.textContent = 'Adicionar Integrante';
-        if (nameInput) nameInput.value = '';
         if (usernameInput) usernameInput.value = '';
+        if (nameHidden) nameHidden.value = '';
+        if (avatarHidden) avatarHidden.value = '';
+        if (userIdHidden) userIdHidden.value = '';
         if (roleInput) roleInput.value = '';
-        if (extraSkillsInput) extraSkillsInput.value = '';
         if (leaderCheckbox) leaderCheckbox.checked = false;
-        if (avatarInput) avatarInput.value = '';
+        if (resolvedNameEl) resolvedNameEl.textContent = 'Aguardando @usuário';
+        if (resolvedHandleEl) resolvedHandleEl.textContent = 'Digite o nome de usuário acima';
         updateMemberModalAvatarPreview('', 'Novo');
       }
 
@@ -12027,16 +12009,25 @@
     async function handleMemberUsernameInput(rawVal) {
       const clean = (rawVal || '').replace(/^@+/, '').trim().toLowerCase();
       const statusDiv = document.getElementById('mMemberUserStatus');
-      const nameInput = document.getElementById('mMemberName');
-      const avatarInput = document.getElementById('mMemberAvatarUri');
+      const nameHidden = document.getElementById('mMemberName');
+      const avatarHidden = document.getElementById('mMemberAvatarUri');
+      const userIdHidden = document.getElementById('mMemberUserId');
+      const resolvedNameEl = document.getElementById('mMemberResolvedName');
+      const resolvedHandleEl = document.getElementById('mMemberResolvedHandle');
 
       if (!clean) {
         if (statusDiv) statusDiv.innerHTML = '';
+        if (nameHidden) nameHidden.value = '';
+        if (avatarHidden) avatarHidden.value = '';
+        if (userIdHidden) userIdHidden.value = '';
+        if (resolvedNameEl) resolvedNameEl.textContent = 'Aguardando @usuário';
+        if (resolvedHandleEl) resolvedHandleEl.textContent = 'Digite o nome de usuário acima';
+        updateMemberModalAvatarPreview('', 'Novo');
         return;
       }
 
       if (statusDiv) {
-        statusDiv.innerHTML = '<span style="font-size: 0.76rem; color: #94a3b8;"><ion-icon name="sync" class="spin"></ion-icon> Buscando usuário...</span>';
+        statusDiv.innerHTML = '<span style="font-size: 0.76rem; color: #94a3b8; display: inline-flex; align-items: center; gap: 4px;"><ion-icon name="sync" class="spin-icon"></ion-icon> Buscando usuário...</span>';
       }
 
       clearTimeout(memberLookupTimeout);
@@ -12067,7 +12058,7 @@
                 if (resSearch.ok) {
                   const list = await resSearch.json();
                   if (Array.isArray(list)) {
-                    found = list.find(u => (u.username || '').toLowerCase() === clean) || list[0];
+                    found = list.find(u => (u.username || '').toLowerCase() === clean);
                   }
                 }
               } catch (e) {}
@@ -12076,25 +12067,37 @@
 
           if (found) {
             cachedPlatformUsers[clean] = found;
-            const displayName = found.name || found.displayName || found.fullName || found.username;
+            const displayName = found.displayName || found.name || found.fullName || found.username;
             const photoUrl = found.pictureUrl || found.avatarUri || found.imageUri || found.photo || '';
+            const uid = found.id || found.userId || '';
 
-            if (nameInput) nameInput.value = displayName;
-            if (avatarInput) avatarInput.value = photoUrl;
+            if (nameHidden) nameHidden.value = displayName;
+            if (avatarHidden) avatarHidden.value = photoUrl;
+            if (userIdHidden) userIdHidden.value = uid;
+            if (resolvedNameEl) resolvedNameEl.textContent = displayName;
+            if (resolvedHandleEl) resolvedHandleEl.textContent = `@${found.username || clean}`;
+
             updateMemberModalAvatarPreview(photoUrl, displayName);
 
             if (statusDiv) {
               statusDiv.innerHTML = `
-                <span style="font-size: 0.78rem; color: #4ade80; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                  <ion-icon name="checkmark-circle"></ion-icon> Usuário encontrado: ${escapeHtml(displayName)}
+                <span style="font-size: 0.78rem; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                  <ion-icon name="checkmark-circle"></ion-icon> Usuário confirmado na plataforma
                 </span>
               `;
             }
           } else {
+            if (nameHidden) nameHidden.value = clean;
+            if (avatarHidden) avatarHidden.value = '';
+            if (userIdHidden) userIdHidden.value = '';
+            if (resolvedNameEl) resolvedNameEl.textContent = `@${clean}`;
+            if (resolvedHandleEl) resolvedHandleEl.textContent = 'Não localizado';
+            updateMemberModalAvatarPreview('', clean);
+
             if (statusDiv) {
               statusDiv.innerHTML = `
-                <span style="font-size: 0.76rem; color: #94a3b8; display: inline-flex; align-items: center; gap: 4px;">
-                  <ion-icon name="information-circle-outline"></ion-icon> Usuário não encontrado na rede. Você pode preencher o nome manualmente.
+                <span style="font-size: 0.76rem; color: #f87171; display: inline-flex; align-items: center; gap: 4px;">
+                  <ion-icon name="close-circle"></ion-icon> Usuário @${escapeHtml(clean)} não encontrado na rede
                 </span>
               `;
             }
@@ -12102,7 +12105,7 @@
         } catch (err) {
           console.warn('Erro na busca de usuário:', err);
           if (statusDiv) {
-            statusDiv.innerHTML = '<span style="font-size: 0.76rem; color: #94a3b8;">Preencha o nome manualmente.</span>';
+            statusDiv.innerHTML = '<span style="font-size: 0.76rem; color: #94a3b8;">Erro ao buscar usuário na rede.</span>';
           }
         }
       }, 350);
@@ -12133,18 +12136,25 @@
       `).join('');
     }
 
-    function saveBandMemberModal(e) {
+    async function saveBandMemberModal(e) {
       if (e) e.preventDefault();
-      const name = document.getElementById('mMemberName')?.value.trim();
       const username = (document.getElementById('mMemberUsername')?.value.trim() || '').replace(/^@+/, '');
+      const name = document.getElementById('mMemberName')?.value.trim() || username;
       const role = document.getElementById('mMemberRole')?.value.trim() || 'Músico';
-      const extraSkills = document.getElementById('mMemberExtraSkills')?.value.trim() || '';
       const isLeader = document.getElementById('mMemberIsLeader')?.checked || false;
       const avatarUri = document.getElementById('mMemberAvatarUri')?.value.trim() || '';
+      const rawUserId = document.getElementById('mMemberUserId')?.value.trim();
+      const userId = rawUserId ? parseInt(rawUserId, 10) : null;
 
-      if (!name) {
-        showToast('Informe o nome de exibição do integrante.', 'warning');
+      if (!username) {
+        showToast('Informe o nome de usuário (@username).', 'warning');
         return;
+      }
+
+      const btnSave = document.getElementById('btnSaveBandMember');
+      if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<ion-icon name="sync" class="spin-icon"></ion-icon> Salvando...';
       }
 
       const members = getBandMembersArray();
@@ -12152,11 +12162,49 @@
         name,
         username,
         role,
-        extraSkills,
         isLeader,
-        avatarUri
+        avatarUri,
+        userId: userId || undefined
       };
 
+      // 1. Salva diretamente no endpoint da API de integrantes da banda
+      if (currentBandData?.id && typeof API_URL !== 'undefined') {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+          try {
+            const res = await fetch(`${API_URL}/Bands/${currentBandData.id}/members`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({
+                username: username,
+                role: role,
+                isLeader: isLeader,
+                userId: userId
+              })
+            });
+
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData.userId) memberData.userId = resData.userId;
+              if (resData.displayName) memberData.name = resData.displayName;
+              if (resData.pictureUrl) memberData.avatarUri = resData.pictureUrl;
+              console.log('Integrante persistido na API com sucesso:', resData);
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              console.warn('API de membros retornou:', res.status, errData);
+              if (res.status === 404) {
+                showToast(errData.message || 'Usuário não encontrado na plataforma.', 'warning');
+                if (btnSave) { btnSave.disabled = false; btnSave.textContent = 'Salvar Integrante'; }
+                return;
+              }
+            }
+          } catch (apiErr) {
+            console.warn('Erro de conexão ao salvar membro na API:', apiErr);
+          }
+        }
+      }
+
+      // 2. Atualiza estado local da banda
       if (editingBandMemberIndex >= 0 && editingBandMemberIndex < members.length) {
         members[editingBandMemberIndex] = {
           ...members[editingBandMemberIndex],
@@ -12168,24 +12216,39 @@
           id: `m_${Date.now()}`,
           ...memberData
         });
-        showToast('Integrante adicionado à banda!', 'success');
+        showToast('Integrante adicionado à banda com sucesso!', 'success');
       }
 
+      // 3. Sincroniza snapshot geral
       persistBandMembers();
       closeModal('editBandMemberModal');
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Salvar Integrante';
+      }
       renderBandMembersTab(currentBandData, currentBandSyncData);
       renderBandFinancesTab(currentBandData, currentBandSyncData);
     }
 
-    function deleteBandMember(idx) {
+    async function deleteBandMember(idx) {
       const members = getBandMembersArray();
       if (idx < 0 || idx >= members.length) return;
       const mem = members[idx];
-      if (!confirm(`Deseja remover "${mem.name}" da formação da banda?`)) return;
+      if (!confirm(`Deseja remover "${mem.name || mem.username}" da formação da banda?`)) return;
+
+      if (currentBandData?.id && mem.userId && typeof API_URL !== 'undefined') {
+        try {
+          fetch(`${API_URL}/Bands/${currentBandData.id}/members/${mem.userId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+          }).catch(e => console.warn('Erro ao remover membro da API:', e));
+        } catch {}
+      }
+
       if (currentBandSyncData) currentBandSyncData.membersInitialized = true;
       members.splice(idx, 1);
       persistBandMembers();
-      showToast(`Integrante "${mem.name}" removido com sucesso.`, 'info');
+      showToast(`Integrante "${mem.name || mem.username}" removido com sucesso.`, 'info');
       renderBandMembersTab(currentBandData, currentBandSyncData);
       renderBandFinancesTab(currentBandData, currentBandSyncData);
     }

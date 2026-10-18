@@ -719,6 +719,41 @@ export const api = {
     return response.json();
   },
 
+  addBandMember: async (bandId, memberData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${bandId}/members`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(memberData)
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao adicionar membro à banda.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  removeBandMember: async (bandId, targetUserId) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${bandId}/members/${targetUserId}`, {
+      method: "DELETE",
+      headers
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao remover membro da banda.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
   deleteBand: async (id) => {
     const headers = await getHeaders();
     const response = await fetchWithTimeout(`${API_URL}/Bands/${id}`, {
