@@ -4763,68 +4763,47 @@
       background: rgba(255, 255, 255, 0.06);
       border-color: rgba(255, 255, 255, 0.15);
     }
-    /* Gear Item Card (Responsive for Mobile & Desktop) */
+    /* SVG Tab Icon Support */
+    .profile-tab-btn .tab-icon-svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      fill: currentColor;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @media (max-width: 768px) {
+      .profile-tab-btn .tab-icon-svg {
+        width: 1.45rem;
+        height: 1.45rem;
+        margin: 0 auto;
+        display: block;
+      }
+    }
+    /* Gear Item Card (Clickable, Responsive for Mobile & Desktop) */
     .gear-card-row {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px 14px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
       transition: all 0.15s ease;
       width: 100%;
       box-sizing: border-box;
+      cursor: pointer;
+      user-select: none;
     }
     .gear-card-row:hover {
       background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(139, 92, 246, 0.45);
+      transform: translateY(-1px);
     }
-    .gear-card-icon-col {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: rgba(139, 92, 246, 0.12);
-      border: 1px solid rgba(139, 92, 246, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .gear-card-icon-col i {
-      color: var(--violet);
-      font-size: 1.35rem;
-    }
-    .gear-card-content-col {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .gear-card-row-1 {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      width: 100%;
-    }
-    .gear-card-row-2 {
-      font-size: 0.76rem;
-      color: #94a3b8;
-      line-height: 1.25;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .gear-card-row-3 {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      min-width: 0;
-      width: 100%;
-      margin-top: 2px;
+    .gear-card-row:active {
+      transform: translateY(0);
+      background: rgba(255, 255, 255, 0.08);
     }
     .clean-chip-del-btn {
       background: none;
@@ -5515,8 +5494,8 @@
             <ion-icon name="flash-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label">Habilidade</span>
           </button>
-          <button class="profile-tab-btn" onclick="switchProfileTab('gear')" id="pTab-gear" title="Equipamentos (Gear)">
-            <i class="fa-solid fa-guitar tab-icon"></i>
+          <button class="profile-tab-btn" onclick="switchProfileTab('gear')" id="pTab-gear" title="Equipamentos">
+            <svg viewBox="0 0 512 512" fill="currentColor" class="tab-icon tab-icon-svg"><path d="M497.9 40.7c-18.7-18.7-49.1-18.7-67.9 0l-45.7 45.7c-5.8 5.8-9.1 13.7-9.1 21.9V135L296.8 213.5c-7.6-5.3-16.7-8.5-26.6-8.5-12.7 0-24.2 5.2-32.5 13.6l-8.9 8.9c-8.4 8.4-13.6 19.9-13.6 32.5 0 9.8 3.2 19 8.5 26.6L145 365.1h-26.7c-8.2 0-16.1 3.3-21.9 9.1l-45.7 45.7c-18.7 18.7-18.7 49.1 0 67.9 18.7 18.7 49.1 18.7 67.9 0l45.7-45.7c5.8-5.8 9.1-13.7 9.1-21.9v-26.8l78.5-78.5c7.6 5.3 16.7 8.5 26.6 8.5 12.7 0 24.2-5.2 32.5-13.6l8.9-8.9c8.4-8.4 13.6-19.9 13.6-32.5 0-9.8-3.2-19-8.5-26.6L403.5 163.2v26.7c0 8.2 3.3 16.1 9.1 21.9l45.7 45.7c18.7 18.7 49.1 18.7 67.9 0 18.7-18.7 18.7-49.1 0-67.9l-45.7-45.7c-5.8-5.8-13.7-9.1-21.9-9.1h-26.8l-78.5-78.5 78.5-78.5h26.8c8.2 0 16.1-3.3 21.9-9.1l45.7-45.7c18.8-18.8 18.8-49.2-.3-67.9z"/></svg>
             <span class="tab-name-label">Equipamentos</span>
           </button>
           <button class="profile-tab-btn" onclick="switchProfileTab('songbook_p')" id="pTab-songbook_p" title="Songbook">
@@ -5775,8 +5754,8 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
-                    <i class="fa-solid fa-guitar" style="color: var(--violet); font-size: 1.25rem;"></i>
-                    <span>Meus Equipamentos (Gear)</span>
+                    <svg viewBox="0 0 512 512" fill="currentColor" style="width: 1.25rem; height: 1.25rem; color: var(--violet); display: inline-block; vertical-align: middle;"><path d="M497.9 40.7c-18.7-18.7-49.1-18.7-67.9 0l-45.7 45.7c-5.8 5.8-9.1 13.7-9.1 21.9V135L296.8 213.5c-7.6-5.3-16.7-8.5-26.6-8.5-12.7 0-24.2 5.2-32.5 13.6l-8.9 8.9c-8.4 8.4-13.6 19.9-13.6 32.5 0 9.8 3.2 19 8.5 26.6L145 365.1h-26.7c-8.2 0-16.1 3.3-21.9 9.1l-45.7 45.7c-18.7 18.7-18.7 49.1 0 67.9 18.7 18.7 49.1 18.7 67.9 0l45.7-45.7c5.8-5.8 9.1-13.7 9.1-21.9v-26.8l78.5-78.5c7.6 5.3 16.7 8.5 26.6 8.5 12.7 0 24.2-5.2 32.5-13.6l8.9-8.9c8.4-8.4 13.6-19.9 13.6-32.5 0-9.8-3.2-19-8.5-26.6L403.5 163.2v26.7c0 8.2 3.3 16.1 9.1 21.9l45.7 45.7c18.7 18.7 49.1 18.7 67.9 0 18.7-18.7 18.7-49.1 0-67.9l-45.7-45.7c-5.8-5.8-13.7-9.1-21.9-9.1h-26.8l-78.5-78.5 78.5-78.5h26.8c8.2 0 16.1-3.3 21.9-9.1l45.7-45.7c18.8-18.8 18.8-49.2-.3-67.9z"/></svg>
+                    <span>Equipamentos</span>
                   </h3>
                 </div>
                 <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">
@@ -6801,8 +6780,8 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title">
-          <i class="fa-solid fa-guitar" style="color: var(--violet); font-size: 1.25rem;"></i>
-          <span id="gearModalTitle">Adicionar Equipamento / Gear</span>
+          <svg viewBox="0 0 512 512" fill="currentColor" style="width: 1.25rem; height: 1.25rem; color: var(--violet); display: inline-block; vertical-align: middle;"><path d="M497.9 40.7c-18.7-18.7-49.1-18.7-67.9 0l-45.7 45.7c-5.8 5.8-9.1 13.7-9.1 21.9V135L296.8 213.5c-7.6-5.3-16.7-8.5-26.6-8.5-12.7 0-24.2 5.2-32.5 13.6l-8.9 8.9c-8.4 8.4-13.6 19.9-13.6 32.5 0 9.8 3.2 19 8.5 26.6L145 365.1h-26.7c-8.2 0-16.1 3.3-21.9 9.1l-45.7 45.7c-18.7 18.7-18.7 49.1 0 67.9 18.7 18.7 49.1 18.7 67.9 0l45.7-45.7c5.8-5.8 9.1-13.7 9.1-21.9v-26.8l78.5-78.5c7.6 5.3 16.7 8.5 26.6 8.5 12.7 0 24.2-5.2 32.5-13.6l8.9-8.9c8.4-8.4 13.6-19.9 13.6-32.5 0-9.8-3.2-19-8.5-26.6L403.5 163.2v26.7c0 8.2 3.3 16.1 9.1 21.9l45.7 45.7c18.7 18.7 49.1 18.7 67.9 0 18.7-18.7 18.7-49.1 0-67.9l-45.7-45.7c-5.8-5.8-13.7-9.1-21.9-9.1h-26.8l-78.5-78.5 78.5-78.5h26.8c8.2 0 16.1-3.3 21.9-9.1l45.7-45.7c18.8-18.8 18.8-49.2-.3-67.9z"/></svg>
+          <span id="gearModalTitle">Adicionar Equipamento</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addGearModal')">&times;</button>
       </div>
@@ -6845,9 +6824,15 @@
           </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('addGearModal')">Cancelar</button>
-          <button type="submit" class="btn btn-violet" id="gearModalSubmitBtn">Adicionar</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px;">
+          <button type="button" id="gearModalDeleteBtn" class="btn btn-sm btn-outline-danger" style="display: none; color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08); align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;" onclick="handleDeleteCurrentGear()">
+            <ion-icon name="trash-outline" style="font-size: 1.1rem;"></ion-icon>
+            <span>Excluir</span>
+          </button>
+          <div style="display: flex; gap: 10px; margin-left: auto;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('addGearModal')">Cancelar</button>
+            <button type="submit" class="btn btn-violet" id="gearModalSubmitBtn">Adicionar</button>
+          </div>
         </div>
       </form>
     </div>
@@ -10354,10 +10339,10 @@
       if (myGear.length === 0) {
         container.style.display = 'block';
         container.innerHTML = `
-          <div style="text-align: center; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-            <i class="fa-solid fa-guitar" style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 8px; display: inline-block;"></i>
+          <div style="text-align: center; padding: 28px 20px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+            <svg viewBox="0 0 512 512" fill="currentColor" style="width: 2.5rem; height: 2.5rem; color: var(--text-dim); margin-bottom: 8px; display: inline-block;"><path d="M497.9 40.7c-18.7-18.7-49.1-18.7-67.9 0l-45.7 45.7c-5.8 5.8-9.1 13.7-9.1 21.9V135L296.8 213.5c-7.6-5.3-16.7-8.5-26.6-8.5-12.7 0-24.2 5.2-32.5 13.6l-8.9 8.9c-8.4 8.4-13.6 19.9-13.6 32.5 0 9.8 3.2 19 8.5 26.6L145 365.1h-26.7c-8.2 0-16.1 3.3-21.9 9.1l-45.7 45.7c-18.7 18.7-18.7 49.1 0 67.9 18.7 18.7 49.1 18.7 67.9 0l45.7-45.7c5.8-5.8 9.1-13.7 9.1-21.9v-26.8l78.5-78.5c7.6 5.3 16.7 8.5 26.6 8.5 12.7 0 24.2-5.2 32.5-13.6l8.9-8.9c8.4-8.4 13.6-19.9 13.6-32.5 0-9.8-3.2-19-8.5-26.6L403.5 163.2v26.7c0 8.2 3.3 16.1 9.1 21.9l45.7 45.7c18.7 18.7 49.1 18.7 67.9 0 18.7-18.7 18.7-49.1 0-67.9l-45.7-45.7c-5.8-5.8-13.7-9.1-21.9-9.1h-26.8l-78.5-78.5 78.5-78.5h26.8c8.2 0 16.1-3.3 21.9-9.1l45.7-45.7c18.8-18.8 18.8-49.2-.3-67.9z"/></svg>
             <h4 style="color: #fff; font-size: 0.95rem;">Nenhum equipamento cadastrado</h4>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px;">Cadastre seus instrumentos, amplificadores e pedais para enriquecer seu perfil.</p>
             <button class="btn btn-violet btn-sm" onclick="openAddGearModal()">Adicionar</button>
           </div>
         `;
@@ -10383,40 +10368,22 @@
         const displayCategory = (rawCat === 'Pedal / Pedaleira' || rawCat === 'Pedal/Efeito') ? 'Pedal' : rawCat;
 
         return `
-          <div class="gear-card-row">
-            <!-- Ícone maior do lado esquerdo -->
-            <div class="gear-card-icon-col">
-              <i class="fa-solid fa-guitar"></i>
-            </div>
-
-            <!-- Divisão em linhas do lado direito -->
-            <div class="gear-card-content-col">
-              <!-- 1ª Linha: Pílula do tipo e Nome responsivos para caber em uma linha -->
-              <div class="gear-card-row-1">
+          <div class="gear-card-row" onclick="openEditGearModal(${idx})" title="Clique para editar este equipamento">
+            <!-- Linha 1: Pílula da categoria, Nome do equipamento e Pílula de valor -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
                 <span class="badge badge-violet" style="font-size: 0.68rem; padding: 2px 7px; flex-shrink: 0; white-space: nowrap;">${escapeHtml(displayCategory)}</span>
-                <span style="font-weight: 800; font-size: 0.92rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+                <span style="font-weight: 800; font-size: 0.95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;">${escapeHtml(item.name)}</span>
               </div>
-
-              <!-- 2ª Linha: Descrição se houver com texto de menor tamanho -->
-              ${item.details ? `
-                <div class="gear-card-row-2" title="${escapeHtml(item.details)}">
-                  ${escapeHtml(item.details)}
-                </div>
-              ` : ''}
-
-              <!-- 3ª Linha: Pílula de valor e botões de ação tudo responsivo para caber em uma linha -->
-              <div class="gear-card-row-3">
-                <div style="min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis;">
-                  ${negBadge}
-                </div>
-                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;">
-                  <button type="button" onclick="openEditGearModal(${idx})" title="Editar equipamento" class="clean-chip-del-btn" style="color: #94a3b8; font-size: 0.95rem; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
-                    <ion-icon name="create-outline"></ion-icon>
-                  </button>
-                  <button type="button" onclick="removeGear(${idx})" title="Remover equipamento" class="clean-chip-del-btn" style="color: #f87171; font-size: 1.15rem; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); line-height: 1;">&times;</button>
-                </div>
-              </div>
+              ${negBadge ? `<div style="flex-shrink: 0;">${negBadge}</div>` : ''}
             </div>
+
+            <!-- Linha 2 (se houver): Descrição com texto de tamanho menor -->
+            ${item.details ? `
+              <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.35; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${escapeHtml(item.details)}
+              </div>
+            ` : ''}
           </div>
         `;
       }).join('');
@@ -10495,9 +10462,11 @@
     function openAddGearModal() {
       editingGearIndex = null;
       const title = document.getElementById('gearModalTitle');
-      if (title) title.textContent = 'Adicionar Equipamento / Gear';
+      if (title) title.textContent = 'Adicionar Equipamento';
       const submitBtn = document.getElementById('gearModalSubmitBtn');
       if (submitBtn) submitBtn.textContent = 'Adicionar';
+      const delBtn = document.getElementById('gearModalDeleteBtn');
+      if (delBtn) delBtn.style.display = 'none';
 
       document.getElementById('gearCategoryInput').value = 'Guitarra';
       document.getElementById('gearNameInput').value = '';
@@ -10520,6 +10489,8 @@
       if (title) title.textContent = 'Editar Equipamento';
       const submitBtn = document.getElementById('gearModalSubmitBtn');
       if (submitBtn) submitBtn.textContent = 'Salvar Alterações';
+      const delBtn = document.getElementById('gearModalDeleteBtn');
+      if (delBtn) delBtn.style.display = 'inline-flex';
 
       const rawCat = item.category || 'Guitarra';
       document.getElementById('gearCategoryInput').value = (rawCat === 'Pedal / Pedaleira' || rawCat === 'Pedal/Efeito') ? 'Pedal' : rawCat;
@@ -10533,6 +10504,18 @@
       const priceWrapper = document.getElementById('gearPriceWrapper');
       if (priceWrapper) priceWrapper.style.display = isNeg ? 'block' : 'none';
       openModal('addGearModal');
+    }
+
+    function handleDeleteCurrentGear() {
+      if (editingGearIndex === null || editingGearIndex === undefined || editingGearIndex < 0 || editingGearIndex >= myGear.length) return;
+      const itemName = myGear[editingGearIndex]?.name || 'este equipamento';
+      if (!confirm(`Deseja realmente excluir "${itemName}"?`)) return;
+      myGear.splice(editingGearIndex, 1);
+      editingGearIndex = null;
+      saveGearCache();
+      closeModal('addGearModal');
+      renderGearTab();
+      showToast('Equipamento excluído com sucesso.', 'info');
     }
 
     function handleSaveGear(e) {
@@ -10563,12 +10546,14 @@
 
       saveGearCache();
       closeModal('addGearModal');
+      renderGearTab();
     }
 
     function removeGear(idx) {
       if (!confirm('Deseja remover este equipamento?')) return;
       myGear.splice(idx, 1);
       saveGearCache();
+      renderGearTab();
       showToast('Equipamento removido.', 'info');
     }
 
