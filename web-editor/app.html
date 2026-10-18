@@ -3828,8 +3828,9 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    .spin, .spin-animation {
+    .spin, .spin-animation, .spin-icon {
       animation: spin 1s linear infinite;
+      display: inline-block;
     }
 
     /* Agenda Event Card (Mobile Style) */
@@ -6679,21 +6680,83 @@
       <form id="formRegister" onsubmit="handleRegister(event)" style="display: none;">
         <div class="form-group">
           <label>Nome de Usuário (@handle)</label>
-          <input type="text" id="regUsername" class="form-input" placeholder="ex: lucas_rock" maxlength="30" required>
+          <div style="position: relative;">
+            <input type="text" id="regUsername" class="form-input" placeholder="ex: lucas_rock" maxlength="30" required oninput="onUsernameInputChange(this.value)">
+          </div>
+          <div id="regUsernameFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none; font-weight: 600;"></div>
         </div>
+
         <div class="form-group">
           <label>E-mail</label>
-          <input type="email" id="regEmail" class="form-input" placeholder="seu-email@dominio.com" required>
+          <input type="email" id="regEmail" class="form-input" placeholder="seu-email@dominio.com" required autocomplete="email">
         </div>
+
         <div class="form-group">
           <label>Data de Nascimento</label>
           <input type="date" id="regBirthDate" class="form-input">
         </div>
+
+        <!-- Localização: Cidade, UF e País (Forms abertos para digitar) -->
         <div class="form-group">
-          <label>Senha (mínimo 8 caracteres)</label>
-          <input type="password" id="regPassword" class="form-input" placeholder="••••••••" minlength="8" required>
+          <label>Localização</label>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 8px;">
+            <div>
+              <input type="text" id="regCity" class="form-input" placeholder="Cidade (ex: São Paulo)" maxlength="100">
+            </div>
+            <div>
+              <input type="text" id="regState" class="form-input" placeholder="UF (ex: SP)" maxlength="30">
+            </div>
+            <div>
+              <input type="text" id="regCountry" class="form-input" placeholder="País" value="Brasil" maxlength="100">
+            </div>
+          </div>
         </div>
-        <button type="submit" class="btn btn-violet" style="width: 100%; padding: 12px; margin-top: 8px;">Criar Conta Gratuita</button>
+
+        <div class="form-group">
+          <label>Senha</label>
+          <div style="position: relative;">
+            <input type="password" id="regPassword" class="form-input" placeholder="••••••••" minlength="8" required oninput="validateRegisterPasswordRules()" autocomplete="new-password">
+            <button type="button" onclick="togglePasswordVisibility('regPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; padding: 4px;">
+              <ion-icon name="eye-outline" style="font-size: 1.15rem;"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Confirmar Senha</label>
+          <div style="position: relative;">
+            <input type="password" id="regConfirmPassword" class="form-input" placeholder="••••••••" minlength="8" required oninput="validateRegisterPasswordRules()" autocomplete="new-password">
+            <button type="button" onclick="togglePasswordVisibility('regConfirmPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; padding: 4px;">
+              <ion-icon name="eye-outline" style="font-size: 1.15rem;"></ion-icon>
+            </button>
+          </div>
+          <div id="regPasswordMatchFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none; font-weight: 600;"></div>
+        </div>
+
+        <!-- Condições da Senha (Abaixo dos campos) -->
+        <div id="regPasswordRulesBox" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 0.78rem;">
+          <div style="font-weight: 700; color: #94a3b8; margin-bottom: 6px;">Condições para a senha:</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <div id="ruleMinLen" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
+              <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
+              <span>Mínimo 8 caracteres</span>
+            </div>
+            <div id="ruleUpper" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
+              <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
+              <span>1 letra maiúscula</span>
+            </div>
+            <div id="ruleNumber" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
+              <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
+              <span>1 número</span>
+            </div>
+            <div id="ruleSpecial" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
+              <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
+              <span>1 caractere especial</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="btnSubmitRegister" class="btn btn-violet" style="width: 100%; padding: 12px; margin-top: 4px;">Criar Conta Gratuita</button>
       </form>
 
       <!-- Form Confirmar Código -->
@@ -8534,12 +8597,13 @@
             }
           }
 
-          // Restore saved profile picture from local storage if not returned by backend
-          const savedPic = localStorage.getItem('bandlink_user_picture');
-          if (savedPic && (!currentUser.pictureUrl || !currentUser.pictureUrl.trim())) {
-            currentUser.pictureUrl = savedPic;
-          } else if (currentUser.pictureUrl && !savedPic) {
-            localStorage.setItem('bandlink_user_picture', currentUser.pictureUrl);
+          // Foto de Perfil: estritamente persistida na API (currentUser.pictureUrl)
+          // Limpa chave legada global que causava vazamento de foto entre contas
+          localStorage.removeItem('bandlink_user_picture');
+          if (currentUser.id && currentUser.pictureUrl) {
+            localStorage.setItem(`bandlink_user_picture_${currentUser.id}`, currentUser.pictureUrl);
+          } else if (currentUser.id) {
+            localStorage.removeItem(`bandlink_user_picture_${currentUser.id}`);
           }
 
           // Restore saved skills: prioritize API instruments if present, else fallback to local cache & sync to DB
@@ -8643,9 +8707,11 @@
         const cachedUser = localStorage.getItem(USER_KEY);
         if (cachedUser) {
           currentUser = JSON.parse(cachedUser);
-          const savedPic = localStorage.getItem('bandlink_user_picture');
-          if (savedPic && (!currentUser.pictureUrl || !currentUser.pictureUrl.trim())) {
-            currentUser.pictureUrl = savedPic;
+          if (currentUser?.id) {
+            const userPic = localStorage.getItem(`bandlink_user_picture_${currentUser.id}`);
+            if (userPic && !currentUser.pictureUrl) {
+              currentUser.pictureUrl = userPic;
+            }
           }
           const userKey = currentUser?.username ? `bandlink_user_skills_${currentUser.username}` : null;
           const savedSkills = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('bandlink_user_skills');
@@ -8780,6 +8846,7 @@
         tabs.style.display = 'flex';
         tabLogin.classList.remove('active');
         tabRegister.classList.add('active');
+        validateRegisterPasswordRules();
       } else if (mode === 'confirm') {
         document.getElementById('formConfirm').style.display = 'block';
         tabs.style.display = 'none';
@@ -8790,6 +8857,130 @@
         document.getElementById('formReset').style.display = 'block';
         tabs.style.display = 'none';
       }
+    }
+
+    let usernameCheckTimer = null;
+    let isUsernameAvailable = null;
+
+    function onUsernameInputChange(val) {
+      clearTimeout(usernameCheckTimer);
+      const feedback = document.getElementById('regUsernameFeedback');
+      const clean = (val || '').trim().toLowerCase().replace('@', '');
+
+      if (!clean) {
+        if (feedback) feedback.style.display = 'none';
+        isUsernameAvailable = null;
+        return;
+      }
+
+      if (clean.length < 3) {
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.innerHTML = '<span style="color: #f59e0b;">Mínimo de 3 caracteres.</span>';
+        }
+        isUsernameAvailable = false;
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.innerHTML = '<span style="color: #f87171;">Apenas letras, números e sublinhados (_).</span>';
+        }
+        isUsernameAvailable = false;
+        return;
+      }
+
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.innerHTML = '<span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="sync-outline" class="spin-icon"></ion-icon> Verificando disponibilidade...</span>';
+      }
+
+      usernameCheckTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`${API_URL}/Auth/check-username?username=${encodeURIComponent(clean)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.available) {
+              isUsernameAvailable = true;
+              if (feedback) {
+                feedback.innerHTML = `<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> @${clean} está disponível</span>`;
+              }
+            } else {
+              isUsernameAvailable = false;
+              if (feedback) {
+                feedback.innerHTML = `<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> ${data.message || `@${clean} já está em uso`}</span>`;
+              }
+            }
+          }
+        } catch {
+          isUsernameAvailable = null;
+          if (feedback) feedback.style.display = 'none';
+        }
+      }, 350);
+    }
+
+    function validateRegisterPasswordRules() {
+      const pwd = document.getElementById('regPassword')?.value || '';
+      const confirm = document.getElementById('regConfirmPassword')?.value || '';
+
+      const hasMinLen = pwd.length >= 8;
+      const hasUpper = /[A-Z]/.test(pwd);
+      const hasNumber = /[0-9]/.test(pwd);
+      const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+
+      updatePasswordRuleElement('ruleMinLen', hasMinLen);
+      updatePasswordRuleElement('ruleUpper', hasUpper);
+      updatePasswordRuleElement('ruleNumber', hasNumber);
+      updatePasswordRuleElement('ruleSpecial', hasSpecial);
+
+      const matchEl = document.getElementById('regPasswordMatchFeedback');
+      if (matchEl) {
+        if (!confirm) {
+          matchEl.style.display = 'none';
+        } else if (pwd === confirm) {
+          matchEl.style.display = 'block';
+          matchEl.innerHTML = '<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> As senhas conferem</span>';
+        } else {
+          matchEl.style.display = 'block';
+          matchEl.innerHTML = '<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> As senhas não conferem</span>';
+        }
+      }
+
+      return hasMinLen && hasUpper && hasNumber && hasSpecial && (pwd === confirm);
+    }
+
+    function updatePasswordRuleElement(id, isValid) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (isValid) {
+        el.style.color = '#10b981';
+        const icon = el.querySelector('ion-icon');
+        if (icon) icon.setAttribute('name', 'checkmark-circle');
+      } else {
+        el.style.color = '#64748b';
+        const icon = el.querySelector('ion-icon');
+        if (icon) icon.setAttribute('name', 'ellipse-outline');
+      }
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPass = input.type === 'password';
+      input.type = isPass ? 'text' : 'password';
+      const icon = btn.querySelector('ion-icon');
+      if (icon) icon.setAttribute('name', isPass ? 'eye-off-outline' : 'eye-outline');
+    }
+
+    function clearAllUserLocalCache() {
+      localStorage.removeItem('bandlink_user_picture');
+      localStorage.removeItem(DISPLAY_NAME_KEY);
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('bandlink_user_picture') || k.startsWith('bandlink_user_skills')) {
+          localStorage.removeItem(k);
+        }
+      });
     }
 
     async function handleLogin(e) {
@@ -8825,6 +9016,8 @@
         }
 
         const data = await res.json();
+        // Clear any previous user's cached photo on new login
+        clearAllUserLocalCache();
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(data));
         showToast('Login realizado com sucesso! Bem-vindo.', 'success');
@@ -8839,11 +9032,41 @@
       const username = document.getElementById('regUsername').value.trim();
       const email = document.getElementById('regEmail').value.trim().toLowerCase();
       const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword')?.value || '';
       const birthDate = document.getElementById('regBirthDate').value;
+      const city = document.getElementById('regCity') ? document.getElementById('regCity').value.trim() : '';
+      const state = document.getElementById('regState') ? document.getElementById('regState').value.trim() : '';
+      const country = document.getElementById('regCountry') ? document.getElementById('regCountry').value.trim() : 'Brasil';
+
+      if (isUsernameAvailable === false) {
+        showToast('O nome de usuário escolhido não está disponível ou é inválido.', 'warning');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showToast('A confirmação de senha não confere.', 'warning');
+        return;
+      }
+
+      const hasMinLen = password.length >= 8;
+      const hasUpper = /[A-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+      if (!hasMinLen || !hasUpper || !hasNumber || !hasSpecial) {
+        showToast('A senha deve conter no mínimo 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial.', 'warning');
+        return;
+      }
+
+      // Limpar cache de fotos/dados de usuário anterior do localStorage antes de criar nova conta
+      clearAllUserLocalCache();
 
       try {
         const payload = { username, email, password };
         if (birthDate) payload.birthDate = birthDate;
+        if (city) payload.city = city;
+        if (state) payload.state = state;
+        if (country) payload.country = country;
 
         const res = await fetch(`${API_URL}/Auth/register`, {
           method: "POST",
@@ -8977,6 +9200,7 @@
     }
 
     function executeLogout() {
+      clearAllUserLocalCache();
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       currentUser = null;
@@ -16255,7 +16479,7 @@
     function openEditProfileModal() {
       if (!currentUser) return;
       document.getElementById('editDisplayName').value = currentUser.displayName || localStorage.getItem(DISPLAY_NAME_KEY) || currentUser.username || '';
-      const savedPic = localStorage.getItem('bandlink_user_picture');
+      const savedPic = currentUser.id ? localStorage.getItem(`bandlink_user_picture_${currentUser.id}`) : null;
       document.getElementById('editPictureUrl').value = currentUser.pictureUrl || savedPic || '';
 
       const birthInput = document.getElementById('editBirthDate');
@@ -16442,11 +16666,10 @@
         return;
       }
 
-      const finalPictureUrl = pictureUrl || (currentUser ? currentUser.pictureUrl : '');
-
-      if (finalPictureUrl) {
-        localStorage.setItem('bandlink_user_picture', finalPictureUrl);
+      if (finalPictureUrl && currentUser && currentUser.id) {
+        localStorage.setItem(`bandlink_user_picture_${currentUser.id}`, finalPictureUrl);
       }
+      localStorage.removeItem('bandlink_user_picture');
       localStorage.setItem(DISPLAY_NAME_KEY, displayName);
 
       const payload = {

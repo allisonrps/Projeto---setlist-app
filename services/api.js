@@ -128,7 +128,21 @@ export const api = {
     return data;
   },
 
-  register: async (username, email, password, birthDate = null) => {
+  checkUsername: async (username) => {
+    const clean = (username || '').trim().replace(/^@/, '');
+    if (!clean) return { available: false, message: 'Nome de usuário vazio.' };
+    try {
+      const response = await fetchWithTimeout(`${API_URL}/Auth/check-username?username=${encodeURIComponent(clean)}`, {}, 5000);
+      if (response.ok) {
+        return await response.json();
+      }
+      return { available: false, message: 'Erro ao verificar nome de usuário.' };
+    } catch {
+      return { available: true }; // Se offline, não bloquear
+    }
+  },
+
+  register: async (username, email, password, birthDate = null, location = {}) => {
     const cleanEmail = (email || '').trim().toLowerCase();
     const payload = {
       username: (username || '').trim(),
@@ -137,6 +151,11 @@ export const api = {
     };
     if (birthDate && birthDate.trim()) {
       payload.birthDate = birthDate.trim();
+    }
+    if (location && typeof location === 'object') {
+      if (location.city && location.city.trim()) payload.city = location.city.trim();
+      if (location.state && location.state.trim()) payload.state = location.state.trim();
+      if (location.country && location.country.trim()) payload.country = location.country.trim();
     }
     const response = await fetchWithTimeout(`${API_URL}/Auth/register`, {
       method: "POST",

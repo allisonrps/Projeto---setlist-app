@@ -639,10 +639,15 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const applyProfileData = async (data) => {
     if (!data) return;
     try {
-      const savedImage = await AsyncStorage.getItem('profileImage');
-      const cloudPic = data.pictureUrl || data.imageUri;
-      const initialPic = savedImage || cloudPic || null;
-      if (initialPic) setProfileImage(initialPic);
+      const userId = data.id || data.userId;
+      const userScopedPic = userId ? await AsyncStorage.getItem(`profileImage_${userId}`) : null;
+      const cloudPic = data.pictureUrl || data.imageUri || userScopedPic || null;
+      setProfileImage(cloudPic);
+      if (cloudPic && userId) {
+        await AsyncStorage.setItem(`profileImage_${userId}`, cloudPic);
+      }
+      // Limpa chave legada não-escopada para evitar contaminação entre contas
+      await AsyncStorage.removeItem('profileImage');
       const savedDisplayName = await AsyncStorage.getItem('user_display_name');
       const resolvedDisplayName = data.displayName || data.name || savedDisplayName || data.username || '';
       if (data.displayName) {
@@ -989,7 +994,10 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         }
 
         setProfileImage(finalUri);
-        await AsyncStorage.setItem('profileImage', finalUri);
+        if (user?.id) {
+          await AsyncStorage.setItem(`profileImage_${user.id}`, finalUri);
+        }
+        await AsyncStorage.removeItem('profileImage');
 
         // Prepara Base64 portátil para sincronizar na nuvem
         let base64Photo = asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : null;
