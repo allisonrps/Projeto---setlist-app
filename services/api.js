@@ -611,7 +611,8 @@ export const api = {
       const qs = params.toString() ? `?${params.toString()}` : '';
       const response = await fetchWithTimeout(`${API_URL}/Bands/public${qs}`, {}, 8000);
       if (response.ok) {
-        return await response.json();
+        const res = await response.json();
+        return Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
       }
     } catch (err) {
       console.log('Error fetching public bands:', err);

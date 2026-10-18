@@ -521,11 +521,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const loadPublicBands = async () => {
     try {
       const bList = await api.getPublicBands();
-      if (Array.isArray(bList)) {
-        setPublicBands(bList);
-      } else {
-        setPublicBands([]);
-      }
+      const list = Array.isArray(bList) ? bList : (Array.isArray(bList?.data) ? bList.data : []);
+      setPublicBands(list);
     } catch (e) {
       console.log('Error loading public bands:', e);
       setPublicBands([]);
