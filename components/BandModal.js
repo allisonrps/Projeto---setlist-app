@@ -88,6 +88,8 @@ export default function BandModal({ visible, onClose, onSave, band }) {
   const [endDate, setEndDate] = useState('');
   const [isCover, setIsCover] = useState(true);
   const [isAutoral, setIsAutoral] = useState(false);
+  const [isProfissional, setIsProfissional] = useState(true);
+  const [isCasual, setIsCasual] = useState(false);
 
   // Localização
   const [city, setCity] = useState('');
@@ -156,6 +158,16 @@ export default function BandModal({ visible, onClose, onSave, band }) {
           setIsCover(hasCover);
           setIsAutoral(hasAutoral);
         }
+
+        const hasProf = band.isProfissional !== undefined ? Boolean(band.isProfissional) : (band.interestLevel ? band.interestLevel.toLowerCase().includes('prof') : true);
+        const hasCas = band.isCasual !== undefined ? Boolean(band.isCasual) : (band.interestLevel ? (band.interestLevel.toLowerCase().includes('cas') || band.interestLevel.toLowerCase().includes('hob')) : false);
+        if (!hasProf && !hasCas) {
+          setIsProfissional(true);
+          setIsCasual(false);
+        } else {
+          setIsProfissional(hasProf);
+          setIsCasual(hasCas);
+        }
       } else {
         setName('');
         setImageUri(null);
@@ -173,6 +185,8 @@ export default function BandModal({ visible, onClose, onSave, band }) {
         setFacebook('');
         setIsCover(true);
         setIsAutoral(false);
+        setIsProfissional(true);
+        setIsCasual(false);
       }
     }
   }, [visible, band]);
@@ -189,6 +203,20 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       return; // Pelo menos uma deve estar marcada
     }
     setIsAutoral(!isAutoral);
+  };
+
+  const toggleProfissional = () => {
+    if (isProfissional && !isCasual) {
+      return; // Pelo menos uma deve estar marcada
+    }
+    setIsProfissional(!isProfissional);
+  };
+
+  const toggleCasual = () => {
+    if (isCasual && !isProfissional) {
+      return; // Pelo menos uma deve estar marcada
+    }
+    setIsCasual(!isCasual);
   };
 
   const handleAddTag = (tagToAdd) => {
@@ -244,6 +272,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       return;
     }
     const bandType = (isCover && isAutoral) ? 'both' : (isCover ? 'cover' : 'autoral');
+    const interestLevel = (isProfissional && isCasual) ? 'both' : (isProfissional ? 'Profissional' : 'Casual');
     const linksObj = {
       instagram: instagram.trim(),
       youtube: youtube.trim(),
@@ -258,7 +287,10 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       endDate: endDate.trim(),
       isCover: isCover ? 1 : 0,
       isAutoral: isAutoral ? 1 : 0,
+      isProfissional: isProfissional ? 1 : 0,
+      isCasual: isCasual ? 1 : 0,
       bandType,
+      interestLevel,
       city: city.trim(),
       state: state.trim(),
       country: country.trim() || '',
@@ -318,7 +350,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
 
             {/* PÍLULAS DE SELEÇÃO: COVER / AUTORAL */}
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('musicalProposalLabel') || 'PROPOSTA MUSICAL'}</Text>
-            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
               <Pressable
                 onPress={toggleCover}
                 style={({ pressed }) => [
@@ -366,6 +398,60 @@ export default function BandModal({ visible, onClose, onSave, band }) {
                   { color: isAutoral ? colors.primary : colors.textMuted, fontWeight: isAutoral ? '800' : '600' }
                 ]}>
                   {t('proposalOriginal') || 'Autoral'}
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* PÍLULAS DE SELEÇÃO: PROFISSIONAL / CASUAL */}
+            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('interestLevelSection') || 'NÍVEL / FOCO DA BANDA'}</Text>
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
+              <Pressable
+                onPress={toggleProfissional}
+                style={({ pressed }) => [
+                  styles.pillButton,
+                  {
+                    flex: 1,
+                    backgroundColor: isProfissional ? colors.primary + '22' : colors.inputBackground,
+                    borderColor: isProfissional ? colors.primary : colors.border,
+                    opacity: pressed ? 0.8 : 1,
+                  }
+                ]}
+              >
+                <Ionicons 
+                  name={isProfissional ? "checkmark-circle" : "briefcase-outline"} 
+                  size={16} 
+                  color={isProfissional ? colors.primary : colors.textMuted} 
+                />
+                <Text style={[
+                  styles.pillButtonText,
+                  { color: isProfissional ? colors.primary : colors.textMuted, fontWeight: isProfissional ? '800' : '600' }
+                ]}>
+                  {t('proposalProfessional') || 'Profissional'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={toggleCasual}
+                style={({ pressed }) => [
+                  styles.pillButton,
+                  {
+                    flex: 1,
+                    backgroundColor: isCasual ? colors.primary + '22' : colors.inputBackground,
+                    borderColor: isCasual ? colors.primary : colors.border,
+                    opacity: pressed ? 0.8 : 1,
+                  }
+                ]}
+              >
+                <Ionicons 
+                  name={isCasual ? "checkmark-circle" : "beer-outline"} 
+                  size={16} 
+                  color={isCasual ? colors.primary : colors.textMuted} 
+                />
+                <Text style={[
+                  styles.pillButtonText,
+                  { color: isCasual ? colors.primary : colors.textMuted, fontWeight: isCasual ? '800' : '600' }
+                ]}>
+                  {t('proposalCasual') || 'Casual'}
                 </Text>
               </Pressable>
             </View>

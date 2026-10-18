@@ -1728,6 +1728,40 @@
       font-weight: 800;
     }
 
+    .interest-view-mode-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: nowrap !important;
+      padding: 4px 0;
+      width: 100%;
+      max-width: 100%;
+    }
+    @media (max-width: 640px) {
+      .interest-view-mode-row {
+        gap: 6px !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+      }
+      .interest-circle-node {
+        flex-shrink: 0 !important;
+      }
+      .interest-circle-disc {
+        width: 44px !important;
+        height: 44px !important;
+      }
+      .interest-circle-disc ion-icon {
+        font-size: 1.22rem !important;
+      }
+      .interest-circle-caption {
+        font-size: 0.65rem !important;
+      }
+      .interest-circle-sep {
+        height: 32px !important;
+        margin: 0 3px !important;
+      }
+    }
+
     /* FIGMA INFLUENCES TABLE ROW */
     .figma-influence-row {
       display: flex;
@@ -3356,6 +3390,16 @@
       margin-bottom: 0;
       position: relative;
     }
+    .band-page-hero-actions {
+      position: absolute;
+      right: 28px;
+      top: 20px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
     .band-page-hero-inner {
       display: flex;
       align-items: center;
@@ -4875,6 +4919,13 @@
       .band-page-hero-location {
         justify-content: center !important;
       }
+      .band-page-hero-actions {
+        position: static !important;
+        margin-top: 12px !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+      }
 
       /* 4. MODALS SIZING */
       .modal-card {
@@ -5320,7 +5371,7 @@
                 </div>
                 <div class="figma-content-block">
                   <!-- CÍRCULOS FIGMA: 3 NÍVEIS DE INTERESSE + ESPAÇO + CÍRCULO ALTERNÁVEL DISPONÍVEL/INDISPONÍVEL -->
-                  <div id="interestViewMode" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 4px 0;">
+                  <div id="interestViewMode" class="interest-view-mode-row">
                     <!-- 3 CÍRCULOS DE INTERESSE COM ÍCONES -->
                     <div class="interest-circle-node" id="circle-Hobbie" onclick="toggleCircleInterest('Hobbie')" title="Clique para alternar: Hobbie">
                       <div class="interest-circle-disc">
@@ -5344,7 +5395,7 @@
                     </div>
 
                     <!-- PULA UM ESPAÇO (SEPARADOR DISCRETO) -->
-                    <div style="width: 2px; height: 44px; background: rgba(255,255,255,0.12); margin: 0 10px; border-radius: 2px;"></div>
+                    <div class="interest-circle-sep" style="width: 2px; height: 44px; background: rgba(255,255,255,0.12); margin: 0 10px; border-radius: 2px; flex-shrink: 0;"></div>
 
                     <!-- CÍRCULO DISPONÍVEL / INDISPONÍVEL QUE ALTERNA CONFORME CLICA -->
                     <div class="interest-circle-node" id="circle-Availability" onclick="toggleCircleAvailability()" title="Clique para alternar entre Disponível e Indisponível">
@@ -6010,13 +6061,6 @@
       <section class="main-view" id="view-band-profile" style="padding: 0;">
         <!-- BAND HERO HEADER (FIGMA PRINT 1) -->
         <div class="band-page-hero">
-          <div style="position: absolute; right: 28px; top: 20px; z-index: 20; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-sm btn-outline" onclick="openEditBandProfileModal()" style="border-radius: 9999px; background: rgba(0,0,0,0.3); font-size: 0.82rem; padding: 6px 14px; border-color: rgba(255,255,255,0.25);">
-              <ion-icon name="create-outline"></ion-icon>
-              <span>Editar Banda</span>
-            </button>
-          </div>
-
           <div class="band-page-hero-inner">
             <div class="band-page-hero-avatar" id="bHeroAvatar" onclick="openEditBandProfileModal()" style="cursor: pointer;" title="Alterar foto da banda">
               <!-- Band Logo or fallback initials -->
@@ -6035,6 +6079,13 @@
               </div>
               <div id="bHeroGenres" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center;"></div>
             </div>
+          </div>
+
+          <div class="band-page-hero-actions">
+            <button class="btn btn-sm btn-outline" onclick="openEditBandProfileModal()" style="border-radius: 9999px; background: rgba(0,0,0,0.3); font-size: 0.82rem; padding: 6px 14px; border-color: rgba(255,255,255,0.25);">
+              <ion-icon name="create-outline"></ion-icon>
+              <span>Editar Banda</span>
+            </button>
           </div>
         </div>
 
@@ -7210,6 +7261,36 @@
           <div class="form-group">
             <label>Gênero Musical</label>
             <input type="text" id="editBandGenre" class="form-input" placeholder="Ex: Rock, Hard Rock" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Proposta Musical e Foco / Interesse -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Proposta Musical</label>
+            <div style="display: flex; gap: 8px;">
+              <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
+                <input type="checkbox" id="editBandIsCover" style="accent-color: var(--cyan);">
+                <span>Cover</span>
+              </label>
+              <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
+                <input type="checkbox" id="editBandIsAutoral" style="accent-color: var(--cyan);">
+                <span>Autoral</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Nível / Foco</label>
+            <div style="display: flex; gap: 8px;">
+              <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
+                <input type="checkbox" id="editBandIsProfissional" style="accent-color: var(--cyan);">
+                <span>Profissional</span>
+              </label>
+              <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
+                <input type="checkbox" id="editBandIsCasual" style="accent-color: var(--cyan);">
+                <span>Casual</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -8802,6 +8883,53 @@
       filterProfileSongbookList();
     }
 
+    function toggleSongbookFavorite(songId, event) {
+      if (event) event.stopPropagation();
+      const s = mySongs.find(x => String(x.id) === String(songId));
+      if (!s) return;
+      s.isFavorite = !s.isFavorite;
+      saveSongsCache();
+      persistSongToServer(s, s.isFavorite ? 'Adicionada aos favoritos!' : 'Removida dos favoritos.');
+      filterProfileSongbookList();
+      if (typeof filterSongbookList === 'function') filterSongbookList();
+      if (selectedSong && String(selectedSong.id) === String(songId)) {
+        selectedSong.isFavorite = s.isFavorite;
+        const favBtn = document.getElementById('sbBtnFav');
+        if (favBtn) {
+          favBtn.className = s.isFavorite ? 'btn-favorite-star active' : 'btn-favorite-star';
+          favBtn.innerHTML = s.isFavorite ? '<ion-icon name="star"></ion-icon>' : '<ion-icon name="star-outline"></ion-icon>';
+        }
+        const mobFavBtn = document.getElementById('sbMobileBtnFav');
+        if (mobFavBtn) {
+          mobFavBtn.className = s.isFavorite ? 'sb-mobile-icon-btn active' : 'sb-mobile-icon-btn';
+          mobFavBtn.innerHTML = s.isFavorite ? '<ion-icon name="star"></ion-icon>' : '<ion-icon name="star-outline"></ion-icon>';
+        }
+      }
+    }
+
+    async function deleteSongFromSongbook(songId, event) {
+      if (event) event.stopPropagation();
+      const s = mySongs.find(x => String(x.id) === String(songId));
+      if (!s) return;
+      if (!confirm(`Tem certeza que deseja excluir "${s.name || 'esta música'}" do Songbook?`)) return;
+
+      mySongs = mySongs.filter(x => String(x.id) !== String(songId));
+      saveSongsCache();
+
+      try {
+        await fetch(`${API_URL}/Songs/${songId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+      } catch (err) {
+        console.warn('Erro ao deletar música da API:', err);
+      }
+
+      showToast('Música excluída com sucesso!', 'info');
+      filterProfileSongbookList();
+      if (typeof renderSongbookSplitView === 'function') renderSongbookSplitView();
+    }
+
     function renderProfileSongbookTab() {
       updateProfileSongSortButtons();
       renderProfileSongStylePills();
@@ -8882,8 +9010,62 @@
         groups[letter].push(song);
       });
 
-      // Renderização com régua de letras e padrão: BANDA - NOME DA MUSICA (tags) (tags)...
+      const renderProfileSongItem = (song) => {
+        const tags = song.style
+          ? song.style.split(',').map(t => t.trim()).filter(Boolean)
+          : [];
+        const tagsInlineHtml = tags.map(t => `<span class="profile-song-tag-badge">${escapeHtml(t)}</span>`).join('');
+        const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+        const hasChords = !!(song.chords && song.chords.trim());
+        const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
+        const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
+        const bandName = song.originalBand || 'Artista';
+        const songName = song.name || 'Sem título';
+
+        return `
+          <div class="profile-song-item" onclick="openPublicSongViewer('${song.id}')" title="Clique para abrir e ver a música completa">
+            <div class="profile-song-item-left">
+              <div class="profile-song-item-titles">
+                <span class="song-band">${escapeHtml(bandName)}</span>
+                <span class="song-sep">-</span>
+                <span class="song-name">${escapeHtml(songName)}</span>
+                ${tags.length > 0 ? `<span class="profile-song-tags-inline">${tagsInlineHtml}</span>` : ''}
+              </div>
+            </div>
+            <div class="profile-song-item-right" style="display: flex; align-items: center; gap: 8px;">
+              ${song.key ? `<span style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">${escapeHtml(song.key)}</span>` : ''}
+              <button type="button" onclick="toggleSongbookFavorite('${song.id}', event)" title="Favoritar música" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: ${song.isFavorite ? '#fbbf24' : '#64748b'};">
+                <ion-icon name="${song.isFavorite ? 'star' : 'star-outline'}" style="font-size: 1.05rem;"></ion-icon>
+              </button>
+              <div class="sb-song-content-dots" title="${dotsTooltip}">
+                <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
+                <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
+                <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
+              </div>
+              <button type="button" onclick="deleteSongFromSongbook('${song.id}', event)" title="Excluir música" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: #f87171; opacity: 0.85;">
+                <ion-icon name="trash-outline" style="font-size: 1.05rem;"></ion-icon>
+              </button>
+            </div>
+          </div>
+        `;
+      };
+
+      // Renderização com régua de letras e categoria de Favoritos acima da letra A
       let html = '';
+      const favList = filtered.filter(s => s.isFavorite);
+      if (favList.length > 0) {
+        html += `
+          <div class="sb-letter-group-header" style="margin-top: 10px; margin-bottom: 6px;">
+            <div class="sb-letter-circle" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border-color: rgba(251, 191, 36, 0.4);"><ion-icon name="star"></ion-icon></div>
+            <div class="sb-letter-line" style="background: rgba(251, 191, 36, 0.3);"></div>
+            <span class="sb-letter-count" style="color: #fbbf24;">${favList.length}</span>
+          </div>
+        `;
+        favList.forEach(song => {
+          html += renderProfileSongItem(song);
+        });
+      }
+
       letterOrder.forEach(letter => {
         html += `
           <div class="sb-letter-group-header" style="margin-top: 10px; margin-bottom: 4px;">
@@ -8892,44 +9074,8 @@
             <span class="sb-letter-count">${groups[letter].length}</span>
           </div>
         `;
-
         groups[letter].forEach(song => {
-          // Tags de estilo inline
-          const tags = song.style
-            ? song.style.split(',').map(t => t.trim()).filter(Boolean)
-            : [];
-          const tagsInlineHtml = tags.map(t => `<span class="profile-song-tag-badge">${escapeHtml(t)}</span>`).join('');
-
-          // Indicadores de conteúdo: Letra, Cifra, Tablatura
-          const hasLyrics = !!(song.lyrics && song.lyrics.trim());
-          const hasChords = !!(song.chords && song.chords.trim());
-          const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
-          const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
-
-          const bandName = song.originalBand || 'Artista';
-          const songName = song.name || 'Sem título';
-
-          html += `
-            <div class="profile-song-item" onclick="openPublicSongViewer('${song.id}')" title="Clique para abrir e ver a música completa">
-              <div class="profile-song-item-left">
-                <div class="profile-song-item-titles">
-                  <span class="song-band">${escapeHtml(bandName)}</span>
-                  <span class="song-sep">-</span>
-                  <span class="song-name">${escapeHtml(songName)}</span>
-                  ${tags.length > 0 ? `<span class="profile-song-tags-inline">${tagsInlineHtml}</span>` : ''}
-                </div>
-              </div>
-              <div class="profile-song-item-right">
-                ${song.key ? `<span style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">${escapeHtml(song.key)}</span>` : ''}
-                ${song.isFavorite ? `<ion-icon name="star" style="color: #fbbf24; font-size: 0.85rem;"></ion-icon>` : ''}
-                <div class="sb-song-content-dots" title="${dotsTooltip}">
-                  <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
-                  <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
-                  <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
-                </div>
-              </div>
-            </div>
-          `;
+          html += renderProfileSongItem(song);
         });
       });
 
@@ -9989,7 +10135,7 @@
           negBadge = `
             <span class="badge" style="font-size: 0.68rem; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700;">
               <ion-icon name="pricetag-outline"></ion-icon>
-              <span>Negociável${priceDisplay ? ': ' + escapeHtml(priceDisplay) : ''}</span>
+              <span>${escapeHtml(priceDisplay || 'R$ 0,00')}</span>
             </span>
           `;
         }
@@ -10741,6 +10887,17 @@
       document.getElementById('editBandCountry').value = currentBandData.country || 'Brasil';
       document.getElementById('editBandDescription').value = currentBandData.description || '';
       document.getElementById('editBandImageUri').value = currentBandData.imageUri || '';
+
+      const hasCover = currentBandData.isCover !== undefined ? Boolean(currentBandData.isCover) : (currentBandData.bandType ? currentBandData.bandType.includes('cover') : true);
+      const hasAutoral = currentBandData.isAutoral !== undefined ? Boolean(currentBandData.isAutoral) : (currentBandData.bandType ? currentBandData.bandType.includes('autoral') : false);
+      document.getElementById('editBandIsCover').checked = hasCover;
+      document.getElementById('editBandIsAutoral').checked = hasAutoral;
+
+      const hasProf = currentBandData.isProfissional !== undefined ? Boolean(currentBandData.isProfissional) : (currentBandData.interestLevel ? currentBandData.interestLevel.toLowerCase().includes('prof') : true);
+      const hasCas = currentBandData.isCasual !== undefined ? Boolean(currentBandData.isCasual) : (currentBandData.interestLevel ? (currentBandData.interestLevel.toLowerCase().includes('cas') || currentBandData.interestLevel.toLowerCase().includes('hob')) : false);
+      document.getElementById('editBandIsProfissional').checked = hasProf;
+      document.getElementById('editBandIsCasual').checked = hasCas;
+
       updateBandPhotoPreview();
       openModal('editBandProfileModal');
     }
@@ -10800,6 +10957,11 @@
       const updatedDesc = document.getElementById('editBandDescription').value.trim();
       const updatedImg = document.getElementById('editBandImageUri').value.trim();
 
+      const isCover = document.getElementById('editBandIsCover').checked;
+      const isAutoral = document.getElementById('editBandIsAutoral').checked;
+      const isProfissional = document.getElementById('editBandIsProfissional').checked;
+      const isCasual = document.getElementById('editBandIsCasual').checked;
+
       currentBandData.name = updatedName;
       currentBandData.sinceYear = updatedSince;
       currentBandData.genre = updatedGenre;
@@ -10808,6 +10970,12 @@
       currentBandData.country = updatedCountry;
       currentBandData.description = updatedDesc;
       currentBandData.imageUri = updatedImg;
+      currentBandData.isCover = isCover ? 1 : 0;
+      currentBandData.isAutoral = isAutoral ? 1 : 0;
+      currentBandData.isProfissional = isProfissional ? 1 : 0;
+      currentBandData.isCasual = isCasual ? 1 : 0;
+      currentBandData.bandType = (isCover && isAutoral) ? 'both' : (isCover ? 'cover' : 'autoral');
+      currentBandData.interestLevel = (isProfissional && isCasual) ? 'both' : (isProfissional ? 'Profissional' : 'Casual');
 
       // Atualizar o Hero Header da banda na tela
       const initials = (updatedName || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -11564,19 +11732,18 @@
           </div>
         `;
       } else {
-        html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
-        filteredSongs.forEach(song => {
+        const renderBandSongItemHtml = (song) => {
           const tags = getBandGenrePills(song.style);
           const hasLyrics = !!(song.lyrics && song.lyrics.trim());
           const hasChords = !!(song.chords && song.chords.trim());
           const hasTabs = !!(song.tabs && song.tabs.trim());
           const isFav = !!song.isFavorite;
 
-          html += `
-            <div class="repertoire-song-card" onclick="openSongFromBandRepertoire(${JSON.stringify(song).replace(/"/g, '&quot;')})" title="Clique para ver letra, cifra e tablatura">
+          return `
+            <div class="repertoire-song-card" onclick="openSongFromBandRepertoire(${JSON.stringify(song).replace(/"/g, '&quot;')})" title="Clique para ver letra, cifra e tablatura" style="margin-bottom: 6px;">
               <!-- Left: Favorite Star & Title -->
               <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 250px;">
-                <button type="button" onclick="toggleBandSongFavorite('${song.id}', event)" style="background: transparent; border: none; cursor: pointer; color: ${isFav ? '#eab308' : '#64748b'}; padding: 4px; display: flex; align-items: center;">
+                <button type="button" onclick="toggleBandSongFavorite('${song.id}', event)" style="background: transparent; border: none; cursor: pointer; color: ${isFav ? '#fbbf24' : '#64748b'}; padding: 4px; display: flex; align-items: center;">
                   <ion-icon name="${isFav ? 'star' : 'star-outline'}" style="font-size: 1.15rem;"></ion-icon>
                 </button>
                 <div style="flex: 1; min-width: 0;">
@@ -11600,7 +11767,7 @@
                 </div>
               </div>
 
-              <!-- Right: Duração + Pontinhos Indicadores (L, C, T) + Status -->
+              <!-- Right: Duração + Pontinhos Indicadores (L, C, T) + Status + Lixeira -->
               <div style="display: flex; align-items: center; gap: 14px;">
                 <span style="color: #94a3b8; font-size: 0.82rem; font-family: var(--font-mono);">${song.duration || '--:--'}</span>
 
@@ -11621,7 +11788,58 @@
               </div>
             </div>
           `;
+        };
+
+        // Agrupamento por letra e favoritos
+        const favList = filteredSongs.filter(s => s.isFavorite);
+        const groups = {};
+        const letterOrder = [];
+
+        filteredSongs.forEach(song => {
+          const raw = (bandRepertoireSort === 'band' ? (song.originalBand || song.name) : (song.name || song.originalBand)) || '';
+          const clean = raw.trim();
+          let letter = '#';
+          if (clean) {
+            const char = clean.charAt(0).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            letter = /[A-Z]/.test(char) ? char : '#';
+          }
+          if (!groups[letter]) {
+            groups[letter] = [];
+            letterOrder.push(letter);
+          }
+          groups[letter].push(song);
         });
+
+        html += `<div style="display: flex; flex-direction: column;">`;
+
+        // 1. Categoria de Favoritos acima da letra A
+        if (favList.length > 0) {
+          html += `
+            <div class="sb-letter-group-header" style="margin-top: 10px; margin-bottom: 6px;">
+              <div class="sb-letter-circle" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border-color: rgba(251, 191, 36, 0.4);"><ion-icon name="star"></ion-icon></div>
+              <div class="sb-letter-line" style="background: rgba(251, 191, 36, 0.3);"></div>
+              <span class="sb-letter-count" style="color: #fbbf24;">${favList.length}</span>
+            </div>
+          `;
+          favList.forEach(song => {
+            html += renderBandSongItemHtml(song);
+          });
+        }
+
+        // 2. Grupos de Letras A-Z
+        letterOrder.forEach(letter => {
+          html += `
+            <div class="sb-letter-group-header" style="margin-top: 14px; margin-bottom: 6px;">
+              <div class="sb-letter-circle">${letter}</div>
+              <div class="sb-letter-line"></div>
+              <span class="sb-letter-count">${groups[letter].length}</span>
+            </div>
+          `;
+          groups[letter].forEach(song => {
+            html += renderBandSongItemHtml(song);
+          });
+        });
+
         html += `</div>`;
       }
 
@@ -11897,7 +12115,7 @@
         key: `${yr}-${String(mIdx + 1).padStart(2, '0')}`,
         monthName: MONTH_NAMES_BR[mIdx] || 'Mês',
         year: yr,
-        title: `${MONTH_NAMES_BR[mIdx] || 'Mês'} ${yr}`,
+        title: `${MONTH_NAMES_BR[mIdx] || 'Mês'}`,
         dateObj: dt
       };
     }
@@ -12355,9 +12573,6 @@
                   <ion-icon name="trending-down"></ion-icon> <span>- R$ ${mTotalOut.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </span>
               ` : ''}
-              <span class="month-pill-badge month-pill-musician" title="Cota do Músico">
-                <ion-icon name="star"></ion-icon> <span>R$ ${mMyShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </span>
 
               <!-- Nome do Mês Depois -->
               <span class="mobile-month-title">${g.title.toUpperCase()}</span>
@@ -12975,9 +13190,6 @@
               ${monthGrossTotal > 0 ? `
                 <span class="month-pill-badge month-pill-total" title="Cachê Total da Banda">
                   <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${monthGrossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </span>
-                <span class="month-pill-badge month-pill-musician" title="Cota do Músico">
-                  <ion-icon name="star"></ion-icon> <span>R$ ${myShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </span>
               ` : ''}
 
@@ -16193,8 +16405,71 @@
         groups[letter].push(song);
       });
 
+      const renderSongbookSidebarItem = (song) => {
+        const isSelected = selectedSong && String(selectedSong.id) === String(song.id);
+        const activeClass = isSelected ? 'active' : '';
+
+        // Preserve and show ALL registered tags individually
+        const songTags = song.style
+          ? song.style.split(',').map(t => t.trim()).filter(Boolean)
+          : [];
+        const tagsHtml = songTags.map(t => `<span class="sb-song-row-tag">${escapeHtml(t)}</span>`).join('');
+
+        // Content indicators (Letra: Azul #3b82f6, Cifra: Verde #10b981, Tablatura: Roxo #8b5cf6)
+        const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+        const hasChords = !!(song.chords && song.chords.trim());
+        const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
+        const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
+
+        return `
+          <div class="sb-song-item ${activeClass}" onclick="selectSongbookItem('${song.id}')" id="sbItem-${song.id}">
+            <div class="sb-song-item-body">
+              <div class="sb-song-row-main">
+                <span class="sb-song-row-title">${escapeHtml(song.name || 'Sem título')}</span>
+                <span class="sb-song-row-sep">-</span>
+                <span class="sb-song-row-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
+              </div>
+              <div class="sb-song-row-meta">
+                ${tagsHtml}
+                ${song.key ? `<span class="sb-song-row-key">${escapeHtml(song.key)}</span>` : ''}
+                ${song.bpm ? `<span class="sb-song-row-bpm">${song.bpm} BPM</span>` : ''}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" onclick="toggleSongbookFavorite('${song.id}', event)" title="Favoritar música" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: ${song.isFavorite ? '#fbbf24' : '#64748b'};">
+                <ion-icon name="${song.isFavorite ? 'star' : 'star-outline'}" style="font-size: 1.05rem;"></ion-icon>
+              </button>
+              <div class="sb-song-content-dots" title="${dotsTooltip}">
+                <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
+                <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
+                <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
+              </div>
+              <button type="button" onclick="deleteSongFromSongbook('${song.id}', event)" title="Excluir música" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: #f87171; opacity: 0.85;">
+                <ion-icon name="trash-outline" style="font-size: 1.05rem;"></ion-icon>
+              </button>
+            </div>
+          </div>
+        `;
+      };
+
       // Render Song List with Prominent Circular Letter Badges and Compact Items
       let listHtml = '';
+
+      // Categoria de Favoritos acima da Letra A
+      const favList = filtered.filter(s => s.isFavorite);
+      if (favList.length > 0) {
+        listHtml += `
+          <div class="sb-letter-group-header" id="sb-letter-group-FAV" style="margin-top: 10px; margin-bottom: 6px;">
+            <div class="sb-letter-circle" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border-color: rgba(251, 191, 36, 0.4);"><ion-icon name="star"></ion-icon></div>
+            <div class="sb-letter-line" style="background: rgba(251, 191, 36, 0.3);"></div>
+            <span class="sb-letter-count" style="color: #fbbf24;">${favList.length}</span>
+          </div>
+        `;
+        favList.forEach(song => {
+          listHtml += renderSongbookSidebarItem(song);
+        });
+      }
+
       letterOrder.forEach(letter => {
         listHtml += `
           <div class="sb-letter-group-header" id="sb-letter-group-${letter}">
@@ -16205,43 +16480,7 @@
         `;
 
         groups[letter].forEach(song => {
-          const isSelected = selectedSong && String(selectedSong.id) === String(song.id);
-          const activeClass = isSelected ? 'active' : '';
-
-          // Preserve and show ALL registered tags individually
-          const songTags = song.style
-            ? song.style.split(',').map(t => t.trim()).filter(Boolean)
-            : [];
-          const tagsHtml = songTags.map(t => `<span class="sb-song-row-tag">${escapeHtml(t)}</span>`).join('');
-
-          // Content indicators (Letra: Azul #3b82f6, Cifra: Verde #10b981, Tablatura: Roxo #8b5cf6)
-          const hasLyrics = !!(song.lyrics && song.lyrics.trim());
-          const hasChords = !!(song.chords && song.chords.trim());
-          const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
-          const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
-
-          listHtml += `
-            <div class="sb-song-item ${activeClass}" onclick="selectSongbookItem('${song.id}')" id="sbItem-${song.id}">
-              <div class="sb-song-item-body">
-                <div class="sb-song-row-main">
-                  <span class="sb-song-row-title">${escapeHtml(song.name || 'Sem título')}</span>
-                  <span class="sb-song-row-sep">-</span>
-                  <span class="sb-song-row-artist">${escapeHtml(song.originalBand || 'Artista')}</span>
-                </div>
-                <div class="sb-song-row-meta">
-                  ${tagsHtml}
-                  ${song.key ? `<span class="sb-song-row-key">${escapeHtml(song.key)}</span>` : ''}
-                  ${song.bpm ? `<span class="sb-song-row-bpm">${song.bpm} BPM</span>` : ''}
-                  ${song.isFavorite ? `<ion-icon name="star" class="sb-song-row-fav"></ion-icon>` : ''}
-                </div>
-              </div>
-              <div class="sb-song-content-dots" title="${dotsTooltip}">
-                <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
-                <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
-                <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
-              </div>
-            </div>
-          `;
+          listHtml += renderSongbookSidebarItem(song);
         });
       });
 

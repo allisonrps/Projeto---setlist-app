@@ -177,8 +177,8 @@ const getMonthYearHeader = (dateStr, lang = 'pt') => {
 
   const months = lang === 'en' ? monthsEn : lang === 'es' ? monthsEs : monthsPt;
 
-  if (monthNum >= 0 && monthNum < 12 && year) {
-    return `${months[monthNum]} ${year}`;
+  if (monthNum >= 0 && monthNum < 12) {
+    return months[monthNum];
   }
   return lang === 'en' ? 'EVENTS' : lang === 'es' ? 'EVENTOS' : 'EVENTOS';
 };

@@ -215,9 +215,6 @@ const getMonthInfo = (dateStr, lang = 'pt') => {
 
 const getMonthYearHeader = (dateStr, lang = 'pt') => {
   const m = getMonthInfo(dateStr, lang);
-  if (m.index >= 0 && m.year > 0) {
-    return `${m.name} ${m.year}`;
-  }
   return m.name;
 };
 
@@ -2558,29 +2555,67 @@ export default function BandDetailScreen({
                   )}
                 </View>
               ) : (
-                filteredBandSongs.map(song => (
-                  <SongListItem
-                    key={song.id}
-                    song={song}
-                    onSelect={() => onSelectSong(song)}
-                    onPress={() => onSelectSong(song)}
-                    onToggleFavorite={() => handleToggleBandSongFavorite(song.id, song.isFavorite)}
-                    showRehearsalControls={true}
-                    onToggleRehearsalStatus={() => onToggleRehearsalStatus && onToggleRehearsalStatus(song.id)}
-                    onUpdateRehearsalNotes={(notes) => onUpdateSongRehearsalNotes && onUpdateSongRehearsalNotes(song.id, notes)}
-                    extraRightComponent={
-                      isUserLeader ? (
-                        <Pressable
-                          style={styles.unlinkSongBtn}
-                          onPress={() => handleUnlinkSongConfirm(song)}
-                          hitSlop={8}
-                        >
-                          <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                        </Pressable>
-                      ) : null
-                    }
-                  />
-                ))
+                (() => {
+                  const favoriteSongs = filteredBandSongs.filter(s => s.isFavorite);
+                  const otherSongs = filteredBandSongs.filter(s => !s.isFavorite);
+
+                  const renderSong = (song) => (
+                    <SongListItem
+                      key={song.id}
+                      song={song}
+                      onSelect={() => onSelectSong(song)}
+                      onPress={() => onSelectSong(song)}
+                      onToggleFavorite={() => handleToggleBandSongFavorite(song.id, song.isFavorite)}
+                      showRehearsalControls={true}
+                      onToggleRehearsalStatus={() => onToggleRehearsalStatus && onToggleRehearsalStatus(song.id)}
+                      onUpdateRehearsalNotes={(notes) => onUpdateSongRehearsalNotes && onUpdateSongRehearsalNotes(song.id, notes)}
+                      extraRightComponent={
+                        isUserLeader ? (
+                          <Pressable
+                            style={styles.unlinkSongBtn}
+                            onPress={() => handleUnlinkSongConfirm(song)}
+                            hitSlop={8}
+                          >
+                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                          </Pressable>
+                        ) : null
+                      }
+                    />
+                  );
+
+                  return (
+                    <>
+                      {favoriteSongs.length > 0 && (
+                        <View style={{ marginBottom: 10 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 8, gap: 8 }}>
+                            <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#fbbf2422', borderColor: '#fbbf2455', borderWidth: 1, alignItems: 'center', justifyContent: 'center' }}>
+                              <Ionicons name="star" size={12} color="#fbbf24" />
+                            </View>
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: '#fbbf24', letterSpacing: 0.8 }}>
+                              {t('favorites') || 'FAVORITOS'} ({favoriteSongs.length})
+                            </Text>
+                            <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+                          </View>
+                          {favoriteSongs.map(renderSong)}
+                        </View>
+                      )}
+
+                      {otherSongs.length > 0 && (
+                        <View>
+                          {favoriteSongs.length > 0 && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 8, gap: 8 }}>
+                              <Text style={{ fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 0.8 }}>
+                                {t('allSongs') || 'TODAS AS MÚSICAS'} ({otherSongs.length})
+                              </Text>
+                              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.3 }} />
+                            </View>
+                          )}
+                          {otherSongs.map(renderSong)}
+                        </View>
+                      )}
+                    </>
+                  );
+                })()
               )}
             </ScrollView>
 
@@ -3313,24 +3348,6 @@ export default function BandDetailScreen({
                                 <Ionicons name="trending-up" size={12} color="#10b981" />
                                 <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981' }}>
                                   + $ {monthIncomeTotal.toFixed(2)}
-                                </Text>
-                              </View>
-
-                              {/* Pílula 2: Minha Parte (Apenas Ícone + Valor) */}
-                              <View style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: 4,
-                                backgroundColor: colors.primary + '18',
-                                borderColor: colors.primary + '40',
-                                borderWidth: 1,
-                                paddingHorizontal: 8,
-                                paddingVertical: 2.5,
-                                borderRadius: 12
-                              }}>
-                                <Ionicons name="star" size={11} color={colors.primary} />
-                                <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>
-                                  $ {myShare.toFixed(2)}
                                 </Text>
                               </View>
 
