@@ -1160,7 +1160,7 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
             >
               <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <Text style={[styles.skillName, { color: colors.text, marginBottom: 0 }]}>{skill.instrument}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>{renderStars(skill.stars, 14)}</View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>{renderStars(skill.stars, 20)}</View>
               </View>
             </View>
           );

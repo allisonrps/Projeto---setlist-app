@@ -1903,7 +1903,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
             >
               <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <Text style={[styles.skillName, { color: colors.text, marginBottom: 0 }]}>{skill.instrument}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>{renderStars(skill.stars, 14)}</View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>{renderStars(skill.stars, 20)}</View>
               </View>
 
               <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
@@ -2730,7 +2730,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderTopColor: colors.border }]}>
             <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]} />
             <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 16 }]}>
-              {editingSkill ? 'Editar Habilidade' : 'Nova Habilidade'}
+              {editingSkill ? 'Editar Habilidade Musical' : 'Habilidade Musical'}
             </Text>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9' }]}

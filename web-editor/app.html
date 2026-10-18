@@ -3516,6 +3516,22 @@
       align-items: center;
       gap: 6px;
     }
+    .profile-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .profile-section-add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-responsive-input-row {
+      display: flex;
+      gap: 8px;
+    }
 
     .band-page-tabs-strip {
       background: #19202f;
@@ -5024,6 +5040,40 @@
         display: none !important;
       }
 
+      /* Botões de Adicionar Seções no Mobile: Círculo com + na Direita */
+      .profile-section-header {
+        flex-wrap: nowrap !important;
+      }
+      .profile-section-add-btn {
+        width: 38px !important;
+        height: 38px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+      }
+      .profile-section-add-btn ion-icon {
+        font-size: 1.45rem !important;
+        margin: 0 !important;
+      }
+      .profile-section-add-btn span {
+        display: none !important;
+      }
+
+      /* Responsividade de Inputs e Ações em Modais */
+      .modal-responsive-input-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+      .modal-responsive-input-row button {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 9px 14px !important;
+      }
+
       /* 4. MODALS SIZING */
       .modal-card {
         padding: 20px 14px !important;
@@ -5616,36 +5666,36 @@
             </div>
           </div>
 
-          <!-- ── TAB H: HABILIDADES (MUSICAIS & EXTRA-MUSICAIS) ── -->
+          <!-- ── TAB H: HABILIDADES (MUSICAIS & EXTRAS) ── -->
           <div class="profile-subview" id="subview-skills">
             <!-- 1. HABILIDADES MUSICAIS (INSTRUMENTOS & DOMÍNIO) -->
             <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08); margin-bottom: 24px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div class="profile-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
                     <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
-                    <span>Habilidades Musicais</span>
+                    <span>Musicais</span>
                   </h3>
                 </div>
-                <button class="btn btn-primary btn-sm" onclick="openAddSkillModal()">
-                  <ion-icon name="add-circle-outline"></ion-icon>
+                <button class="btn btn-primary btn-sm profile-section-add-btn" onclick="openAddSkillModal()" title="Adicionar Habilidade Musical">
+                  <ion-icon name="add"></ion-icon>
                   <span>Adicionar</span>
                 </button>
               </div>
               <div id="skillsListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
 
-            <!-- 2. HABILIDADES EXTRA-MUSICAIS -->
+            <!-- 2. HABILIDADES EXTRAS -->
             <div class="card" style="background: #1c2336; border-color: rgba(255,255,255,0.08);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div class="profile-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
                 <div>
                   <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin: 0;">
                     <ion-icon name="sparkles" style="color: #fbbf24;"></ion-icon>
-                    <span>Habilidades Extra-Musicais</span>
+                    <span>Extras</span>
                   </h3>
                 </div>
-                <button class="btn btn-amber btn-sm" onclick="openAddExtraSkillModal()" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); font-weight: 700;">
-                  <ion-icon name="add-circle-outline"></ion-icon>
+                <button class="btn btn-amber btn-sm profile-section-add-btn" onclick="openAddExtraSkillModal()" title="Adicionar Habilidade Extra" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); font-weight: 700;">
+                  <ion-icon name="add"></ion-icon>
                   <span>Adicionar</span>
                 </button>
               </div>
@@ -6600,8 +6650,8 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title">
-          <ion-icon name="flash-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Adicionar Instrumento / Habilidade</span>
+          <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
+          <span>Habilidade Musical</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addSkillModal')">&times;</button>
       </div>
@@ -6634,7 +6684,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="sparkles" style="color: #fbbf24;"></ion-icon>
-          <span>Habilidade Extra-Musical</span>
+          <span>Habilidade Extra</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addExtraSkillModal')">&times;</button>
       </div>
@@ -6642,8 +6692,8 @@
       <!-- Único scroll/seletor de opções sugeridas -->
       <div class="form-group" style="margin-bottom: 14px;">
         <label style="font-size: 0.84rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Selecione a Habilidade</label>
-        <div style="display: flex; gap: 8px;">
-          <select id="extraSkillPresetSelect" class="form-input" style="flex: 1;">
+        <div class="modal-responsive-input-row">
+          <select id="extraSkillPresetSelect" class="form-input" style="flex: 1; min-width: 0;">
             <option value="">-- Escolha uma opção da lista --</option>
             <option value="Transporte Próprio (Van/Carro)">🚐 Transporte Próprio (Van / Carro)</option>
             <option value="Técnico de Som / PA">🎛️ Técnico de Som / PA</option>
@@ -6657,16 +6707,16 @@
             <option value="Técnico de Iluminação / Luz">💡 Técnico de Iluminação / Luz</option>
             <option value="Produção Musical & Gravação">🎹 Produção Musical & Gravação</option>
           </select>
-          <button type="button" class="btn btn-amber" onclick="addSelectedPresetExtraSkill()" style="background: #f59e0b; border-color: #f59e0b; padding: 0 16px; font-weight: 800;">Adicionar</button>
+          <button type="button" class="btn btn-amber" onclick="addSelectedPresetExtraSkill()" style="background: #f59e0b; border-color: #f59e0b; padding: 0 16px; font-weight: 800; white-space: nowrap;">Adicionar</button>
         </div>
       </div>
 
       <!-- Opção de digitar uma habilidade personalizada -->
       <div class="form-group" style="margin-bottom: 18px;">
         <label style="font-size: 0.78rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px; display: block;">Ou digite uma opção personalizada:</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="extraSkillCustomInput" class="form-input" placeholder="Ex: Direção de Palco, Gravação em DAW...">
-          <button type="button" class="btn btn-outline" onclick="addCustomExtraSkill()" style="padding: 0 14px; font-size: 0.82rem; font-weight: 700;">Adicionar</button>
+        <div class="modal-responsive-input-row">
+          <input type="text" id="extraSkillCustomInput" class="form-input" placeholder="Ex: Direção de Palco, Gravação em DAW..." style="flex: 1; min-width: 0;">
+          <button type="button" class="btn btn-outline" onclick="addCustomExtraSkill()" style="padding: 0 14px; font-size: 0.82rem; font-weight: 700; white-space: nowrap;">Adicionar</button>
         </div>
       </div>
 
@@ -9579,47 +9629,65 @@
       updateCircleInterestsUI();
       updateCircleAvailabilityUI();
 
-      // 3. INFLUÊNCIAS MUSICAIS (TABELA COM 5 LINHAS E ESTRELAS)
+      // 3. INFLUÊNCIAS MUSICAIS (SOMENTE AS CADASTRADAS)
       const infContainer = document.getElementById('influencesListContainer');
       const infList = parseInfluencesList(currentUser?.influences);
 
       let rowsHtml = '';
-      for (let i = 0; i < 5; i++) {
-        const item = infList[i];
-        const label = item ? item.name : `musical influence ${i + 1}`;
-        const starsCount = item ? item.stars : (5 - (i % 3));
-        let starsHtml = '';
-        for (let s = 1; s <= 5; s++) {
-          const isFilled = s <= starsCount;
-          starsHtml += `<ion-icon name="${isFilled ? 'star' : 'star-outline'}" style="color: ${isFilled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}; font-size: 1.15rem; ${isFilled ? 'filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));' : ''}"></ion-icon>`;
-        }
-
-        rowsHtml += `
-          <div class="figma-influence-row">
-            <span style="${item ? 'color: #fff;' : 'color: #64748b; font-style: italic;'}">${label}</span>
-            <div style="display: flex; gap: 4px; align-items: center;">
-              ${starsHtml}
-            </div>
+      const validInfluences = (infList || []).filter(item => item && item.name && item.name.trim());
+      if (validInfluences.length === 0) {
+        rowsHtml = `
+          <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-style: italic; background: rgba(255,255,255,0.02); border-radius: 8px;">
+            Nenhuma influência cadastrada. Clique no botão de editar acima para adicionar suas referências.
           </div>
         `;
+      } else {
+        validInfluences.forEach((item) => {
+          const label = item.name.trim();
+          const starsCount = Math.max(1, Math.min(5, parseInt(item.stars) || 5));
+          let starsHtml = '';
+          for (let s = 1; s <= 5; s++) {
+            const isFilled = s <= starsCount;
+            starsHtml += `<ion-icon name="${isFilled ? 'star' : 'star-outline'}" style="color: ${isFilled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}; font-size: 1.15rem; ${isFilled ? 'filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));' : ''}"></ion-icon>`;
+          }
+
+          rowsHtml += `
+            <div class="figma-influence-row">
+              <span style="color: #fff; font-weight: 700;">${escapeHtml(label)}</span>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                ${starsHtml}
+              </div>
+            </div>
+          `;
+        });
       }
       if (infContainer) infContainer.innerHTML = rowsHtml;
 
-      // 4. LINKS SOCIAIS (CÍRCULOS CINZAS FIGMA)
+      // 4. LINKS SOCIAIS (SOMENTE AS CADASTRADAS)
       const socialRow = document.getElementById('figmaSocialCirclesRow');
       if (socialRow) {
         const socials = [
-          { icon: 'logo-instagram', label: 'Instagram', val: currentUser.instagram, href: currentUser.instagram ? (currentUser.instagram.startsWith('http') ? currentUser.instagram : `https://instagram.com/${currentUser.instagram.replace('@','')}`) : null },
-          { icon: 'logo-youtube', label: 'YouTube', val: currentUser.youtube, href: currentUser.youtube ? (currentUser.youtube.startsWith('http') ? currentUser.youtube : `https://youtube.com/@${currentUser.youtube.replace('@','')}`) : null },
-          { icon: 'musical-notes', label: 'Spotify', val: currentUser.spotify, href: currentUser.spotify || null },
-          { icon: 'logo-twitter', label: 'X (Twitter)', val: currentUser.twitter, href: currentUser.twitter ? (currentUser.twitter.startsWith('http') ? currentUser.twitter : `https://twitter.com/${currentUser.twitter.replace('@','')}`) : null }
+          { icon: 'logo-instagram', label: 'Instagram', val: currentUser.instagram, href: currentUser.instagram ? (currentUser.instagram.startsWith('http') ? currentUser.instagram : `https://instagram.com/${currentUser.instagram.replace(/^@+/,'')}`) : null },
+          { icon: 'logo-youtube', label: 'YouTube', val: currentUser.youtube, href: currentUser.youtube ? (currentUser.youtube.startsWith('http') ? currentUser.youtube : `https://youtube.com/@${currentUser.youtube.replace(/^@+/,'')}`) : null },
+          { icon: 'musical-notes', label: 'Spotify', val: currentUser.spotify, href: currentUser.spotify ? (currentUser.spotify.startsWith('http') ? currentUser.spotify : `https://open.spotify.com/artist/${currentUser.spotify}`) : null },
+          { icon: 'logo-twitter', label: 'X (Twitter)', val: currentUser.twitter, href: currentUser.twitter ? (currentUser.twitter.startsWith('http') ? currentUser.twitter : `https://twitter.com/${currentUser.twitter.replace(/^@+/,'')}`) : null }
         ];
 
-        socialRow.innerHTML = socials.map(s => `
-          <div class="figma-circle-avatar" onclick="${s.href ? `window.open('${s.href}', '_blank')` : 'toggleInlineSocialsEdit()'}" title="${s.label}: ${s.val || 'Clique para adicionar'}">
-            <ion-icon name="${s.icon}" style="font-size: 1.6rem; color: ${s.val ? '#0f172a' : '#475569'};"></ion-icon>
-          </div>
-        `).join('');
+        const activeSocials = socials.filter(s => s.val && String(s.val).trim() !== '');
+
+        if (activeSocials.length === 0) {
+          socialRow.innerHTML = `
+            <div style="color: var(--text-muted); font-size: 0.82rem; font-style: italic; padding: 6px 0;">
+              Nenhuma rede social informada.
+            </div>
+          `;
+        } else {
+          socialRow.innerHTML = activeSocials.map(s => `
+            <div class="figma-circle-avatar" onclick="window.open('${s.href}', '_blank')" title="${s.label}: ${s.val}" style="cursor: pointer;">
+              <ion-icon name="${s.icon}" style="font-size: 1.6rem; color: #0f172a;"></ion-icon>
+            </div>
+          `).join('');
+        }
       }
     }
 
@@ -9996,16 +10064,26 @@
         container.style.display = 'flex';
         container.style.flexDirection = 'column';
         container.style.gap = '8px';
-        container.innerHTML = mySkills.map((s, idx) => `
-          <div class="profile-clean-row">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <ion-icon name="musical-notes" style="color: var(--cyan); font-size: 1.15rem;"></ion-icon>
-              <span style="font-weight: 800; font-size: 0.9rem; color: #fff;">${escapeHtml(s.instrument || s.name)}</span>
-              <span style="color: #fbbf24; font-size: 0.82rem; letter-spacing: 2px;">${'★'.repeat(Math.max(1, Math.min(5, parseInt(s.stars) || 1)))}</span>
+        container.innerHTML = mySkills.map((s, idx) => {
+          const starCount = Math.max(1, Math.min(5, parseInt(s.stars) || 1));
+          let starsHtml = '';
+          for (let st = 1; st <= 5; st++) {
+            const isFilled = st <= starCount;
+            starsHtml += `<ion-icon name="${isFilled ? 'star' : 'star-outline'}" style="color: ${isFilled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}; font-size: 1.25rem; ${isFilled ? 'filter: drop-shadow(0 0 3px rgba(251,191,36,0.5));' : ''}"></ion-icon>`;
+          }
+          return `
+            <div class="profile-clean-row">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <ion-icon name="musical-notes" style="color: var(--cyan); font-size: 1.2rem;"></ion-icon>
+                <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">${escapeHtml(s.instrument || s.name)}</span>
+                <div style="display: inline-flex; align-items: center; gap: 3px;">
+                  ${starsHtml}
+                </div>
+              </div>
+              <button type="button" onclick="removeSkill(${idx})" title="Remover habilidade" class="clean-chip-del-btn">&times;</button>
             </div>
-            <button type="button" onclick="removeSkill(${idx})" title="Remover habilidade" class="clean-chip-del-btn">&times;</button>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       renderExtraSkillsTab();
