@@ -3493,6 +3493,29 @@
       align-items: center;
       gap: 6px;
     }
+    .band-page-hero-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .band-members-count-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      font-size: 0.82rem;
+      font-weight: 800;
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      flex-shrink: 0;
+    }
+    .band-add-member-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
 
     .band-page-tabs-strip {
       background: #19202f;
@@ -3513,10 +3536,10 @@
         overflow-x: auto;
       }
       .band-page-hero-avatar {
-        margin-bottom: -20px;
-        width: 120px;
-        height: 120px;
-        font-size: 2.8rem;
+        margin-bottom: 0;
+        width: 160px;
+        height: 160px;
+        font-size: 3.6rem;
       }
     }
     .band-tab-btn {
@@ -4896,35 +4919,109 @@
       }
 
       .band-page-hero {
-        padding: 20px 10px 14px 10px !important;
+        padding: 24px 14px 20px 14px !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 16px !important;
       }
       .band-page-hero-inner {
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 12px !important;
         text-align: center !important;
+        gap: 14px !important;
+        width: 100% !important;
       }
       .band-page-hero-avatar {
-        width: 80px !important;
-        height: 80px !important;
-        font-size: 1.8rem !important;
+        width: 160px !important;
+        height: 160px !important;
+        font-size: 3.6rem !important;
         margin-bottom: 0 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        flex-shrink: 0 !important;
+      }
+      .band-page-hero-info {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        width: 100% !important;
+      }
+      .band-page-hero-name-wrap {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
       }
       .band-page-hero-title {
-        font-size: 1.35rem !important;
+        font-size: 1.45rem !important;
         text-align: center !important;
+        width: 100% !important;
       }
-      .band-page-hero-handle-row,
+      .band-page-hero-handle-row {
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+      }
       .band-page-hero-location {
         justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+      #bHeroGenres,
+      .band-page-hero-pills {
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
       }
       .band-page-hero-actions {
         position: static !important;
-        margin-top: 12px !important;
+        margin-top: 10px !important;
         width: 100% !important;
         display: flex !important;
         justify-content: center !important;
+        align-items: center !important;
+      }
+
+      /* Estilo dos Membros: Marcador Circular e Botão + no Mobile */
+      .band-members-count-circle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(56, 189, 248, 0.2);
+        color: var(--cyan-light);
+        font-size: 0.82rem;
+        font-weight: 800;
+        border: 1.5px solid rgba(56, 189, 248, 0.4);
+        flex-shrink: 0;
+      }
+      .band-add-member-btn {
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .band-add-member-btn ion-icon {
+        font-size: 1.45rem !important;
+        margin: 0 !important;
+      }
+      .band-add-member-btn .band-add-member-label {
+        display: none !important;
       }
 
       /* 4. MODALS SIZING */
@@ -6065,8 +6162,8 @@
             <div class="band-page-hero-avatar" id="bHeroAvatar" onclick="openEditBandProfileModal()" style="cursor: pointer;" title="Alterar foto da banda">
               <!-- Band Logo or fallback initials -->
             </div>
-            <div>
-              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div class="band-page-hero-info">
+              <div class="band-page-hero-name-wrap" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <h1 class="band-page-hero-title" id="bHeroName">NOME DA BANDA</h1>
               </div>
               <div class="band-page-hero-handle-row">
@@ -6077,7 +6174,7 @@
                 <ion-icon name="location-outline"></ion-icon>
                 <span>Cidade, UF, País</span>
               </div>
-              <div id="bHeroGenres" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center;"></div>
+              <div id="bHeroGenres" class="band-page-hero-pills" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center;"></div>
             </div>
           </div>
 
@@ -6093,7 +6190,7 @@
         <div class="band-page-tabs-strip">
           <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Histórico e Linha do Tempo">
             <ion-icon name="time-outline" class="tab-icon"></ion-icon>
-            <span class="tab-name-label">Histórico</span>
+            <span class="tab-name-label">Alterações</span>
           </button>
           <button class="band-tab-btn" id="bTabBtn-M" onclick="switchBandPageTab('M')" title="Integrantes e Membros">
             <ion-icon name="people-outline" class="tab-icon"></ion-icon>
@@ -6109,7 +6206,7 @@
           </button>
           <button class="band-tab-btn active" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda de Shows e Ensaios">
             <ion-icon name="calendar-outline" class="tab-icon"></ion-icon>
-            <span class="tab-name-label">Agenda</span>
+            <span class="tab-name-label">Agenda e Setlists</span>
           </button>
         </div>
 
@@ -10742,6 +10839,35 @@
     // ==============================================================
     // PÁGINA DA BANDA (FIGMA PRINT 1: L M R F A)
     // ==============================================================
+    function renderBandHeroPills(band) {
+      if (!band) return '';
+      const pills = [];
+      const hasCover = band.isCover === true || band.isCover === 1 || band.isCover === 'true' || (band.bandType && band.bandType.includes('cover')) || (!band.bandType && band.isCover === undefined);
+      const hasAutoral = band.isAutoral === true || band.isAutoral === 1 || band.isAutoral === 'true' || (band.bandType && band.bandType.includes('autoral'));
+      const hasProf = band.isProfissional === true || band.isProfissional === 1 || band.isProfissional === 'true' || (band.interestLevel && band.interestLevel.includes('profissional'));
+      const hasCas = band.isCasual === true || band.isCasual === 1 || band.isCasual === 'true' || (band.interestLevel && band.interestLevel.includes('casual'));
+
+      if (hasCover) {
+        pills.push(`<span class="badge" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">Cover</span>`);
+      }
+      if (hasAutoral) {
+        pills.push(`<span class="badge" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35);">Autoral</span>`);
+      }
+      if (hasProf) {
+        pills.push(`<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">Profissional</span>`);
+      }
+      if (hasCas) {
+        pills.push(`<span class="badge badge-violet" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">Casual</span>`);
+      }
+
+      const gList = getBandGenrePills(band.genre || band.genresJson);
+      gList.forEach(g => {
+        pills.push(`<span class="badge" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px; background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.18);">${escapeHtml(g)}</span>`);
+      });
+
+      return pills.join('');
+    }
+
     async function openBandProfileView(bandId) {
       showLoading('Carregando informações da banda...');
       currentActiveBandId = bandId;
@@ -10823,8 +10949,7 @@
 
       const hGenres = document.getElementById('bHeroGenres');
       if (hGenres) {
-        const gList = getBandGenrePills(band.genre || band.genresJson);
-        hGenres.innerHTML = gList.map(g => `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('');
+        hGenres.innerHTML = renderBandHeroPills(band);
       }
 
       // Abre por padrão na aba de Agenda (A) e rola imediatamente para o topo
@@ -10994,8 +11119,7 @@
       if (hLoc) hLoc.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${updatedCity}, ${updatedState}, ${updatedCountry}</span>`;
       const hGenres = document.getElementById('bHeroGenres');
       if (hGenres) {
-        const gList = getBandGenrePills(updatedGenre);
-        hGenres.innerHTML = gList.map(g => `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('');
+        hGenres.innerHTML = renderBandHeroPills(currentBandData);
       }
 
       // Atualizar no array local myBands
@@ -11053,7 +11177,7 @@
         <div style="margin-bottom: 24px;">
           <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
             <ion-icon name="time" style="color: var(--cyan);"></ion-icon>
-            <span>Linha do Tempo de Alterações</span>
+            <span>Alterações</span>
           </h2>
           <p style="color: #94a3b8; font-size: 0.88rem;">Registro de atividades, mensagens de candidatos interessados e histórico da banda.</p>
         </div>
@@ -11239,19 +11363,18 @@
       const members = getBandMembersArray();
 
       let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 14px;">
           <div>
-            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
-              <span>Integrantes e Formação</span>
-              <span class="badge badge-cyan">${members.length} Integrantes</span>
+              <span>Membros</span>
+              <span class="band-members-count-circle">${members.length}</span>
             </h2>
-            <p style="color: #94a3b8; font-size: 0.88rem;">Músicos ativos na formação oficial da banda.</p>
           </div>
           <div>
-            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditBandMemberModal(-1)">
-              <ion-icon name="person-add-outline"></ion-icon>
-              <span>Adicionar Integrante</span>
+            <button type="button" class="btn btn-cyan btn-sm band-add-member-btn" onclick="openEditBandMemberModal(-1)" title="Adicionar Integrante">
+              <ion-icon name="add"></ion-icon>
+              <span class="band-add-member-label">Adicionar Integrante</span>
             </button>
           </div>
         </div>

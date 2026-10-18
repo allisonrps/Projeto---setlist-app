@@ -1992,14 +1992,24 @@ export default function BandDetailScreen({
                   </Text>
                 </View>
 
-                {(band.isCover === 1 || (band.bandType && band.bandType.includes('cover')) || (!band.bandType && band.isCover === undefined)) && (
-                  <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
-                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalCover') || 'Cover'}</Text>
+                {(band.isCover === 1 || band.isCover === true || (band.bandType && band.bandType.includes('cover')) || (!band.bandType && band.isCover === undefined)) && (
+                  <View style={{ backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: 'rgba(56, 189, 248, 0.4)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#38bdf8', fontSize: 11, fontWeight: '700' }}>{t('proposalCover') || 'Cover'}</Text>
                   </View>
                 )}
-                {(band.isAutoral === 1 || (band.bandType && band.bandType.includes('autoral'))) && (
-                  <View style={{ backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
-                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{t('proposalOriginal') || 'Autoral'}</Text>
+                {(band.isAutoral === 1 || band.isAutoral === true || (band.bandType && band.bandType.includes('autoral'))) && (
+                  <View style={{ backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: 'rgba(168, 85, 247, 0.4)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#c084fc', fontSize: 11, fontWeight: '700' }}>{t('proposalOriginal') || 'Autoral'}</Text>
+                  </View>
+                )}
+                {(band.isProfissional === 1 || band.isProfissional === true || (band.interestLevel && band.interestLevel.includes('profissional'))) && (
+                  <View style={{ backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 0.4)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#34d399', fontSize: 11, fontWeight: '700' }}>{t('proposalProfessional') || 'Profissional'}</Text>
+                  </View>
+                )}
+                {(band.isCasual === 1 || band.isCasual === true || (band.interestLevel && band.interestLevel.includes('casual'))) && (
+                  <View style={{ backgroundColor: 'rgba(236, 72, 153, 0.2)', borderColor: 'rgba(236, 72, 153, 0.4)', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                    <Text style={{ color: '#f472b6', fontSize: 11, fontWeight: '700' }}>{t('proposalCasual') || 'Casual'}</Text>
                   </View>
                 )}
                 {detailBandTags.map((tag, idx) => (
@@ -2092,6 +2102,7 @@ export default function BandDetailScreen({
             <Pressable
               style={[styles.tabItemIconOnly, activeTab === 'setlists' && [styles.activeTabItem, { borderBottomColor: colors.primary }]]}
               onPress={() => handleTabChange('setlists')}
+              accessibilityLabel={t('bandAgendaTab') || 'Agenda e Setlists'}
             >
               <Ionicons
                 name={activeTab === 'setlists' ? "calendar" : "calendar-outline"}
@@ -2274,7 +2285,7 @@ export default function BandDetailScreen({
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <View>
                 <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
-                  {t('bandFeedTitle') || 'Histórico de Atividades'}
+                  {t('bandFeedTitle') || 'Alterações'}
                 </Text>
                 <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
                   {t('bandFeedSubtitle') || 'Linha do tempo das mudanças feitas na banda'}
@@ -2703,9 +2714,9 @@ export default function BandDetailScreen({
                     }
                   ]}
                   onPress={handleOpenAddMember}
-                  hitSlop={6}
+                  accessibilityLabel={t('addMember') || 'Adicionar Integrante'}
                 >
-                  <Ionicons name="person-add" size={20} color="#ffffff" />
+                  <Ionicons name="add" size={26} color="#ffffff" />
                 </Pressable>
               )}
             </View>
@@ -2844,14 +2855,23 @@ export default function BandDetailScreen({
               </View>
             )}
 
-            {/* SEÇÃO 1: INTEGRANTES ATIVOS (MOSTRAM APENAS NOME E FUNÇÃO + BOTÃO DE EXPANDIR '+') */}
+            {/* SEÇÃO 1: INTEGRANTES ATIVOS */}
             <View style={styles.memberSectionHeader}>
               <View style={styles.sectionHeaderTitleGroup}>
-                <View style={[styles.pillBadge, { backgroundColor: '#10b9811a', borderColor: '#10b98155' }]}>
-                  <Text style={[styles.pillBadgeText, { color: '#10b981' }]}>{activeMembers.length}</Text>
+                <View style={{
+                  backgroundColor: '#10b98120',
+                  borderColor: '#10b98155',
+                  borderWidth: 1.5,
+                  borderRadius: 14,
+                  width: 28,
+                  height: 28,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8
+                }}>
+                  <Text style={{ color: '#10b981', fontSize: 13, fontWeight: '800' }}>{activeMembers.length}</Text>
                 </View>
-                <View style={styles.activeDot} />
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('activeMembers')}</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text, textTransform: 'none', fontSize: 16 }]}>{t('membersTab') || 'Membros'}</Text>
               </View>
             </View>
 
