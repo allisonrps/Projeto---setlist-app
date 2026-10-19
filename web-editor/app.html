@@ -11752,19 +11752,47 @@
       return pills;
     }
 
+    function getBandLastViewedTimelineTime(bandId) {
+      if (!bandId) return 0;
+      const v = localStorage.getItem(`bandlink_timeline_last_viewed_${bandId}`);
+      return v ? Number(v) : 0;
+    }
+
+    function markBandTimelineAsViewed(bandId) {
+      if (!bandId) return;
+      localStorage.setItem(`bandlink_timeline_last_viewed_${bandId}`, String(Date.now()));
+    }
+
     function hasBandTimelineNews(band) {
       if (!band) return false;
       try {
-        const candidateInterests = getBandCandidateInterests(band.id, band.name);
-        if (candidateInterests && candidateInterests.length > 0) return true;
+        const lastViewed = getBandLastViewedTimelineTime(band.id);
 
+        // 1. Candidatos interessados que chegaram após a última visualização
+        const candidateInterests = getBandCandidateInterests(band.id, band.name);
+        if (candidateInterests && candidateInterests.length > 0) {
+          if (!lastViewed) return true;
+          const hasNewCandidates = candidateInterests.some(ci => {
+            const t = ci.createdAt ? new Date(ci.createdAt).getTime() : 0;
+            return t > lastViewed;
+          });
+          if (hasNewCandidates) return true;
+        }
+
+        // 2. Registros de atividades ou alterações recentes na banda
         const syncData = parseJsonSafe(band.syncDataJson);
         const logs = syncData?.activityLogs || [];
         if (logs.length > 0) {
           const lastLog = logs[logs.length - 1];
           if (lastLog?.createdAt) {
-            const diffHours = (Date.now() - new Date(lastLog.createdAt).getTime()) / (1000 * 60 * 60);
-            if (diffHours < 72) return true;
+            const logTime = new Date(lastLog.createdAt).getTime();
+            if (lastViewed) {
+              if (logTime > lastViewed) return true;
+            } else {
+              // Se nunca abriu a banda, considera novidade se foi nas últimas 72h
+              const diffHours = (Date.now() - logTime) / (1000 * 60 * 60);
+              if (diffHours < 72) return true;
+            }
           }
         }
       } catch {
@@ -11775,16 +11803,16 @@
 
     function formatCompactCurrency(val) {
       const num = Number(val) || 0;
-      if (num === 0) return 'R$ 0';
+      if (num === 0) return '$ 0';
       if (num >= 1000000) {
         const m = (num / 1000000).toFixed(1).replace('.0', '');
-        return `R$ ${m}M`;
+        return `$ ${m}M`;
       }
       if (num >= 1000) {
         const k = (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1).replace('.0', '');
-        return `R$ ${k}k`;
+        return `$ ${k}k`;
       }
-      return `R$ ${Math.round(num)}`;
+      return `$ ${Math.round(num)}`;
     }
 
     // ==============================================================
@@ -11877,11 +11905,11 @@
                 <ion-icon name="mic-outline"></ion-icon>
                 <span>${m.rehearsalsCount || 0}</span>
               </div>
-              <div class="project-metric-mini-item" style="color: #38bdf8;" title="Total Faturado pela Banda: R$ ${bandTotalRev.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">
+              <div class="project-metric-mini-item" style="color: #38bdf8;" title="Total Faturado pela Banda: $ ${bandTotalRev.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">
                 <ion-icon name="cash-outline" style="color: #38bdf8;"></ion-icon>
                 <span>${fmtBandRev}</span>
               </div>
-              <div class="project-metric-mini-item" style="color: #4ade80;" title="Total Faturado pelo Músico: R$ ${musicianIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">
+              <div class="project-metric-mini-item" style="color: #4ade80;" title="Total Faturado pelo Músico: $ ${musicianIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">
                 <ion-icon name="person-outline" style="color: #4ade80;"></ion-icon>
                 <span>${fmtMusicianRev}</span>
               </div>
@@ -12032,6 +12060,9 @@
         hGenres.innerHTML = renderBandHeroPills(band);
       }
 
+      // Marca novidades como visualizadas ao abrir a banda
+      markBandTimelineAsViewed(band.id);
+
       // Abre por padrão na aba de Agenda (A) e rola imediatamente para o topo
       switchBandPageTab('A');
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -12061,7 +12092,10 @@
 
       if (!currentBandData) return;
 
-      if (tabKey === 'L') renderBandTimelineTab(currentBandData, currentBandSyncData);
+      if (tabKey === 'L') {
+        markBandTimelineAsViewed(currentBandData.id);
+        renderBandTimelineTab(currentBandData, currentBandSyncData);
+      }
       if (tabKey === 'M') renderBandMembersTab(currentBandData, currentBandSyncData);
       if (tabKey === 'R') renderBandRepertoireTab(currentBandData, currentBandSyncData);
       if (tabKey === 'F') renderBandFinancesTab(currentBandData, currentBandSyncData);
