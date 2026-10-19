@@ -7751,6 +7751,7 @@
       <form onsubmit="handleSendInterestMessage(event)">
         <input type="hidden" id="interestAnnId">
         <input type="hidden" id="interestBandId">
+        <input type="hidden" id="interestBandName">
         <input type="hidden" id="interestCreatorUsername">
         <input type="hidden" id="interestInstrument">
         
@@ -8413,7 +8414,7 @@
           <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: var(--cyan);">
             <ion-icon name="person-outline" style="font-size: 1.25rem;"></ion-icon>
           </div>
-          <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0; font-size: 1.15rem;">Integrante da Banda</h3>
+          <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0; font-size: 1.15rem;">Integrante</h3>
         </div>
         <button class="modal-close" onclick="closeModal('editBandMemberModal')">&times;</button>
       </div>
@@ -8422,7 +8423,7 @@
         <!-- Username com Busca em Tempo Real -->
         <div class="form-group" style="margin-bottom: 0;">
           <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
-            Nome de Usuário (@username) *
+            Usuário (@username) *
           </label>
           <input type="text" id="mMemberUsername" class="form-input" placeholder="Ex: allison_xd" oninput="handleMemberUsernameInput(this.value)" autocomplete="off" required>
           <div id="mMemberUserStatus" style="margin-top: 4px; min-height: 18px;"></div>
@@ -8456,18 +8457,18 @@
         <!-- Cargo de Líder -->
         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
           <input type="checkbox" id="mMemberIsLeader" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
-          <div style="font-size: 0.88rem; font-weight: 600; color: #e2e8f0;">Líder / Administrador da Banda</div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: #e2e8f0;">Líder / Administrador</div>
         </label>
 
         <!-- Ações do Modal -->
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
-          <button type="button" id="btnDeleteBandMemberFromModal" class="btn" onclick="handleDeleteBandMemberFromModal()" style="display: none; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.82rem; padding: 6px 14px; gap: 6px; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap;">
+          <button type="button" id="btnDeleteBandMemberFromModal" class="btn" onclick="handleDeleteBandMemberFromModal()" style="display: none; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.82rem; min-height: 36px; padding: 0 14px; gap: 6px; align-items: center; border-radius: 8px;">
             <ion-icon name="trash-outline"></ion-icon>
             <span>Remover</span>
           </button>
-          <div style="display: flex; gap: 10px; margin-left: auto;">
-            <button type="button" class="btn btn-outline" onclick="closeModal('editBandMemberModal')">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveBandMember">Salvar Integrante</button>
+          <div style="display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('editBandMemberModal')" style="min-width: 90px; min-height: 36px; padding: 0 16px; font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveBandMember" style="min-width: 90px; min-height: 36px; padding: 0 18px; font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">Salvar</button>
           </div>
         </div>
       </form>
@@ -8476,27 +8477,27 @@
 
   <!-- MODAL: ADICIONAR MÚSICAS DO SONGBOOK AO REPERTÓRIO DA BANDA -->
   <div class="modal-overlay" id="addSongsToBandModal">
-    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
+    <div class="modal-content" style="max-width: 640px; width: 95%; max-height: 88vh; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; padding: 18px;">
       <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08);">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
             <ion-icon name="musical-notes"></ion-icon>
           </div>
           <div>
-            <h3 class="modal-title" style="margin: 0; font-size: 1.2rem;">Adicionar Músicas do Songbook</h3>
-            <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;" id="addSongsToBandSubtitle">Selecione as músicas do seu acervo para incluir no repertório oficial da banda.</p>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem;">Adicionar do Songbook</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;" id="addSongsToBandSubtitle">Selecione as músicas para o repertório da banda.</p>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('addSongsToBandModal')">&times;</button>
       </div>
 
       <!-- Barra de Pesquisa e Seleção Rápida -->
-      <div style="padding: 14px 0 10px 0; display: flex; gap: 10px; align-items: center;">
-        <div style="flex: 1; display: flex; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; height: 40px;">
+      <div style="padding: 12px 0 10px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px; display: flex; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; height: 38px;">
           <ion-icon name="search-outline" style="font-size: 1.1rem; color: #94a3b8; margin-right: 8px;"></ion-icon>
-          <input type="text" id="addSongsFilterInput" placeholder="Buscar por música, artista ou estilo..." oninput="filterAddSongsToBandList(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none;">
+          <input type="text" id="addSongsFilterInput" placeholder="Buscar por música, artista ou estilo..." oninput="filterAddSongsToBandList(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none; width: 100%;">
         </div>
-        <button type="button" class="btn btn-outline btn-sm" onclick="toggleSelectAllAddSongs()" id="btnToggleSelectAllAddSongs" style="font-size: 0.8rem; white-space: nowrap; height: 40px; border-radius: 10px;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="toggleSelectAllAddSongs()" id="btnToggleSelectAllAddSongs" style="font-size: 0.82rem; white-space: nowrap; height: 38px; padding: 0 14px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
           Selecionar Todas
         </button>
       </div>
@@ -8507,11 +8508,11 @@
       </div>
 
       <!-- Rodapé com Ações -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
-        <span id="selectedAddSongsCountLabel" style="font-size: 0.85rem; color: #94a3b8;">0 músicas selecionadas</span>
-        <div style="display: flex; gap: 10px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('addSongsToBandModal')">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="confirmAddSongsToBand()" id="btnConfirmAddSongsToBand">Adicionar ao Repertório</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
+        <span id="selectedAddSongsCountLabel" style="font-size: 0.85rem; color: #94a3b8;">0 selecionadas</span>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('addSongsToBandModal')" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="confirmAddSongsToBand()" id="btnConfirmAddSongsToBand" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">Adicionar</button>
         </div>
       </div>
     </div>
@@ -11867,7 +11868,7 @@
       if (!sub) return;
 
       const logs = syncData?.activityLogs || [];
-      const candidateInterests = getBandCandidateInterests(band.id, band.ownerUsername);
+      const candidateInterests = getBandCandidateInterests(band.id, band.name);
 
       let html = `
         <div style="margin-bottom: 24px;">
@@ -11882,7 +11883,7 @@
 
       const timelineEvents = [];
 
-      // 1. Mensagens de candidatos interessados (do Mural de Anúncios)
+      // 1. Mensagens de candidatos interessados (do Mural de Anúncios vinculado a esta banda)
       candidateInterests.forEach(ci => {
         timelineEvents.push({
           isInterest: true,
@@ -11897,7 +11898,16 @@
       });
 
       // 2. Logs de atividade
+      const curBandName = (band.name || '').trim().toLowerCase();
       logs.forEach(l => {
+        if (l.actionType === 'candidate_interest') {
+          const logBandId = l.bandId;
+          const logBandName = (l.bandName || '').trim().toLowerCase();
+          const matchesThisBand = (logBandId && String(logBandId) === String(band.id)) ||
+                                  (logBandName && logBandName === curBandName);
+          if (!matchesThisBand) return;
+        }
+
         timelineEvents.push({
           icon: l.actionType?.includes('delete') ? 'trash-outline' : (l.actionType === 'candidate_interest' ? 'paper-plane' : 'create-outline'),
           color: l.actionType?.includes('delete') ? '#f43f5e' : (l.actionType === 'candidate_interest' ? '#22c55e' : '#38bdf8'),
@@ -12430,7 +12440,7 @@
       closeModal('editBandMemberModal');
       if (btnSave) {
         btnSave.disabled = false;
-        btnSave.textContent = 'Salvar Integrante';
+        btnSave.textContent = 'Salvar';
       }
       renderBandMembersTab(currentBandData, currentBandSyncData);
       renderBandFinancesTab(currentBandData, currentBandSyncData);
@@ -12866,7 +12876,9 @@
               </div>
             </div>
             ${isAlreadyInBand ? `
-              <span class="badge badge-emerald" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700;">Já no repertório</span>
+              <span title="No repertório" style="color: #4ade80; font-size: 1.35rem; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0;">
+                <ion-icon name="checkmark-circle"></ion-icon>
+              </span>
             ` : ''}
           </div>
         `;
@@ -19069,6 +19081,8 @@
 
       document.getElementById('interestAnnId').value = annId || '';
       document.getElementById('interestBandId').value = bandId || '';
+      const bandNameInput = document.getElementById('interestBandName');
+      if (bandNameInput) bandNameInput.value = projectTitle || '';
       document.getElementById('interestCreatorUsername').value = creatorUsername || '';
       document.getElementById('interestInstrument').value = instrument || '';
 
@@ -19101,17 +19115,21 @@
       }
     }
 
-    function getBandCandidateInterests(bandId, creatorUsername) {
+    function getBandCandidateInterests(bandId, bandName) {
       try {
         const key = 'bandlink_candidate_interests';
         const raw = localStorage.getItem(key);
         if (!raw) return [];
         const list = JSON.parse(raw);
+        const targetName = (bandName || '').trim().toLowerCase();
         return list.filter(item => {
+          // Strictly associate interest ONLY with the band related to the announcement
           if (bandId && item.bandId && String(item.bandId) === String(bandId)) return true;
-          if (creatorUsername && item.creatorUsername && item.creatorUsername.toLowerCase() === creatorUsername.toLowerCase()) return true;
-          if (currentBandData && currentBandData.id && item.bandId && String(item.bandId) === String(currentBandData.id)) return true;
-          return true;
+          if (targetName) {
+            if (item.bandName && item.bandName.trim().toLowerCase() === targetName) return true;
+            if (item.announcementTitle && item.announcementTitle.trim().toLowerCase() === targetName) return true;
+          }
+          return false;
         });
       } catch {
         return [];
@@ -19122,6 +19140,7 @@
       e.preventDefault();
       const annId = document.getElementById('interestAnnId').value;
       const bandId = document.getElementById('interestBandId').value;
+      const bandName = document.getElementById('interestBandName')?.value || document.getElementById('interestProjectTitle')?.textContent || '';
       const creatorUsername = document.getElementById('interestCreatorUsername').value;
       const instrument = document.getElementById('interestInstrument').value;
       const message = document.getElementById('interestMessageText').value.trim();
@@ -19136,6 +19155,8 @@
         id: 'int_' + Date.now(),
         announcementId: annId,
         bandId: bandId || null,
+        bandName: bandName.trim(),
+        announcementTitle: bandName.trim(),
         creatorUsername: creatorUsername,
         instrument: instrument,
         authorUsername: currentUser.username,
@@ -19163,10 +19184,17 @@
         }).catch(err => console.log('API application save note:', err));
       }
 
-      if (currentBandSyncData && (!bandId || String(currentBandData?.id) === String(bandId))) {
+      const isMatchingCurrentBand = currentBandData && (
+        (bandId && String(currentBandData.id) === String(bandId)) ||
+        (bandName && currentBandData.name && currentBandData.name.trim().toLowerCase() === bandName.trim().toLowerCase())
+      );
+
+      if (currentBandSyncData && isMatchingCurrentBand) {
         if (!currentBandSyncData.activityLogs) currentBandSyncData.activityLogs = [];
         currentBandSyncData.activityLogs.unshift({
           actionType: 'candidate_interest',
+          bandId: bandId || currentBandData.id,
+          bandName: bandName || currentBandData.name,
           authorName: '@' + currentUser.username,
           description: `demonstrou interesse na vaga de ${instrument}: "${message.slice(0, 80)}${message.length > 80 ? '...' : ''}"`,
           createdAt: new Date().toISOString()
