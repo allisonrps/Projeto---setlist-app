@@ -3426,7 +3426,7 @@
       background: #182234;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 18px;
-      padding: 16px 18px;
+      padding: 16px 18px 16px 20px;
       position: relative;
       cursor: pointer;
       transition: all 0.22s ease;
@@ -3436,6 +3436,9 @@
       gap: 12px;
       width: 100%;
       box-sizing: border-box;
+      overflow: visible;
+      margin-left: 20px;
+      max-width: calc(100% - 24px);
     }
     .project-band-card:hover {
       transform: translateY(-2px);
@@ -3446,25 +3449,33 @@
     .project-band-card-top {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       width: 100%;
+      position: relative;
     }
 
     .project-band-card-avatar {
-      width: 52px;
-      height: 52px;
-      min-width: 52px;
+      width: 72px;
+      height: 72px;
+      min-width: 72px;
       border-radius: 50%;
-      background: #334155;
-      border: 2px solid #0284c7;
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      border: 3px solid #0f172a;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(56, 189, 248, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      font-size: 1.25rem;
-      font-weight: 800;
+      font-size: 1.55rem;
+      font-weight: 900;
       color: #f1f5f9;
       flex-shrink: 0;
+      margin-left: -38px;
+      z-index: 2;
+      transition: transform 0.2s ease;
+    }
+    .project-band-card:hover .project-band-card-avatar {
+      transform: scale(1.05);
     }
     .project-band-card-avatar img {
       width: 100%;
@@ -3480,7 +3491,7 @@
       gap: 2px;
     }
     .project-band-card-name {
-      font-size: 1.08rem;
+      font-size: 1.12rem;
       font-weight: 800;
       color: #ffffff;
       white-space: nowrap;
@@ -3493,7 +3504,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: #94a3b8;
       white-space: nowrap;
       overflow: hidden;
@@ -3508,25 +3519,34 @@
     .project-band-card-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-shrink: 0;
     }
-    .project-band-news-pill {
+    .project-band-news-icon-btn {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 50%;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 9999px;
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.35);
-      animation: pulseNews 2s infinite ease-in-out;
+      justify-content: center;
+      font-size: 1.15rem;
+      transition: all 0.2s ease;
     }
-    @keyframes pulseNews {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.04); opacity: 0.85; }
+    .project-band-news-icon-btn.has-news {
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.45);
+      animation: bellPulse 2s infinite ease-in-out;
+    }
+    .project-band-news-icon-btn.no-news {
+      background: rgba(255, 255, 255, 0.04);
+      color: #475569;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    @keyframes bellPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+      50% { transform: scale(1.08); box-shadow: 0 0 10px 2px rgba(74, 222, 128, 0.3); }
     }
     .project-band-card-chevron {
       color: #64748b;
@@ -3544,27 +3564,28 @@
       background: #101726;
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      padding: 10px 14px;
+      padding: 10px 12px;
       display: flex;
       align-items: center;
-      justify-content: space-around;
+      justify-content: space-between;
       width: 100%;
       box-sizing: border-box;
-      flex-wrap: wrap;
-      gap: 10px 14px;
+      gap: 6px;
     }
     .project-metric-mini-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       color: #f1f5f9;
       font-weight: 800;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .project-metric-mini-item ion-icon {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: #38bdf8;
+      flex-shrink: 0;
     }
 
     .project-band-pills-row {
@@ -5630,35 +5651,56 @@
 
       /* PROJECTS VIEW CARDS */
       .projects-container {
-        padding: 16px 10px 36px 10px !important;
-        gap: 12px !important;
+        padding: 16px 8px 36px 18px !important;
+        gap: 14px !important;
+        overflow-x: hidden;
       }
       .project-band-card {
-        padding: 14px 14px !important;
+        padding: 12px 12px 12px 14px !important;
         border-radius: 16px !important;
+        margin-left: 18px !important;
+        max-width: calc(100% - 20px) !important;
       }
       .project-band-card-avatar {
-        width: 46px !important;
-        height: 46px !important;
-        min-width: 46px !important;
-        font-size: 1.1rem !important;
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        font-size: 1.3rem !important;
+        margin-left: -32px !important;
       }
       .project-band-card-name {
-        font-size: 1rem !important;
+        font-size: 0.98rem !important;
       }
       .project-band-card-meta {
-        font-size: 0.72rem !important;
+        font-size: 0.7rem !important;
+        gap: 6px !important;
+      }
+      .project-band-metrics-strip {
+        padding: 8px 10px !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      .project-band-metrics-strip::-webkit-scrollbar {
+        display: none !important;
       }
       .project-metric-mini-item {
-        font-size: 0.88rem !important;
-        gap: 5px !important;
+        font-size: 0.8rem !important;
+        gap: 4px !important;
       }
       .project-metric-mini-item ion-icon {
-        font-size: 1.05rem !important;
+        font-size: 0.95rem !important;
       }
       .project-band-pill {
-        font-size: 0.68rem !important;
-        padding: 2px 8px !important;
+        font-size: 0.65rem !important;
+        padding: 2px 7px !important;
+      }
+      .project-band-news-icon-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        font-size: 1rem !important;
       }
 
       /* BAND MEMBERS ROW CARD */
@@ -11731,6 +11773,20 @@
       return false;
     }
 
+    function formatCompactCurrency(val) {
+      const num = Number(val) || 0;
+      if (num === 0) return 'R$ 0';
+      if (num >= 1000000) {
+        const m = (num / 1000000).toFixed(1).replace('.0', '');
+        return `R$ ${m}M`;
+      }
+      if (num >= 1000) {
+        const k = (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1).replace('.0', '');
+        return `R$ ${k}k`;
+      }
+      return `R$ ${Math.round(num)}`;
+    }
+
     // ==============================================================
     // MAIN VIEW: PROJETOS (CARDS DAS BANDAS - FIGMA PRINT 2 / APP MOBILE)
     // ==============================================================
@@ -11774,24 +11830,19 @@
         });
         const locStr = dedupBLocs.join(', ');
 
-        const setlistsCount = (m.setlists || []).length;
         const pills = getProjectBandCardPills(band);
         const hasNews = hasBandTimelineNews(band);
 
-        // Formatação de faturamento acumulado
+        // Faturamento formatado no estilo compacto (ex: 4k)
         const bandTotalRev = Number(m.totalBandRevenue || m.totalCache || 0);
         const musicianIncome = Number(m.individualIncome || 0);
-        const fmtBandRev = bandTotalRev > 0
-          ? `R$ ${bandTotalRev.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-          : 'R$ 0';
-        const fmtMusicianRev = musicianIncome > 0
-          ? `R$ ${musicianIncome.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-          : 'R$ 0';
+        const fmtBandRev = formatCompactCurrency(bandTotalRev);
+        const fmtMusicianRev = formatCompactCurrency(musicianIncome);
 
         return `
           <div class="project-band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${escapeHtml(band.name)}">
             <div class="project-band-card-top">
-              <div class="project-band-card-avatar">
+              <div class="project-band-card-avatar" title="${escapeHtml(band.name)}">
                 ${avatarHtml}
               </div>
               <div class="project-band-card-info">
@@ -11802,11 +11853,9 @@
                 </div>
               </div>
               <div class="project-band-card-right">
-                ${hasNews ? `
-                  <span class="project-band-news-pill" title="Novidades na linha do tempo / candidatos">
-                    <ion-icon name="notifications-outline"></ion-icon> Novidades
-                  </span>
-                ` : ''}
+                <span class="project-band-news-icon-btn ${hasNews ? 'has-news' : 'no-news'}" title="${hasNews ? 'Novidades na linha do tempo ou candidatos interessados' : 'Tudo atualizado'}">
+                  <ion-icon name="${hasNews ? 'notifications' : 'notifications-outline'}"></ion-icon>
+                </span>
                 <span class="project-band-card-chevron"><ion-icon name="chevron-forward"></ion-icon></span>
               </div>
             </div>
@@ -11816,7 +11865,7 @@
                 <ion-icon name="musical-notes"></ion-icon>
                 <span>${m.repertoireCount}</span>
               </div>
-              <div class="project-metric-mini-item" title="Membros">
+              <div class="project-metric-mini-item" title="Integrantes / Membros">
                 <ion-icon name="people"></ion-icon>
                 <span>${m.membersCount}</span>
               </div>
@@ -11824,15 +11873,15 @@
                 <ion-icon name="calendar"></ion-icon>
                 <span>${m.showsCount || 0}</span>
               </div>
-              <div class="project-metric-mini-item" title="Setlists">
-                <ion-icon name="headset"></ion-icon>
-                <span>${setlistsCount}</span>
+              <div class="project-metric-mini-item" title="Ensaios">
+                <ion-icon name="mic-outline"></ion-icon>
+                <span>${m.rehearsalsCount || 0}</span>
               </div>
-              <div class="project-metric-mini-item" style="color: #38bdf8;" title="Total Faturado pela Banda no Ano">
+              <div class="project-metric-mini-item" style="color: #38bdf8;" title="Total Faturado pela Banda: R$ ${bandTotalRev.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">
                 <ion-icon name="cash-outline" style="color: #38bdf8;"></ion-icon>
                 <span>${fmtBandRev}</span>
               </div>
-              <div class="project-metric-mini-item" style="color: #4ade80;" title="Total Faturado pelo Músico no Ano">
+              <div class="project-metric-mini-item" style="color: #4ade80;" title="Total Faturado pelo Músico: R$ ${musicianIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">
                 <ion-icon name="person-outline" style="color: #4ade80;"></ion-icon>
                 <span>${fmtMusicianRev}</span>
               </div>
