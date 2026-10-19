@@ -2907,13 +2907,54 @@
         padding-right: 12px;
         overflow-x: auto;
       }
+      .social-tabs-strip .profile-tab-btn {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        padding: 10px 4px !important;
+      }
+      .social-tabs-strip .profile-tab-btn .tab-icon {
+        margin: 0 !important;
+        font-size: 1.25rem !important;
+        display: inline-block !important;
+      }
+      .social-tabs-strip .profile-tab-btn .badge {
+        margin-left: 0 !important;
+        font-size: 0.72rem !important;
+        padding: 1px 6px !important;
+        border-radius: 9999px !important;
+      }
       .social-search-bar-row {
-        flex-direction: column;
-        gap: 10px;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+      .social-search-bar-input-wrap {
+        flex: 1 !important;
+        min-width: 0 !important;
       }
       .social-search-submit-btn {
-        width: 100%;
-        justify-content: center;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3) !important;
+      }
+      .social-search-submit-btn span {
+        display: none !important;
+      }
+      .social-search-submit-btn ion-icon {
+        font-size: 1.35rem !important;
+        margin: 0 !important;
       }
       .social-content-container {
         padding: 20px 14px 60px 14px;
@@ -5126,6 +5167,27 @@
         display: block !important;
       }
 
+      /* Social Tabs on Mobile: Keep icon and badge centered together */
+      .social-tabs-strip .profile-tab-btn {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        padding: 10px 4px !important;
+      }
+      .social-tabs-strip .profile-tab-btn .tab-icon {
+        margin: 0 !important;
+        font-size: 1.25rem !important;
+        display: inline-block !important;
+      }
+      .social-tabs-strip .profile-tab-btn .badge {
+        margin-left: 0 !important;
+        font-size: 0.72rem !important;
+        padding: 1px 6px !important;
+        border-radius: 9999px !important;
+      }
+
       /* Songbook Editor Tabs */
       .sb-editor-tabs {
         flex: 1;
@@ -6709,12 +6771,12 @@
             <div class="social-search-bar-row">
               <div class="social-search-bar-input-wrap">
                 <ion-icon name="search-outline" class="social-search-icon"></ion-icon>
-                <input type="text" id="socialSearchInput" class="social-search-input" placeholder="Buscar músicos por instrumento, nome, estilo musical..." oninput="triggerSocialSearch()">
+                <input type="text" id="socialSearchInput" class="social-search-input" placeholder="Busca." oninput="triggerSocialSearch()" onkeydown="if(event.key==='Enter'){event.preventDefault(); triggerSocialSearch(true);}">
                 <button class="social-search-clear-btn" id="socialSearchClearBtn" onclick="clearSocialSearch()" style="display: none;" title="Limpar busca">
                   <ion-icon name="close-circle"></ion-icon>
                 </button>
               </div>
-              <button class="btn btn-primary social-search-submit-btn" onclick="triggerSocialSearch()">
+              <button class="btn btn-primary social-search-submit-btn" onclick="triggerSocialSearch(true)" title="Buscar">
                 <ion-icon name="search-outline"></ion-icon>
                 <span>Buscar</span>
               </button>
@@ -12485,6 +12547,10 @@
         if (idx !== -1) {
           bandRepertoireSelectedTags.splice(idx, 1);
         } else {
+          if (bandRepertoireSelectedTags.length >= 4) {
+            showToast('Você pode selecionar até 4 tags ao mesmo tempo.', 'info');
+            return;
+          }
           bandRepertoireSelectedTags.push(tag);
         }
       }
@@ -12611,16 +12677,16 @@
 
       let html = `
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px;">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
               <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
               <span>Repertório</span>
             </h2>
             <span class="badge badge-cyan" style="font-size: 0.82rem; padding: 2px 9px; font-weight: 800; border-radius: 9999px;">${songs.length}</span>
-            <button type="button" onclick="openAddSongsToBandModal(${band.id})" title="Adicionar músicas do Songbook" style="width: 34px; height: 34px; border-radius: 50%; background: var(--cyan); color: #0f172a; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; font-weight: 800; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35); transition: all 0.2s ease; margin-left: 2px;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-              <ion-icon name="add"></ion-icon>
-            </button>
           </div>
+          <button type="button" onclick="openAddSongsToBandModal(${band.id})" title="Adicionar músicas do Songbook" style="width: 36px; height: 36px; border-radius: 50%; background: var(--cyan); color: #0f172a; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.35rem; font-weight: 800; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35); transition: all 0.2s ease; margin-left: auto; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+            <ion-icon name="add"></ion-icon>
+          </button>
         </div>
 
         <!-- TOOLBAR DE BUSCA, TAGS E ORDENAÇÃO (PADRÃO MOBILE) -->
@@ -12644,18 +12710,22 @@
 
         <!-- CONTAINER DE TAGS DE ESTILO EXPANDÍVEL -->
         ${bandRepertoireShowTags && uniqueStyles.length > 0 ? `
-          <div style="background: #182030; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-            <button type="button" onclick="toggleBandRepertoireTagFilter('')" class="badge" style="cursor: pointer; padding: 5px 12px; font-size: 0.78rem; font-weight: 700; border-radius: 20px; border: 1px solid ${bandRepertoireSelectedTags.length === 0 ? 'var(--cyan)' : 'rgba(255,255,255,0.1)'}; background: ${bandRepertoireSelectedTags.length === 0 ? 'rgba(56, 189, 248, 0.2)' : 'transparent'}; color: ${bandRepertoireSelectedTags.length === 0 ? 'var(--cyan)' : '#94a3b8'};">
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+            <button type="button" onclick="toggleBandRepertoireTagFilter('')" style="cursor: pointer; padding: 3px 9px; font-size: 0.70rem; font-weight: 600; border-radius: 12px; border: 1px solid ${bandRepertoireSelectedTags.length === 0 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255,255,255,0.08)'}; background: ${bandRepertoireSelectedTags.length === 0 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255,255,255,0.02)'}; color: ${bandRepertoireSelectedTags.length === 0 ? 'var(--cyan)' : '#94a3b8'}; transition: all 0.15s ease;">
               Todas (${songs.length})
             </button>
             ${uniqueStyles.map(st => {
               const isSel = bandRepertoireSelectedTags.includes(st);
+              const safeSt = escapeHtml(st).replace(/'/g, "\\'");
               return `
-                <button type="button" onclick="toggleBandRepertoireTagFilter('${st}')" class="badge" style="cursor: pointer; padding: 5px 12px; font-size: 0.78rem; font-weight: 700; border-radius: 20px; border: 1px solid ${isSel ? 'var(--cyan)' : 'rgba(255,255,255,0.1)'}; background: ${isSel ? 'rgba(56, 189, 248, 0.2)' : 'transparent'}; color: ${isSel ? 'var(--cyan)' : '#cbd5e1'};">
-                  ${st}
+                <button type="button" onclick="toggleBandRepertoireTagFilter('${safeSt}')" style="cursor: pointer; padding: 3px 9px; font-size: 0.70rem; font-weight: 600; border-radius: 12px; border: 1px solid ${isSel ? 'rgba(56, 189, 248, 0.45)' : 'rgba(255,255,255,0.08)'}; background: ${isSel ? 'rgba(56, 189, 248, 0.18)' : 'rgba(255,255,255,0.02)'}; color: ${isSel ? 'var(--cyan)' : '#cbd5e1'}; transition: all 0.15s ease;">
+                  ${escapeHtml(st)}
                 </button>
               `;
             }).join('')}
+            ${bandRepertoireSelectedTags.length > 0 ? `
+              <span style="font-size: 0.70rem; color: #64748b; margin-left: auto; padding-left: 6px;">${bandRepertoireSelectedTags.length}/4</span>
+            ` : ''}
           </div>
         ` : ''}
 
@@ -18842,13 +18912,22 @@
       loadSocialData(false);
     }
 
-    function triggerSocialSearch() {
+    let socialSearchDebounceTimer = null;
+
+    function triggerSocialSearch(immediate = false) {
       const input = document.getElementById('socialSearchInput');
       const clearBtn = document.getElementById('socialSearchClearBtn');
       if (clearBtn && input) {
         clearBtn.style.display = input.value.trim() ? 'flex' : 'none';
       }
-      loadSocialData();
+      if (socialSearchDebounceTimer) clearTimeout(socialSearchDebounceTimer);
+      if (immediate) {
+        loadSocialData();
+      } else {
+        socialSearchDebounceTimer = setTimeout(() => {
+          loadSocialData();
+        }, 300);
+      }
     }
 
     function clearSocialSearch() {
@@ -18859,7 +18938,17 @@
         input.focus();
       }
       if (clearBtn) clearBtn.style.display = 'none';
+      if (socialSearchDebounceTimer) clearTimeout(socialSearchDebounceTimer);
       loadSocialData();
+    }
+
+    function getSocialLoadingHtml(label = 'Carregando...') {
+      return `
+        <div class="social-tab-loading-state" style="grid-column: 1/-1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 20px; color: var(--cyan); gap: 12px;">
+          <ion-icon name="sync" class="spin-icon" style="font-size: 2.2rem;"></ion-icon>
+          <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 600; letter-spacing: 0.3px;">${escapeHtml(label)}</span>
+        </div>
+      `;
     }
 
     async function loadAnnouncements() {
@@ -18871,6 +18960,9 @@
       if (currentSocialCountry) params.append('country', currentSocialCountry);
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewAnn');
+      if (container) {
+        container.innerHTML = getSocialLoadingHtml('Carregando anúncios & oportunidades...');
+      }
 
       try {
         const res = await fetch(`${API_URL}/Announcements${qs}`);
@@ -19306,6 +19398,9 @@
       if (currentSocialCountry) params.append('country', currentSocialCountry);
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewMus');
+      if (container) {
+        container.innerHTML = getSocialLoadingHtml('Carregando músicos na rede...');
+      }
 
       try {
         const res = await fetch(`${API_URL}/Users${qs}`, {
@@ -19429,6 +19524,9 @@
       if (currentSocialCountry) params.append('country', currentSocialCountry);
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewBands');
+      if (container) {
+        container.innerHTML = getSocialLoadingHtml('Carregando bandas públicas...');
+      }
 
       try {
         const res = await fetch(`${API_URL}/Bands/public${qs}`);
