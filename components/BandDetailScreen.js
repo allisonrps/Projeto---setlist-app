@@ -504,6 +504,8 @@ export default function BandDetailScreen({
     })
   ).current;
   const [activityLogs, setActivityLogs] = useState([]);
+  const [onlineSetlists, setOnlineSetlists] = useState([]);
+  const [isLoadingOnline, setIsLoadingOnline] = useState(false);
   const [isTurningOnline, setIsTurningOnline] = useState(false);
 
   // Compartilhar Agenda da banda (mesmo sistema da agenda do perfil)
@@ -911,17 +913,109 @@ export default function BandDetailScreen({
   const [substitutes, setSubstitutes] = useState([]);
 
   // Load Band Data when modal opens or updates
-  const loadData = useCallback(async (shouldPullCloud = false) => {
-    if (band && band.id) {
+  // REGRA MÓVEL: No modo online, APENAS consulte dados da API (nunca SQLite).
+  // No modo offline, sempre o SQLite.
+  const loadData = useCallback(async () => {
+    if (!band || !band.id) return;
+
+    if (band.cloudId) {
+      // ==========================================
+      // MODO ONLINE: APENAS DADOS DA API (NUNCA SQLITE)
+      // ==========================================
       try {
-        if (shouldPullCloud && band.cloudId) {
-          try {
-            await bandService.pullBandFromCloud(band.id);
-            if (onReloadAll) onReloadAll();
-          } catch (e) {
-            console.log('Background pull on open error:', e);
-          }
+        setIsLoadingOnline(true);
+        const cloudData = await api.pullBand(band.cloudId);
+        if (cloudData) {
+          const snapshot = typeof cloudData.syncDataJson === 'string'
+            ? (JSON.parse(cloudData.syncDataJson || '{}') || {})
+            : (cloudData.syncDataJson || {});
+
+          // 1. Músicas do Repertório da API
+          const apiSongs = Array.isArray(snapshot.songs) ? snapshot.songs : [];
+          setBandSongs(apiSongs.map(s => ({
+            ...s,
+            id: s.id || `cloud_${s.name}`,
+            isFavorite: Boolean(s.isFavorite)
+          })));
+
+          // 2. Integrantes da API (tabela relacional da nuvem + dados do snapshot)
+          const apiMembers = Array.isArray(cloudData.members) && cloudData.members.length > 0
+            ? cloudData.members
+            : (Array.isArray(snapshot.members) ? snapshot.members : []);
+
+          const unifiedMembers = apiMembers.map((m, idx) => ({
+            id: m.id || m.userId || `cloud_mem_${idx}`,
+            userId: m.userId || null,
+            name: m.displayName || m.name || m.username || 'Membro',
+            username: (m.username || '').replace(/^@+/, ''),
+            role: m.role || 'Member',
+            phone: m.phone || '',
+            startDate: m.startDate || '',
+            endDate: m.endDate || '',
+            status: m.status === 'Accepted' ? 'active' : (m.status || 'active'),
+            isLeader: m.isLeader ? 1 : (m.role === 'Leader' || m.role === 'Admin' ? 1 : 0),
+            pictureUrl: m.pictureUrl || ''
+          }));
+          setMembers(unifiedMembers);
+
+          // Fotos dos membros
+          const photosMap = {};
+          unifiedMembers.forEach(m => {
+            if (m.pictureUrl) photosMap[m.id] = m.pictureUrl;
+          });
+          setMemberPhotos(photosMap);
+
+          // 3. Setlists / Agenda da API
+          const apiSetlists = Array.isArray(snapshot.setlists) ? snapshot.setlists : [];
+          setOnlineSetlists(apiSetlists.map(sl => ({
+            ...sl,
+            id: sl.id || `cloud_sl_${sl.name}_${sl.date}`,
+            myBandId: band.id,
+            type: sl.type || 'show',
+            date: sl.date || '',
+            time: sl.time || '',
+            local: sl.local || sl.venue || sl.location || '',
+            cachê: sl.cache || sl.cachê || '',
+            notes: sl.notes || '',
+            songs: Array.isArray(sl.songs) ? sl.songs : []
+          })));
+
+          // 4. Finanças da API
+          const apiFinances = Array.isArray(snapshot.finances) ? snapshot.finances : [];
+          setFinances(apiFinances.map((f, idx) => ({
+            ...f,
+            id: f.id || `cloud_fin_${idx}`,
+            bandId: band.id,
+            title: f.title || '',
+            amount: f.amount || 0,
+            type: f.type || 'income',
+            date: f.date || '',
+            status: f.status || 'paid',
+            notes: f.notes || ''
+          })));
+
+          // 5. Linha do Tempo / Logs da API
+          const apiLogs = Array.isArray(snapshot.activityLogs) ? snapshot.activityLogs : [];
+          setActivityLogs(apiLogs.map((log, idx) => ({
+            ...log,
+            id: log.id || `cloud_log_${idx}`,
+            bandId: band.id,
+            actionType: log.actionType || 'update',
+            authorName: log.authorName || 'Membro',
+            description: log.description || '',
+            createdAt: log.createdAt || ''
+          })));
         }
+      } catch (err) {
+        console.error('Erro ao consultar dados da banda na API (Modo Online):', err);
+      } finally {
+        setIsLoadingOnline(false);
+      }
+    } else {
+      // ==========================================
+      // MODO OFFLINE: APENAS DADOS DO SQLITE
+      // ==========================================
+      try {
         const bSongs = await bandService.getBandSongs(band.id);
         setBandSongs(bSongs || []);
 
@@ -948,39 +1042,66 @@ export default function BandDetailScreen({
         const bLogs = await bandService.getBandActivityLogs(band.id, 50);
         setActivityLogs(bLogs || []);
       } catch (err) {
-        console.error('Error loading BandDetailScreen data:', err);
+        console.error('Erro ao consultar dados da banda no SQLite (Modo Offline):', err);
       }
     }
-  }, [band, onReloadAll]);
+  }, [band]);
 
   const handleToggleBandSongFavorite = async (songId, currentIsFav) => {
     if (band && band.id) {
-      await bandService.toggleBandSongFavorite(band.id, songId, currentIsFav);
-      await loadData();
+      if (band.cloudId) {
+        try {
+          setBandSongs(prev => prev.map(s => s.id === songId ? { ...s, isFavorite: !currentIsFav } : s));
+          const cloudData = await api.pullBand(band.cloudId);
+          const snapshot = typeof cloudData.syncDataJson === 'string'
+            ? JSON.parse(cloudData.syncDataJson || '{}')
+            : (cloudData.syncDataJson || {});
+          if (Array.isArray(snapshot.songs)) {
+            const matchS = snapshot.songs.find(s => s.id === songId || s.name === songId);
+            if (matchS) matchS.isFavorite = !currentIsFav;
+            await api.syncBand(band.cloudId, {
+              name: band.name,
+              genre: band.genre || '',
+              description: band.description || '',
+              imageUri: band.imageUri || '',
+              city: band.city || '',
+              state: band.state || '',
+              country: band.country || '',
+              syncDataJson: JSON.stringify(snapshot)
+            });
+          }
+        } catch (e) {
+          console.warn('Erro ao favoritar música online:', e);
+        }
+      } else {
+        await bandService.toggleBandSongFavorite(band.id, songId, currentIsFav);
+        await loadData();
+      }
     }
   };
 
   useEffect(() => {
     if (visible && band && band.id) {
-      loadData(Boolean(band.cloudId));
+      loadData();
     }
   }, [visible, band?.id, band?.cloudId, loadData]);
 
   if (!visible || !band) return null;
 
   // Filter setlists belonging to this band sorted by date
-  // Regra Banda Online: se a banda é online, apenas eventos da API vinculados a ela aparecem.
-  const bandSetlists = (allSetlists || [])
-    .filter(s => {
-      if (!s) return false;
-      const sBandId = Number(s.myBandId || s.bandId);
-      const bId = Number(band.id);
-      const bCloudId = band.cloudId ? Number(band.cloudId) : null;
-      if (sBandId && (sBandId === bId || (bCloudId && sBandId === bCloudId))) return true;
-      if (!band.cloudId && s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
-      return false;
-    })
-    .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+  // MODO ONLINE: APENAS consulta os setlists da API (onlineSetlists) - NUNCA SQLite
+  // MODO OFFLINE: consulta os setlists do SQLite (allSetlists)
+  const bandSetlists = (band.cloudId
+    ? (onlineSetlists || [])
+    : (allSetlists || []).filter(s => {
+        if (!s) return false;
+        const sBandId = Number(s.myBandId || s.bandId);
+        const bId = Number(band.id);
+        if (sBandId && sBandId === bId) return true;
+        if (s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+        return false;
+      })
+  ).sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
   // Eventos (shows) da banda no formato da arte de agenda do perfil
   const bandLogoUri = band.imageUri || band.image || band.logo ||
@@ -1323,15 +1444,49 @@ export default function BandDetailScreen({
       if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
       const targetIds = Array.from(selectedPickerSongIds);
 
-      const currentIds = new Set(bandSongs.map(s => s.id));
-      const toAdd = targetIds.filter(id => !currentIds.has(id));
-      const toRemove = Array.from(currentIds).filter(id => !selectedPickerSongIds.has(id));
+      if (band.cloudId) {
+        // MODO ONLINE: salva diretamente no snapshot da API
+        const selectedSongsList = (allGeneralSongs || []).filter(s => targetIds.includes(s.id));
+        const cloudData = await api.pullBand(band.cloudId);
+        const snapshot = typeof cloudData.syncDataJson === 'string'
+          ? JSON.parse(cloudData.syncDataJson || '{}')
+          : (cloudData.syncDataJson || {});
 
-      if (toAdd.length > 0) {
-        await bandService.addSongsToBand(band.id, toAdd);
-      }
-      for (const remId of toRemove) {
-        await bandService.removeSongFromBand(band.id, remId);
+        snapshot.songs = selectedSongsList.map(s => ({
+          id: s.id,
+          name: s.name,
+          originalBand: s.originalBand || '',
+          style: s.style || '',
+          duration: s.duration || '',
+          defaultView: s.defaultView || 'lyrics',
+          lyrics: s.lyrics || '',
+          chords: s.chords || '',
+          tabs: s.tabs || '',
+          isFavorite: bandSongs.find(bs => bs.id === s.id)?.isFavorite || false
+        }));
+
+        await api.syncBand(band.cloudId, {
+          name: band.name,
+          genre: band.genre || '',
+          description: band.description || '',
+          imageUri: band.imageUri || '',
+          city: band.city || '',
+          state: band.state || '',
+          country: band.country || '',
+          syncDataJson: JSON.stringify(snapshot)
+        });
+      } else {
+        // MODO OFFLINE: salva no SQLite
+        const currentIds = new Set(bandSongs.map(s => s.id));
+        const toAdd = targetIds.filter(id => !currentIds.has(id));
+        const toRemove = Array.from(currentIds).filter(id => !selectedPickerSongIds.has(id));
+
+        if (toAdd.length > 0) {
+          await bandService.addSongsToBand(band.id, toAdd);
+        }
+        for (const remId of toRemove) {
+          await bandService.removeSongFromBand(band.id, remId);
+        }
       }
 
       setShowSongPickerModal(false);
@@ -1352,7 +1507,31 @@ export default function BandDetailScreen({
           text: t('remove') || 'Remover',
           style: 'destructive',
           onPress: async () => {
-            await bandService.removeSongFromBand(band.id, song.id);
+            if (band.cloudId) {
+              try {
+                const cloudData = await api.pullBand(band.cloudId);
+                const snapshot = typeof cloudData.syncDataJson === 'string'
+                  ? JSON.parse(cloudData.syncDataJson || '{}')
+                  : (cloudData.syncDataJson || {});
+                if (Array.isArray(snapshot.songs)) {
+                  snapshot.songs = snapshot.songs.filter(s => s.id !== song.id && s.name !== song.name);
+                  await api.syncBand(band.cloudId, {
+                    name: band.name,
+                    genre: band.genre || '',
+                    description: band.description || '',
+                    imageUri: band.imageUri || '',
+                    city: band.city || '',
+                    state: band.state || '',
+                    country: band.country || '',
+                    syncDataJson: JSON.stringify(snapshot)
+                  });
+                }
+              } catch (e) {
+                console.warn('Erro ao desvincular música na nuvem:', e);
+              }
+            } else {
+              await bandService.removeSongFromBand(band.id, song.id);
+            }
             await loadData();
           },
         },
@@ -1391,37 +1570,90 @@ export default function BandDetailScreen({
 
     try {
       const cleanUsername = memberUsername.trim().replace(/^@+/, '');
-      if (editingMemberId) {
-        const existingMember = members.find(m => m.id === editingMemberId);
-        await bandService.updateBandMember(
-          editingMemberId,
-          memberName.trim(),
-          roleTag,
-          memberPhone.trim(),
-          finalStartDate,
-          finalEndDate,
-          memberStatus,
-          JSON.stringify(updatedCycles),
-          cleanUsername,
-          existingMember?.inviteMessage || '',
-          existingMember?.replyMessage || '',
-          memberIsLeader ? 1 : 0
-        );
+      if (band.cloudId) {
+        // MODO ONLINE: salva diretamente na API e no snapshot da nuvem (nunca SQLite)
+        if (cleanUsername) {
+          try {
+            await api.addBandMember(band.cloudId, {
+              username: cleanUsername,
+              role: roleTag,
+              isLeader: Boolean(memberIsLeader)
+            });
+          } catch (apiErr) {
+            console.warn('Erro ao salvar membro na API:', apiErr);
+          }
+        }
+        try {
+          const cloudData = await api.pullBand(band.cloudId);
+          const snapshot = typeof cloudData.syncDataJson === 'string'
+            ? JSON.parse(cloudData.syncDataJson || '{}')
+            : (cloudData.syncDataJson || {});
+          if (!snapshot.members) snapshot.members = [];
+          const mIdx = snapshot.members.findIndex(m => m.id === editingMemberId || (cleanUsername && m.username && m.username.toLowerCase() === cleanUsername.toLowerCase()));
+          const memPayload = {
+            id: editingMemberId || `m_${Date.now()}`,
+            name: memberName.trim(),
+            role: roleTag,
+            phone: memberPhone.trim(),
+            startDate: finalStartDate,
+            endDate: finalEndDate,
+            status: memberStatus,
+            cycles: JSON.stringify(updatedCycles),
+            username: cleanUsername,
+            isLeader: memberIsLeader ? 1 : 0
+          };
+          if (mIdx >= 0) {
+            snapshot.members[mIdx] = { ...snapshot.members[mIdx], ...memPayload };
+          } else {
+            snapshot.members.push(memPayload);
+          }
+          await api.syncBand(band.cloudId, {
+            name: band.name,
+            genre: band.genre || '',
+            description: band.description || '',
+            imageUri: band.imageUri || '',
+            city: band.city || '',
+            state: band.state || '',
+            country: band.country || '',
+            syncDataJson: JSON.stringify(snapshot)
+          });
+        } catch (syncErr) {
+          console.warn('Erro ao sincronizar membro no snapshot:', syncErr);
+        }
       } else {
-        await bandService.addBandMember(
-          band.id,
-          memberName.trim(),
-          roleTag,
-          memberPhone.trim(),
-          finalStartDate,
-          finalEndDate,
-          memberStatus,
-          JSON.stringify(updatedCycles),
-          cleanUsername,
-          '',
-          '',
-          memberIsLeader ? 1 : 0
-        );
+        // MODO OFFLINE: salva no SQLite
+        if (editingMemberId) {
+          const existingMember = members.find(m => m.id === editingMemberId);
+          await bandService.updateBandMember(
+            editingMemberId,
+            memberName.trim(),
+            roleTag,
+            memberPhone.trim(),
+            finalStartDate,
+            finalEndDate,
+            memberStatus,
+            JSON.stringify(updatedCycles),
+            cleanUsername,
+            existingMember?.inviteMessage || '',
+            existingMember?.replyMessage || '',
+            memberIsLeader ? 1 : 0
+          );
+        } else {
+          await bandService.addBandMember(
+            band.id,
+            memberName.trim(),
+            roleTag,
+            memberPhone.trim(),
+            finalStartDate,
+            finalEndDate,
+            memberStatus,
+            JSON.stringify(updatedCycles),
+            cleanUsername,
+            '',
+            '',
+            memberIsLeader ? 1 : 0
+          );
+        }
       }
       setMemberName('');
       setMemberRole('');
@@ -1536,7 +1768,35 @@ export default function BandDetailScreen({
           {
             text: t('promoteToLeader') || 'Promover a Líder',
             onPress: async () => {
-              await bandService.updateMemberLeaderStatus(member.id, 1);
+              if (band.cloudId) {
+                try {
+                  const cloudData = await api.pullBand(band.cloudId);
+                  const snapshot = typeof cloudData.syncDataJson === 'string'
+                    ? JSON.parse(cloudData.syncDataJson || '{}')
+                    : (cloudData.syncDataJson || {});
+                  if (Array.isArray(snapshot.members)) {
+                    const matchM = snapshot.members.find(m => m.id === member.id || (member.username && m.username === member.username));
+                    if (matchM) {
+                      matchM.isLeader = 1;
+                      matchM.role = 'Leader';
+                    }
+                    await api.syncBand(band.cloudId, {
+                      name: band.name,
+                      genre: band.genre || '',
+                      description: band.description || '',
+                      imageUri: band.imageUri || '',
+                      city: band.city || '',
+                      state: band.state || '',
+                      country: band.country || '',
+                      syncDataJson: JSON.stringify(snapshot)
+                    });
+                  }
+                } catch (e) {
+                  console.warn('Erro ao promover membro online:', e);
+                }
+              } else {
+                await bandService.updateMemberLeaderStatus(member.id, 1);
+              }
               await loadData();
             }
           }
@@ -1555,7 +1815,36 @@ export default function BandDetailScreen({
           text: t('removeMemberConfirmTitle') || 'Remover',
           style: 'destructive',
           onPress: async () => {
-            await bandService.deleteBandMember(member.id);
+            if (band.cloudId) {
+              // MODO ONLINE: remove da API e do snapshot
+              if (member.userId) {
+                try {
+                  await api.removeBandMember(band.cloudId, member.userId);
+                } catch (e) {}
+              }
+              try {
+                const cloudData = await api.pullBand(band.cloudId);
+                const snapshot = typeof cloudData.syncDataJson === 'string'
+                  ? JSON.parse(cloudData.syncDataJson || '{}')
+                  : (cloudData.syncDataJson || {});
+                if (Array.isArray(snapshot.members)) {
+                  snapshot.members = snapshot.members.filter(m => m.id !== member.id && (!member.username || m.username !== member.username));
+                  await api.syncBand(band.cloudId, {
+                    name: band.name,
+                    genre: band.genre || '',
+                    description: band.description || '',
+                    imageUri: band.imageUri || '',
+                    city: band.city || '',
+                    state: band.state || '',
+                    country: band.country || '',
+                    syncDataJson: JSON.stringify(snapshot)
+                  });
+                }
+              } catch (e) {}
+            } else {
+              // MODO OFFLINE: remove do SQLite
+              await bandService.deleteBandMember(member.id);
+            }
             if (editingMemberId === member.id) handleCancelEditMember();
             await loadData();
           }
@@ -1631,26 +1920,61 @@ export default function BandDetailScreen({
     }
 
     try {
-      if (editingFinanceItem) {
-        await bandService.updateFinancialEntry(
-          editingFinanceItem.id,
-          finTitle.trim(),
-          parsedAmt,
-          finType,
-          finDate.trim(),
-          finStatus,
-          notesToSave
-        );
+      if (band.cloudId) {
+        // MODO ONLINE: salva diretamente no snapshot da API
+        const cloudData = await api.pullBand(band.cloudId);
+        const snapshot = typeof cloudData.syncDataJson === 'string'
+          ? JSON.parse(cloudData.syncDataJson || '{}')
+          : (cloudData.syncDataJson || {});
+        if (!snapshot.finances) snapshot.finances = [];
+        const finPayload = {
+          id: editingFinanceItem?.id || `fin_${Date.now()}`,
+          title: finTitle.trim(),
+          amount: parsedAmt,
+          type: finType,
+          date: finDate.trim(),
+          status: finStatus,
+          notes: notesToSave
+        };
+        const fIdx = snapshot.finances.findIndex(f => f.id === editingFinanceItem?.id);
+        if (fIdx >= 0) {
+          snapshot.finances[fIdx] = finPayload;
+        } else {
+          snapshot.finances.unshift(finPayload);
+        }
+        await api.syncBand(band.cloudId, {
+          name: band.name,
+          genre: band.genre || '',
+          description: band.description || '',
+          imageUri: band.imageUri || '',
+          city: band.city || '',
+          state: band.state || '',
+          country: band.country || '',
+          syncDataJson: JSON.stringify(snapshot)
+        });
       } else {
-        await bandService.addFinancialEntry(
-          band.id,
-          finTitle.trim(),
-          parsedAmt,
-          finType,
-          finDate.trim(),
-          finStatus,
-          notesToSave
-        );
+        // MODO OFFLINE: salva no SQLite
+        if (editingFinanceItem) {
+          await bandService.updateFinancialEntry(
+            editingFinanceItem.id,
+            finTitle.trim(),
+            parsedAmt,
+            finType,
+            finDate.trim(),
+            finStatus,
+            notesToSave
+          );
+        } else {
+          await bandService.addFinancialEntry(
+            band.id,
+            finTitle.trim(),
+            parsedAmt,
+            finType,
+            finDate.trim(),
+            finStatus,
+            notesToSave
+          );
+        }
       }
       setShowAddFinanceModal(false);
       await loadData();
@@ -1672,7 +1996,30 @@ export default function BandDetailScreen({
 
   const handleToggleFinanceStatus = async (item) => {
     try {
-      await bandService.toggleFinanceStatus(item.id, item.status || 'paid');
+      if (band.cloudId) {
+        // MODO ONLINE: atualiza no snapshot da nuvem
+        const nextStatus = item.status === 'paid' ? 'pending' : 'paid';
+        const cloudData = await api.pullBand(band.cloudId);
+        const snapshot = typeof cloudData.syncDataJson === 'string'
+          ? JSON.parse(cloudData.syncDataJson || '{}')
+          : (cloudData.syncDataJson || {});
+        if (Array.isArray(snapshot.finances)) {
+          const matchF = snapshot.finances.find(f => f.id === item.id);
+          if (matchF) matchF.status = nextStatus;
+          await api.syncBand(band.cloudId, {
+            name: band.name,
+            genre: band.genre || '',
+            description: band.description || '',
+            imageUri: band.imageUri || '',
+            city: band.city || '',
+            state: band.state || '',
+            country: band.country || '',
+            syncDataJson: JSON.stringify(snapshot)
+          });
+        }
+      } else {
+        await bandService.toggleFinanceStatus(item.id, item.status || 'paid');
+      }
       await loadData();
     } catch (e) {
       console.error('Error toggling finance status:', e);
@@ -1689,7 +2036,30 @@ export default function BandDetailScreen({
           text: t('delete') || 'Excluir',
           style: 'destructive',
           onPress: async () => {
-            await bandService.deleteFinancialEntry(item.id);
+            if (band.cloudId) {
+              // MODO ONLINE: remove da nuvem
+              try {
+                const cloudData = await api.pullBand(band.cloudId);
+                const snapshot = typeof cloudData.syncDataJson === 'string'
+                  ? JSON.parse(cloudData.syncDataJson || '{}')
+                  : (cloudData.syncDataJson || {});
+                if (Array.isArray(snapshot.finances)) {
+                  snapshot.finances = snapshot.finances.filter(f => f.id !== item.id);
+                  await api.syncBand(band.cloudId, {
+                    name: band.name,
+                    genre: band.genre || '',
+                    description: band.description || '',
+                    imageUri: band.imageUri || '',
+                    city: band.city || '',
+                    state: band.state || '',
+                    country: band.country || '',
+                    syncDataJson: JSON.stringify(snapshot)
+                  });
+                }
+              } catch (e) {}
+            } else {
+              await bandService.deleteFinancialEntry(item.id);
+            }
             await loadData();
           }
         }

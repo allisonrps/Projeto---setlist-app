@@ -4111,18 +4111,32 @@ function MainApp() {
 
                 {/* DEMAIS BANDAS */}
                 {filteredBands.map(band => {
-              const bSetlists = setlists.filter(s => s && s.myBandId === band.id);
+              const isOnline = Boolean(band.cloudId);
+              let onlineSync = null;
+              if (isOnline && band.syncDataJson) {
+                try {
+                  onlineSync = typeof band.syncDataJson === 'string' ? JSON.parse(band.syncDataJson) : band.syncDataJson;
+                } catch (e) {}
+              }
+
+              // MODO ONLINE: consulta apenas dados da API (syncDataJson)
+              // MODO OFFLINE: consulta dados do SQLite (setlists, songs, etc)
+              const bSetlists = isOnline
+                ? (onlineSync?.setlists || [])
+                : setlists.filter(s => s && s.myBandId === band.id);
               const showsCount = bSetlists.filter(s => s.type === 'show').length;
               const rehearsalsCount = bSetlists.filter(s => s.type !== 'show').length;
-              const songsCount = band.songsCount || 0;
-              const membersCount = band.membersCount || 0;
+              const songsCount = isOnline ? (onlineSync?.songs?.length || 0) : (band.songsCount || 0);
+              const membersCount = isOnline ? (band.membersCount || onlineSync?.members?.length || 0) : (band.membersCount || 0);
 
               // Top 4 style tags by percentage
               const tagCounts = {};
               let totalTagsCount = 0;
-              const bSongs = (band.songsList && band.songsList.length > 0)
-                ? band.songsList
-                : songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase()))));
+              const bSongs = isOnline
+                ? (onlineSync?.songs || [])
+                : ((band.songsList && band.songsList.length > 0)
+                  ? band.songsList
+                  : songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase())))));
               
               bSongs.forEach(s => {
                 if (s.style && s.style.trim()) {
@@ -4605,17 +4619,37 @@ function MainApp() {
   };
 
   const renderSetlistsTab = () => {
+    const activeBand = bands.find(b => String(b.id) === String(selectedBandId));
+
+    // MODO ONLINE: se uma banda online foi selecionada no filtro, usa ESTRITAMENTE a API (syncDataJson)
+    // MODO OFFLINE: usa setlists do SQLite
+    let bandOnlineSetlists = null;
+    if (activeBand && activeBand.cloudId && activeBand.syncDataJson) {
+      try {
+        const sync = typeof activeBand.syncDataJson === 'string' ? JSON.parse(activeBand.syncDataJson) : activeBand.syncDataJson;
+        if (sync && Array.isArray(sync.setlists)) {
+          bandOnlineSetlists = sync.setlists.map(sl => ({
+            ...sl,
+            myBandId: activeBand.id,
+            id: sl.id || `cloud_${sl.name}`
+          }));
+        } else {
+          bandOnlineSetlists = [];
+        }
+      } catch (e) {
+        bandOnlineSetlists = [];
+      }
+    }
+
     // 1. Filtrar setlists pela banda selecionada
     let filteredSetlists = selectedBandId 
-      ? setlists.filter(s => String(s.myBandId) === String(selectedBandId))
+      ? (activeBand?.cloudId ? (bandOnlineSetlists || []) : setlists.filter(s => String(s.myBandId) === String(selectedBandId)))
       : setlists;
 
     // 2. Filtrar setlists pelo tipo selecionado
     if (selectedSetlistType !== '') {
       filteredSetlists = filteredSetlists.filter(s => s.type === selectedSetlistType);
     }
-
-    const activeBand = bands.find(b => String(b.id) === String(selectedBandId));
 
     const favoriteSetlists = filteredSetlists.filter(s => s.isFavorite);
     const nonFavoriteSetlists = filteredSetlists.filter(s => !s.isFavorite);
