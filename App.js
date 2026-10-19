@@ -1563,6 +1563,7 @@ function MainApp() {
     try {
       const setlistId = setlistData?.id || editingSetlist?.id;
       const cleanCache = setlistData?.cachê || setlistData?.cache || setlistData?.cacheê || '';
+      const targetBandId = setlistData?.myBandId || editingSetlist?.myBandId || editingSetlistFromBandDetail?.id || activeBandDetail?.id;
       if (setlistId) {
         await setlistService.update(
           setlistId,
@@ -1589,6 +1590,15 @@ function MainApp() {
           setlistData.time || ''
         );
       }
+
+      // Auto-sincroniza com a nuvem se a banda for online para que apareça na web imediatamente
+      if (targetBandId) {
+        const bandObj = bands.find(b => String(b.id) === String(targetBandId));
+        if (bandObj && bandObj.cloudId) {
+          bandService.syncBandToCloud(bandObj.id).catch(e => console.log('Auto-sync band setlist error:', e));
+        }
+      }
+
       await reloadAllData();
       setShowSetlistModal(false);
       setEditingSetlist(null);
@@ -1615,6 +1625,7 @@ function MainApp() {
   };
 
   const handleDeleteSetlist = (id) => {
+    const toDelete = setlists.find(s => s.id === id);
     Alert.alert(
       t('deleteSetlistConfirmTitle'),
       t('deleteSetlistConfirmMsg'),
@@ -1626,6 +1637,12 @@ function MainApp() {
           onPress: async () => {
             try {
               await setlistService.delete(id);
+              if (toDelete?.myBandId) {
+                const bandObj = bands.find(b => String(b.id) === String(toDelete.myBandId));
+                if (bandObj && bandObj.cloudId) {
+                  bandService.syncBandToCloud(bandObj.id).catch(e => console.log('Auto-sync band delete error:', e));
+                }
+              }
               await reloadAllData();
               setActiveSetlistDetail(null);
               if (editingSetlistFromBandDetail) {

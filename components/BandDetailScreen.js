@@ -911,9 +911,17 @@ export default function BandDetailScreen({
   const [substitutes, setSubstitutes] = useState([]);
 
   // Load Band Data when modal opens or updates
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (shouldPullCloud = false) => {
     if (band && band.id) {
       try {
+        if (shouldPullCloud && band.cloudId) {
+          try {
+            await bandService.pullBandFromCloud(band.id);
+            if (onReloadAll) onReloadAll();
+          } catch (e) {
+            console.log('Background pull on open error:', e);
+          }
+        }
         const bSongs = await bandService.getBandSongs(band.id);
         setBandSongs(bSongs || []);
 
@@ -943,7 +951,7 @@ export default function BandDetailScreen({
         console.error('Error loading BandDetailScreen data:', err);
       }
     }
-  }, [band]);
+  }, [band, onReloadAll]);
 
   const handleToggleBandSongFavorite = async (songId, currentIsFav) => {
     if (band && band.id) {
@@ -954,13 +962,14 @@ export default function BandDetailScreen({
 
   useEffect(() => {
     if (visible && band && band.id) {
-      loadData();
+      loadData(Boolean(band.cloudId));
     }
-  }, [visible, band, loadData]);
+  }, [visible, band?.id, band?.cloudId, loadData]);
 
   if (!visible || !band) return null;
 
   // Filter setlists belonging to this band sorted by date
+  // Regra Banda Online: se a banda é online, apenas eventos da API vinculados a ela aparecem.
   const bandSetlists = (allSetlists || [])
     .filter(s => {
       if (!s) return false;
@@ -968,7 +977,7 @@ export default function BandDetailScreen({
       const bId = Number(band.id);
       const bCloudId = band.cloudId ? Number(band.cloudId) : null;
       if (sBandId && (sBandId === bId || (bCloudId && sBandId === bCloudId))) return true;
-      if (s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+      if (!band.cloudId && s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
       return false;
     })
     .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));

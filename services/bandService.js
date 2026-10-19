@@ -1002,6 +1002,7 @@ export const bandService = {
       }
 
       // 2. Synchronize songs & repertoire into local SQLite
+      const syncedSongIds = new Set();
       if (snapshot.songs && Array.isArray(snapshot.songs)) {
         for (const song of snapshot.songs) {
           if (!song.name) continue;
@@ -1047,6 +1048,7 @@ export const bandService = {
 
           // Link song to this band repertoire and keep favorite status in sync
           if (localSongId) {
+            syncedSongIds.add(localSongId);
             await db.runAsync(
               `INSERT INTO band_songs (bandId, songId, isFavorite) VALUES (?, ?, ?)
                ON CONFLICT(bandId, songId) DO UPDATE SET isFavorite = excluded.isFavorite;`,
@@ -1056,16 +1058,26 @@ export const bandService = {
         }
       }
 
-      // 3. Synchronize setlists into local SQLite
-      if (snapshot.setlists && Array.isArray(snapshot.setlists)) {
-        // Load all local setlists for this band or orphan setlists to match accurately without collisions
-        const rawLocalSetlists = await db.getAllAsync(
-          'SELECT * FROM setlists WHERE myBandId = ? OR myBandId IS NULL;',
-          [bandId]
+      // Regra Banda Online: só mantém no repertório da banda as músicas que existem na nuvem
+      if (syncedSongIds.size > 0) {
+        const placeholders = Array.from(syncedSongIds).map(() => '?').join(',');
+        await db.runAsync(
+          `DELETE FROM band_songs WHERE bandId = ? AND songId NOT IN (${placeholders});`,
+          [bandId, ...Array.from(syncedSongIds)]
         );
-        const localSetlists = Array.isArray(rawLocalSetlists) ? [...rawLocalSetlists] : [];
-        const matchedLocalIds = new Set();
+      } else if (snapshot.songs && Array.isArray(snapshot.songs)) {
+        await db.runAsync('DELETE FROM band_songs WHERE bandId = ?;', [bandId]);
+      }
 
+      // 3. Synchronize setlists into local SQLite
+      const rawLocalSetlists = await db.getAllAsync(
+        'SELECT * FROM setlists WHERE myBandId = ? OR myBandId IS NULL;',
+        [bandId]
+      );
+      const localSetlists = Array.isArray(rawLocalSetlists) ? [...rawLocalSetlists] : [];
+      const matchedLocalIds = new Set();
+
+      if (snapshot.setlists && Array.isArray(snapshot.setlists)) {
         for (const sl of snapshot.setlists) {
           if (!sl.name) continue;
           const slNameClean = sl.name.trim().toLowerCase();
@@ -1133,6 +1145,7 @@ export const bandService = {
             // Update existing setlist event data
             await db.runAsync(
               `UPDATE setlists SET
+                name = ?,
                 type = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE type END,
                 date = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE date END,
                 time = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE time END,
@@ -1141,6 +1154,7 @@ export const bandService = {
                 notes = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE notes END
                WHERE id = ?;`,
               [
+                sl.name,
                 sl.type, sl.type, sl.type,
                 sl.date, sl.date, sl.date,
                 sl.time, sl.time, sl.time,
@@ -1180,26 +1194,87 @@ export const bandService = {
         }
       }
 
-      // 4. Synchronize band members into local SQLite
-      if (snapshot.members && Array.isArray(snapshot.members)) {
-        for (const m of snapshot.members) {
-          if (!m.name) continue;
-          const existingMem = await db.getAllAsync(
-            'SELECT id FROM band_members WHERE bandId = ? AND LOWER(name) = ?;',
-            [bandId, m.name.trim().toLowerCase()]
-          );
+      // Regra Banda Online: se a banda é online, apenas eventos da API são mantidos vinculados a esta banda.
+      // Desvincula quaisquer setlists locais antigos/órfãos que não estejam no snapshot da nuvem.
+      if (matchedLocalIds.size > 0) {
+        const slPlaceholders = Array.from(matchedLocalIds).map(() => '?').join(',');
+        await db.runAsync(
+          `UPDATE setlists SET myBandId = NULL WHERE myBandId = ? AND id NOT IN (${slPlaceholders});`,
+          [bandId, ...Array.from(matchedLocalIds)]
+        );
+      } else {
+        await db.runAsync('UPDATE setlists SET myBandId = NULL WHERE myBandId = ?;', [bandId]);
+      }
 
-          if (!existingMem || existingMem.length === 0) {
-            await db.runAsync(
-              'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status) VALUES (?, ?, ?, ?, ?, ?, ?);',
-              [bandId, m.name, m.role || '', m.phone || '', m.startDate || '', m.endDate || '', m.status || 'active']
-            );
-          } else {
-            await db.runAsync(
-              'UPDATE band_members SET role = COALESCE(?, role), phone = COALESCE(?, phone), startDate = COALESCE(?, startDate), endDate = COALESCE(?, endDate), status = COALESCE(?, status) WHERE id = ?;',
-              [m.role, m.phone, m.startDate, m.endDate, m.status, existingMem[0].id]
-            );
+      // 4. Synchronize band members into local SQLite
+      // Coleta integrantes oficiais: primeiro da API relacional (cloudData.members), depois fallback/complemento com snapshot
+      let cloudMembers = Array.isArray(cloudData.members) && cloudData.members.length > 0
+        ? cloudData.members
+        : [];
+
+      if (cloudMembers.length === 0) {
+        try {
+          const directMembers = await api.getBandMembers(localBand.cloudId);
+          if (Array.isArray(directMembers) && directMembers.length > 0) {
+            cloudMembers = directMembers;
           }
+        } catch (e) {}
+      }
+
+      const snapshotMembers = Array.isArray(snapshot.members) ? snapshot.members : [];
+      const unifiedMembers = [];
+      const seenUsernames = new Set();
+
+      for (const cm of cloudMembers) {
+        const uClean = (cm.username || '').trim().toLowerCase().replace('@', '');
+        if (uClean) seenUsernames.add(uClean);
+        const matchSnap = snapshotMembers.find(sm => {
+          const smClean = (sm.username || '').trim().toLowerCase().replace('@', '');
+          return (smClean && smClean === uClean) ||
+                 (sm.name && cm.displayName && sm.name.trim().toLowerCase() === cm.displayName.trim().toLowerCase());
+        });
+
+        unifiedMembers.push({
+          name: cm.displayName || cm.username || matchSnap?.name || 'Membro',
+          role: cm.role || matchSnap?.role || 'Member',
+          phone: matchSnap?.phone || '',
+          startDate: matchSnap?.startDate || '',
+          endDate: matchSnap?.endDate || '',
+          status: cm.status === 'Accepted' ? 'active' : (cm.status || 'active'),
+          cycles: matchSnap?.cycles || '[]',
+          username: uClean,
+          isLeader: cm.isLeader ? 1 : (matchSnap?.isLeader ? 1 : 0)
+        });
+      }
+
+      for (const sm of snapshotMembers) {
+        const smClean = (sm.username || '').trim().toLowerCase().replace('@', '');
+        if (smClean && seenUsernames.has(smClean)) continue;
+        if (!sm.name) continue;
+        const nameClean = sm.name.trim().toLowerCase();
+        if (unifiedMembers.some(m => m.name.trim().toLowerCase() === nameClean)) continue;
+
+        unifiedMembers.push({
+          name: sm.name,
+          role: sm.role || '',
+          phone: sm.phone || '',
+          startDate: sm.startDate || '',
+          endDate: sm.endDate || '',
+          status: sm.status || 'active',
+          cycles: sm.cycles || '[]',
+          username: smClean,
+          isLeader: sm.isLeader ? 1 : 0
+        });
+      }
+
+      // Regra Banda Online: substitui integrantes locais pelos integrantes oficiais da nuvem
+      if (unifiedMembers.length > 0) {
+        await db.runAsync('DELETE FROM band_members WHERE bandId = ?;', [bandId]);
+        for (const m of unifiedMembers) {
+          await db.runAsync(
+            'INSERT INTO band_members (bandId, name, role, phone, startDate, endDate, status, cycles, username, isLeader) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+            [bandId, m.name, m.role || '', m.phone || '', m.startDate || '', m.endDate || '', m.status || 'active', m.cycles || '[]', m.username || '', m.isLeader ? 1 : 0]
+          );
         }
       }
 

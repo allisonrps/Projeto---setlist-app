@@ -12009,6 +12009,26 @@
                 localStorage.setItem(`bandlink_band_${bandId}_sync`, cloudSync);
               }
             }
+            if (Array.isArray(fullData.members) && fullData.members.length > 0) {
+              if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+              if (!currentBandSyncData.members) currentBandSyncData.members = [];
+              for (const fm of fullData.members) {
+                const uClean = (fm.username || '').trim().toLowerCase().replace('@', '');
+                const exists = currentBandSyncData.members.some(m => {
+                  const mClean = (m.username || '').trim().toLowerCase().replace('@', '');
+                  return (mClean && mClean === uClean) || (m.name && fm.displayName && m.name.trim().toLowerCase() === fm.displayName.trim().toLowerCase());
+                });
+                if (!exists) {
+                  currentBandSyncData.members.push({
+                    name: fm.displayName || fm.username || 'Membro',
+                    username: uClean,
+                    role: fm.role || 'Member',
+                    status: fm.status === 'Accepted' ? 'active' : (fm.status || 'active'),
+                    isLeader: fm.isLeader || false
+                  });
+                }
+              }
+            }
           }
         } catch (e) {
           console.warn('Error fetching band full details from API:', e);

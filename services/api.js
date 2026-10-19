@@ -800,6 +800,22 @@ export const api = {
     return response.json();
   },
 
+  getBandMembers: async (bandId) => {
+    try {
+      const headers = await getHeaders();
+      const response = await fetchWithTimeout(`${API_URL}/Bands/${bandId}/members`, {
+        method: "GET",
+        headers
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (e) {
+      console.log('Error fetching band members from API:', e);
+    }
+    return [];
+  },
+
   removeBandMember: async (bandId, targetUserId) => {
     const headers = await getHeaders();
     const response = await fetchWithTimeout(`${API_URL}/Bands/${bandId}/members/${targetUserId}`, {
