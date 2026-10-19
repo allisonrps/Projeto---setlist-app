@@ -620,11 +620,29 @@ export const bandService = {
 
   async autoSyncIfOnline(bandId) {
     try {
-      const local = await this.getBandById(bandId);
-      if (!local || !local.cloudId) return; // Banda offline não auto-sincroniza
-
+      if (!bandId) return;
       const loggedIn = await api.isLoggedIn();
       if (!loggedIn) return;
+
+      const local = await this.getBandById(bandId);
+      if (!local) return;
+
+      // Se a banda não tiver cloudId mas o usuário estiver logado, vincula com a nuvem pelo nome ou cria
+      if (!local.cloudId) {
+        try {
+          const myCloudBands = await api.getMyCloudBands();
+          const existing = myCloudBands.find(b => b.name?.trim().toLowerCase() === local.name.trim().toLowerCase());
+          if (existing && existing.id) {
+            await this.updateCloudInfo(bandId, existing.id, existing.version || 0, existing.lastSyncedAt || new Date().toISOString(), existing.isNetworkVisible ? 1 : 0);
+          } else {
+            // Sincroniza diretamente (o próprio syncBandToCloud criará na nuvem)
+            await this.syncBandToCloud(bandId);
+            return;
+          }
+        } catch (linkErr) {
+          console.log('Error auto-linking band to cloud:', linkErr);
+        }
+      }
 
       // Dispara push silencioso em background
       await this.syncBandToCloud(bandId);

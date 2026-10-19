@@ -11752,15 +11752,22 @@
       return pills;
     }
 
+    function getBandLastViewedTimelineKey(bandId) {
+      const uId = currentUser?.id || currentUser?.username || 'anon';
+      return `bandlink_timeline_last_viewed_${uId}_${bandId}`;
+    }
+
     function getBandLastViewedTimelineTime(bandId) {
       if (!bandId) return 0;
-      const v = localStorage.getItem(`bandlink_timeline_last_viewed_${bandId}`);
+      const key = getBandLastViewedTimelineKey(bandId);
+      const v = localStorage.getItem(key);
       return v ? Number(v) : 0;
     }
 
     function markBandTimelineAsViewed(bandId) {
       if (!bandId) return;
-      localStorage.setItem(`bandlink_timeline_last_viewed_${bandId}`, String(Date.now()));
+      const key = getBandLastViewedTimelineKey(bandId);
+      localStorage.setItem(key, String(Date.now()));
     }
 
     function hasBandTimelineNews(band) {
@@ -12060,9 +12067,6 @@
         hGenres.innerHTML = renderBandHeroPills(band);
       }
 
-      // Marca novidades como visualizadas ao abrir a banda
-      markBandTimelineAsViewed(band.id);
-
       // Abre por padrão na aba de Agenda (A) e rola imediatamente para o topo
       switchBandPageTab('A');
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -12093,6 +12097,7 @@
       if (!currentBandData) return;
 
       if (tabKey === 'L') {
+        // Marca novidades como vistas apenas quando o usuário abre especificamente a aba de Alterações
         markBandTimelineAsViewed(currentBandData.id);
         renderBandTimelineTab(currentBandData, currentBandSyncData);
       }
@@ -12325,17 +12330,43 @@
           if (!matchesThisBand) return;
         }
 
+        let evIcon = 'create-outline';
+        let evColor = '#38bdf8';
+        if (l.actionType?.includes('delete')) {
+          evIcon = 'trash-outline';
+          evColor = '#f43f5e';
+        } else if (l.actionType === 'candidate_interest') {
+          evIcon = 'paper-plane';
+          evColor = '#22c55e';
+        } else if (l.actionType?.includes('setlist')) {
+          evIcon = 'calendar-outline';
+          evColor = '#38bdf8';
+        }
+
         timelineEvents.push({
-          icon: l.actionType?.includes('delete') ? 'trash-outline' : (l.actionType === 'candidate_interest' ? 'paper-plane' : 'create-outline'),
-          color: l.actionType?.includes('delete') ? '#f43f5e' : (l.actionType === 'candidate_interest' ? '#22c55e' : '#38bdf8'),
+          icon: evIcon,
+          color: evColor,
           title: `${l.authorName || 'Integrante'} ${l.description || 'realizou uma alteração'}`,
           date: l.createdAt ? new Date(l.createdAt).toLocaleString('pt-BR') : 'Recente'
         });
       });
 
-      // 3. Registro real de sincronização do repertório (apenas se a banda tiver músicas reais)
+      // 3. Eventos e Setlists da Agenda adicionados na banda
+      const bandSetlistsList = syncData?.setlists || [];
+      bandSetlistsList.forEach(sl => {
+        const isRehearsal = sl.type === 'rehearsal' || (sl.name || '').toLowerCase().includes('ensaio');
+        const slDate = sl.date ? formatDateDisplay(sl.date) : 'Data não informada';
+        timelineEvents.push({
+          icon: isRehearsal ? 'mic-outline' : 'calendar-outline',
+          color: isRehearsal ? '#a855f7' : '#38bdf8',
+          title: `${isRehearsal ? 'Ensaio agendado' : 'Show agendado'}: ${sl.name || 'Sem título'}${sl.local ? ` em ${sl.local}` : ''}`,
+          date: sl.updatedAt ? new Date(sl.updatedAt).toLocaleString('pt-BR') : (sl.createdAt ? new Date(sl.createdAt).toLocaleString('pt-BR') : slDate)
+        });
+      });
+
+      // 4. Registro real de sincronização do repertório (apenas se a banda tiver músicas reais)
       const bandSongsCount = (syncData?.songs || []).length;
-      const bandSetlistsCount = (syncData?.setlists || []).length;
+      const bandSetlistsCount = bandSetlistsList.length;
       if (bandSongsCount > 0 || bandSetlistsCount > 0) {
         timelineEvents.push({
           icon: 'cloud-done-outline',
@@ -12345,7 +12376,7 @@
         });
       }
 
-      // 4. Criação do projeto / banda
+      // 5. Criação do projeto / banda
       timelineEvents.push({
         icon: 'flag-outline',
         color: '#a855f7',
