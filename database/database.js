@@ -1373,6 +1373,9 @@ export const createTables = async () => {
     try {
       await db.execAsync("ALTER TABLE my_bands ADD COLUMN hasLocalChanges INTEGER DEFAULT 0;");
     } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN publicSlug TEXT;");
+    } catch (e) {}
 
     // Migração de chords em songs
     try {

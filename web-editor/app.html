@@ -7626,7 +7626,14 @@
       <form onsubmit="handleCreateBand(event)">
         <div class="form-group">
           <label>Nome da Banda *</label>
-          <input type="text" id="bandName" class="form-input" placeholder="Ex: Os Valentes" required maxlength="100">
+          <input type="text" id="bandName" class="form-input" placeholder="Ex: Os Valentes" required maxlength="100" oninput="onBandNameInputChange(this.value)">
+        </div>
+        <div class="form-group">
+          <label>Username da Banda (@) *</label>
+          <div style="position: relative;">
+            <input type="text" id="bandUsername" class="form-input" placeholder="ex: os_valentes" required maxlength="30" oninput="onBandUsernameInputChange(this.value, 'create')">
+          </div>
+          <div id="bandUsernameFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
         </div>
         <div class="form-group">
           <label>Gênero Musical Principal</label>
@@ -8058,6 +8065,14 @@
         <div class="form-group">
           <label>Nome da Banda *</label>
           <input type="text" id="editBandName" class="form-input" required maxlength="100">
+        </div>
+
+        <div class="form-group">
+          <label>Username da Banda (@) *</label>
+          <div style="position: relative;">
+            <input type="text" id="editBandUsername" class="form-input" placeholder="ex: os_valentes" required maxlength="30" oninput="onBandUsernameInputChange(this.value, 'edit')">
+          </div>
+          <div id="editBandUsernameFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
         </div>
 
         <div class="form-grid-2">
@@ -12049,7 +12064,7 @@
       if (hName) hName.textContent = (band.name || 'BANDA').toUpperCase();
 
       const hHandle = document.getElementById('bHeroHandle');
-      const handleStr = band.username || band.ownerUsername || band.name.toLowerCase().replace(/\s+/g, '_');
+      const handleStr = band.publicSlug || band.username || band.ownerUsername || band.name.toLowerCase().replace(/[^a-z0-9_]+/g, '_');
       if (hHandle) hHandle.textContent = `@${handleStr.replace(/^@/, '')}`;
 
       const hSince = document.getElementById('bHeroSince');
@@ -12119,11 +12134,106 @@
     }
 
     // ==============================================================
-    // EDITOR DE PERFIL DA BANDA (DESDE, NOME, GÊNERO, LOCAL, FOTO)
+    // EDITOR DE PERFIL DA BANDA (DESDE, NOME, USERNAME, GÊNERO, LOCAL, FOTO)
     // ==============================================================
+    let bandUsernameCheckTimer = null;
+    let isBandUsernameAvailable = { create: null, edit: null };
+    let bandUsernameUserEdited = false;
+
+    function onBandNameInputChange(val) {
+      if (bandUsernameUserEdited) return;
+      const clean = (val || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
+      const input = document.getElementById('bandUsername');
+      if (input) {
+        input.value = clean;
+        onBandUsernameInputChange(clean, 'create');
+      }
+    }
+
+    function onBandUsernameInputChange(val, mode) {
+      if (mode === 'create') bandUsernameUserEdited = true;
+      clearTimeout(bandUsernameCheckTimer);
+      const feedback = document.getElementById(mode === 'create' ? 'bandUsernameFeedback' : 'editBandUsernameFeedback');
+      const clean = (val || '').trim().toLowerCase().replace('@', '');
+
+      if (!clean) {
+        if (feedback) feedback.style.display = 'none';
+        isBandUsernameAvailable[mode] = null;
+        return;
+      }
+
+      if (clean.length < 3) {
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.innerHTML = '<span style="color: #f59e0b;">Mínimo de 3 caracteres.</span>';
+        }
+        isBandUsernameAvailable[mode] = false;
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.innerHTML = '<span style="color: #f87171;">Apenas letras, números e sublinhados (_).</span>';
+        }
+        isBandUsernameAvailable[mode] = false;
+        return;
+      }
+
+      const currentClean = (currentBandData?.publicSlug || currentBandData?.username || '').trim().toLowerCase().replace('@', '');
+      if (mode === 'edit' && clean === currentClean) {
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.innerHTML = `<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> @${clean} é o username atual da banda</span>`;
+        }
+        isBandUsernameAvailable[mode] = true;
+        return;
+      }
+
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.innerHTML = '<span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="sync-outline" class="spin-icon"></ion-icon> Verificando disponibilidade...</span>';
+      }
+
+      bandUsernameCheckTimer = setTimeout(async () => {
+        try {
+          const excludeId = mode === 'edit' && currentBandData?.id ? currentBandData.id : '';
+          const res = await fetch(`${API_URL}/Bands/check-username?username=${encodeURIComponent(clean)}${excludeId ? `&excludeBandId=${excludeId}` : ''}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.available) {
+              isBandUsernameAvailable[mode] = true;
+              if (feedback) {
+                feedback.innerHTML = `<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> @${clean} está disponível</span>`;
+              }
+            } else {
+              isBandUsernameAvailable[mode] = false;
+              if (feedback) {
+                feedback.innerHTML = `<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> ${data.message || `@${clean} já está em uso por outra banda`}</span>`;
+              }
+            }
+          }
+        } catch {
+          isBandUsernameAvailable[mode] = null;
+          if (feedback) feedback.style.display = 'none';
+        }
+      }, 350);
+    }
+
     function openEditBandProfileModal() {
       if (!currentBandData) return;
       document.getElementById('editBandName').value = currentBandData.name || '';
+
+      const unameInput = document.getElementById('editBandUsername');
+      const unameFeedback = document.getElementById('editBandUsernameFeedback');
+      if (unameFeedback) unameFeedback.style.display = 'none';
+      if (unameInput) {
+        const curSlug = (currentBandData.publicSlug || currentBandData.username || (currentBandData.name || '').toLowerCase().replace(/[^a-z0-9_]+/g, '_')).replace(/^@/, '');
+        unameInput.value = curSlug;
+        isBandUsernameAvailable['edit'] = true;
+        onBandUsernameInputChange(curSlug, 'edit');
+      }
+
       document.getElementById('editBandSinceYear').value = currentBandData.sinceYear || (currentBandData.createdAt ? new Date(currentBandData.createdAt).getFullYear() : '2018');
       document.getElementById('editBandGenre').value = currentBandData.genre || '';
       document.getElementById('editBandCity').value = currentBandData.city || 'Franca';
@@ -12206,6 +12316,16 @@
       const isProfissional = document.getElementById('editBandIsProfissional').checked;
       const isCasual = document.getElementById('editBandIsCasual').checked;
 
+      const updatedUsername = (document.getElementById('editBandUsername')?.value || '').trim().toLowerCase().replace('@', '');
+      if (updatedUsername) {
+        if (isBandUsernameAvailable['edit'] === false) {
+          showToast('O username escolhido para a banda não está disponível.', 'error');
+          return;
+        }
+        currentBandData.publicSlug = updatedUsername;
+        currentBandData.username = updatedUsername;
+      }
+
       currentBandData.name = updatedName;
       currentBandData.sinceYear = updatedSince;
       currentBandData.genre = updatedGenre;
@@ -12232,6 +12352,10 @@
       }
       const hName = document.getElementById('bHeroName');
       if (hName) hName.textContent = updatedName.toUpperCase();
+      const hHandle = document.getElementById('bHeroHandle');
+      if (hHandle && updatedUsername) {
+        hHandle.textContent = `@${updatedUsername}`;
+      }
       const hSince = document.getElementById('bHeroSince');
       if (hSince) hSince.textContent = `[ DESDE ${updatedSince} ]`;
       const hLoc = document.getElementById('bHeroLocation');
@@ -12255,13 +12379,15 @@
           body: JSON.stringify({
             id: currentBandData.id,
             name: updatedName,
+            publicSlug: updatedUsername,
             sinceYear: updatedSince,
             genre: updatedGenre,
             city: updatedCity,
             state: updatedState,
             country: updatedCountry,
             description: updatedDesc,
-            imageUri: updatedImg
+            imageUri: updatedImg,
+            bandType: currentBandData.bandType
           })
         });
       } catch (err) {
@@ -17083,6 +17209,12 @@
 
     function openCreateBandModal() {
       document.getElementById('bandName').value = '';
+      const bUname = document.getElementById('bandUsername');
+      if (bUname) bUname.value = '';
+      const bFeed = document.getElementById('bandUsernameFeedback');
+      if (bFeed) bFeed.style.display = 'none';
+      bandUsernameUserEdited = false;
+      isBandUsernameAvailable['create'] = null;
       document.getElementById('bandGenre').value = '';
       document.getElementById('bandDescription').value = '';
       document.getElementById('bandImageUri').value = '';
@@ -17106,8 +17238,14 @@
 
     async function handleCreateBand(e) {
       e.preventDefault();
+      const bUsername = (document.getElementById('bandUsername')?.value || '').trim().toLowerCase().replace('@', '');
+      if (bUsername && isBandUsernameAvailable['create'] === false) {
+        showToast('O username escolhido para a banda não está disponível.', 'error');
+        return;
+      }
       const payload = {
         name: document.getElementById('bandName').value.trim(),
+        publicSlug: bUsername || undefined,
         genre: document.getElementById('bandGenre').value.trim(),
         description: document.getElementById('bandDescription').value.trim(),
         imageUri: document.getElementById('bandImageUri').value.trim()

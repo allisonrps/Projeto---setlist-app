@@ -1317,7 +1317,8 @@ function MainApp() {
           bandData.youtube,
           bandData.spotify,
           bandData.tiktok,
-          bandData.facebook
+          bandData.facebook,
+          bandData.publicSlug
         );
         savedBandId = editingBand.id;
       } else {
@@ -1338,7 +1339,8 @@ function MainApp() {
           bandData.youtube,
           bandData.spotify,
           bandData.tiktok,
-          bandData.facebook
+          bandData.facebook,
+          bandData.publicSlug
         );
       }
       await reloadAllData();

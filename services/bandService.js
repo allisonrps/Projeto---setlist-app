@@ -69,45 +69,33 @@ export const bandService = {
     }
   },
 
-  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '') {
+  async checkUsername(username, excludeBandId = null) {
     try {
-      const result = await db.runAsync(
-        'INSERT INTO my_bands (name, imageUri, startDate, endDate, bandType, isCover, isAutoral, city, state, country, genres, links, instagram, youtube, spotify, tiktok, facebook) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
-        [
-          sanitizeText(name, 100),
-          imageUri,
-          sanitizeText(startDate, 20) || '',
-          sanitizeText(endDate, 20) || '',
-          sanitizeText(bandType, 20) || 'cover',
-          isCover !== undefined ? isCover : 1,
-          isAutoral !== undefined ? isAutoral : 0,
-          sanitizeText(city, 100) || '',
-          sanitizeText(state, 100) || '',
-          sanitizeText(country, 100) || '',
-          sanitizeJson(genres) || '[]',
-          sanitizeJson(links) || '{}',
-          sanitizeText(instagram, 100) || '',
-          sanitizeText(youtube, 200) || '',
-          sanitizeText(spotify, 200) || '',
-          sanitizeText(tiktok, 100) || '',
-          sanitizeText(facebook, 200) || ''
-        ]
-      );
-      const newId = result.lastInsertRowId;
-      try {
-        await this.logBandActivity(newId, 'created_band', `criou a banda ${name.trim()}`);
-      } catch (e) {}
-      return newId;
-    } catch (error) {
-      console.error('Error in bandService.insert:', error);
-      throw error;
+      const clean = (username || '').trim().toLowerCase().replace('@', '');
+      if (clean.length < 3) {
+        return { available: false, message: 'O username da banda deve ter no mínimo 3 caracteres.' };
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+        return { available: false, message: 'Apenas letras, números e sublinhados (_).' };
+      }
+      const token = await AsyncStorage.getItem('jwt_token');
+      const url = `${API_URL}/Bands/check-username?username=${encodeURIComponent(clean)}${excludeBandId ? `&excludeBandId=${excludeBandId}` : ''}`;
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      return { available: true, username: clean };
+    } catch (e) {
+      return { available: true, username: (username || '').trim().toLowerCase().replace('@', '') };
     }
   },
 
-  async update(id, name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '') {
+  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '', publicSlug = '') {
     try {
-      await db.runAsync(
-        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ?, links = ?, instagram = ?, youtube = ?, spotify = ?, tiktok = ?, facebook = ?, hasLocalChanges = 1 WHERE id = ?;',
+      const result = await db.runAsync(
+        'INSERT INTO my_bands (name, imageUri, startDate, endDate, bandType, isCover, isAutoral, city, state, country, genres, links, instagram, youtube, spotify, tiktok, facebook, publicSlug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
         [
           sanitizeText(name, 100),
           imageUri,
@@ -126,6 +114,43 @@ export const bandService = {
           sanitizeText(spotify, 200) || '',
           sanitizeText(tiktok, 100) || '',
           sanitizeText(facebook, 200) || '',
+          sanitizeText(publicSlug, 50) || ''
+        ]
+      );
+      const newId = result.lastInsertRowId;
+      try {
+        await this.logBandActivity(newId, 'created_band', `criou a banda ${name.trim()}`);
+      } catch (e) {}
+      return newId;
+    } catch (error) {
+      console.error('Error in bandService.insert:', error);
+      throw error;
+    }
+  },
+
+  async update(id, name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '', publicSlug = '') {
+    try {
+      await db.runAsync(
+        'UPDATE my_bands SET name = ?, imageUri = ?, startDate = ?, endDate = ?, bandType = ?, isCover = ?, isAutoral = ?, city = ?, state = ?, country = ?, genres = ?, links = ?, instagram = ?, youtube = ?, spotify = ?, tiktok = ?, facebook = ?, publicSlug = ?, hasLocalChanges = 1 WHERE id = ?;',
+        [
+          sanitizeText(name, 100),
+          imageUri,
+          sanitizeText(startDate, 20) || '',
+          sanitizeText(endDate, 20) || '',
+          sanitizeText(bandType, 20) || 'cover',
+          isCover !== undefined ? isCover : 1,
+          isAutoral !== undefined ? isAutoral : 0,
+          sanitizeText(city, 100) || '',
+          sanitizeText(state, 100) || '',
+          sanitizeText(country, 100) || '',
+          sanitizeJson(genres) || '[]',
+          sanitizeJson(links) || '{}',
+          sanitizeText(instagram, 100) || '',
+          sanitizeText(youtube, 200) || '',
+          sanitizeText(spotify, 200) || '',
+          sanitizeText(tiktok, 100) || '',
+          sanitizeText(facebook, 200) || '',
+          sanitizeText(publicSlug, 50) || '',
           id
         ]
       );
@@ -799,6 +824,7 @@ export const bandService = {
 
       const syncPayload = {
         name: localBand.name,
+        publicSlug: localBand.publicSlug || '',
         genre: localBand.genres || '',
         description: localBand.city ? `${localBand.city}${localBand.state ? ', ' + localBand.state : ''}` : '',
         imageUri: syncImageUri,
@@ -827,6 +853,7 @@ export const bandService = {
         } else {
           const createRes = await api.createBand({
             name: localBand.name,
+            publicSlug: localBand.publicSlug || '',
             genre: localBand.genres,
             description: localBand.city
           });

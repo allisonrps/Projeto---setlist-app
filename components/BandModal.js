@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   Pressable,
@@ -11,12 +11,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
+import { bandService } from '../services/bandService';
 
 const BRAZIL_STATES = [
   { uf: 'AC', name: 'Acre' },
@@ -83,6 +85,11 @@ export default function BandModal({ visible, onClose, onSave, band }) {
   const isDark = colors.isDark;
 
   const [name, setName] = useState('');
+  const [publicSlug, setPublicSlug] = useState('');
+  const [isSlugAvailable, setIsSlugAvailable] = useState(null);
+  const [slugFeedbackMsg, setSlugFeedbackMsg] = useState('');
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const slugCheckTimerRef = useRef(null);
   const [imageUri, setImageUri] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -110,11 +117,81 @@ export default function BandModal({ visible, onClose, onSave, band }) {
   // Modais de seleção
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+
+  const handleCheckSlug = (val) => {
+    if (slugCheckTimerRef.current) clearTimeout(slugCheckTimerRef.current);
+    const clean = (val || '').trim().toLowerCase().replace('@', '');
+
+    if (!clean) {
+      setIsSlugAvailable(null);
+      setSlugFeedbackMsg('');
+      return;
+    }
+
+    if (clean.length < 3) {
+      setIsSlugAvailable(false);
+      setSlugFeedbackMsg('Mínimo de 3 caracteres.');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+      setIsSlugAvailable(false);
+      setSlugFeedbackMsg('Apenas letras, números e sublinhados (_).');
+      return;
+    }
+
+    const currentBandSlug = (band?.publicSlug || '').trim().toLowerCase().replace('@', '');
+    if (band && clean === currentBandSlug) {
+      setIsSlugAvailable(true);
+      setSlugFeedbackMsg(`@${clean} é o username atual da banda`);
+      return;
+    }
+
+    setIsSlugAvailable('checking');
+    setSlugFeedbackMsg('Verificando disponibilidade...');
+
+    slugCheckTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await bandService.checkUsername(clean, band?.id || band?.cloudId);
+        if (res.available) {
+          setIsSlugAvailable(true);
+          setSlugFeedbackMsg(`@${clean} está disponível`);
+        } else {
+          setIsSlugAvailable(false);
+          setSlugFeedbackMsg(res.message || `@${clean} já está em uso por outra banda`);
+        }
+      } catch (e) {
+        setIsSlugAvailable(null);
+        setSlugFeedbackMsg('');
+      }
+    }, 350);
+  };
+
+  const handleNameChange = (val) => {
+    setName(val);
+    if (!slugManuallyEdited && !band) {
+      const suggested = (val || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
+      setPublicSlug(suggested);
+      handleCheckSlug(suggested);
+    }
+  };
+
+  const handleSlugChange = (val) => {
+    setSlugManuallyEdited(true);
+    const clean = (val || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30);
+    setPublicSlug(clean);
+    handleCheckSlug(clean);
+  };
   
   useEffect(() => {
     if (visible) {
       if (band) {
         setName(band.name || '');
+        const bSlug = (band.publicSlug || '').replace(/^@/, '');
+        setPublicSlug(bSlug);
+        setSlugManuallyEdited(Boolean(bSlug));
+        setIsSlugAvailable(bSlug ? true : null);
+        setSlugFeedbackMsg(bSlug ? `@${bSlug} é o username atual da banda` : '');
         setImageUri(band.imageUri || null);
         setStartDate(band.startDate || '');
         setEndDate(band.endDate || '');
@@ -170,6 +247,10 @@ export default function BandModal({ visible, onClose, onSave, band }) {
         }
       } else {
         setName('');
+        setPublicSlug('');
+        setIsSlugAvailable(null);
+        setSlugFeedbackMsg('');
+        setSlugManuallyEdited(false);
         setImageUri(null);
         setStartDate('');
         setEndDate('');
@@ -271,6 +352,10 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       Alert.alert(t('attention'), t('alertBandName'));
       return;
     }
+    if (isSlugAvailable === false) {
+      Alert.alert(t('attention') || 'Atenção', 'O username da banda já está em uso ou é inválido. Escolha outro para continuar.');
+      return;
+    }
     const bandType = (isCover && isAutoral) ? 'both' : (isCover ? 'cover' : 'autoral');
     const interestLevel = (isProfissional && isCasual) ? 'both' : (isProfissional ? 'Profissional' : 'Casual');
     const linksObj = {
@@ -282,6 +367,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
     };
     onSave({ 
       name: name.trim(), 
+      publicSlug: publicSlug.trim().toLowerCase().replace('@', ''),
       imageUri, 
       startDate: startDate.trim(), 
       endDate: endDate.trim(),
@@ -343,10 +429,60 @@ export default function BandModal({ visible, onClose, onSave, band }) {
                 borderColor: colors.border
               }]}
               value={name}
-              onChangeText={setName}
+              onChangeText={handleNameChange}
               autoComplete="off"
               importantForAutofill="no"
             />
+
+            {/* USERNAME DA BANDA */}
+            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('bandUsernameLabel') || 'USERNAME DA BANDA (@)'}</Text>
+            <View style={{ marginBottom: slugFeedbackMsg ? 6 : 14 }}>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.inputBackground,
+                borderWidth: 1,
+                borderColor: isSlugAvailable === true ? '#22c55e' : (isSlugAvailable === false ? '#ef4444' : colors.border),
+                borderRadius: 8,
+                paddingHorizontal: 12,
+              }}>
+                <Text style={{ color: colors.textMuted, fontSize: 15, fontWeight: '700', marginRight: 2 }}>@</Text>
+                <TextInput
+                  maxLength={30}
+                  style={{
+                    flex: 1,
+                    height: 44,
+                    color: colors.inputText,
+                    fontSize: 15,
+                  }}
+                  value={publicSlug}
+                  onChangeText={handleSlugChange}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="ex: os_valentes"
+                  placeholderTextColor={colors.textMuted + '80'}
+                />
+                {isSlugAvailable === 'checking' && (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                )}
+                {isSlugAvailable === true && (
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                )}
+                {isSlugAvailable === false && (
+                  <Ionicons name="close-circle" size={18} color="#ef4444" />
+                )}
+              </View>
+              {slugFeedbackMsg ? (
+                <Text style={{
+                  fontSize: 12,
+                  marginTop: 4,
+                  fontWeight: '600',
+                  color: isSlugAvailable === true ? '#22c55e' : (isSlugAvailable === false ? '#ef4444' : colors.textMuted)
+                }}>
+                  {slugFeedbackMsg}
+                </Text>
+              ) : null}
+            </View>
 
             {/* PÍLULAS DE SELEÇÃO: COVER / AUTORAL */}
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('musicalProposalLabel') || 'PROPOSTA MUSICAL'}</Text>
