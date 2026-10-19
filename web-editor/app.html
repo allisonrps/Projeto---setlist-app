@@ -5563,6 +5563,28 @@
         display: none !important;
       }
 
+      /* Finances header row & mobile circular action button */
+      .finances-header-actions .finances-btn-cash {
+        padding: 5px 9px !important;
+        font-size: 0.78rem !important;
+      }
+      .finances-header-actions .finances-btn-add {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .finances-header-actions .finances-btn-add .finances-btn-add-text {
+        display: none !important;
+      }
+      .finances-header-actions .finances-btn-add ion-icon {
+        font-size: 1.25rem !important;
+      }
+
       /* FINANCES GRID */
       .band-finance-grid {
         grid-template-columns: 1fr !important;
@@ -8142,78 +8164,77 @@
 
   <!-- MODAL DE DIVISÃO DE CACHÊ (CACHE SPLIT POR INTEGRANTE E SUBSTITUTOS) -->
   <div class="modal-overlay" id="cacheSplitModal">
-    <div class="modal-card large" style="max-width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
-      <div class="modal-header">
+    <div class="modal-card large" style="max-width: 640px; max-height: 92vh; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; overflow-x: hidden; padding: 22px 18px;">
+      <div class="modal-header" style="margin-bottom: 14px;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); display: flex; align-items: center; justify-content: center; color: #4ade80;">
-            <ion-icon name="pie-chart-outline" style="font-size: 1.3rem;"></ion-icon>
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); display: flex; align-items: center; justify-content: center; color: #4ade80; flex-shrink: 0;">
+            <ion-icon name="pie-chart-outline" style="font-size: 1.25rem;"></ion-icon>
           </div>
-          <div>
-            <h3 class="modal-title" style="margin: 0;" id="cacheSplitModalTitle">Divisão de Cachê</h3>
-            <span style="font-size: 0.8rem; color: #94a3b8;" id="cacheSplitModalSubtitle">Show • Data • Local</span>
+          <div style="min-width: 0;">
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cacheSplitModalTitle">Divisão de Cachê</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cacheSplitModalSubtitle">Show • Data • Local</span>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('cacheSplitModal')">&times;</button>
       </div>
 
-      <div style="overflow-y: auto; padding: 4px; flex: 1;">
+      <div style="overflow-y: auto; overflow-x: hidden; padding: 2px; flex: 1; display: flex; flex-direction: column; gap: 14px;">
         <!-- Header Financeiro do Show -->
-        <div style="background: #141c2c; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="background: #141c2c; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Cachê Total Bruto</span>
-            <div style="font-size: 1.6rem; font-weight: 900; color: #4ade80;" id="cacheSplitTotalGrossDisplay">R$ 0,00</div>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Cachê Total Bruto</span>
+            <div style="font-size: 1.55rem; font-weight: 900; color: #4ade80;" id="cacheSplitTotalGrossDisplay">$ 0,00</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
             <div>
-              <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 4px;">Status do Pagamento</span>
+              <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 4px;">Status</span>
               <select id="cacheSplitStatusSelect" class="form-input" style="padding: 4px 10px; font-size: 0.82rem; height: 34px;">
-                <option value="paid">Pago / Recebido</option>
+                <option value="paid">Recebido</option>
                 <option value="pending">Pendente</option>
               </select>
             </div>
-            <button type="button" class="btn btn-sm btn-cyan" onclick="splitCacheEquallyAmongMembers()" style="height: 34px; margin-top: 16px;">
-              <ion-icon name="git-branch-outline"></ion-icon> Dividir Igualmente
+            <button type="button" class="btn btn-sm btn-cyan" onclick="splitCacheEquallyAmongMembers()" style="height: 34px; font-size: 0.8rem; padding: 0 12px; white-space: nowrap;">
+              <ion-icon name="git-branch-outline"></ion-icon> <span>Dividir Igualmente</span>
             </button>
           </div>
         </div>
 
-        <!-- Opção: Caixa da Banda (Reserva do Evento) -->
-        <div style="background: rgba(56, 189, 248, 0.07); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 240px;">
-            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; color: #38bdf8; flex-shrink: 0;">
-              <ion-icon name="wallet-outline" style="font-size: 1.35rem;"></ion-icon>
+        <!-- Opção: Caixa da Banda (Sem subtexto, com $) -->
+        <div style="background: rgba(56, 189, 248, 0.07); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 150px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; color: #38bdf8; flex-shrink: 0;">
+              <ion-icon name="wallet-outline" style="font-size: 1.25rem;"></ion-icon>
             </div>
             <div>
-              <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">Caixa da Banda (Fundo de Reserva)</div>
-              <div style="font-size: 0.76rem; color: #94a3b8;">Inicia em R$ 0,00. Ao destinar valor para o caixa, o split dos membros diminui automaticamente.</div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">Caixa da Banda</div>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 800;">R$</span>
-            <input type="number" id="cacheSplitBandFundInput" step="0.01" min="0" class="form-input" placeholder="0.00" style="width: 130px; font-size: 1.05rem; font-weight: 900; color: #38bdf8; text-align: right; padding: 6px 12px;" value="0.00" oninput="handleBandFundInputChange(this.value)">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 800;">$</span>
+            <input type="number" id="cacheSplitBandFundInput" step="0.01" min="0" class="form-input" placeholder="0.00" style="width: 120px; font-size: 1.05rem; font-weight: 900; color: #38bdf8; text-align: right; padding: 6px 10px;" value="0.00" oninput="handleBandFundInputChange(this.value)">
           </div>
         </div>
 
         <!-- Seção: Integrantes da Banda -->
-        <div style="margin-bottom: 18px;">
-          <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+        <div>
+          <h4 style="font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
             <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
-            <span>Cota dos Integrantes Oficiais</span>
+            <span>Cota dos Integrantes</span>
           </h4>
           <div id="cacheSplitMembersList" style="display: flex; flex-direction: column; gap: 8px;">
             <!-- Linhas de membros -->
           </div>
         </div>
 
-        <!-- Seção: Substitutos / Músicos Convidados -->
-        <div style="margin-bottom: 18px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <!-- Seção: Substitutos e Convidados (Sem texto 'músicos') -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-size: 0.92rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
               <ion-icon name="person-add" style="color: #fbbf24;"></ion-icon>
-              <span>Substitutos & Músicos Convidados</span>
+              <span>Substitutos e Convidados</span>
             </h4>
-            <button type="button" class="btn btn-sm btn-outline" onclick="addSubstituteToCacheSplit()" style="font-size: 0.78rem; padding: 4px 10px;">
-              <ion-icon name="add-outline"></ion-icon> Adicionar Substituto
+            <button type="button" class="btn btn-sm btn-outline" onclick="addSubstituteToCacheSplit()" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px;">
+              <ion-icon name="add-outline"></ion-icon> <span>Adicionar</span>
             </button>
           </div>
           <div id="cacheSplitSubstitutesList" style="display: flex; flex-direction: column; gap: 8px;">
@@ -8222,27 +8243,27 @@
         </div>
 
         <!-- Resumo Contábil da Divisão -->
-        <div style="background: #101624; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; align-items: center;">
+        <div style="background: #101624; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: center;">
           <div>
-            <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Total do Show</span>
-            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;" id="cacheSplitSummaryGross">R$ 0,00</div>
+            <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Total do Show</span>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #fff;" id="cacheSplitSummaryGross">$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.72rem; color: #38bdf8; text-transform: uppercase; font-weight: 700; display: block;">Caixa da Banda</span>
-            <div style="font-size: 1.15rem; font-weight: 800; color: #38bdf8;" id="cacheSplitSummaryFund">R$ 0,00</div>
+            <span style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase; font-weight: 700; display: block;">Caixa da Banda</span>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #38bdf8;" id="cacheSplitSummaryFund">$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.72rem; color: #4ade80; text-transform: uppercase; font-weight: 700; display: block;">Total aos Músicos</span>
-            <div style="font-size: 1.15rem; font-weight: 800; color: #4ade80;" id="cacheSplitTotalDistributed">R$ 0,00</div>
+            <span style="font-size: 0.7rem; color: #4ade80; text-transform: uppercase; font-weight: 700; display: block;">Total Músicos</span>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #4ade80;" id="cacheSplitTotalDistributed">$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Saldo Restante</span>
-            <div style="font-size: 1.15rem; font-weight: 800; color: #94a3b8;" id="cacheSplitBandFund">R$ 0,00</div>
+            <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Saldo Restante</span>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #94a3b8;" id="cacheSplitBandFund">$ 0,00</div>
           </div>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap;">
         <button type="button" class="btn btn-outline" onclick="closeModal('cacheSplitModal')">Cancelar</button>
         <button type="button" class="btn btn-primary" onclick="saveCacheSplitModal()">Salvar Divisão de Cachê</button>
       </div>
@@ -13134,22 +13155,21 @@
       const allMonthKeys = Object.keys(financeMonthMap).sort().reverse();
 
       let html = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+        <div class="finances-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
           <div>
-            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="wallet" style="color: var(--cyan);"></ion-icon>
-              <span>Finanças & Lançamentos da Banda</span>
+              <span>Finanças</span>
             </h2>
-            <p style="color: #94a3b8; font-size: 0.88rem;">Controle completo de cachês, divisão entre integrantes, despesas e fundo de reserva.</p>
           </div>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline" onclick="openEditBandCashModal()" style="font-size: 0.84rem; padding: 7px 14px; border-color: rgba(251,191,36,0.4); color: #fbbf24;">
-              <ion-icon name="create-outline"></ion-icon>
-              <span>Ajustar Caixa</span>
+          <div class="finances-header-actions" style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm finances-btn-cash" onclick="openEditBandCashModal()" style="font-size: 0.82rem; padding: 5px 12px; border-color: rgba(251,191,36,0.4); color: #fbbf24; display: inline-flex; align-items: center; gap: 6px;">
+              <ion-icon name="wallet-outline"></ion-icon>
+              <span>Caixa</span>
             </button>
-            <button type="button" class="btn btn-primary" onclick="openAddFinanceEntryModal()" style="font-size: 0.84rem; padding: 7px 16px;">
-              <ion-icon name="add-circle-outline"></ion-icon>
-              <span>Novo Lançamento</span>
+            <button type="button" class="btn btn-primary btn-sm finances-btn-add" onclick="openAddFinanceEntryModal()" title="Novo Lançamento" style="font-size: 0.82rem; padding: 5px 14px; display: inline-flex; align-items: center; gap: 6px;">
+              <ion-icon name="add"></ion-icon>
+              <span class="finances-btn-add-text">Novo Lançamento</span>
             </button>
           </div>
         </div>
@@ -13159,7 +13179,7 @@
           <!-- Círculo 1: Receita Total -->
           <div class="agenda-circle-col">
             <div class="agenda-circle-wrapper">
-              <div class="agenda-circle-disc" style="padding-left: 10px; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.35); color: #fff;" title="Receita Total: R$ ${m.totalBandRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}">
+              <div class="agenda-circle-disc" style="padding-left: 10px; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.35); color: #fff;" title="Receita Total: $ ${m.totalBandRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}">
                 ${formatCompactNumber(m.totalBandRevenue)}
               </div>
               <div class="agenda-circle-overlap-icon" style="border-color: #38bdf8; color: #38bdf8;" title="Receita Total da Banda">
@@ -13171,7 +13191,7 @@
 
           <!-- Círculo 2: Caixa da Banda (Reserva) com clique para ajuste -->
           <div class="agenda-circle-col">
-            <div class="agenda-circle-wrapper" onclick="openEditBandCashModal()" style="cursor: pointer;" title="Clique para ajustar caixa da banda (Saldo: R$ ${m.totalBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})">
+            <div class="agenda-circle-wrapper" onclick="openEditBandCashModal()" style="cursor: pointer;" title="Clique para ajustar caixa da banda (Saldo: $ ${m.totalBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})">
               <div class="agenda-circle-disc" style="padding-left: 10px; background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.35); color: #fbbf24;">
                 ${formatCompactNumber(m.totalBandFund)}
               </div>
@@ -13185,7 +13205,7 @@
           <!-- Círculo 3: Despesas da Banda -->
           <div class="agenda-circle-col">
             <div class="agenda-circle-wrapper">
-              <div class="agenda-circle-disc" style="padding-left: 10px; background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.35); color: #f87171;" title="Despesas Totais: R$ ${m.totalManualExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}">
+              <div class="agenda-circle-disc" style="padding-left: 10px; background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.35); color: #f87171;" title="Despesas Totais: $ ${m.totalManualExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}">
                 ${formatCompactNumber(m.totalManualExpense)}
               </div>
               <div class="agenda-circle-overlap-icon" style="border-color: #f87171; color: #f87171;" title="Despesas Totais da Banda">
@@ -13252,19 +13272,19 @@
                       <span class="badge ${isPaid ? 'badge-emerald' : 'badge-amber'}" style="font-size: 0.65rem; padding: 1.5px 6px; font-weight: 700;">
                         ${isPaid ? 'RECEBIDO' : 'PENDENTE'}
                       </span>
-                      <!-- Mobile Pill Cachê Bruto -->
-                      <span class="mobile-event-val-pill">
+                      <!-- Mobile Pill Cachê Bruto (Amarela se pendente) -->
+                      <span class="mobile-event-val-pill" style="${isPaid ? '' : 'background: rgba(251, 191, 36, 0.15) !important; color: #fbbf24 !important; border: 1px solid rgba(251, 191, 36, 0.35) !important;'}">
                         <ion-icon name="cash-outline"></ion-icon>
                         <span>$ ${formatCompactNumber(num)}</span>
                       </span>
-                      <!-- Pill Cota Individual -->
-                      <span class="badge" style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: #4ade80; font-size: 0.68rem; padding: 1.5px 6px; font-weight: 700;" title="Cota Individual por Membro">
-                        <ion-icon name="person-outline" style="vertical-align: middle;"></ion-icon> Cota: $ ${formatCompactNumber(indiv)}
+                      <!-- Pill Cota Individual (Apenas ícone e valor) -->
+                      <span class="badge" style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: #4ade80; font-size: 0.68rem; padding: 1.5px 6px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Cota Individual por Membro">
+                        <ion-icon name="person-outline"></ion-icon> <span>$ ${formatCompactNumber(indiv)}</span>
                       </span>
-                      <!-- Pill Caixa da Banda (se houver reserva) -->
+                      <!-- Pill Caixa da Banda (Apenas ícone e valor se > 0) -->
                       ${showBandFund > 0 ? `
-                        <span class="badge" style="background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 0.68rem; padding: 1.5px 6px; font-weight: 700;" title="Fundo de Reserva da Banda">
-                          <ion-icon name="wallet-outline" style="vertical-align: middle;"></ion-icon> Caixa: $ ${formatCompactNumber(showBandFund)}
+                        <span class="badge" style="background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 0.68rem; padding: 1.5px 6px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Caixa da Banda">
+                          <ion-icon name="wallet-outline"></ion-icon> <span>$ ${formatCompactNumber(showBandFund)}</span>
                         </span>
                       ` : ''}
                       ${hasSplit ? `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 5px;">Split OK</span>` : ''}
@@ -13274,7 +13294,7 @@
 
                 <!-- Lado direito: Cachê e Ação (Desktop) -->
                 <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 14px;">
-                  <span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: #38bdf8;">R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: ${isPaid ? '#38bdf8' : '#fbbf24'};">$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                   <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 12px; font-size: 0.78rem;" onclick="event.stopPropagation(); openCacheSplitModal(${originalIdx})">
                     <ion-icon name="pie-chart-outline"></ion-icon> <span>Divisão de Cachê</span>
                   </button>
@@ -13311,16 +13331,17 @@
                           ${isPaid ? (isIncome ? 'RECEBIDO' : 'PAGO') : 'PENDENTE'}
                         </span>
                       </button>
-                      <!-- Mobile Pill Valor -->
-                      <span class="mobile-event-val-pill" style="${isIncome ? 'background: rgba(74,222,128,0.15); color: #4ade80; border-color: rgba(74,222,128,0.35);' : 'background: rgba(248,113,113,0.15); color: #f87171; border-color: rgba(248,113,113,0.35);'}">
+                      <!-- Mobile Pill Valor (Amarela se pendente) -->
+                      <span class="mobile-event-val-pill" style="${isPaid ? (isIncome ? 'background: rgba(74,222,128,0.15); color: #4ade80; border-color: rgba(74,222,128,0.35);' : 'background: rgba(248,113,113,0.15); color: #f87171; border-color: rgba(248,113,113,0.35);') : 'background: rgba(251, 191, 36, 0.15) !important; color: #fbbf24 !important; border: 1px solid rgba(251, 191, 36, 0.35) !important;'}">
                         <ion-icon name="${isIncome ? 'trending-up' : 'trending-down'}"></ion-icon>
                         <span>${isIncome ? '+' : '-'} $ ${formatCompactNumber(num)}</span>
                       </span>
+                      <!-- Pill Caixa da Banda (Apenas ícone) -->
                       ${f.useBandCash !== false ? `
-                        <span class="badge" style="background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; font-size: 0.68rem; padding: 1.5px 6px; font-weight: 700;">
-                          <ion-icon name="wallet-outline" style="vertical-align: middle;"></ion-icon> Caixa Banda
+                        <span class="badge" style="background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; font-size: 0.68rem; padding: 1.5px 6px; font-weight: 700; display: inline-flex; align-items: center;" title="Caixa da Banda">
+                          <ion-icon name="wallet-outline"></ion-icon>
                         </span>
-                      ` : '<span class="badge badge-outline" style="font-size: 0.65rem; padding: 1px 5px; color: #64748b;">Externo</span>'}
+                      ` : '<span class="badge badge-outline" style="font-size: 0.65rem; padding: 1px 5px; color: #64748b;" title="Externo">Externo</span>'}
                       ${f.notes ? `<span style="color: #94a3b8; font-style: italic; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;"><ion-icon name="document-text-outline" style="color: #64748b;"></ion-icon> ${escapeHtml(f.notes)}</span>` : ''}
                     </div>
                   </div>
@@ -13328,7 +13349,7 @@
 
                 <!-- Lado direito: Valor e Ações (Desktop) -->
                 <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 14px;">
-                  <span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: ${isIncome ? '#4ade80' : '#f87171'};">${isIncome ? '+ ' : '- '}R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: ${isPaid ? (isIncome ? '#4ade80' : '#f87171') : '#fbbf24'};">${isIncome ? '+ ' : '- '}$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                   <div style="display: inline-flex; gap: 6px;">
                     <button type="button" class="member-action-btn edit" onclick="event.stopPropagation(); openEditFinanceEntryModal('${f.id}')" title="Editar Lançamento" style="padding: 5px 10px; font-size: 0.76rem;">
                       <ion-icon name="create-outline"></ion-icon> <span>Editar</span>
@@ -13365,11 +13386,11 @@
                 <ion-icon name="calendar-outline"></ion-icon> <span>${mShows}</span>
               </span>
               <span class="month-pill-badge month-pill-total" title="Entradas no Mês">
-                <ion-icon name="trending-up"></ion-icon> <span>+ R$ ${mTotalIn.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <ion-icon name="trending-up"></ion-icon> <span>+ $ ${mTotalIn.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </span>
               ${mTotalOut > 0 ? `
                 <span class="month-pill-badge" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3);" title="Despesas do Mês">
-                  <ion-icon name="trending-down"></ion-icon> <span>- R$ ${mTotalOut.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <ion-icon name="trending-down"></ion-icon> <span>- $ ${mTotalOut.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </span>
               ` : ''}
 
@@ -15879,6 +15900,95 @@
     let currentSplitMembers = {};
     let currentSplitSubstitutes = [];
     let currentSplitBandFund = 0;
+    let platformUsersCache = null;
+    let isFetchingPlatformUsers = false;
+    let substituteInputDebounceTimer = null;
+
+    async function getPlatformUsersList() {
+      if (platformUsersCache && platformUsersCache.length > 0) return platformUsersCache;
+      if (isFetchingPlatformUsers) return platformUsersCache || [];
+      isFetchingPlatformUsers = true;
+      try {
+        const res = await fetch(`${API_URL}/Users`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            platformUsersCache = data;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load platform users for substitute auto-complete:', err);
+      } finally {
+        isFetchingPlatformUsers = false;
+      }
+      return platformUsersCache || [];
+    }
+
+    async function checkPlatformUserMatch(raw) {
+      if (!raw) return null;
+      const clean = raw.trim().replace(/^@/, '').toLowerCase();
+      if (!clean) return null;
+
+      // 1. Consulta em memória
+      let list = await getPlatformUsersList();
+      let match = list.find(u =>
+        (u.username && u.username.toLowerCase() === clean) ||
+        (u.displayName && u.displayName.toLowerCase() === clean)
+      );
+      if (match) return match;
+
+      // 2. Consulta direta à API
+      if (clean.length >= 3) {
+        try {
+          const res = await fetch(`${API_URL}/Users/${encodeURIComponent(clean)}`);
+          if (res.ok) {
+            const user = await res.json();
+            if (user && user.username) {
+              if (!platformUsersCache) platformUsersCache = [];
+              if (!platformUsersCache.some(u => u.username?.toLowerCase() === user.username.toLowerCase())) {
+                platformUsersCache.push(user);
+              }
+              return user;
+            }
+          }
+        } catch (_) {}
+      }
+
+      return null;
+    }
+
+    function renderSubstituteBadgeHtml(sub) {
+      if (!sub) return '';
+      if (sub.isPlatformUser && sub.username) {
+        const pic = sub.userPicture || '';
+        const initial = (sub.displayName || sub.username || 'U').charAt(0).toUpperCase();
+        return `
+          <div style="display: inline-flex; align-items: center; gap: 7px; font-size: 0.76rem; color: #34d399; background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 6px; padding: 3px 8px; font-weight: 700; margin-top: 3px;">
+            ${pic ? `
+              <img src="${escapeHtml(pic)}" alt="" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover;">
+            ` : `
+              <span style="width: 18px; height: 18px; border-radius: 50%; background: #34d399; color: #064e3b; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900;">${initial}</span>
+            `}
+            <ion-icon name="checkmark-circle" style="font-size: 0.95rem;"></ion-icon>
+            <span>@${escapeHtml(sub.username)} • Músico BandLink verificado (agenda sincronizada)</span>
+          </div>
+        `;
+      }
+      const raw = (sub.name || '').trim();
+      if (raw) {
+        return `
+          <div style="font-size: 0.72rem; color: #94a3b8; font-style: italic; padding: 2px 2px 0 2px; display: flex; align-items: center; gap: 4px;">
+            <ion-icon name="person-outline" style="font-size: 0.8rem; color: #64748b;"></ion-icon>
+            <span>Nome aberto (substituto sem conta no app)</span>
+          </div>
+        `;
+      }
+      return `
+        <div style="font-size: 0.72rem; color: #64748b; font-style: italic; padding: 2px 2px 0 2px;">
+          Digite @username para vincular à agenda do músico ou um nome aberto.
+        </div>
+      `;
+    }
 
     function openCacheSplitModal(originalIdx) {
       const band = currentBandData || { name: 'Bad Badgers' };
@@ -15912,7 +16022,7 @@
 
       if (titleEl) titleEl.textContent = `Divisão de Cachê: ${ev.name || 'Show'}`;
       if (subTitleEl) subTitleEl.textContent = `${formatDateDisplay(ev.date)} • ${ev.local || 'Local a confirmar'}`;
-      if (grossDisplay) grossDisplay.textContent = `R$ ${grossNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      if (grossDisplay) grossDisplay.textContent = `$ ${grossNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
       const membersList = getBandMembersList(band, currentBandSyncData);
 
@@ -15939,6 +16049,9 @@
       renderCacheSplitSubstitutesList();
       updateCacheSplitTotals();
 
+      // Pré-carrega usuários da plataforma em background
+      getPlatformUsersList();
+
       openModal('cacheSplitModal');
     }
 
@@ -15963,7 +16076,7 @@
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">R$</span>
+              <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">$</span>
               <input type="number" step="0.01" class="form-input" style="width: 110px; padding: 6px 10px; font-size: 0.9rem; font-weight: 800; color: #4ade80; text-align: right;" value="${val}" oninput="handleMemberSplitInputChange('${mem.id}', this.value)">
             </div>
           </div>
@@ -15977,23 +16090,30 @@
 
       if (currentSplitSubstitutes.length === 0) {
         listEl.innerHTML = `
-          <div style="font-size: 0.8rem; color: #64748b; font-style: italic; padding: 6px 4px;">
-            Nenhum músico substituto adicionado a este evento.
+          <div style="font-size: 0.8rem; color: #64748b; font-style: italic; padding: 8px 4px;">
+            Nenhum substituto ou convidado adicionado a este evento.
           </div>
         `;
         return;
       }
 
       listEl.innerHTML = currentSplitSubstitutes.map((sub, idx) => `
-        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 8px;">
-          <input type="text" class="form-input" placeholder="Nome do Músico Substituto" value="${escapeHtml(sub.name || '')}" oninput="handleSubstituteInputChange(${idx}, 'name', this.value)" style="flex: 1; font-size: 0.85rem; padding: 6px 10px;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">R$</span>
-            <input type="number" step="0.01" class="form-input" placeholder="0.00" value="${sub.amount || ''}" oninput="handleSubstituteInputChange(${idx}, 'amount', this.value)" style="width: 100px; padding: 6px 10px; font-size: 0.9rem; font-weight: 800; color: #fbbf24; text-align: right;">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.22); border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <div style="flex: 1; min-width: 0;">
+              <input type="text" class="form-input" placeholder="Nome ou @username" value="${escapeHtml(sub.name || '')}" oninput="handleSubstituteNameInput(${idx}, this.value)" style="width: 100%; font-size: 0.85rem; padding: 6px 10px; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+              <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 700;">$</span>
+              <input type="number" step="0.01" class="form-input" placeholder="0.00" value="${sub.amount || ''}" oninput="handleSubstituteAmountInput(${idx}, this.value)" style="width: 90px; padding: 6px 8px; font-size: 0.9rem; font-weight: 800; color: #fbbf24; text-align: right; box-sizing: border-box;">
+            </div>
+            <button type="button" class="btn btn-sm" onclick="removeSubstituteFromCacheSplit(${idx})" style="padding: 6px 8px; color: #f87171; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); flex-shrink: 0;" title="Remover substituto">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
           </div>
-          <button type="button" class="btn btn-sm" onclick="removeSubstituteFromCacheSplit(${idx})" style="padding: 6px 8px; color: #f87171; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25);" title="Remover substituto">
-            <ion-icon name="trash-outline"></ion-icon>
-          </button>
+          <div id="sub-platform-badge-${idx}">
+            ${renderSubstituteBadgeHtml(sub)}
+          </div>
         </div>
       `).join('');
     }
@@ -16031,15 +16151,52 @@
       updateCacheSplitTotals();
     }
 
-    function handleSubstituteInputChange(idx, field, val) {
+    function handleSubstituteAmountInput(idx, val) {
       if (currentSplitSubstitutes[idx]) {
-        currentSplitSubstitutes[idx][field] = val;
+        currentSplitSubstitutes[idx].amount = val;
         updateCacheSplitTotals();
       }
     }
 
+    function handleSubstituteNameInput(idx, val) {
+      if (!currentSplitSubstitutes[idx]) return;
+      currentSplitSubstitutes[idx].name = val;
+
+      if (substituteInputDebounceTimer) {
+        clearTimeout(substituteInputDebounceTimer);
+      }
+
+      const badgeContainer = document.getElementById(`sub-platform-badge-${idx}`);
+
+      substituteInputDebounceTimer = setTimeout(async () => {
+        const match = await checkPlatformUserMatch(val);
+        if (currentSplitSubstitutes[idx]) {
+          if (match) {
+            currentSplitSubstitutes[idx].isPlatformUser = true;
+            currentSplitSubstitutes[idx].username = match.username;
+            currentSplitSubstitutes[idx].userId = match.id || match.userId;
+            currentSplitSubstitutes[idx].userPicture = match.pictureUrl || '';
+            currentSplitSubstitutes[idx].displayName = match.displayName || match.username;
+          } else {
+            currentSplitSubstitutes[idx].isPlatformUser = false;
+            currentSplitSubstitutes[idx].username = '';
+            currentSplitSubstitutes[idx].userId = null;
+            currentSplitSubstitutes[idx].userPicture = '';
+            currentSplitSubstitutes[idx].displayName = '';
+          }
+          if (badgeContainer) {
+            badgeContainer.innerHTML = renderSubstituteBadgeHtml(currentSplitSubstitutes[idx]);
+          }
+        }
+      }, 250);
+
+      if (badgeContainer && (!val || !val.trim())) {
+        badgeContainer.innerHTML = renderSubstituteBadgeHtml(currentSplitSubstitutes[idx]);
+      }
+    }
+
     function addSubstituteToCacheSplit() {
-      currentSplitSubstitutes.push({ name: '', amount: '0' });
+      currentSplitSubstitutes.push({ name: '', amount: '0', isPlatformUser: false, username: '', userId: null });
       renderCacheSplitSubstitutesList();
       updateCacheSplitTotals();
     }
@@ -16100,22 +16257,104 @@
       const distEl = document.getElementById('cacheSplitTotalDistributed');
       const fundEl = document.getElementById('cacheSplitBandFund');
 
-      if (grossEl) grossEl.textContent = `R$ ${grossNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-      if (fundDisplayEl) fundDisplayEl.textContent = `R$ ${currentSplitBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-      if (distEl) distEl.textContent = `R$ ${totalDistributed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      if (grossEl) grossEl.textContent = `$ ${grossNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      if (fundDisplayEl) fundDisplayEl.textContent = `$ ${currentSplitBandFund.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      if (distEl) distEl.textContent = `$ ${totalDistributed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
       if (fundEl) {
         if (Math.abs(balance) < 0.01) {
-          fundEl.textContent = 'R$ 0,00 (Exato)';
+          fundEl.textContent = '$ 0,00';
           fundEl.style.color = '#4ade80';
         } else if (balance < -0.01) {
-          fundEl.textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (Excesso)`;
+          fundEl.textContent = `$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (Excesso)`;
           fundEl.style.color = '#f87171';
         } else {
-          fundEl.textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+          fundEl.textContent = `$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
           fundEl.style.color = '#fbbf24';
         }
       }
+    }
+
+    async function scheduleEventInSubstituteAgenda(sub, show, band) {
+      if (!sub) return;
+      const cleanUser = (sub.username || sub.name || '').trim().replace(/^@/, '').toLowerCase();
+      if (!cleanUser) return;
+
+      const subAmount = parseFloat(String(sub.amount || '0').replace(',', '.')) || 0;
+      const bName = band?.name || 'Banda';
+      const sName = show?.name || 'Show';
+      const dateStr = normalizeDateStr(show?.date);
+      const timeStr = show?.time || '21:00';
+      const localStr = show?.local || show?.location || '';
+      const eventKey = `sub_${cleanUser}_${show?.id || (sName + '_' + dateStr)}`;
+
+      const newEvent = {
+        id: eventKey,
+        substituteForUsername: cleanUser,
+        substituteUserId: sub.userId || null,
+        bandId: band?.id || null,
+        bandName: bName,
+        bandImageUri: band?.imageUri || '',
+        title: `${sName} • (${bName})`,
+        name: `${sName} • (${bName})`,
+        date: dateStr,
+        time: timeStr,
+        local: localStr,
+        location: localStr,
+        cacheNum: subAmount,
+        myShareNum: subAmount,
+        cacheValue: subAmount,
+        isRehearsal: false,
+        type: 'show',
+        isSubstitute: true,
+        notes: `Músico Convidado / Substituto na banda ${bName}. Cachê acordado: $ ${subAmount.toFixed(2)}`,
+        status: 'Confirmed',
+        createdAt: new Date().toISOString()
+      };
+
+      // 1. Grava no cache de substituições do usuário específico
+      try {
+        const userStorageKey = `bandlink_user_${cleanUser}_sub_events`;
+        let userSubEvents = parseJsonSafe(localStorage.getItem(userStorageKey)) || [];
+        userSubEvents = userSubEvents.filter(e => e.id !== eventKey && !(e.date === dateStr && e.bandName === bName));
+        userSubEvents.unshift(newEvent);
+        localStorage.setItem(userStorageKey, JSON.stringify(userSubEvents));
+      } catch (err) {
+        console.warn('Could not persist substitute event to localStorage:', err);
+      }
+
+      // 2. Se o usuário atualmente logado for o próprio substituto, injeta diretamente em myEvents
+      const currentLogUser = (currentUser?.username || '').trim().replace(/^@/, '').toLowerCase();
+      if (currentLogUser && currentLogUser === cleanUser) {
+        myEvents = (myEvents || []).filter(e => e.id !== eventKey && !(e.date === dateStr && e.band === bName));
+        myEvents.unshift({
+          ...newEvent,
+          band: bName
+        });
+        saveEventsCache();
+        renderProfileAgenda();
+      }
+
+      // 3. Tenta persistir no backend via /api/Events se usuário tiver ID ou token
+      try {
+        const payload = {
+          targetUsername: cleanUser,
+          targetUserId: sub.userId || null,
+          bandId: band?.id || null,
+          title: newEvent.title,
+          date: dateStr,
+          time: timeStr,
+          location: localStr,
+          cacheValue: subAmount,
+          notes: newEvent.notes,
+          eventType: 'Show'
+        };
+        fetch(`${API_URL}/Events`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } catch (_) {}
     }
 
     function saveCacheSplitModal() {
@@ -16146,6 +16385,14 @@
       }
 
       persistCurrentBandSync();
+
+      // Sincroniza e agenda o evento para os substitutos reconhecidos
+      const band = currentBandData || { name: 'Bad Badgers' };
+      currentSplitSubstitutes.forEach(sub => {
+        if (sub.isPlatformUser || (sub.name && sub.name.trim().startsWith('@')) || sub.username) {
+          scheduleEventInSubstituteAgenda(sub, currentSplitShow, band);
+        }
+      });
 
       closeModal('cacheSplitModal');
       showToast('Divisão de cachê salva com sucesso!', 'success');
@@ -16275,31 +16522,48 @@
 
           // Cálculo da parte do músico
           let myShareNum = 0;
+          let isSubstituteForThisShow = false;
+          const cleanCurrUser = (currentUser?.username || '').trim().replace(/^@/, '').toLowerCase();
+
           if (sl.cacheSplit) {
-            let memSum = 0;
-            if (sl.cacheSplit.members) {
-              if (currentUser && currentUser.id && sl.cacheSplit.members[currentUser.id] !== undefined) {
-                memSum = parseFloat(String(sl.cacheSplit.members[currentUser.id] || '0').replace(',', '.')) || 0;
-                myShareNum = memSum;
-              } else {
-                Object.values(sl.cacheSplit.members).forEach(v => {
-                  memSum += parseFloat(String(v || '0').replace(',', '.')) || 0;
-                });
-                let subSum = 0;
-                if (Array.isArray(sl.cacheSplit.substitutes)) {
-                  sl.cacheSplit.substitutes.forEach(s => {
-                    subSum += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
-                  });
-                }
-                let showBandFund = parseFloat(sl.cacheSplit.bandFund);
-                if (isNaN(showBandFund)) {
-                  showBandFund = Math.max(0, cacheNum - (memSum + subSum));
-                }
-                const paidToMusicians = cacheNum - showBandFund;
-                myShareNum = activeMemCount > 0 ? (memSum > 0 ? (memSum / activeMemCount) : (paidToMusicians / activeMemCount)) : 0;
+            // Verifica se o usuário atual é um dos substitutos escalados para este show
+            if (cleanCurrUser && Array.isArray(sl.cacheSplit.substitutes)) {
+              const matchedSub = sl.cacheSplit.substitutes.find(s => {
+                const subUser = (s.username || s.name || '').trim().replace(/^@/, '').toLowerCase();
+                return subUser === cleanCurrUser || (currentUser?.id && s.userId === currentUser.id);
+              });
+              if (matchedSub) {
+                isSubstituteForThisShow = true;
+                myShareNum = parseFloat(String(matchedSub.amount || '0').replace(',', '.')) || 0;
               }
-            } else {
-              myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
+            }
+
+            if (!isSubstituteForThisShow) {
+              let memSum = 0;
+              if (sl.cacheSplit.members) {
+                if (currentUser && currentUser.id && sl.cacheSplit.members[currentUser.id] !== undefined) {
+                  memSum = parseFloat(String(sl.cacheSplit.members[currentUser.id] || '0').replace(',', '.')) || 0;
+                  myShareNum = memSum;
+                } else {
+                  Object.values(sl.cacheSplit.members).forEach(v => {
+                    memSum += parseFloat(String(v || '0').replace(',', '.')) || 0;
+                  });
+                  let subSum = 0;
+                  if (Array.isArray(sl.cacheSplit.substitutes)) {
+                    sl.cacheSplit.substitutes.forEach(s => {
+                      subSum += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+                    });
+                  }
+                  let showBandFund = parseFloat(sl.cacheSplit.bandFund);
+                  if (isNaN(showBandFund)) {
+                    showBandFund = Math.max(0, cacheNum - (memSum + subSum));
+                  }
+                  const paidToMusicians = cacheNum - showBandFund;
+                  myShareNum = activeMemCount > 0 ? (memSum > 0 ? (memSum / activeMemCount) : (paidToMusicians / activeMemCount)) : 0;
+                }
+              } else {
+                myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
+              }
             }
           } else {
             myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
@@ -16322,6 +16586,7 @@
               myShareNum: Math.round(myShareNum * 100) / 100,
               isRehearsal: isRehearsal,
               type: isRehearsal ? 'rehearsal' : 'show',
+              isSubstitute: isSubstituteForThisShow,
               notes: sl.notes || '',
               fromBand: true
             });
@@ -16345,7 +16610,7 @@
           const rawC = ev['cachê'] ?? ev.cache ?? ev.valCache ?? ev.value;
           const cacheNum = rawC ? (parseFloat(String(rawC).replace(/[^\d.,]/g, '').replace(',', '.')) || 0) : 0;
           const activeMemCount = matchedBand ? ((matchedBand.membersCount || matchedBand.members?.length) || 1) : 1;
-          const myShareNum = activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum;
+          const myShareNum = ev.isSubstitute ? (parseFloat(ev.cacheValue || ev.cacheNum) || 0) : (activeMemCount > 0 ? (cacheNum / activeMemCount) : cacheNum);
 
           aggregated.push({
             id: ev.id ? String(ev.id) : `ev_${Math.random()}`,
@@ -16361,11 +16626,46 @@
             myShareNum: Math.round(myShareNum * 100) / 100,
             isRehearsal: isRehearsal,
             type: isRehearsal ? 'rehearsal' : 'show',
+            isSubstitute: !!ev.isSubstitute,
             notes: ev.notes || '',
             fromBand: false
           });
         }
       });
+
+      // 3. Mescla shows onde o músico logado foi escalado como Substituto/Convidado (de outras bandas ou cache local)
+      const cleanUserCurrent = (currentUser?.username || '').trim().replace(/^@/, '').toLowerCase();
+      if (cleanUserCurrent) {
+        const userStorageKey = `bandlink_user_${cleanUserCurrent}_sub_events`;
+        const subEvents = parseJsonSafe(localStorage.getItem(userStorageKey)) || [];
+        subEvents.forEach(subEv => {
+          const sName = subEv.title || subEv.name || 'Show';
+          const dateStr = normalizeDateStr(subEv.date);
+          const uniqueKey = subEv.id ? `sub_${subEv.id}` : `sub_${subEv.bandName}_${sName}_${dateStr}`;
+          if (!seenKeys.has(uniqueKey)) {
+            seenKeys.add(uniqueKey);
+            const subAmount = subEv.cacheNum || subEv.cacheValue || subEv.myShareNum || 0;
+            aggregated.push({
+              id: subEv.id || `sub_${Math.random()}`,
+              bandId: subEv.bandId || null,
+              bandName: subEv.bandName || 'Banda Convidante',
+              bandImageUri: subEv.bandImageUri || '',
+              title: sName,
+              name: sName,
+              date: dateStr,
+              time: subEv.time || '',
+              local: subEv.local || subEv.location || '',
+              cacheNum: Math.round(subAmount * 100) / 100,
+              myShareNum: Math.round(subAmount * 100) / 100,
+              isRehearsal: false,
+              type: 'show',
+              isSubstitute: true,
+              notes: subEv.notes || 'Músico Substituto / Convidado',
+              fromBand: true
+            });
+          }
+        });
+      }
 
       return aggregated;
     }
@@ -16503,8 +16803,8 @@
                 <!-- Pílula de show/ensaio + Nome do Evento + Local + Horário -->
                 <div style="flex: 1; min-width: 0;">
                   <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; min-width: 0;">
-                    <span class="badge ${ev.isRehearsal ? 'badge-amber' : 'badge-rose'}" style="font-size: 0.6rem; font-weight: 800; padding: 1.5px 6px; border-radius: 4px; letter-spacing: 0.2px; text-transform: uppercase; flex-shrink: 0;">
-                      ${ev.isRehearsal ? 'ENSAIO' : 'SHOW'}
+                    <span class="badge ${ev.isSubstitute ? 'badge-amber' : (ev.isRehearsal ? 'badge-amber' : 'badge-rose')}" style="font-size: 0.6rem; font-weight: 800; padding: 1.5px 6px; border-radius: 4px; letter-spacing: 0.2px; text-transform: uppercase; flex-shrink: 0; ${ev.isSubstitute ? 'background: rgba(251, 191, 36, 0.18) !important; color: #fbbf24 !important; border: 1px solid rgba(251, 191, 36, 0.4) !important;' : ''}">
+                      ${ev.isSubstitute ? 'SUBSTITUTO' : (ev.isRehearsal ? 'ENSAIO' : 'SHOW')}
                     </span>
                     <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">
                       ${escapeHtml(ev.title)}
