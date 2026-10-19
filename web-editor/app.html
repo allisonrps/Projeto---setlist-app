@@ -12284,7 +12284,53 @@
       }
     }
 
-    // SUBVIEW L: LINHA DO TEMPO
+    // SUBVIEW L: LINHA DO TEMPO (ALTERAÇÕES)
+    let expandedTimelineMonths = {};
+
+    function toggleTimelineMonth(key) {
+      const now = new Date();
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const isDefaultOpen = (key === currentMonthKey);
+      const current = expandedTimelineMonths[key] !== undefined ? expandedTimelineMonths[key] : isDefaultOpen;
+      expandedTimelineMonths[key] = !current;
+      renderBandTimelineTab(currentBandData, currentBandSyncData);
+    }
+
+    function formatTimelineEventDate(ts, fallback) {
+      if (!ts || ts === 0) return fallback || 'Data não informada';
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return fallback || 'Data não informada';
+      const dateStr = d.toLocaleDateString('pt-BR');
+      const hours = d.getHours();
+      const minutes = d.getMinutes();
+      if (hours === 0 && minutes === 0) {
+        return dateStr;
+      }
+      return `${dateStr} às ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+    function parseTimelineDate(val) {
+      if (!val) return 0;
+      if (typeof val === 'number') return val;
+      const str = String(val).trim();
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d.getTime();
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length >= 3) {
+          const parsed = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+          if (!isNaN(parsed.getTime())) return parsed.getTime();
+        }
+      } else if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3) {
+          const parsed = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          if (!isNaN(parsed.getTime())) return parsed.getTime();
+        }
+      }
+      return 0;
+    }
+
     function renderBandTimelineTab(band, syncData) {
       const sub = document.getElementById('bSubview-L');
       if (!sub) return;
@@ -12293,21 +12339,23 @@
       const candidateInterests = getBandCandidateInterests(band.id, band.name);
 
       let html = `
-        <div style="margin-bottom: 24px;">
-          <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+        <div style="margin-bottom: 16px;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 2px; display: flex; align-items: center; gap: 8px;">
             <ion-icon name="time" style="color: var(--cyan);"></ion-icon>
             <span>Alterações</span>
           </h2>
-          <p style="color: #94a3b8; font-size: 0.88rem;">Registro de atividades, mensagens de candidatos interessados e histórico da banda.</p>
+          <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">Histórico recente de atividades e alterações da banda.</p>
         </div>
-        <div style="position: relative; padding-left: 8px;">
       `;
 
       const timelineEvents = [];
 
-      // 1. Mensagens de candidatos interessados (do Mural de Anúncios vinculado a esta banda)
+      // 1. Mensagens de candidatos interessados
       candidateInterests.forEach(ci => {
+        const d = ci.createdAt ? new Date(ci.createdAt) : null;
+        const ts = d && !isNaN(d.getTime()) ? d.getTime() : Date.now();
         timelineEvents.push({
+          timestamp: ts,
           isInterest: true,
           icon: 'paper-plane',
           color: '#22c55e',
@@ -12315,7 +12363,7 @@
           message: ci.message,
           phone: ci.phone,
           username: ci.authorUsername,
-          date: ci.createdAt ? new Date(ci.createdAt).toLocaleString('pt-BR') : 'Recente'
+          dateStr: formatTimelineEventDate(ts)
         });
       });
 
@@ -12343,11 +12391,15 @@
           evColor = '#38bdf8';
         }
 
+        const d = l.createdAt ? new Date(l.createdAt) : null;
+        const ts = d && !isNaN(d.getTime()) ? d.getTime() : Date.now();
+
         timelineEvents.push({
+          timestamp: ts,
           icon: evIcon,
           color: evColor,
           title: `${l.authorName || 'Integrante'} ${l.description || 'realizou uma alteração'}`,
-          date: l.createdAt ? new Date(l.createdAt).toLocaleString('pt-BR') : 'Recente'
+          dateStr: formatTimelineEventDate(ts)
         });
       });
 
@@ -12355,75 +12407,173 @@
       const bandSetlistsList = syncData?.setlists || [];
       bandSetlistsList.forEach(sl => {
         const isRehearsal = sl.type === 'rehearsal' || (sl.name || '').toLowerCase().includes('ensaio');
-        const slDate = sl.date ? formatDateDisplay(sl.date) : 'Data não informada';
+        let ts = 0;
+        if (sl.updatedAt) {
+          const d = new Date(sl.updatedAt);
+          if (!isNaN(d.getTime())) ts = d.getTime();
+        }
+        if (!ts && sl.createdAt) {
+          const d = new Date(sl.createdAt);
+          if (!isNaN(d.getTime())) ts = d.getTime();
+        }
+        if (!ts && sl.date) {
+          const d = parseTimelineDate(sl.date);
+          if (d) ts = d;
+        }
+        if (!ts) ts = Date.now();
+
+        const fallbackDate = sl.date ? formatDateDisplay(sl.date) : 'Data não informada';
         timelineEvents.push({
-          icon: isRehearsal ? 'mic-outline' : 'calendar-outline',
-          color: isRehearsal ? '#a855f7' : '#38bdf8',
+          timestamp: ts,
+          icon: isRehearsal ? 'headset-outline' : 'calendar-outline',
+          color: isRehearsal ? '#fbbf24' : '#38bdf8',
           title: `${isRehearsal ? 'Ensaio agendado' : 'Show agendado'}: ${sl.name || 'Sem título'}${sl.local ? ` em ${sl.local}` : ''}`,
-          date: sl.updatedAt ? new Date(sl.updatedAt).toLocaleString('pt-BR') : (sl.createdAt ? new Date(sl.createdAt).toLocaleString('pt-BR') : slDate)
+          dateStr: formatTimelineEventDate(ts, fallbackDate)
         });
       });
 
-      // 4. Registro real de sincronização do repertório (apenas se a banda tiver músicas reais)
+      // 4. Registro de sincronização do repertório
       const bandSongsCount = (syncData?.songs || []).length;
       const bandSetlistsCount = bandSetlistsList.length;
       if (bandSongsCount > 0 || bandSetlistsCount > 0) {
+        const d = syncData?.syncedAt ? new Date(syncData.syncedAt) : null;
+        const ts = d && !isNaN(d.getTime()) ? d.getTime() : Date.now();
         timelineEvents.push({
+          timestamp: ts,
           icon: 'cloud-done-outline',
           color: '#4ade80',
-          title: `Repertório da Banda: ${bandSongsCount} música${bandSongsCount === 1 ? '' : 's'} e ${bandSetlistsCount} setlist${bandSetlistsCount === 1 ? '' : 's'} no repertório da banda.`,
-          date: syncData?.syncedAt ? new Date(syncData.syncedAt).toLocaleString('pt-BR') : 'Recente'
+          title: `Repertório: ${bandSongsCount} música${bandSongsCount === 1 ? '' : 's'} e ${bandSetlistsCount} setlist${bandSetlistsCount === 1 ? '' : 's'} sincronizados`,
+          dateStr: formatTimelineEventDate(ts, 'Recente')
         });
       }
 
       // 5. Criação do projeto / banda
+      let createdTs = 0;
+      if (band.createdAt) {
+        const d = new Date(band.createdAt);
+        if (!isNaN(d.getTime())) createdTs = d.getTime();
+      }
+      if (!createdTs && band.sinceYear) {
+        const y = parseInt(band.sinceYear, 10);
+        if (!isNaN(y)) createdTs = new Date(y, 0, 1).getTime();
+      }
+      if (!createdTs) createdTs = new Date(2020, 0, 1).getTime();
+
+      const createdDateFallback = band.sinceYear ? `Ano de ${band.sinceYear}` : (band.createdAt ? new Date(band.createdAt).toLocaleDateString('pt-BR') : 'Início do projeto');
       timelineEvents.push({
+        timestamp: createdTs,
         icon: 'flag-outline',
         color: '#a855f7',
-        title: `Criação do projeto ${band.name}${band.city ? ` em ${band.city}${band.state ? '/' + band.state : ''}` : ''}.`,
-        date: band.sinceYear ? `Ano de ${band.sinceYear}` : (band.createdAt ? new Date(band.createdAt).toLocaleDateString('pt-BR') : 'Início recente')
+        title: `Criação do projeto ${band.name}${band.city ? ` em ${band.city}${band.state ? '/' + band.state : ''}` : ''}`,
+        dateStr: createdDateFallback
       });
 
-      timelineEvents.forEach((ev, idx) => {
-        if (ev.isInterest) {
-          html += `
-            <div class="band-timeline-item" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;">
-              <div class="band-timeline-dot" style="border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.15);">
-                <ion-icon name="paper-plane"></ion-icon>
-              </div>
-              <div style="flex: 1; padding-top: 2px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-                  <span class="badge" style="background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.72rem; font-weight: 800; border-radius: 9999px;">Candidato Interessado</span>
-                  <span style="font-size: 0.78rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.date}</span>
+      // Ordenar por ordem cronológica decrescente (o mais recente no topo)
+      timelineEvents.sort((a, b) => b.timestamp - a.timestamp);
+
+      if (timelineEvents.length === 0) {
+        html += `
+          <div style="text-align: center; padding: 40px 16px; color: #94a3b8;">
+            <ion-icon name="time-outline" style="font-size: 2.2rem; opacity: 0.4; margin-bottom: 6px;"></ion-icon>
+            <p style="font-size: 0.88rem; margin: 0;">Nenhuma alteração registrada até o momento.</p>
+          </div>
+        `;
+        sub.innerHTML = html;
+        return;
+      }
+
+      // Agrupar eventos por mês (YYYY-MM)
+      const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      const monthGroups = {};
+      const groupKeys = [];
+
+      timelineEvents.forEach(ev => {
+        const dt = new Date(ev.timestamp);
+        let yr = dt.getFullYear();
+        let mIdx = dt.getMonth();
+        if (isNaN(yr) || yr < 1970) {
+          yr = new Date().getFullYear();
+          mIdx = new Date().getMonth();
+        }
+        const key = `${yr}-${String(mIdx + 1).padStart(2, '0')}`;
+        if (!monthGroups[key]) {
+          monthGroups[key] = {
+            key,
+            title: `${monthNames[mIdx] || 'Mês'} ${yr}`,
+            list: []
+          };
+          groupKeys.push(key);
+        }
+        monthGroups[key].list.push(ev);
+      });
+
+      groupKeys.sort((a, b) => b.localeCompare(a));
+
+      const now = new Date();
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      groupKeys.forEach(key => {
+        const g = monthGroups[key];
+        const isCurrentMonth = (key === currentMonthKey);
+        const isExpanded = expandedTimelineMonths[key] !== undefined ? expandedTimelineMonths[key] : isCurrentMonth;
+
+        html += `
+          <div class="mobile-month-bar" onclick="toggleTimelineMonth('${g.key}')" title="Clique para expandir/recolher mês" style="margin: 10px 0 6px 0;">
+            <span class="month-pill-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">
+              <ion-icon name="time-outline"></ion-icon> <span>${g.list.length}</span>
+            </span>
+            <span class="mobile-month-title">${escapeHtml(g.title.toUpperCase())}</span>
+            <div class="mobile-month-line"></div>
+            <ion-icon name="${isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}" style="font-size: 1.15rem; color: #94a3b8;"></ion-icon>
+          </div>
+        `;
+
+        if (isExpanded) {
+          html += `<div style="position: relative; padding: 6px 4px 6px 8px; margin-bottom: 12px;">`;
+          g.list.forEach((ev, idx) => {
+            if (ev.isInterest) {
+              html += `
+                <div class="band-timeline-item" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;">
+                  <div class="band-timeline-dot" style="border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.15);">
+                    <ion-icon name="paper-plane"></ion-icon>
+                  </div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                      <span class="badge" style="background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.7rem; font-weight: 800; border-radius: 9999px;">Candidato</span>
+                      <span style="font-size: 0.75rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.dateStr}</span>
+                    </div>
+                    <h4 style="font-size: 0.92rem; font-weight: 800; color: #fff; margin: 4px 0;">${escapeHtml(ev.title)}</h4>
+                    <div style="background: rgba(0,0,0,0.3); border-left: 3px solid #22c55e; padding: 8px 10px; border-radius: 6px; margin: 6px 0; color: #e2e8f0; font-size: 0.84rem; line-height: 1.4;">
+                      "${escapeHtml(ev.message)}"
+                    </div>
+                    ${ev.phone ? `<div style="font-size: 0.78rem; color: #86efac; margin-bottom: 6px;"><ion-icon name="call-outline"></ion-icon> Contato: <strong>${escapeHtml(ev.phone)}</strong></div>` : ''}
+                    <button class="btn btn-sm btn-outline" onclick="openPublicMusicianProfile('${escapeHtml(ev.username)}')" style="font-size: 0.74rem; padding: 3px 10px; border-radius: 8px;">
+                      <ion-icon name="person-outline"></ion-icon> Ver Perfil
+                    </button>
+                  </div>
                 </div>
-                <h4 style="font-size: 1rem; font-weight: 800; color: #fff; margin: 6px 0 4px 0;">${ev.title}</h4>
-                <div style="background: rgba(0,0,0,0.3); border-left: 3px solid #22c55e; padding: 8px 12px; border-radius: 6px; margin: 8px 0; color: #e2e8f0; font-size: 0.88rem; line-height: 1.45;">
-                  "${escapeHtml(ev.message)}"
+              `;
+            } else {
+              html += `
+                <div class="band-timeline-item" style="padding-bottom: 14px;">
+                  ${idx < g.list.length - 1 ? '<div class="band-timeline-line" style="top: 36px; bottom: 0;"></div>' : ''}
+                  <div class="band-timeline-dot" style="border-color: ${ev.color}; color: ${ev.color};">
+                    <ion-icon name="${ev.icon}"></ion-icon>
+                  </div>
+                  <div style="flex: 1; padding-top: 5px; min-width: 0;">
+                    <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin: 0 0 3px 0; line-height: 1.35;">${escapeHtml(ev.title)}</h4>
+                    <span style="font-size: 0.75rem; color: #94a3b8; display: inline-flex; align-items: center; gap: 4px;">
+                      <ion-icon name="time-outline"></ion-icon> ${ev.dateStr}
+                    </span>
+                  </div>
                 </div>
-                ${ev.phone ? `<div style="font-size: 0.82rem; color: #86efac; margin-bottom: 8px;"><ion-icon name="call-outline"></ion-icon> Contato: <strong>${escapeHtml(ev.phone)}</strong></div>` : ''}
-                <button class="btn btn-sm btn-outline" onclick="openPublicMusicianProfile('${ev.username}')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 8px;">
-                  <ion-icon name="person-outline"></ion-icon> Ver Perfil do Músico
-                </button>
-              </div>
-            </div>
-          `;
-        } else {
-          html += `
-            <div class="band-timeline-item">
-              ${idx < timelineEvents.length - 1 ? '<div class="band-timeline-line"></div>' : ''}
-              <div class="band-timeline-dot" style="border-color: ${ev.color}; color: ${ev.color};">
-                <ion-icon name="${ev.icon}"></ion-icon>
-              </div>
-              <div style="flex: 1; padding-top: 6px;">
-                <h4 style="font-size: 0.98rem; font-weight: 700; color: #fff; margin: 0 0 4px 0;">${ev.title}</h4>
-                <span style="font-size: 0.8rem; color: #94a3b8;"><ion-icon name="time-outline"></ion-icon> ${ev.date}</span>
-              </div>
-            </div>
-          `;
+              `;
+            }
+          });
+          html += `</div>`;
         }
       });
 
-      html += `</div>`;
       sub.innerHTML = html;
     }
 
