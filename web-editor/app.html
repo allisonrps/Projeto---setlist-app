@@ -12309,19 +12309,52 @@
       renderBandRepertoireTab(currentBandData, currentBandSyncData);
     }
 
+    function normalizeBandSyncSongs(syncData) {
+      if (!syncData || !Array.isArray(syncData.songs)) return;
+      const seenIds = new Set();
+      syncData.songs.forEach((s, idx) => {
+        if (!s) return;
+        let idStr = (s.id !== undefined && s.id !== null && s.id !== 'undefined' && s.id !== 'null' && String(s.id).trim() !== '')
+          ? String(s.id).trim()
+          : '';
+        if (!idStr || seenIds.has(idStr)) {
+          const cleanName = (s.name || 'faixa').trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+          const cleanBand = (s.originalBand || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+          idStr = `bs_${cleanName}_${cleanBand || idx}`;
+          let uniqueId = idStr;
+          let counter = 1;
+          while (seenIds.has(uniqueId)) {
+            uniqueId = `${idStr}_${counter++}`;
+          }
+          idStr = uniqueId;
+          s.id = idStr;
+        }
+        seenIds.add(idStr);
+      });
+    }
+
     async function toggleBandSongFavorite(songId, event) {
       if (event) event.stopPropagation();
       if (!currentBandSyncData || !currentBandSyncData.songs) return;
-      const s = currentBandSyncData.songs.find(x => String(x.id) === String(songId));
+      normalizeBandSyncSongs(currentBandSyncData);
+      const cleanId = String(songId).trim();
+      const s = currentBandSyncData.songs.find(x => String(x.id).trim() === cleanId);
       if (s) {
         s.isFavorite = !s.isFavorite;
         renderBandRepertoireTab(currentBandData, currentBandSyncData);
         await persistCurrentBandSync();
-        showToast(s.isFavorite ? `"${s.name}" favoritada no repertório da banda!` : `"${s.name}" removida dos favoritos da banda.`, 'info');
+        showToast(s.isFavorite ? `"${s.name}" favoritada no repertório!` : `"${s.name}" removida dos favoritos.`, 'info');
+      } else {
+        console.warn('Música não encontrada para favoritar no repertório com id:', songId);
       }
     }
 
-    function openSongFromBandRepertoire(song) {
+    function openSongFromBandRepertoire(songOrId) {
+      let song = typeof songOrId === 'object' && songOrId !== null ? songOrId : null;
+      if (!song && currentBandSyncData?.songs) {
+        const clean = String(songOrId || '').trim();
+        song = currentBandSyncData.songs.find(s => String(s.id).trim() === clean);
+      }
       if (!song) return;
       publicViewSong = song;
       const titleEl = document.getElementById('songModalTitle');
@@ -12335,6 +12368,8 @@
     function renderBandRepertoireTab(band, syncData) {
       const sub = document.getElementById('bSubview-R');
       if (!sub) return;
+
+      normalizeBandSyncSongs(syncData);
 
       const m = getBandMetrics(band);
       const setlists = m.setlists || [];
@@ -12460,10 +12495,12 @@
           const bandName = song.originalBand || 'Banda';
           const songName = song.name || 'Sem título';
 
+          const safeId = String(song.id || '').replace(/'/g, "\\'");
+
           return `
-            <div class="profile-song-item" onclick="openSongFromBandRepertoire(${JSON.stringify(song).replace(/"/g, '&quot;')})" title="Clique para ver letra, cifra e tablatura" style="margin-bottom: 4px;">
+            <div class="profile-song-item" onclick="openSongFromBandRepertoire('${safeId}')" title="Clique para ver letra, cifra e tablatura" style="margin-bottom: 4px;">
               <div class="profile-song-item-left">
-                <button type="button" onclick="toggleBandSongFavorite('${song.id}', event)" title="Favoritar música" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: ${isFav ? '#fbbf24' : '#64748b'};">
+                <button type="button" onclick="toggleBandSongFavorite('${safeId}', event)" title="${isFav ? 'Remover dos favoritos da banda' : 'Favoritar no repertório da banda'}" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: ${isFav ? '#fbbf24' : '#64748b'};">
                   <ion-icon name="${isFav ? 'star' : 'star-outline'}" style="font-size: 1.05rem;"></ion-icon>
                 </button>
                 <div class="profile-song-item-titles">
@@ -12487,7 +12524,7 @@
                   <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
                   <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
                 </div>
-                <button type="button" onclick="removeSongFromBandRepertoire('${song.id}', event)" title="Remover do repertório da banda" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: #f87171; opacity: 0.85;">
+                <button type="button" onclick="removeSongFromBandRepertoire('${safeId}', event)" title="Remover do repertório da banda" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: #f87171; opacity: 0.85;">
                   <ion-icon name="trash-outline" style="font-size: 1.05rem;"></ion-icon>
                 </button>
               </div>
@@ -12697,7 +12734,7 @@
         const found = mySongs.find(s => String(s.id) === String(sId));
         if (found && !bandSongIds.has(String(found.id)) && !bandSongNames.has((found.name || '').toLowerCase().trim())) {
           currentBandSyncData.songs.push({
-            id: found.id,
+            id: found.id || `bs_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             name: found.name,
             originalBand: found.originalBand || '',
             style: found.style || '',
@@ -12737,8 +12774,10 @@
       if (!confirm('Deseja remover esta música do repertório da banda? (A música continuará preservada no seu Songbook)')) return;
       if (!currentBandData || !currentBandSyncData || !currentBandSyncData.songs) return;
 
-      const removedSong = currentBandSyncData.songs.find(s => String(s.id) === String(songId));
-      currentBandSyncData.songs = currentBandSyncData.songs.filter(s => String(s.id) !== String(songId));
+      normalizeBandSyncSongs(currentBandSyncData);
+      const cleanId = String(songId).trim();
+      const removedSong = currentBandSyncData.songs.find(s => String(s.id).trim() === cleanId);
+      currentBandSyncData.songs = currentBandSyncData.songs.filter(s => String(s.id).trim() !== cleanId);
       currentBandSyncData.activityLogs = currentBandSyncData.activityLogs || [];
       currentBandSyncData.activityLogs.unshift({
         actionType: 'delete_song',

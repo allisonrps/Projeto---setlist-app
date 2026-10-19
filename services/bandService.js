@@ -763,6 +763,7 @@ export const bandService = {
         members: members || [],
         finances: finances || [],
         songs: (repertoireSongs || []).map(s => ({
+          id: s.id || s.songId,
           name: s.name,
           originalBand: s.originalBand,
           style: s.style,
