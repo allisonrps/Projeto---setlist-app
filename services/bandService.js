@@ -270,6 +270,7 @@ export const bandService = {
         'UPDATE band_songs SET isFavorite = ? WHERE bandId = ? AND songId = ?;',
         [newStatus, bandId, songId]
       );
+      this.syncBandToCloud(bandId).catch(e => console.log('Background sync on favorite toggle:', e));
       return newStatus;
     } catch (error) {
       console.error('Error in bandService.toggleBandSongFavorite:', error);
@@ -981,10 +982,11 @@ export const bandService = {
             );
           }
 
-          // Link song to this band repertoire
+          // Link song to this band repertoire and keep favorite status in sync
           if (localSongId) {
             await db.runAsync(
-              'INSERT OR IGNORE INTO band_songs (bandId, songId, isFavorite) VALUES (?, ?, ?);',
+              `INSERT INTO band_songs (bandId, songId, isFavorite) VALUES (?, ?, ?)
+               ON CONFLICT(bandId, songId) DO UPDATE SET isFavorite = excluded.isFavorite;`,
               [bandId, localSongId, song.isFavorite ? 1 : 0]
             );
           }

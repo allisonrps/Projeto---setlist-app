@@ -11371,15 +11371,32 @@
       currentBandData = null;
       let band = (myBands || []).find(b => b.id === bandId);
 
-      if (!band || !band.syncDataJson) {
+      // Sempre busca dados frescos da nuvem se online para obter o repertório consolidado e favoritos da banda
+      if (typeof API_URL !== 'undefined') {
+        const token = localStorage.getItem(TOKEN_KEY);
         try {
-          const res = await fetch(`${API_URL}/Bands/public/${bandId}`);
-          if (res.ok) {
+          let res = null;
+          if (token) {
+            res = await fetch(`${API_URL}/Bands/${bandId}/pull`, { headers: getAuthHeaders() });
+          }
+          if (!res || !res.ok) {
+            res = await fetch(`${API_URL}/Bands/public/${bandId}`);
+          }
+          if (res && res.ok) {
             const fullData = await res.json();
             band = { ...(band || {}), ...fullData };
+            const cloudSync = fullData.syncDataJson || fullData.SyncDataJson;
+            if (cloudSync) {
+              const parsedCloud = parseJsonSafe(cloudSync);
+              if (parsedCloud) {
+                currentBandSyncData = parsedCloud;
+                band.syncDataJson = cloudSync;
+                localStorage.setItem(`bandlink_band_${bandId}_sync`, cloudSync);
+              }
+            }
           }
         } catch (e) {
-          console.warn('Error fetching band full details:', e);
+          console.warn('Error fetching band full details from API:', e);
         }
       }
 
@@ -11389,12 +11406,14 @@
       }
 
       currentBandData = band;
-      const localCached = localStorage.getItem(`bandlink_band_${bandId}_sync`);
-      if (localCached) {
-        const parsedLocal = parseJsonSafe(localCached);
-        if (parsedLocal) {
-          currentBandSyncData = parsedLocal;
-          band.syncDataJson = localCached;
+      if (!currentBandSyncData) {
+        const localCached = localStorage.getItem(`bandlink_band_${bandId}_sync`);
+        if (localCached) {
+          const parsedLocal = parseJsonSafe(localCached);
+          if (parsedLocal) {
+            currentBandSyncData = parsedLocal;
+            band.syncDataJson = localCached;
+          }
         }
       }
       if (!currentBandSyncData) {
@@ -12290,14 +12309,15 @@
       renderBandRepertoireTab(currentBandData, currentBandSyncData);
     }
 
-    function toggleBandSongFavorite(songId, event) {
+    async function toggleBandSongFavorite(songId, event) {
       if (event) event.stopPropagation();
       if (!currentBandSyncData || !currentBandSyncData.songs) return;
       const s = currentBandSyncData.songs.find(x => String(x.id) === String(songId));
       if (s) {
         s.isFavorite = !s.isFavorite;
-        persistCurrentBandSync();
         renderBandRepertoireTab(currentBandData, currentBandSyncData);
+        await persistCurrentBandSync();
+        showToast(s.isFavorite ? `"${s.name}" favoritada no repertório da banda!` : `"${s.name}" removida dos favoritos da banda.`, 'info');
       }
     }
 
@@ -12358,17 +12378,14 @@
       }
 
       let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
-          <div>
-            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
               <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
               <span>Repertório</span>
-              <span class="badge badge-cyan">${songs.length} Músicas</span>
             </h2>
-            <p style="color: #94a3b8; font-size: 0.88rem;">Catálogo consolidado de músicas, letras, cifras e tablaturas da banda.</p>
-          </div>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <button type="button" onclick="openAddSongsToBandModal(${band.id})" title="Adicionar músicas do Songbook" style="width: 42px; height: 42px; border-radius: 50%; background: var(--cyan); color: #0f172a; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.45rem; font-weight: 800; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35); transition: all 0.2s ease;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+            <span class="badge badge-cyan" style="font-size: 0.82rem; padding: 2px 9px; font-weight: 800; border-radius: 9999px;">${songs.length}</span>
+            <button type="button" onclick="openAddSongsToBandModal(${band.id})" title="Adicionar músicas do Songbook" style="width: 34px; height: 34px; border-radius: 50%; background: var(--cyan); color: #0f172a; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; font-weight: 800; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35); transition: all 0.2s ease; margin-left: 2px;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
               <ion-icon name="add"></ion-icon>
             </button>
           </div>
@@ -12464,7 +12481,6 @@
               </div>
 
               <div class="profile-song-item-right" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                ${song.duration ? `<span style="color: #94a3b8; font-size: 0.78rem; font-family: var(--font-mono);">${escapeHtml(song.duration)}</span>` : ''}
                 ${song.key ? `<span style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">${escapeHtml(song.key)}</span>` : ''}
                 <div class="sb-song-content-dots" title="${dotsTooltip}">
                   <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
