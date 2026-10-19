@@ -3511,7 +3511,7 @@
       gap: 8px;
       flex-shrink: 0;
     }
-    .project-band-card-sync-pill {
+    .project-band-news-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
@@ -3519,9 +3519,14 @@
       font-weight: 700;
       padding: 3px 10px;
       border-radius: 9999px;
-      background: rgba(34, 197, 94, 0.12);
+      background: rgba(34, 197, 94, 0.15);
       color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.28);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      animation: pulseNews 2s infinite ease-in-out;
+    }
+    @keyframes pulseNews {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 0.85; }
     }
     .project-band-card-chevron {
       color: #64748b;
@@ -3545,6 +3550,8 @@
       justify-content: space-around;
       width: 100%;
       box-sizing: border-box;
+      flex-wrap: wrap;
+      gap: 10px 14px;
     }
     .project-metric-mini-item {
       display: flex;
@@ -3552,10 +3559,11 @@
       gap: 6px;
       color: #f1f5f9;
       font-weight: 800;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
+      white-space: nowrap;
     }
     .project-metric-mini-item ion-icon {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       color: #38bdf8;
     }
 
@@ -3575,6 +3583,93 @@
       display: inline-flex;
       align-items: center;
       line-height: 1.3;
+    }
+
+    /* Projects View Header & Action Buttons */
+    .projects-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .projects-page-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .projects-page-title {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      letter-spacing: -0.3px;
+    }
+    .projects-circle-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 9999px;
+      background: rgba(14, 165, 233, 0.15);
+      color: var(--cyan-light);
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      font-weight: 900;
+      font-size: 0.95rem;
+      line-height: 1;
+    }
+    .projects-add-btn-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: #ffffff;
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      font-size: 1.4rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .projects-add-btn-circle:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+      background: linear-gradient(135deg, #9333ea, #7c3aed);
+    }
+    .projects-add-btn-circle:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 680px) {
+      .projects-page-header {
+        padding: 8px 12px 14px 12px;
+        margin-bottom: 16px;
+      }
+      .projects-page-title {
+        font-size: 1.25rem;
+        gap: 8px;
+      }
+      .projects-circle-badge {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+      }
+      .projects-add-btn-circle {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+      }
     }
 
     /* ============================================================== */
@@ -6641,18 +6736,17 @@
       <!-- ============================================================== -->
       <!-- MAIN VIEW: PROJETOS (CARDS DAS BANDAS - FIGMA PRINT 2)        -->
       <!-- ============================================================== -->
-      <section class="main-view" id="view-projects">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
-          <div>
-            <h1 style="font-size: 1.6rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px; margin: 0;">
-              <ion-icon name="briefcase" style="color: var(--cyan);"></ion-icon>
-              <span>Meus Projetos & Bandas</span>
-              <span class="badge badge-cyan" id="projectsCountBadge">1 Banda</span>
+      <section class="main-view" id="view-projects" style="padding-top: 10px;">
+        <div class="projects-page-header">
+          <div class="projects-page-title-group">
+            <h1 class="projects-page-title">
+              <ion-icon name="briefcase" style="color: var(--cyan); font-size: 1.45rem;"></ion-icon>
+              <span>Projetos e Bandas</span>
+              <span class="projects-circle-badge" id="projectsCountBadge" title="Total de Bandas e Projetos">1</span>
             </h1>
           </div>
-          <button class="btn btn-violet" onclick="openCreateBandModal()">
-            <ion-icon name="add-circle-outline"></ion-icon>
-            <span>Nova Banda</span>
+          <button class="projects-add-btn-circle" onclick="openCreateBandModal()" title="Criar Nova Banda ou Projeto">
+            <ion-icon name="add"></ion-icon>
           </button>
         </div>
 
@@ -11435,20 +11529,58 @@
       let list = [];
       if (Array.isArray(rawGenre)) {
         list = rawGenre;
+      } else if (typeof rawGenre === 'object') {
+        try {
+          list = Object.values(rawGenre);
+        } catch {
+          list = [];
+        }
       } else if (typeof rawGenre === 'string') {
-        const trimmed = rawGenre.trim();
-        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        let trimmed = rawGenre.trim();
+        // If it starts with [ or { or contains escaped quotes, parse safely
+        if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
           try {
             const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) list = parsed;
-          } catch (e) {
-            list = trimmed.replace(/[\[\]"]/g, '').split(/[,/•;]+/);
+            if (Array.isArray(parsed)) {
+              list = parsed;
+            } else if (parsed && typeof parsed === 'object') {
+              list = Object.values(parsed);
+            }
+          } catch {
+            list = trimmed.replace(/[\[\]{}"]/g, '').split(/[,/•;]+/);
           }
         } else {
           list = trimmed.split(/[,/•;]+/);
         }
       }
-      return list.map(s => String(s).trim()).filter(s => s && s !== 'null' && s !== 'undefined');
+
+      // Flatten and clean any remnants of JSON syntax like ["rock"], quotes, curly braces
+      const cleaned = [];
+      list.forEach(item => {
+        if (!item) return;
+        if (typeof item === 'object') {
+          try {
+            Object.values(item).forEach(v => {
+              if (v && typeof v === 'string') cleaned.push(v);
+            });
+          } catch {}
+          return;
+        }
+        let str = String(item).trim();
+        // Strip leftover brackets, braces, and quotes
+        str = str.replace(/[\[\]{}"'\\]+/g, '').trim();
+        // If still contains commas or delimiters
+        if (str.includes(',') || str.includes(';') || str.includes('/')) {
+          str.split(/[,/•;]+/).forEach(part => {
+            const p = part.trim();
+            if (p && p !== 'null' && p !== 'undefined') cleaned.push(p);
+          });
+        } else if (str && str !== 'null' && str !== 'undefined') {
+          cleaned.push(str);
+        }
+      });
+
+      return cleaned;
     }
 
     function renderProfileBandsTab() {
@@ -11558,20 +11690,45 @@
         pills.push({ label: 'Casual', style: 'background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);' });
       }
 
-      // Estilos musicais / gêneros individuais
-      const rawGenres = [band?.genre, band?.genresJson, band?.styles].filter(Boolean).join(',');
-      const splitGenres = rawGenres.split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean);
+      // Estilos musicais / gêneros individuais limpos via getBandGenrePills
+      const parsedGenres = [
+        ...getBandGenrePills(band?.genre),
+        ...getBandGenrePills(band?.genresJson),
+        ...getBandGenrePills(band?.styles)
+      ];
       const seen = new Set(pills.map(p => p.label.toLowerCase()));
-      splitGenres.forEach(g => {
+      parsedGenres.forEach(g => {
+        if (!g) return;
         const clean = g.charAt(0).toUpperCase() + g.slice(1);
         const lower = clean.toLowerCase();
-        if (!seen.has(lower) && lower !== 'cover' && lower !== 'autoral' && lower !== 'banda' && lower !== 'projeto') {
+        if (!seen.has(lower) && lower !== 'cover' && lower !== 'autoral' && lower !== 'banda' && lower !== 'projeto' && lower !== 'geral') {
           seen.add(lower);
           pills.push({ label: clean, style: 'background: rgba(56, 189, 248, 0.08); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.2);' });
         }
       });
 
       return pills;
+    }
+
+    function hasBandTimelineNews(band) {
+      if (!band) return false;
+      try {
+        const candidateInterests = getBandCandidateInterests(band.id, band.name);
+        if (candidateInterests && candidateInterests.length > 0) return true;
+
+        const syncData = parseJsonSafe(band.syncDataJson);
+        const logs = syncData?.activityLogs || [];
+        if (logs.length > 0) {
+          const lastLog = logs[logs.length - 1];
+          if (lastLog?.createdAt) {
+            const diffHours = (Date.now() - new Date(lastLog.createdAt).getTime()) / (1000 * 60 * 60);
+            if (diffHours < 72) return true;
+          }
+        }
+      } catch {
+        return false;
+      }
+      return false;
     }
 
     // ==============================================================
@@ -11591,11 +11748,11 @@
             <button class="btn btn-violet btn-sm" onclick="openCreateBandModal()">Criar Banda</button>
           </div>
         `;
-        if (badge) badge.textContent = '0 Bandas';
+        if (badge) badge.textContent = '0';
         return;
       }
 
-      if (badge) badge.textContent = `${myBands.length} ${myBands.length === 1 ? 'Banda' : 'Bandas'}`;
+      if (badge) badge.textContent = String(myBands.length);
 
       container.innerHTML = myBands.map(band => {
         const m = getBandMetrics(band);
@@ -11619,6 +11776,17 @@
 
         const setlistsCount = (m.setlists || []).length;
         const pills = getProjectBandCardPills(band);
+        const hasNews = hasBandTimelineNews(band);
+
+        // Formatação de faturamento acumulado
+        const bandTotalRev = Number(m.totalBandRevenue || m.totalCache || 0);
+        const musicianIncome = Number(m.individualIncome || 0);
+        const fmtBandRev = bandTotalRev > 0
+          ? `R$ ${bandTotalRev.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+          : 'R$ 0';
+        const fmtMusicianRev = musicianIncome > 0
+          ? `R$ ${musicianIncome.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+          : 'R$ 0';
 
         return `
           <div class="project-band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${escapeHtml(band.name)}">
@@ -11634,7 +11802,11 @@
                 </div>
               </div>
               <div class="project-band-card-right">
-                <span class="project-band-card-sync-pill"><ion-icon name="checkmark-circle-outline"></ion-icon> Synced</span>
+                ${hasNews ? `
+                  <span class="project-band-news-pill" title="Novidades na linha do tempo / candidatos">
+                    <ion-icon name="notifications-outline"></ion-icon> Novidades
+                  </span>
+                ` : ''}
                 <span class="project-band-card-chevron"><ion-icon name="chevron-forward"></ion-icon></span>
               </div>
             </div>
@@ -11655,6 +11827,14 @@
               <div class="project-metric-mini-item" title="Setlists">
                 <ion-icon name="headset"></ion-icon>
                 <span>${setlistsCount}</span>
+              </div>
+              <div class="project-metric-mini-item" style="color: #38bdf8;" title="Total Faturado pela Banda no Ano">
+                <ion-icon name="cash-outline" style="color: #38bdf8;"></ion-icon>
+                <span>${fmtBandRev}</span>
+              </div>
+              <div class="project-metric-mini-item" style="color: #4ade80;" title="Total Faturado pelo Músico no Ano">
+                <ion-icon name="person-outline" style="color: #4ade80;"></ion-icon>
+                <span>${fmtMusicianRev}</span>
               </div>
             </div>
 
