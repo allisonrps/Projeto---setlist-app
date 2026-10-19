@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
 // Live Azure Cloud API for BandLink
-const API_URL = "https://bandlink-api.azurewebsites.net/api";
+export const API_URL = "https://bandlink-api.azurewebsites.net/api";
 
 // Lazy load SecureStore safely for native platforms (Android Keystore / iOS Keychain)
 let SecureStore = null;
@@ -630,6 +630,67 @@ export const api = {
       console.log('Error fetching public band profile:', err);
     }
     return null;
+  },
+
+  checkBandUsername: async (username, excludeBandId = null) => {
+    try {
+      const clean = (username || '').trim().toLowerCase().replace('@', '');
+      if (clean.length < 3) {
+        return { available: false, message: 'O username da banda deve ter no mínimo 3 caracteres.' };
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+        return { available: false, message: 'Apenas letras, números e sublinhados (_).' };
+      }
+
+      const headers = await getHeaders();
+      const qs = `username=${encodeURIComponent(clean)}${excludeBandId ? `&excludeBandId=${excludeBandId}` : ''}`;
+
+      // 1. Dedicated endpoint check
+      try {
+        const response = await fetchWithTimeout(`${API_URL}/Bands/check-username?${qs}`, { headers }, 5000);
+        if (response.ok) {
+          return await response.json();
+        }
+      } catch (err) {
+        console.log('check-username endpoint error, fallback to search:', err);
+      }
+
+      // 2. Fallback: check public band profile
+      try {
+        const pubRes = await fetchWithTimeout(`${API_URL}/Bands/public/${encodeURIComponent(clean)}`, {}, 5000);
+        if (pubRes.ok) {
+          const found = await pubRes.json();
+          if (found && (!excludeBandId || found.id !== excludeBandId)) {
+            return { available: false, message: `@${clean} já está sendo usado por "${found.name || clean}".`, username: clean };
+          }
+        }
+      } catch (e) {}
+
+      // 3. Fallback: check public bands search for slug or name match (searching with spaces if underscore)
+      try {
+        const queryTerm = clean.includes('_') ? clean.replace(/_/g, ' ') : clean;
+        const listRes = await fetchWithTimeout(`${API_URL}/Bands/public?search=${encodeURIComponent(queryTerm)}`, {}, 5000);
+        if (listRes.ok) {
+          const res = await listRes.json();
+          const items = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+          const match = items.find(b => {
+            if (excludeBandId && b.id === excludeBandId) return false;
+            const bSlug = (b.publicSlug || '').trim().toLowerCase().replace('@', '');
+            const bNameSlug = (b.name || '').trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+            const bName = (b.name || '').trim().toLowerCase();
+            return bSlug === clean || bNameSlug === clean || bName === clean || bName === queryTerm;
+          });
+          if (match) {
+            return { available: false, message: `@${clean} já está sendo usado por "${match.name}".`, username: clean };
+          }
+        }
+      } catch (e) {}
+
+      return { available: true, username: clean };
+    } catch (err) {
+      console.log('Error checking band username:', err);
+      return { available: true, username: (username || '').trim().toLowerCase().replace('@', '') };
+    }
   },
 
   getMyCloudBands: async () => {

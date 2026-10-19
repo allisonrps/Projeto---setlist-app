@@ -78,16 +78,35 @@ export const bandService = {
       if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
         return { available: false, message: 'Apenas letras, números e sublinhados (_).' };
       }
-      const token = await AsyncStorage.getItem('jwt_token');
-      const url = `${API_URL}/Bands/check-username?username=${encodeURIComponent(clean)}${excludeBandId ? `&excludeBandId=${excludeBandId}` : ''}`;
-      const res = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      if (res.ok) {
-        return await res.json();
+
+      // 1. Check local SQLite bands first
+      try {
+        const localBands = await db.getAllAsync('SELECT id, name, publicSlug, cloudId FROM my_bands;');
+        const localMatch = (localBands || []).find(b => {
+          if (excludeBandId && (String(b.id) === String(excludeBandId) || (b.cloudId && String(b.cloudId) === String(excludeBandId)))) {
+            return false;
+          }
+          const bSlug = (b.publicSlug || '').trim().toLowerCase().replace('@', '');
+          const bNameSlug = (b.name || '').trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+          const bName = (b.name || '').trim().toLowerCase();
+          return bSlug === clean || bNameSlug === clean || bName === clean;
+        });
+
+        if (localMatch) {
+          return {
+            available: false,
+            message: `Você já possui a banda "${localMatch.name}" com este username (@${clean}).`,
+            username: clean
+          };
+        }
+      } catch (localErr) {
+        console.warn('Erro ao verificar bandas locais:', localErr);
       }
-      return { available: true, username: clean };
+
+      // 2. Check cloud API
+      return await api.checkBandUsername(clean, excludeBandId);
     } catch (e) {
+      console.warn('Erro no checkUsername:', e);
       return { available: true, username: (username || '').trim().toLowerCase().replace('@', '') };
     }
   },
