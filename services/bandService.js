@@ -79,36 +79,34 @@ export const bandService = {
         return { available: false, message: 'Apenas letras, números e sublinhados (_).' };
       }
 
-      // 1. Check local SQLite bands first
-      try {
-        const localBands = await db.getAllAsync('SELECT id, name, publicSlug, cloudId FROM my_bands;');
-        const localMatch = (localBands || []).find(b => {
-          if (excludeBandId && (String(b.id) === String(excludeBandId) || (b.cloudId && String(b.cloudId) === String(excludeBandId)))) {
-            return false;
-          }
-          const bSlug = (b.publicSlug || '').trim().toLowerCase().replace('@', '');
-          const bNameSlug = (b.name || '').trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
-          const bName = (b.name || '').trim().toLowerCase();
-          return bSlug === clean || bNameSlug === clean || bName === clean;
-        });
-
-        if (localMatch) {
-          return {
-            available: false,
-            message: `Você já possui a banda "${localMatch.name}" com este username (@${clean}).`,
-            username: clean
-          };
-        }
-      } catch (localErr) {
-        console.warn('Erro ao verificar bandas locais:', localErr);
-      }
-
-      // 2. Check cloud API
+      // Check cloud API (uniqueness is strictly on the cloud API)
       return await api.checkBandUsername(clean, excludeBandId);
     } catch (e) {
       console.warn('Erro no checkUsername:', e);
       return { available: true, username: (username || '').trim().toLowerCase().replace('@', '') };
     }
+  },
+
+  async publishOfflineBandToCloud(bandId, publicSlug) {
+    const clean = (publicSlug || '').trim().toLowerCase().replace('@', '');
+    if (clean.length < 3) {
+      throw new Error('O username da banda deve ter no mínimo 3 caracteres.');
+    }
+    const check = await api.checkBandUsername(clean);
+    if (!check.available) {
+      throw new Error(check.message || 'Este username não está disponível.');
+    }
+
+    // 1. Update publicSlug in local SQLite
+    await db.runAsync('UPDATE my_bands SET publicSlug = ? WHERE id = ?;', [clean, bandId]);
+
+    // 2. Sync to cloud (this creates the band in the cloud API and returns cloudId)
+    const syncRes = await this.syncBandToCloud(bandId);
+
+    // 3. Log activity
+    await this.logBandActivity(bandId, 'online_mode', `publicou a banda na nuvem como @${clean}!`);
+
+    return syncRes;
   },
 
   async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '', publicSlug = '') {

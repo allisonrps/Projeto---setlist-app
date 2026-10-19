@@ -32,6 +32,7 @@ import MusicianProfileModal from './MusicianProfileModal';
 import SongListItem from './SongListItem';
 import ShareAgendaModal, { shareAgendaPillStyles } from './ShareAgendaModal';
 import YearPickerModal from './YearPickerModal';
+import PublishBandModal from './PublishBandModal';
 
 const { width } = Dimensions.get('window');
 
@@ -511,6 +512,7 @@ export default function BandDetailScreen({
   // Network Sync / Visibility & Cloud Collaboration State
   const [isNetworkVisible, setIsNetworkVisible] = useState(band?.isNetworkVisible === 1 || band?.isNetworkVisible === true);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatusInfo, setSyncStatusInfo] = useState({
     isSynced: false,
@@ -1770,6 +1772,32 @@ export default function BandDetailScreen({
                         color={isNetworkVisible ? '#10b981' : (syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : '#ffffff')}
                       />
                     </Pressable>
+
+                    {/* Botão Publicar Banda Online (Exibido quando a banda for Offline) */}
+                    {!band?.cloudId && (
+                      <Pressable
+                        style={[
+                          styles.headerActionPillBtn,
+                          { backgroundColor: 'rgba(56, 189, 248, 0.25)', borderColor: '#38bdf8', borderWidth: 1 }
+                        ]}
+                        onPress={async () => {
+                          setShowBandOptionsMenu(false);
+                          const logged = await api.isLoggedIn();
+                          if (!logged) {
+                            Alert.alert(
+                              t('attention') || 'Atenção',
+                              'Você precisa estar conectado a uma conta para publicar a banda na nuvem.',
+                              [{ text: 'OK' }]
+                            );
+                            return;
+                          }
+                          setShowPublishModal(true);
+                        }}
+                        accessibilityLabel="Publicar Banda Online"
+                      >
+                        <Ionicons name="cloud-upload" size={17} color="#38bdf8" />
+                      </Pressable>
+                    )}
 
                     {/* Página Pública da Banda */}
                     {onOpenPublicProfile && (
@@ -4701,6 +4729,57 @@ export default function BandDetailScreen({
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+              {/* Se a banda for offline, oferece botão direto para publicar online */}
+              {!band?.cloudId && (
+                <View style={{
+                  backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                  borderColor: 'rgba(56, 189, 248, 0.3)',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 16,
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <Ionicons name="cloud-offline-outline" size={20} color="#38bdf8" />
+                    <Text style={{ color: '#38bdf8', fontWeight: '800', fontSize: 14 }}>
+                      Banda em Modo Offline
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 12, color: colors.textMuted, lineHeight: 18, marginBottom: 12 }}>
+                    Esta banda está salva apenas neste dispositivo. Para sincronizar com outros integrantes e acessar via web, publique-a no BandLink Cloud.
+                  </Text>
+                  <Pressable
+                    onPress={async () => {
+                      setShowSyncModal(false);
+                      const logged = await api.isLoggedIn();
+                      if (!logged) {
+                        Alert.alert(
+                          t('attention') || 'Atenção',
+                          'Você precisa estar conectado a uma conta para publicar a banda na nuvem.',
+                          [{ text: 'OK' }]
+                        );
+                        return;
+                      }
+                      setShowPublishModal(true);
+                    }}
+                    style={{
+                      backgroundColor: '#38bdf8',
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      gap: 6
+                    }}
+                  >
+                    <Ionicons name="cloud-upload-outline" size={16} color="#ffffff" />
+                    <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13 }}>
+                      Publicar Banda na Nuvem
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+
               {/* Role & Status Banner */}
               <View style={{
                 backgroundColor: isUserLeader ? 'rgba(56, 189, 248, 0.1)' : 'rgba(168, 85, 247, 0.1)',
@@ -4951,6 +5030,23 @@ export default function BandDetailScreen({
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* MODAL DE PUBLICAR BANDA OFFLINE NA NUVEM */}
+      <PublishBandModal
+        visible={showPublishModal}
+        band={band}
+        onClose={() => setShowPublishModal(false)}
+        onSuccess={async (updatedBand) => {
+          setShowPublishModal(false);
+          if (updatedBand) {
+            band.cloudId = updatedBand.cloudId;
+            band.publicSlug = updatedBand.publicSlug;
+          }
+          await loadData();
+          await loadSyncStatus();
+          if (onReloadAll) onReloadAll();
+        }}
+      />
 
     </Modal>
   );

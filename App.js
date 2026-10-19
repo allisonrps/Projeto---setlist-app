@@ -21,7 +21,7 @@ import {
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
-import { createTables } from './database/database';
+import { createTables, db } from './database/database';
 import { ThemeProvider, useTheme } from './hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -46,6 +46,7 @@ import ShareQrModal from './components/ShareQrModal';
 import ShareOptionsModal from './components/ShareOptionsModal';
 import ImportOptionsModal from './components/ImportOptionsModal';
 import BandModal from './components/BandModal';
+import PublishBandModal from './components/PublishBandModal';
 import SongModal from './components/SongModal';
 import SongDetailScreen from './components/SongDetailScreen';
 import SetlistDetailScreen from './components/SetlistDetailScreen';
@@ -715,6 +716,8 @@ function MainApp() {
   const [selectedBandProfile, setSelectedBandProfile] = useState(null);
   const [showBandProfileModal, setShowBandProfileModal] = useState(false);
   const [showShareHomeAgendaModal, setShowShareHomeAgendaModal] = useState(false);
+  const [showPublishBandModal, setShowPublishBandModal] = useState(false);
+  const [selectedBandForPublish, setSelectedBandForPublish] = useState(null);
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -819,13 +822,18 @@ function MainApp() {
   const reloadAllData = async () => {
     try {
       const rawBands = await bandService.getAll();
+      const visibleRawBands = (rawBands || []).filter(b => {
+        if (isLoggedIn) return true;
+        // Quando deslogado, exibe apenas bandas locais offline (sem vínculo de nuvem)
+        return !b.cloudId;
+      });
       const allSongs = await songService.getAll(searchQuery, selectedStyles, songSortBy, songSortOrder);
       const allSongsUnfilteredData = await songService.getAll();
       const rawSetlists = await setlistService.getAll();
 
       // Enriquecer bandas com estatísticas resumidas (repertório, integrantes, finanças)
       const allBands = await Promise.all(
-        (rawBands || []).map(async (b) => {
+        (visibleRawBands || []).map(async (b) => {
           try {
             const bSongs = await bandService.getBandSongs(b.id);
             const bMembers = await bandService.getBandMembers(b.id);
@@ -1347,10 +1355,10 @@ function MainApp() {
       setShowBandModal(false);
       setEditingBand(null);
 
-      // Sincronizar na nuvem automaticamente se estiver logado
+      // Sincronizar na nuvem apenas se a modalidade for online e estiver logado
       try {
         const logged = await api.isLoggedIn();
-        if (logged && savedBandId) {
+        if (bandData.isOnline && logged && savedBandId) {
           bandService.syncBandToCloud(savedBandId).then(() => reloadAllData()).catch(() => {});
         }
       } catch (syncErr) {
@@ -1359,6 +1367,40 @@ function MainApp() {
     } catch (error) {
       Alert.alert(t('error') || 'Erro', t('errorSavingBand') || 'Não foi possível salvar a banda.');
     }
+  };
+
+  const handleRequestPublishBand = (band) => {
+    Alert.alert(
+      t('syncBand') || 'Sincronizar Banda',
+      `Deseja sincronizar a banda "${band.name}" para a nuvem?`,
+      [
+        { text: t('cancel') || 'Cancelar', style: 'cancel' },
+        {
+          text: t('syncBtn') || 'Sincronizar',
+          onPress: async () => {
+            const logged = await api.isLoggedIn();
+            if (!logged) {
+              Alert.alert(
+                t('attention') || 'Atenção',
+                'Você precisa estar conectado a uma conta para sincronizar esta banda com a nuvem.',
+                [
+                  { text: 'Cancelar', style: 'cancel' },
+                  {
+                    text: 'Fazer Login',
+                    onPress: () => {
+                      setCurrentTab('social');
+                    }
+                  }
+                ]
+              );
+              return;
+            }
+            setSelectedBandForPublish(band);
+            setShowPublishBandModal(true);
+          }
+        }
+      ]
+    );
   };
 
   const handleEditBand = (band) => {
@@ -3752,22 +3794,6 @@ function MainApp() {
             <Pressable 
               style={({ pressed }) => [
                 styles.quickAddButton,
-                { 
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', 
-                  borderWidth: 1, 
-                  borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', 
-                  paddingHorizontal: 10,
-                  transform: [{ scale: pressed ? 0.95 : 1 }] 
-                }
-              ]}
-              onPress={handleRefreshBands}
-            >
-              <Ionicons name="cloud-download-outline" size={16} color={colors.primary} />
-            </Pressable>
-
-            <Pressable 
-              style={({ pressed }) => [
-                styles.quickAddButton,
                 { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
               ]}
               onPress={() => {
@@ -4282,6 +4308,37 @@ function MainApp() {
                       <Ionicons name="headset-outline" size={18} color={colors.primary} />
                       <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{rehearsalsCount}</Text>
                     </View>
+
+                    {/* Modalidade da Banda: Online ou Offline */}
+                    {band.cloudId ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Ionicons name="cloud-done" size={17} color="#10b981" />
+                        <Text style={{ fontSize: 12, fontWeight: '900', color: '#10b981' }}>Online</Text>
+                      </View>
+                    ) : (
+                      <Pressable
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleRequestPublishBand(band);
+                        }}
+                        hitSlop={8}
+                        style={({ pressed }) => [{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 4,
+                          paddingHorizontal: 7,
+                          paddingVertical: 3,
+                          borderRadius: 8,
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+                          borderWidth: 1,
+                          borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+                          opacity: pressed ? 0.7 : 1
+                        }]}
+                      >
+                        <Ionicons name="cloud-offline-outline" size={15} color={colors.textMuted} />
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted }}>Offline</Text>
+                      </Pressable>
+                    )}
                   </View>
 
                   {/* Até 4 Tags de Estilo da Banda */}
@@ -5456,6 +5513,9 @@ function MainApp() {
                 onOpenProfile={() => setSocialView('profile')} 
                 onLogout={async () => {
                   await api.logout();
+                  try {
+                    await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
+                  } catch (e) {}
                   setIsLoggedIn(false);
                   setCurrentTab('home');
                   await reloadAllData();
@@ -5466,6 +5526,9 @@ function MainApp() {
                 onBack={() => setSocialView('feed')} 
                 onLogout={async () => {
                   await api.logout();
+                  try {
+                    await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
+                  } catch (e) {}
                   setIsLoggedIn(false);
                   setCurrentTab('home');
                   await reloadAllData();
@@ -5725,6 +5788,24 @@ function MainApp() {
         onClose={() => { setShowBandModal(false); setEditingBand(null); }}
         onSave={handleSaveBand}
         band={editingBand}
+        isLoggedIn={isLoggedIn}
+        onOpenLogin={() => {
+          setShowBandModal(false);
+          setEditingBand(null);
+          setCurrentTab('social');
+        }}
+      />
+
+      <PublishBandModal
+        visible={showPublishBandModal}
+        band={selectedBandForPublish}
+        onClose={() => {
+          setShowPublishBandModal(false);
+          setSelectedBandForPublish(null);
+        }}
+        onSuccess={async () => {
+          await reloadAllData();
+        }}
       />
 
 

@@ -79,11 +79,12 @@ const parseDate = (dStr) => {
   return new Date();
 };
 
-export default function BandModal({ visible, onClose, onSave, band }) {
+export default function BandModal({ visible, onClose, onSave, band, isLoggedIn = false, onOpenLogin }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const isDark = colors.isDark;
 
+  const [isOnlineMode, setIsOnlineMode] = useState(band?.cloudId ? true : false);
   const [name, setName] = useState('');
   const [publicSlug, setPublicSlug] = useState('');
   const [isSlugAvailable, setIsSlugAvailable] = useState(null);
@@ -169,7 +170,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
 
   const handleNameChange = (val) => {
     setName(val);
-    if (!slugManuallyEdited && !band) {
+    if (!slugManuallyEdited && !band && isOnlineMode) {
       const suggested = (val || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
       setPublicSlug(suggested);
       handleCheckSlug(suggested);
@@ -180,12 +181,15 @@ export default function BandModal({ visible, onClose, onSave, band }) {
     setSlugManuallyEdited(true);
     const clean = (val || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30);
     setPublicSlug(clean);
-    handleCheckSlug(clean);
+    if (isOnlineMode) {
+      handleCheckSlug(clean);
+    }
   };
   
   useEffect(() => {
     if (visible) {
       if (band) {
+        setIsOnlineMode(Boolean(band.cloudId));
         setName(band.name || '');
         const bSlug = (band.publicSlug || '').replace(/^@/, '');
         setPublicSlug(bSlug);
@@ -246,6 +250,7 @@ export default function BandModal({ visible, onClose, onSave, band }) {
           setIsCasual(hasCas);
         }
       } else {
+        setIsOnlineMode(false);
         setName('');
         setPublicSlug('');
         setIsSlugAvailable(null);
@@ -352,10 +357,30 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       Alert.alert(t('attention'), t('alertBandName'));
       return;
     }
-    if (isSlugAvailable === false) {
-      Alert.alert(t('attention') || 'Atenção', 'O username da banda já está em uso ou é inválido. Escolha outro para continuar.');
-      return;
+
+    if (isOnlineMode) {
+      if (!isLoggedIn) {
+        Alert.alert(
+          t('attention') || 'Atenção',
+          'Você precisa estar conectado a uma conta para criar uma banda online vinculada ao seu usuário.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            ...(onOpenLogin ? [{ text: 'Fazer Login', onPress: onOpenLogin }] : [{ text: 'OK' }])
+          ]
+        );
+        return;
+      }
+      const cleanSlug = publicSlug.trim().toLowerCase().replace('@', '');
+      if (!cleanSlug || cleanSlug.length < 3) {
+        Alert.alert(t('attention') || 'Atenção', 'Para criar uma banda online, defina um username exclusivo (@) com no mínimo 3 caracteres.');
+        return;
+      }
+      if (isSlugAvailable === false) {
+        Alert.alert(t('attention') || 'Atenção', slugFeedbackMsg || 'O username da banda já está em uso ou é inválido. Escolha outro para continuar.');
+        return;
+      }
     }
+
     const bandType = (isCover && isAutoral) ? 'both' : (isCover ? 'cover' : 'autoral');
     const interestLevel = (isProfissional && isCasual) ? 'both' : (isProfissional ? 'Profissional' : 'Casual');
     const linksObj = {
@@ -386,7 +411,8 @@ export default function BandModal({ visible, onClose, onSave, band }) {
       youtube: youtube.trim(),
       spotify: spotify.trim(),
       tiktok: tiktok.trim(),
-      facebook: facebook.trim()
+      facebook: facebook.trim(),
+      isOnline: isOnlineMode
     });
   };
 
@@ -419,6 +445,137 @@ export default function BandModal({ visible, onClose, onSave, band }) {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            {/* SELETOR DE MODALIDADE: OFFLINE vs ONLINE */}
+            {!band ? (
+              <View style={{ marginBottom: 16 }}>
+                <Text style={[styles.inputLabel, { color: colors.textMuted }]}>
+                  {t('bandModeLabel') || 'MODALIDADE DA BANDA'}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                  {/* Opção Offline */}
+                  <Pressable
+                    onPress={() => {
+                      setIsOnlineMode(false);
+                      setIsSlugAvailable(null);
+                      setSlugFeedbackMsg('');
+                    }}
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      paddingVertical: 12,
+                      paddingHorizontal: 10,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: !isOnlineMode ? colors.primary : colors.border,
+                      backgroundColor: !isOnlineMode ? (colors.primary + '18') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')
+                    }}
+                  >
+                    <Ionicons
+                      name="phone-portrait-outline"
+                      size={18}
+                      color={!isOnlineMode ? colors.primary : colors.textMuted}
+                    />
+                    <View>
+                      <Text style={{
+                        fontSize: 13,
+                        fontWeight: '900',
+                        color: !isOnlineMode ? colors.primary : colors.text
+                      }}>
+                        {t('offlineMode') || 'Offline'}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>
+                        {t('offlineModeDesc') || 'Apenas neste aparelho'}
+                      </Text>
+                    </View>
+                  </Pressable>
+
+                  {/* Opção Online */}
+                  <Pressable
+                    onPress={() => {
+                      setIsOnlineMode(true);
+                      if (publicSlug) {
+                        handleCheckSlug(publicSlug);
+                      } else if (name) {
+                        const suggested = name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
+                        setPublicSlug(suggested);
+                        handleCheckSlug(suggested);
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      paddingVertical: 12,
+                      paddingHorizontal: 10,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: isOnlineMode ? '#10b981' : colors.border,
+                      backgroundColor: isOnlineMode ? 'rgba(16, 185, 129, 0.15)' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')
+                    }}
+                  >
+                    <Ionicons
+                      name="cloud-outline"
+                      size={18}
+                      color={isOnlineMode ? '#10b981' : colors.textMuted}
+                    />
+                    <View>
+                      <Text style={{
+                        fontSize: 13,
+                        fontWeight: '900',
+                        color: isOnlineMode ? '#10b981' : colors.text
+                      }}>
+                        {t('onlineMode') || 'Online'}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>
+                        {t('onlineModeDesc') || 'BandLink Cloud'}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </View>
+
+                {/* Aviso de Login necessário se escolher Online */}
+                {isOnlineMode && !isLoggedIn && (
+                  <View style={{
+                    marginTop: 8,
+                    padding: 10,
+                    borderRadius: 10,
+                    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                    borderColor: 'rgba(239, 68, 68, 0.3)',
+                    borderWidth: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8
+                  }}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                      <Text style={{ fontSize: 11, color: '#ef4444', fontWeight: '700', flex: 1 }}>
+                        Você precisa estar logado para criar uma banda online.
+                      </Text>
+                    </View>
+                    {onOpenLogin && (
+                      <Pressable
+                        onPress={onOpenLogin}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          borderRadius: 6
+                        }}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>Entrar</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                )}
+              </View>
+            ) : null}
+
             {/* NOME DA BANDA */}
             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('bandNameLabel')}</Text>
             <TextInput
@@ -435,7 +592,14 @@ export default function BandModal({ visible, onClose, onSave, band }) {
             />
 
             {/* USERNAME DA BANDA */}
-            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('bandUsernameLabel') || 'USERNAME DA BANDA (@)'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={[styles.inputLabel, { color: colors.textMuted }]}>
+                {t('bandUsernameLabel') || 'USERNAME DA BANDA (@)'} {isOnlineMode ? '*' : ''}
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>
+                {isOnlineMode ? 'Obrigatório na nuvem' : 'Opcional offline'}
+              </Text>
+            </View>
             <View style={{ marginBottom: slugFeedbackMsg ? 6 : 14 }}>
               <View style={{
                 flexDirection: 'row',

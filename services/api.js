@@ -713,6 +713,7 @@ export const api = {
       headers,
       body: JSON.stringify({
         name: bandData.name,
+        publicSlug: bandData.publicSlug || '',
         genre: bandData.genre || '',
         description: bandData.description || ''
       })
