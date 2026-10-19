@@ -3425,113 +3425,156 @@
     .project-band-card {
       background: #182234;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 22px 28px 22px 115px;
+      border-radius: 18px;
+      padding: 16px 18px;
       position: relative;
       cursor: pointer;
       transition: all 0.22s ease;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
     }
     .project-band-card:hover {
       transform: translateY(-2px);
       border-color: rgba(56, 189, 248, 0.45);
-      box-shadow: 0 12px 32px rgba(14, 165, 233, 0.15);
-    }
-    @media (max-width: 680px) {
-      .project-band-card {
-        padding: 65px 16px 20px 16px;
-      }
+      box-shadow: 0 8px 28px rgba(14, 165, 233, 0.15);
     }
 
-    .project-band-avatar {
-      position: absolute;
-      left: -65px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 150px;
-      height: 150px;
+    .project-band-card-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .project-band-card-avatar {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
       border-radius: 50%;
-      background: #cbd5e1;
-      border: 5px solid #101622;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      background: #334155;
+      border: 2px solid #0284c7;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      font-size: 3.5rem;
-      font-weight: 900;
-      color: #1e293b;
-      z-index: 5;
-      transition: transform 0.2s ease;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #f1f5f9;
+      flex-shrink: 0;
     }
-    .project-band-card:hover .project-band-avatar {
-      transform: translateY(-50%) scale(1.03);
-    }
-    @media (max-width: 680px) {
-      .project-band-avatar {
-        left: 50%;
-        top: -50px;
-        transform: translateX(-50%);
-        width: 100px;
-        height: 100px;
-        font-size: 2.2rem;
-      }
-      .project-band-card:hover .project-band-avatar {
-        transform: translateX(-50%) scale(1.03);
-      }
-    }
-    .project-band-avatar img {
+    .project-band-card-avatar img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .project-band-metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    @media (max-width: 768px) {
-      .project-band-metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-    @media (max-width: 440px) {
-      .project-band-metrics-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .project-metric-box {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 12px 14px;
+    .project-band-card-info {
+      flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      transition: all 0.15s ease;
+      gap: 2px;
     }
-    .project-band-card:hover .project-metric-box {
-      background: rgba(255, 255, 255, 0.07);
-    }
-    .project-metric-val {
-      font-size: 1.15rem;
+    .project-band-card-name {
+      font-size: 1.08rem;
       font-weight: 800;
       color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+      line-height: 1.25;
+    }
+    .project-band-card-meta {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-    .project-metric-lbl {
-      font-size: 0.68rem;
-      font-weight: 700;
+      font-size: 0.78rem;
       color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .project-band-card-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .project-band-card-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .project-band-card-sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.28);
+    }
+    .project-band-card-chevron {
+      color: #64748b;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .project-band-card:hover .project-band-card-chevron {
+      color: #38bdf8;
+      transform: translateX(3px);
+    }
+
+    .project-band-metrics-strip {
+      background: #101726;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .project-metric-mini-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #f1f5f9;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+    .project-metric-mini-item ion-icon {
+      font-size: 1.15rem;
+      color: #38bdf8;
+    }
+
+    .project-band-pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .project-band-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1.3;
     }
 
     /* ============================================================== */
@@ -3804,16 +3847,17 @@
 
     /* Projects Container & Title */
     .projects-container {
-      max-width: 980px;
+      max-width: 820px;
       margin: 0 auto;
-      padding: 30px 24px 60px 85px;
+      padding: 24px 20px 60px 20px;
       display: flex;
       flex-direction: column;
-      gap: 36px;
+      gap: 16px;
     }
     @media (max-width: 680px) {
       .projects-container {
-        padding: 50px 16px 40px 16px;
+        padding: 16px 12px 40px 12px;
+        gap: 14px;
       }
     }
     .project-band-title {
@@ -5491,33 +5535,35 @@
 
       /* PROJECTS VIEW CARDS */
       .projects-container {
-        padding: 18px 4px 36px 4px !important;
-        gap: 20px !important;
-      }
-      .project-band-card-wrapper {
-        padding-left: 0 !important;
-        padding-top: 45px !important;
-        margin-bottom: 24px !important;
+        padding: 16px 10px 36px 10px !important;
+        gap: 12px !important;
       }
       .project-band-card {
-        padding: 48px 12px 18px 12px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
+        padding: 14px 14px !important;
+        border-radius: 16px !important;
       }
-      .project-band-title {
-        margin-left: 0 !important;
-        margin: 0 0 12px 0 !important;
-        text-align: center !important;
-        justify-content: center !important;
-        font-size: 1.25rem !important;
+      .project-band-card-avatar {
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        font-size: 1.1rem !important;
       }
-      .project-band-avatar {
-        left: 50% !important;
-        top: -45px !important;
-        transform: translateX(-50%) !important;
-        width: 88px !important;
-        height: 88px !important;
-        font-size: 2rem !important;
+      .project-band-card-name {
+        font-size: 1rem !important;
+      }
+      .project-band-card-meta {
+        font-size: 0.72rem !important;
+      }
+      .project-metric-mini-item {
+        font-size: 0.88rem !important;
+        gap: 5px !important;
+      }
+      .project-metric-mini-item ion-icon {
+        font-size: 1.05rem !important;
+      }
+      .project-band-pill {
+        font-size: 0.68rem !important;
+        padding: 2px 8px !important;
       }
 
       /* BAND MEMBERS ROW CARD */
@@ -11489,8 +11535,47 @@
       }).join('');
     }
 
+    function getProjectBandCardPills(band) {
+      const pills = [];
+      const rawType = (band?.bandType || '').toLowerCase();
+      const isCover = band?.isCover === true || band?.isCover === 1 || band?.isCover === 'true' || rawType.includes('cover') || (!band?.bandType && band?.isCover === undefined);
+      const isAutoral = band?.isAutoral === true || band?.isAutoral === 1 || band?.isAutoral === 'true' || rawType.includes('autoral');
+
+      // Sempre pílulas separadas para Cover e Autoral
+      if (isCover) {
+        pills.push({ label: 'Cover', style: 'background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);' });
+      }
+      if (isAutoral) {
+        pills.push({ label: 'Autoral', style: 'background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);' });
+      }
+
+      // Nível de interesse (Profissional, Casual, etc)
+      const rawInterest = (band?.interestLevel || '').toLowerCase();
+      if (band?.isProfissional || rawInterest.includes('profissional') || rawInterest.includes('pro')) {
+        pills.push({ label: 'Profissional', style: 'background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3);' });
+      }
+      if (band?.isCasual || rawInterest.includes('casual')) {
+        pills.push({ label: 'Casual', style: 'background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);' });
+      }
+
+      // Estilos musicais / gêneros individuais
+      const rawGenres = [band?.genre, band?.genresJson, band?.styles].filter(Boolean).join(',');
+      const splitGenres = rawGenres.split(/[,/•;]+|\be\b/i).map(s => s.trim()).filter(Boolean);
+      const seen = new Set(pills.map(p => p.label.toLowerCase()));
+      splitGenres.forEach(g => {
+        const clean = g.charAt(0).toUpperCase() + g.slice(1);
+        const lower = clean.toLowerCase();
+        if (!seen.has(lower) && lower !== 'cover' && lower !== 'autoral' && lower !== 'banda' && lower !== 'projeto') {
+          seen.add(lower);
+          pills.push({ label: clean, style: 'background: rgba(56, 189, 248, 0.08); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.2);' });
+        }
+      });
+
+      return pills;
+    }
+
     // ==============================================================
-    // MAIN VIEW: PROJETOS (CARDS DAS BANDAS - FIGMA PRINT 2)
+    // MAIN VIEW: PROJETOS (CARDS DAS BANDAS - FIGMA PRINT 2 / APP MOBILE)
     // ==============================================================
     function renderProjectsMainView() {
       const container = document.getElementById('projectsBandsListContainer');
@@ -11518,8 +11603,10 @@
         const normImg = normalizeImageUri(band.imageUri);
 
         const avatarHtml = normImg
-          ? `<img src="${normImg}" alt="${band.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
+          ? `<img src="${normImg}" alt="${escapeHtml(band.name)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none;">${initials}</span>`
           : `<span>${initials}</span>`;
+
+        const sinceYear = band.sinceYear || (band.startDate ? String(band.startDate).substring(0, 4) : (band.createdAt ? new Date(band.createdAt).getFullYear() : '2025'));
 
         const rawBLocs = [band.city, band.state].map(x => (x || '').trim()).filter(Boolean);
         const dedupBLocs = [];
@@ -11530,47 +11617,52 @@
         });
         const locStr = dedupBLocs.join(', ');
 
+        const setlistsCount = (m.setlists || []).length;
+        const pills = getProjectBandCardPills(band);
+
         return `
-          <div class="project-band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${band.name}">
-            <div class="project-band-avatar">
-              ${avatarHtml}
-            </div>
-            <div class="project-band-content" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%;">
-              <div class="project-band-header" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; margin-bottom: 12px;">
-                <h3 class="project-band-title" style="margin-left: 0; margin-bottom: 8px; justify-content: center; text-align: center; width: 100%;">${band.name}</h3>
-                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;">
-                  <span class="badge badge-cyan" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(band.bandType || 'Banda')}</span>
-                  ${getBandGenrePills(band.genre || band.genresJson).map(g => `<span class="badge badge-emerald" style="font-size: 0.75rem; padding: 3px 10px; font-weight: 800; border-radius: 9999px;">${escapeHtml(g)}</span>`).join('')}
-                  ${locStr ? `<span class="badge" style="background: rgba(255,255,255,0.08); color: #cbd5e1; font-size: 0.75rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;"><ion-icon name="location-outline" style="margin-right: 4px; vertical-align: middle;"></ion-icon>${escapeHtml(locStr)}</span>` : ''}
+          <div class="project-band-card" onclick="openBandProfileView(${band.id})" title="Clique para abrir a página da banda ${escapeHtml(band.name)}">
+            <div class="project-band-card-top">
+              <div class="project-band-card-avatar">
+                ${avatarHtml}
+              </div>
+              <div class="project-band-card-info">
+                <h3 class="project-band-card-name">${escapeHtml(band.name)}</h3>
+                <div class="project-band-card-meta">
+                  <span>Since: ${sinceYear}</span>
+                  ${locStr ? `<span>•</span><span><ion-icon name="location-outline" style="color: #64748b; font-size: 0.85rem;"></ion-icon>${escapeHtml(locStr)}</span>` : ''}
                 </div>
               </div>
-              <div class="project-band-metrics-grid">
-                <div class="project-metric-box">
-                  <div class="project-metric-val"><ion-icon name="musical-notes-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.repertoireCount}</div>
-                  <div class="project-metric-lbl">Músicas no Repertório</div>
-                </div>
-                <div class="project-metric-box">
-                  <div class="project-metric-val"><ion-icon name="people-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.membersCount}</div>
-                  <div class="project-metric-lbl">Membros</div>
-                </div>
-                <div class="project-metric-box">
-                  <div class="project-metric-val"><ion-icon name="mic-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.showsCount}</div>
-                  <div class="project-metric-lbl">Shows no Ano</div>
-                </div>
-                <div class="project-metric-box">
-                  <div class="project-metric-val"><ion-icon name="headset-outline" style="color: var(--cyan); margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>${m.rehearsalsCount}</div>
-                  <div class="project-metric-lbl">Ensaios no Ano</div>
-                </div>
-                <div class="project-metric-box">
-                  <div class="project-metric-val" style="color: #4ade80;"><ion-icon name="person-outline" style="color: #4ade80; margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>R$ ${m.individualIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                  <div class="project-metric-lbl">Renda Individual no Ano Acumulado</div>
-                </div>
-                <div class="project-metric-box">
-                  <div class="project-metric-val" style="color: #38bdf8;"><ion-icon name="cash-outline" style="color: #38bdf8; margin-right: 6px; font-size: 1.15rem; vertical-align: middle;"></ion-icon>R$ ${m.totalCache.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                  <div class="project-metric-lbl">Renda Total da Banda no Ano</div>
-                </div>
+              <div class="project-band-card-right">
+                <span class="project-band-card-sync-pill"><ion-icon name="checkmark-circle-outline"></ion-icon> Synced</span>
+                <span class="project-band-card-chevron"><ion-icon name="chevron-forward"></ion-icon></span>
               </div>
             </div>
+
+            <div class="project-band-metrics-strip">
+              <div class="project-metric-mini-item" title="Músicas no Repertório">
+                <ion-icon name="musical-notes"></ion-icon>
+                <span>${m.repertoireCount}</span>
+              </div>
+              <div class="project-metric-mini-item" title="Membros">
+                <ion-icon name="people"></ion-icon>
+                <span>${m.membersCount}</span>
+              </div>
+              <div class="project-metric-mini-item" title="Shows">
+                <ion-icon name="calendar"></ion-icon>
+                <span>${m.showsCount || 0}</span>
+              </div>
+              <div class="project-metric-mini-item" title="Setlists">
+                <ion-icon name="headset"></ion-icon>
+                <span>${setlistsCount}</span>
+              </div>
+            </div>
+
+            ${pills.length > 0 ? `
+              <div class="project-band-pills-row">
+                ${pills.map(p => `<span class="project-band-pill" style="${p.style}">${escapeHtml(p.label)}</span>`).join('')}
+              </div>
+            ` : ''}
           </div>
         `;
       }).join('');
