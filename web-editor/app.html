@@ -12362,22 +12362,15 @@
           <div>
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
-              <span>Repertório Oficial da Banda</span>
+              <span>Repertório</span>
               <span class="badge badge-cyan">${songs.length} Músicas</span>
             </h2>
             <p style="color: #94a3b8; font-size: 0.88rem;">Catálogo consolidado de músicas, letras, cifras e tablaturas da banda.</p>
           </div>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-            <button type="button" class="btn btn-primary btn-sm" onclick="openAddSongsToBandModal(${band.id})" style="border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; padding: 7px 16px;">
-              <ion-icon name="add-circle" style="font-size: 1.15rem;"></ion-icon>
-              <span>Adicionar do Songbook</span>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" onclick="openAddSongsToBandModal(${band.id})" title="Adicionar músicas do Songbook" style="width: 42px; height: 42px; border-radius: 50%; background: var(--cyan); color: #0f172a; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.45rem; font-weight: 800; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35); transition: all 0.2s ease;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+              <ion-icon name="add"></ion-icon>
             </button>
-            <span class="badge badge-cyan" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
-              <ion-icon name="disc-outline"></ion-icon> ${songs.length} Músicas no Catálogo
-            </span>
-            <span class="badge badge-emerald" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
-              <ion-icon name="list-outline"></ion-icon> ${setlists.length} Setlists Gravados
-            </span>
           </div>
         </div>
 
@@ -12441,56 +12434,45 @@
       } else {
         const renderBandSongItemHtml = (song) => {
           const tags = getBandGenrePills(song.style);
+          const tagsInlineHtml = tags.map(t => `<span class="profile-song-tag-badge">${escapeHtml(t)}</span>`).join('');
           const hasLyrics = !!(song.lyrics && song.lyrics.trim());
           const hasChords = !!(song.chords && song.chords.trim());
-          const hasTabs = !!(song.tabs && song.tabs.trim());
+          const hasTabs = !!((song.tabs && song.tabs.trim()) || (song.tablature && song.tablature.trim()));
+          const dotsTooltip = `Letra: ${hasLyrics ? 'Sim' : 'Não'} | Cifra: ${hasChords ? 'Sim' : 'Não'} | Tablatura: ${hasTabs ? 'Sim' : 'Não'}`;
           const isFav = !!song.isFavorite;
+          const bandName = song.originalBand || 'Banda';
+          const songName = song.name || 'Sem título';
 
           return `
-            <div class="repertoire-song-card" onclick="openSongFromBandRepertoire(${JSON.stringify(song).replace(/"/g, '&quot;')})" title="Clique para ver letra, cifra e tablatura" style="margin-bottom: 6px;">
-              <!-- Left: Favorite Star & Title -->
-              <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 250px;">
-                <button type="button" onclick="toggleBandSongFavorite('${song.id}', event)" style="background: transparent; border: none; cursor: pointer; color: ${isFav ? '#fbbf24' : '#64748b'}; padding: 4px; display: flex; align-items: center;">
-                  <ion-icon name="${isFav ? 'star' : 'star-outline'}" style="font-size: 1.15rem;"></ion-icon>
+            <div class="profile-song-item" onclick="openSongFromBandRepertoire(${JSON.stringify(song).replace(/"/g, '&quot;')})" title="Clique para ver letra, cifra e tablatura" style="margin-bottom: 4px;">
+              <div class="profile-song-item-left">
+                <button type="button" onclick="toggleBandSongFavorite('${song.id}', event)" title="Favoritar música" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: ${isFav ? '#fbbf24' : '#64748b'};">
+                  <ion-icon name="${isFav ? 'star' : 'star-outline'}" style="font-size: 1.05rem;"></ion-icon>
                 </button>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="font-size: 0.98rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    ${bandRepertoireSort === 'name' ? `
-                      <span style="color: #fff;">${escapeHtml(song.name || 'Sem título')}</span>
-                      <span style="color: #64748b; margin: 0 4px;">-</span>
-                      <span style="color: var(--cyan); font-weight: 600;">${escapeHtml(song.originalBand || 'Banda')}</span>
-                    ` : `
-                      <span style="color: var(--cyan); font-weight: 700;">${escapeHtml(song.originalBand || 'Banda')}</span>
-                      <span style="color: #64748b; margin: 0 4px;">-</span>
-                      <span style="color: #fff;">${escapeHtml(song.name || 'Sem título')}</span>
-                    `}
-                  </div>
-                  <!-- Tags compactas abaixo -->
-                  ${tags.length > 0 ? `
-                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                      ${tags.map(t => `<span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 6px;">${escapeHtml(t)}</span>`).join('')}
-                    </div>
-                  ` : ''}
+                <div class="profile-song-item-titles">
+                  ${bandRepertoireSort === 'name' ? `
+                    <span class="song-name" style="color: #fff; font-weight: 700;">${escapeHtml(songName)}</span>
+                    <span class="song-sep">-</span>
+                    <span class="song-band" style="color: var(--cyan); font-weight: 600;">${escapeHtml(bandName)}</span>
+                  ` : `
+                    <span class="song-band" style="color: var(--cyan); font-weight: 700;">${escapeHtml(bandName)}</span>
+                    <span class="song-sep">-</span>
+                    <span class="song-name" style="color: #fff; font-weight: 700;">${escapeHtml(songName)}</span>
+                  `}
+                  ${tags.length > 0 ? `<span class="profile-song-tags-inline">${tagsInlineHtml}</span>` : ''}
                 </div>
               </div>
 
-              <!-- Right: Duração + Pontinhos Indicadores (L, C, T) + Status + Lixeira -->
-              <div style="display: flex; align-items: center; gap: 14px;">
-                <span style="color: #94a3b8; font-size: 0.82rem; font-family: var(--font-mono);">${song.duration || '--:--'}</span>
-
-                <!-- 3 Pontinhos Indicadores Mobile: Letra (Azul), Cifra (Verde), Tablatura (Roxo) -->
-                <div class="song-dots-row" title="Conteúdo disponível: ${hasLyrics ? '[Letra] ' : ''}${hasChords ? '[Cifra] ' : ''}${hasTabs ? '[Tablatura]' : ''}">
-                  <span class="song-dot-pill ${hasLyrics ? 'active' : ''}" style="${hasLyrics ? 'background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);' : ''}">L</span>
-                  <span class="song-dot-pill ${hasChords ? 'active' : ''}" style="${hasChords ? 'background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);' : ''}">C</span>
-                  <span class="song-dot-pill ${hasTabs ? 'active' : ''}" style="${hasTabs ? 'background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);' : ''}">T</span>
+              <div class="profile-song-item-right" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                ${song.duration ? `<span style="color: #94a3b8; font-size: 0.78rem; font-family: var(--font-mono);">${escapeHtml(song.duration)}</span>` : ''}
+                ${song.key ? `<span style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">${escapeHtml(song.key)}</span>` : ''}
+                <div class="sb-song-content-dots" title="${dotsTooltip}">
+                  <div class="sb-content-dot ${hasLyrics ? 'dot-lyrics' : 'dot-empty'}" title="${hasLyrics ? 'Letra disponível' : 'Sem letra'}"></div>
+                  <div class="sb-content-dot ${hasChords ? 'dot-chords' : 'dot-empty'}" title="${hasChords ? 'Cifra disponível' : 'Sem cifra'}"></div>
+                  <div class="sb-content-dot ${hasTabs ? 'dot-tabs' : 'dot-empty'}" title="${hasTabs ? 'Tablatura disponível' : 'Sem tablatura'}"></div>
                 </div>
-
-                <span class="badge ${song.status === 'rehearsal' ? 'badge-amber' : 'badge-emerald'}" style="font-size: 0.68rem; font-weight: 800; padding: 3px 8px;">
-                  ${song.status === 'rehearsal' ? 'REPERTÓRIO' : 'PRONTA'}
-                </span>
-
-                <button type="button" onclick="removeSongFromBandRepertoire('${song.id}', event)" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171; border-radius: 8px; padding: 5px 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Remover do repertório da banda">
-                  <ion-icon name="trash-outline" style="font-size: 1rem;"></ion-icon>
+                <button type="button" onclick="removeSongFromBandRepertoire('${song.id}', event)" title="Remover do repertório da banda" style="background: none; border: none; cursor: pointer; padding: 2px 4px; display: inline-flex; align-items: center; color: #f87171; opacity: 0.85;">
+                  <ion-icon name="trash-outline" style="font-size: 1.05rem;"></ion-icon>
                 </button>
               </div>
             </div>
@@ -13877,7 +13859,7 @@
                         <span>$ ${formatCompactNumber(cacheNum)}</span>
                       </span>
                     ` : ''}
-                    <span><ion-icon name="musical-notes-outline" style="color: var(--cyan); vertical-align: middle;"></ion-icon> ${songsCount} músicas</span>
+                    <span><ion-icon name="musical-notes-outline" style="color: var(--cyan); vertical-align: middle;"></ion-icon> ${songsCount}</span>
                   </div>
                 </div>
               </div>
