@@ -881,6 +881,36 @@ function MainApp() {
         } catch (evErr) {
           console.log('Error refreshing online events in App.js:', evErr);
         }
+
+        try {
+          const cloudSongs = await api.getSongs();
+          if (Array.isArray(cloudSongs) && cloudSongs.length > 0) {
+            const currentDbSongs = await songService.getAll();
+            for (const cs of cloudSongs) {
+              const localMatch = (currentDbSongs || []).find(s => 
+                (cs.id && String(s.id) === String(cs.id)) || 
+                (s.name && cs.name && s.name.trim().toLowerCase() === cs.name.trim().toLowerCase())
+              );
+              if (!localMatch) {
+                try {
+                  await songService.insert(
+                    cs.name,
+                    cs.originalBand || '',
+                    cs.style || '',
+                    cs.lyrics || '',
+                    cs.chords || '',
+                    cs.tabs || '',
+                    cs.defaultView || 'lyrics',
+                    cs.duration || null,
+                    cs.scrollSpeed || 'none'
+                  );
+                } catch (e) {}
+              }
+            }
+          }
+        } catch (songErr) {
+          console.log('Error refreshing cloud songs in App.js:', songErr);
+        }
       }
 
       const visibleRawBands = (rawBands || []).filter(b => {
@@ -2893,6 +2923,47 @@ function MainApp() {
     };
   };
 
+  // ===== INDICADOR DE STATUS ONLINE/OFFLINE =====
+  const renderOnlineStatusIndicator = () => {
+    return (
+      <Pressable
+        onPress={() => {
+          if (isLoggedIn) {
+            Alert.alert(
+              'Modo Online',
+              'Você está conectado à nuvem! As informações desta tela estão sincronizadas diretamente com a API online.'
+            );
+          } else {
+            Alert.alert(
+              'Modo Offline',
+              'Você está no modo offline com dados locais (SQLite).\n\nDeseja entrar com sua conta para sincronizar suas informações na nuvem?',
+              [
+                { text: 'Continuar Offline', style: 'cancel' },
+                { text: 'Fazer Login', onPress: () => setCurrentTab('network') }
+              ]
+            );
+          }
+        }}
+        hitSlop={8}
+        style={({ pressed }) => [
+          styles.onlineStatusCircle,
+          {
+            backgroundColor: isLoggedIn ? '#10B98118' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
+            borderColor: isLoggedIn ? '#10B981' : (isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.18)'),
+            opacity: pressed ? 0.7 : 1
+          }
+        ]}
+        accessibilityLabel={isLoggedIn ? 'Status: Online' : 'Status: Offline'}
+      >
+        <Ionicons
+          name={isLoggedIn ? 'cloud-done' : 'cloud-offline-outline'}
+          size={14}
+          color={isLoggedIn ? '#10B981' : (isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)')}
+        />
+      </Pressable>
+    );
+  };
+
   // ===== RENDERS DAS ABAS =====
   const renderHomeTab = () => {
     
@@ -3204,6 +3275,7 @@ function MainApp() {
         <View style={styles.tabHeaderRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home') || 'Home'}</Text>
+            {renderOnlineStatusIndicator()}
           </View>
 
           <Pressable 
@@ -3866,6 +3938,7 @@ function MainApp() {
               <Text style={[styles.headerCountText, { color: colors.primary }]}>{bands.length}</Text>
             </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('projectsTab') || t('bands') || 'Projetos'}</Text>
+            {renderOnlineStatusIndicator()}
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -4467,6 +4540,7 @@ function MainApp() {
               <Text style={[styles.headerCountText, { color: colors.primary }]}>{songs.length}</Text>
             </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('songbookTab') || t('songs') || 'Songbook'}</Text>
+            {renderOnlineStatusIndicator()}
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Pressable 
@@ -5664,12 +5738,14 @@ function MainApp() {
     const handleUserLogin = async () => {
       setIsLoggedIn(true);
       try {
-        const syncRes = await bandService.syncAllUserBandsFromCloud();
-        if (syncRes && syncRes.count > 0) {
-          await reloadAllData();
-        }
+        await bandService.syncAllUserBandsFromCloud();
       } catch (syncErr) {
         console.log('Error syncing user cloud bands on login:', syncErr);
+      }
+      try {
+        await reloadAllData();
+      } catch (reloadErr) {
+        console.log('Error reloading all data on login:', reloadErr);
       }
       try {
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
@@ -5708,6 +5784,7 @@ function MainApp() {
                   try {
                     await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
                   } catch (e) {}
+                  setOnlineEvents([]);
                   setIsLoggedIn(false);
                   setCurrentTab('home');
                   await reloadAllData();
@@ -5721,6 +5798,7 @@ function MainApp() {
                   try {
                     await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
                   } catch (e) {}
+                  setOnlineEvents([]);
                   setIsLoggedIn(false);
                   setCurrentTab('home');
                   await reloadAllData();
@@ -6619,6 +6697,15 @@ const styles = StyleSheet.create({
   headerCountText: {
     fontSize: 12,
     fontWeight: '900',
+  },
+  onlineStatusCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 4,
   },
   tabHeaderRow: {
     flexDirection: 'row',
