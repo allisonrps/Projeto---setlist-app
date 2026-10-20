@@ -517,9 +517,20 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
         category: g.category || 'Equipamento',
         name: g.name || 'Setup Principal',
         details: g.details || '',
-        isPrimary: g.isPrimary !== undefined ? g.isPrimary : (idx === 0)
+        isPrimary: g.isPrimary !== undefined ? g.isPrimary : (idx === 0),
+        isNegotiable: !!g.isNegotiable,
+        price: g.price || ''
       }))
     : [];
+
+  // Habilidades Extras
+  const extraSkills = useMemo(() => {
+    let raw = activeMusician.extraSkills || activeMusician.extraSkillsJson;
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+    }
+    return Array.isArray(raw) ? raw : [];
+  }, [activeMusician.extraSkills, activeMusician.extraSkillsJson]);
 
   // Bandas e Projetos
   const rawProjects = (() => {
@@ -1180,6 +1191,41 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
           );
         })
       )}
+
+      {/* 2. HABILIDADES EXTRAS (DIFERENCIAIS P/ BANDA) */}
+      {extraSkills.length > 0 && (
+        <View style={{ marginTop: 22 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, paddingHorizontal: 2 }}>
+            <Ionicons name="sparkles" size={16} color="#fbbf24" />
+            <Text style={{ fontSize: 13, fontWeight: '800', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              {t('extraSkills') || 'Habilidades Extras'}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 2 }}>
+            {extraSkills.map((es, idx) => (
+              <View 
+                key={es.id || idx}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 12,
+                  paddingVertical: 7,
+                  borderRadius: 16,
+                  backgroundColor: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(251, 191, 36, 0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(251, 191, 36, 0.35)',
+                }}
+              >
+                <Ionicons name="sparkles" size={13} color="#fbbf24" />
+                <Text style={{ fontSize: 12.5, fontWeight: '700', color: isDark ? '#fef3c7' : '#92400e' }}>
+                  {es.name || es}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   );
 
@@ -1219,7 +1265,7 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
                 }
               ]}
             >
-              {/* LINHA 1 (ACIMA): Badge Categoria + Marca/Modelo */}
+              {/* LINHA 1 (ACIMA): Badge Categoria + Marca/Modelo + Negociável */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8, flexWrap: 'wrap', gap: 8 }}>
                   <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: colors.primary + '30' }}>
@@ -1229,6 +1275,25 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
                     {item.name}
                   </Text>
                 </View>
+
+                {item.isNegotiable ? (
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 6,
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(34, 197, 94, 0.35)'
+                  }}>
+                    <Ionicons name="pricetag-outline" size={11} color="#4ade80" />
+                    <Text style={{ color: '#4ade80', fontSize: 11, fontWeight: '800' }}>
+                      {item.price ? `$ ${String(item.price).replace(/^(\$|R\$)\s*/i, '').trim()}` : (t('negotiable') || 'Negociável')}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
 
               {/* LINHA 2 (ABAIXO): Observações adicionais */}
@@ -1741,7 +1806,7 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
           {/* ── ABAS DE OPÇÕES COM DEGRADÊ CINTILANTE ── */}
           <View style={styles.tabBar}>
             {[
-              { id: 'bio', type: 'ion', icon: 'leaf', iconOutline: 'leaf-outline', label: t('bioTab') || 'Bio' },
+              { id: 'bio', type: 'ion', icon: 'document-text', iconOutline: 'document-text-outline', label: t('bioTab') || 'Bio' },
               { id: 'skills', type: 'ion', icon: 'flash', iconOutline: 'flash-outline', label: t('skillsTab') || 'Habilidades' },
               { id: 'instruments', type: 'mci', icon: 'guitar-acoustic', label: t('instrumentsTab') || 'Instrumentos' },
               { id: 'projects', type: 'ion', icon: 'people', iconOutline: 'people-outline', label: t('projectsTab') || 'Projetos' },

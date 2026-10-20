@@ -499,10 +499,35 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   // Unified Edit Profile Modal (Header button)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [editProfileName, setEditProfileName] = useState('');
+  const [editProfileUsername, setEditProfileUsername] = useState('');
+  const [editProfilePictureUrl, setEditProfilePictureUrl] = useState('');
+  const [usernameStatus, setUsernameStatus] = useState('available'); // 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+  const [usernameMessage, setUsernameMessage] = useState('');
+  const usernameDebounceRef = useRef(null);
   const [editProfileBirthDate, setEditProfileBirthDate] = useState('');
   const [editProfileCity, setEditProfileCity] = useState('');
   const [editProfileState, setEditProfileState] = useState('');
   const [editProfileCountry, setEditProfileCountry] = useState('Brasil');
+
+  // Habilidades Extras (Diferenciais p/ Banda)
+  const [extraSkills, setExtraSkills] = useState([]);
+  const [showExtraSkillModal, setShowExtraSkillModal] = useState(false);
+  const [customExtraSkill, setCustomExtraSkill] = useState('');
+  const [selectedPresetExtraSkill, setSelectedPresetExtraSkill] = useState('');
+
+  const PRESET_EXTRA_SKILLS = [
+    'Transporte Próprio (Van/Carro)',
+    'Técnico de Som / PA',
+    'Design Gráfico & Flyers',
+    'Filmagem & Edição de Vídeo',
+    'Social Media & Anúncios',
+    'Roadie & Montagem de Palco',
+    'Venda de Shows & Booking',
+    'Luthieria & Regulagem',
+    'Fotografia Profissional',
+    'Técnico de Iluminação / Luz',
+    'Produção Musical & Gravação'
+  ];
 
   // Location Modal
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -530,6 +555,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const [customCategory, setCustomCategory] = useState('');
   const [gearName, setGearName] = useState('');
   const [gearDetails, setGearDetails] = useState('');
+  const [gearIsNegotiable, setGearIsNegotiable] = useState(false);
+  const [gearPrice, setGearPrice] = useState('');
 
   // Drag-and-drop state for equipment
   const [draggingIdx, setDraggingIdx] = useState(null);
@@ -681,6 +708,26 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       setGear(parsedGear || []);
       if (parsedGear && parsedGear.length > 0) {
         await AsyncStorage.setItem('user_gear', JSON.stringify(parsedGear));
+      }
+
+      // Load Extra Skills from API or AsyncStorage
+      let parsedExtra = [];
+      const rawExtra = data.extraSkills || data.extraSkillsJson;
+      if (rawExtra) {
+        try {
+          const parsed = typeof rawExtra === 'string' ? JSON.parse(rawExtra) : rawExtra;
+          if (Array.isArray(parsed)) parsedExtra = parsed;
+        } catch (e) {}
+      }
+      if (!parsedExtra || parsedExtra.length === 0) {
+        const savedExtra = await AsyncStorage.getItem('user_extra_skills');
+        if (savedExtra) {
+          try { parsedExtra = JSON.parse(savedExtra); } catch (e) {}
+        }
+      }
+      setExtraSkills(parsedExtra || []);
+      if (parsedExtra && parsedExtra.length > 0) {
+        await AsyncStorage.setItem('user_extra_skills', JSON.stringify(parsedExtra));
       }
 
       let parsedSkills = null;
@@ -1236,6 +1283,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     setCustomCategory('');
     setGearName('');
     setGearDetails('');
+    setGearIsNegotiable(false);
+    setGearPrice('');
     setShowGearModal(true);
   };
 
@@ -1253,6 +1302,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     
     setGearName(item.name || '');
     setGearDetails(item.details || '');
+    setGearIsNegotiable(!!item.isNegotiable);
+    setGearPrice(item.price ? String(item.price).replace(/^(\$|R\$)\s*/i, '').trim() : '');
     setShowGearModal(true);
   };
 
@@ -1272,7 +1323,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         ...g,
         category: finalCategory,
         name: gearName.trim(),
-        details: gearDetails.trim()
+        details: gearDetails.trim(),
+        isNegotiable: !!gearIsNegotiable,
+        price: gearIsNegotiable ? gearPrice.trim() : ''
       } : g);
     } else {
       updated = [
@@ -1281,12 +1334,102 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           id: String(Date.now()),
           category: finalCategory,
           name: gearName.trim(),
-          details: gearDetails.trim()
+          details: gearDetails.trim(),
+          isNegotiable: !!gearIsNegotiable,
+          price: gearIsNegotiable ? gearPrice.trim() : ''
         }
       ];
     }
     saveGearList(updated);
     setShowGearModal(false);
+  };
+
+  // Habilidades Extras Handlers
+  const handleAddExtraSkill = async (name) => {
+    const cleanName = (name || '').trim();
+    if (!cleanName) return;
+    if (extraSkills.some(s => (s.name || s).toLowerCase() === cleanName.toLowerCase())) {
+      Alert.alert(t('attention') || 'Atenção', `Você já adicionou "${cleanName}".`);
+      return;
+    }
+    const newSkill = {
+      id: `es_${Date.now()}`,
+      name: cleanName
+    };
+    const updated = [...extraSkills, newSkill];
+    setExtraSkills(updated);
+    await AsyncStorage.setItem('user_extra_skills', JSON.stringify(updated));
+    try {
+      await api.updateProfile({ extraSkills: JSON.stringify(updated) });
+    } catch (e) {
+      console.log('Error syncing extra skills:', e);
+    }
+    setCustomExtraSkill('');
+    setSelectedPresetExtraSkill('');
+  };
+
+  const handleRemoveExtraSkill = async (idOrName) => {
+    const updated = extraSkills.filter(s => (s.id ? s.id !== idOrName : s !== idOrName));
+    setExtraSkills(updated);
+    await AsyncStorage.setItem('user_extra_skills', JSON.stringify(updated));
+    try {
+      await api.updateProfile({ extraSkills: JSON.stringify(updated) });
+    } catch (e) {
+      console.log('Error removing extra skill:', e);
+    }
+  };
+
+  // Username live check handler
+  const handleUsernameChange = (val) => {
+    const clean = val.replace(/^@+/, '').trim();
+    setEditProfileUsername(clean);
+
+    if (usernameDebounceRef.current) {
+      clearTimeout(usernameDebounceRef.current);
+    }
+
+    if (!clean) {
+      setUsernameStatus('invalid');
+      setUsernameMessage('Nome de usuário obrigatório.');
+      return;
+    }
+
+    if (clean.toLowerCase() === (user?.username || '').toLowerCase()) {
+      setUsernameStatus('available');
+      setUsernameMessage(t('usernameAvailable') || 'Seu nome de usuário atual.');
+      return;
+    }
+
+    if (clean.length < 3) {
+      setUsernameStatus('invalid');
+      setUsernameMessage('Mínimo de 3 caracteres.');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+      setUsernameStatus('invalid');
+      setUsernameMessage('Use apenas letras, números e sublinhados (_).');
+      return;
+    }
+
+    setUsernameStatus('checking');
+    setUsernameMessage(t('checkingUsername') || 'Verificando...');
+
+    usernameDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await api.checkUsername(clean);
+        if (res && res.available) {
+          setUsernameStatus('available');
+          setUsernameMessage(t('usernameAvailable') || 'Nome de usuário disponível');
+        } else {
+          setUsernameStatus('taken');
+          setUsernameMessage(res?.message || t('usernameTaken') || 'Nome de usuário já está em uso');
+        }
+      } catch (err) {
+        setUsernameStatus('idle');
+        setUsernameMessage('');
+      }
+    }, 450);
   };
 
   const handleRemoveGear = (id) => {
@@ -1418,9 +1561,28 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const handleSaveUserProfile = async () => {
     try {
       const cleanName = editProfileName.trim() || user?.username || 'Músico';
+      const cleanUsername = editProfileUsername.trim().toLowerCase().replace(/^@+/, '');
+
+      if (!cleanName) {
+        Alert.alert(t('attention') || 'Atenção', 'O nome de exibição é obrigatório.');
+        return;
+      }
+
+      if (cleanUsername && cleanUsername !== (user?.username || '').toLowerCase()) {
+        if (usernameStatus === 'taken' || usernameStatus === 'invalid') {
+          Alert.alert(t('attention') || 'Atenção', usernameMessage || 'Nome de usuário inválido ou indisponível.');
+          return;
+        }
+        if (usernameStatus === 'checking') {
+          Alert.alert(t('attention') || 'Atenção', 'Aguarde a verificação do nome de usuário.');
+          return;
+        }
+      }
+
       const cleanCity = editProfileCity.trim();
       const cleanState = editProfileState.trim();
       const cleanCountry = editProfileCountry.trim();
+      const finalPic = editProfilePictureUrl.trim() || profileImage || '';
 
       let isoBirthDate = null;
       if (editProfileBirthDate.trim()) {
@@ -1457,7 +1619,10 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
 
       const updatedUser = {
         ...user,
+        username: cleanUsername || user?.username,
         displayName: cleanName,
+        pictureUrl: finalPic,
+        imageUri: finalPic,
         birthDate: isoBirthDate || '',
         age: newAge,
         city: cleanCity,
@@ -1466,14 +1631,21 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       };
 
       setUser(updatedUser);
+      setProfileImage(finalPic);
       await AsyncStorage.setItem('user_display_name', cleanName);
       await AsyncStorage.setItem('user_profile_cache', JSON.stringify(updatedUser));
+      if (finalPic && user?.id) {
+        await AsyncStorage.setItem(`profileImage_${user.id}`, finalPic);
+      }
+
       if (cleanCity) {
         await AsyncStorage.setItem('user_profile_completed', 'true');
       }
 
       await api.updateProfile({
         displayName: cleanName,
+        username: cleanUsername !== (user?.username || '').toLowerCase() ? cleanUsername : undefined,
+        pictureUrl: finalPic,
         birthDate: isoBirthDate || '',
         city: cleanCity,
         state: cleanState,
@@ -2002,33 +2174,22 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           </Text>
         </View>
       ) : (
-        gear.map((item, index) => {
-          const isDragging = draggingIdx === index;
-          const isPrimary = !!item.isPrimary;
+        gear.map((item) => {
           return (
-            <Animated.View 
+            <View 
               key={item.id} 
               style={[
                 styles.gearCardFullWidth, 
                 { 
-                  backgroundColor: isDragging 
-                    ? (isDark ? '#1e293b' : '#f8fafc') 
-                    : colors.cardBackground, 
-                  borderTopColor: isDragging ? colors.primary : colors.border,
-                  borderBottomColor: isDragging ? colors.primary : colors.border,
+                  backgroundColor: colors.cardBackground, 
+                  borderTopColor: colors.border,
+                  borderBottomColor: colors.border,
                   borderLeftWidth: 0,
                   borderRightWidth: 0,
-                  zIndex: isDragging ? 999 : 1,
-                  elevation: isDragging ? 12 : 0,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: isDragging ? 0.3 : 0,
-                  shadowRadius: 8,
-                  transform: isDragging ? [{ translateY: dragY }, { scale: 1.02 }] : []
                 }
               ]}
             >
-              {/* LINHA 1 (ACIMA): Badge Categoria + Marca/Modelo + Ações (Editar e Arrastar) */}
+              {/* LINHA 1 (ACIMA): Badge Categoria + Marca/Modelo + Negociável + Editar */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8, flexWrap: 'wrap', gap: 8 }}>
                   <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: colors.primary + '30' }}>
@@ -2037,22 +2198,30 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                   <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.text }} numberOfLines={1}>
                     {item.name}
                   </Text>
+
+                  {item.isNegotiable ? (
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                      borderRadius: 6,
+                      backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(34, 197, 94, 0.35)'
+                    }}>
+                      <Ionicons name="pricetag-outline" size={11} color="#4ade80" />
+                      <Text style={{ color: '#4ade80', fontSize: 11, fontWeight: '800' }}>
+                        {item.price ? `$ ${String(item.price).replace(/^(\$|R\$)\s*/i, '').trim()}` : (t('negotiable') || 'Negociável')}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
 
-                {/* Apenas Ícone de Editar e Alça de Arraste (Sem lixeira no card!) */}
-                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                  <Pressable onPress={() => openEditGear(item)} hitSlop={8} style={{ padding: 4 }}>
-                    <Ionicons name="pencil" size={17} color={colors.textMuted} />
-                  </Pressable>
-
-                  <View 
-                    {...createGearPanResponder(index).panHandlers}
-                    style={{ padding: 4, paddingRight: 0, justifyContent: 'center', alignItems: 'center' }}
-                    hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }}
-                  >
-                    <Ionicons name="reorder-three" size={24} color={isDragging ? colors.primary : colors.textMuted} />
-                  </View>
-                </View>
+                <Pressable onPress={() => openEditGear(item)} hitSlop={8} style={{ padding: 4 }}>
+                  <Ionicons name="pencil" size={17} color={colors.textMuted} />
+                </Pressable>
               </View>
 
               {/* LINHA 2 (ABAIXO): Observações adicionais */}
@@ -2063,7 +2232,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                   </Text>
                 </View>
               ) : null}
-            </Animated.View>
+            </View>
           );
         })
       )}
@@ -2681,7 +2850,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         {/* ── ABAS DE OPÇÕES COM DEGRADÊ CINTILANTE ── */}
         <View style={styles.tabBar}>
           {[
-            { id: 'bio', type: 'ion', icon: 'leaf', iconOutline: 'leaf-outline', label: t('bioTab') || 'Bio' },
+            { id: 'bio', type: 'ion', icon: 'document-text', iconOutline: 'document-text-outline', label: t('bioTab') || 'Bio' },
             { id: 'skills', type: 'ion', icon: 'flash', iconOutline: 'flash-outline', label: t('skillsTab') || 'Habilidades' },
             { id: 'instruments', type: 'mci', icon: 'guitar-acoustic', label: t('instrumentsTab') || 'Instrumentos' },
             { id: 'projects', type: 'ion', icon: 'people', iconOutline: 'people-outline', label: t('projectsTab') || 'Projetos' },
