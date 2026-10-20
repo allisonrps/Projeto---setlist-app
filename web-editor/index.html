@@ -339,7 +339,9 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 84px;
+      width: 100%;
+      max-width: 100vw;
+      height: 80px;
       background: rgba(6, 8, 13, 0.88);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -348,20 +350,27 @@
       display: flex;
       align-items: center;
       transition: var(--transition-smooth);
+      box-sizing: border-box;
+      overflow-x: clip;
     }
 
     header.site-header.scrolled {
       background: rgba(6, 8, 13, 0.96);
       border-bottom-color: rgba(255, 255, 255, 0.12);
-      height: 72px;
+      height: 68px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .nav-container {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       width: 100%;
-      gap: 36px;
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 0 24px;
+      gap: 20px;
+      box-sizing: border-box;
     }
 
     .brand-link {
@@ -374,16 +383,17 @@
     }
 
     .brand-logo-wide {
-      height: 54px;
+      height: 48px;
       width: auto;
-      max-width: 270px;
+      max-width: 220px;
       object-fit: contain;
       display: block;
-      transition: none;
+      transition: height 0.25s ease, max-width 0.25s ease;
     }
 
     header.site-header.scrolled .brand-logo-wide {
-      height: 44px;
+      height: 38px;
+      max-width: 180px;
     }
 
     /* Fixed Top Logo: completely static, no zoom or filter on hover */
@@ -434,7 +444,7 @@
     nav.main-nav {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 24px;
     }
 
     .nav-link {
@@ -445,6 +455,7 @@
       transition: var(--transition-smooth);
       position: relative;
       padding: 6px 0;
+      white-space: nowrap;
     }
 
     .nav-link::after {
@@ -487,10 +498,10 @@
     }
 
     .nav-actions {
-      margin-left: auto;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
+      flex-shrink: 0;
     }
 
     /* Language Switcher */
@@ -526,14 +537,177 @@
       color: #fff;
     }
 
-    /* Mobile Menu Toggle */
+    /* Mobile Menu Toggle Button */
     .mobile-menu-btn {
       display: none;
-      background: transparent;
-      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: #fff;
-      font-size: 26px;
+      font-size: 24px;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      padding: 0;
+    }
+
+    .mobile-menu-btn:hover, .mobile-menu-btn.active {
+      background: rgba(14, 165, 233, 0.18);
+      border-color: var(--cyan);
+      color: var(--cyan-light);
+    }
+
+    /* ==========================================================
+       MOBILE NAVIGATION DRAWER & BACKDROP
+       ========================================================== */
+    .mobile-nav-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 6, 10, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .mobile-nav-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-nav-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(340px, 86vw);
+      height: 100vh;
+      height: 100dvh;
+      background: linear-gradient(180deg, #0e1420 0%, #06080d 100%);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    .mobile-nav-drawer.active {
+      transform: translateX(0);
+    }
+
+    .mobile-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .mobile-drawer-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-drawer-close:hover {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: rgba(244, 63, 94, 0.4);
+      color: #f43f5e;
+    }
+
+    .mobile-drawer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .mobile-drawer-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-drawer-link ion-icon {
+      font-size: 20px;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .mobile-drawer-link:hover, .mobile-drawer-link:active {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      transform: translateX(4px);
+    }
+
+    .mobile-drawer-link.drawer-network {
+      color: #38bdf8;
+    }
+
+    .mobile-drawer-link .badge-new {
+      margin-left: auto;
+    }
+
+    .mobile-drawer-lang-section {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .mobile-drawer-lang-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mobile-drawer-lang-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .mobile-drawer-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     /* ==========================================================
@@ -2497,30 +2671,116 @@
     /* ==========================================================
        RESPONSIVENESS / MEDIA QUERIES
        ========================================================== */
+    @media (max-width: 1140px) {
+      nav.main-nav {
+        gap: 16px;
+      }
+      .nav-link {
+        font-size: 13px;
+      }
+      .brand-logo-wide {
+        max-width: 180px;
+        height: 42px;
+      }
+      .nav-actions {
+        gap: 10px;
+      }
+      .nav-actions .btn {
+        padding: 7px 12px;
+        font-size: 12.5px;
+      }
+    }
+
     @media (max-width: 1024px) {
       .showcase-grid { grid-template-columns: 1fr; }
       .showcase-pc { border-right: none; border-bottom: 1px solid var(--border-subtle); }
       .musicians-grid { grid-template-columns: repeat(2, 1fr); }
-      .features-grid { grid-template-columns: repeat(2, 1fr); }.stage-layout { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .stage-layout { grid-template-columns: 1fr; }
       .agenda-cards-list { grid-template-columns: repeat(2, 1fr); }
       .download-card-banner { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr 1fr; }
     }
 
+    @media (max-width: 960px) {
+      nav.main-nav {
+        display: none !important;
+      }
+      .mobile-menu-btn {
+        display: inline-flex !important;
+      }
+      .nav-actions .nav-download-desktop-btn {
+        display: none !important;
+      }
+      .nav-container {
+        gap: 12px;
+      }
+    }
+
     @media (max-width: 768px) {
-      nav.main-nav { display: none; }
-      .mobile-menu-btn { display: block; }
+      header.site-header {
+        height: 64px;
+      }
+      header.site-header.scrolled {
+        height: 58px;
+      }
+      .nav-container {
+        padding: 0 16px;
+        gap: 8px;
+      }
+      .brand-logo-wide {
+        height: 34px;
+        max-width: 140px;
+      }
+      header.site-header.scrolled .brand-logo-wide {
+        height: 30px;
+        max-width: 125px;
+      }
+      .nav-actions .header-lang-switcher {
+        display: none !important;
+      }
+      .nav-actions {
+        gap: 8px;
+      }
+      #navWebLoginBtn {
+        padding: 7px 12px;
+        font-size: 12px;
+      }
+      #navWebLoginBtn span.btn-label-long {
+        display: none;
+      }
+      #navWebLoginBtn span.btn-label-short {
+        display: inline;
+      }
+      .hero-section {
+        padding: 110px 0 60px 0;
+      }
       .hero-title { font-size: 38px; }
       .hero-desc { font-size: 16px; }
       .section-title { font-size: 30px; }
       .musicians-grid { grid-template-columns: 1fr; }
       .classifieds-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
-      .sync-steps-grid { grid-template-columns: 1fr; }.agenda-cards-list { grid-template-columns: 1fr; }
+      .sync-steps-grid { grid-template-columns: 1fr; }
+      .agenda-cards-list { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr; }
       .hero-trust-bar { gap: 16px; }
       .band-profile-header { flex-direction: column; align-items: flex-start; }
       .band-profile-main { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 420px) {
+      .nav-container {
+        padding: 0 12px;
+      }
+      .brand-logo-wide {
+        height: 28px;
+        max-width: 115px;
+      }
+      #navWebLoginBtn {
+        padding: 6px 10px;
+        font-size: 11.5px;
+      }
     }
   </style>
 </head>
@@ -2555,11 +2815,11 @@
       </nav>
 
       <div class="nav-actions">
-        <!-- Language Switcher -->
-        <div class="lang-switcher">
-          <button type="button" class="lang-btn active" id="lang-pt" onclick="setLandingLanguage('pt')">PT</button>
-          <button type="button" class="lang-btn" id="lang-en" onclick="setLandingLanguage('en')">EN</button>
-          <button type="button" class="lang-btn" id="lang-es" onclick="setLandingLanguage('es')">ES</button>
+        <!-- Language Switcher (Desktop) -->
+        <div class="lang-switcher header-lang-switcher">
+          <button type="button" class="lang-btn active" id="lang-pt" data-lang="pt" onclick="setLandingLanguage('pt')">PT</button>
+          <button type="button" class="lang-btn" id="lang-en" data-lang="en" onclick="setLandingLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" id="lang-es" data-lang="es" onclick="setLandingLanguage('es')">ES</button>
         </div>
 
         <a href="editor.html" class="btn btn-primary btn-sm" style="display: none;" id="navEditorBtn">
@@ -2567,18 +2827,93 @@
           <span data-i18n="navBtnEditor">Web Editor</span>
         </a>
 
+        <!-- Web Login CTA (Responsive label) -->
         <a href="/app" class="btn btn-primary btn-sm" id="navWebLoginBtn">
           <ion-icon name="log-in-outline"></ion-icon>
-          <span>Entrar na Rede Web</span>
+          <span class="btn-label-long" data-i18n="navLoginWeb">Entrar na Rede Web</span>
+          <span class="btn-label-short" data-i18n="navLoginWebShort" style="display: none;">Entrar</span>
         </a>
 
-        <a href="#download" class="btn btn-outline btn-sm">
+        <!-- Download App Button (Desktop only) -->
+        <a href="#download" class="btn btn-outline btn-sm nav-download-desktop-btn">
           <ion-icon name="logo-google-playstore"></ion-icon>
           <span data-i18n="navBtnDownload">Baixar App</span>
         </a>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Abrir menu" aria-expanded="false">
+          <ion-icon name="menu-outline" id="mobileMenuIcon"></ion-icon>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="closeMobileMenu()"></div>
+  <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Menu Mobile" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <a href="#inicio" onclick="closeMobileMenu()" class="brand-link" title="BandLink">
+        <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" style="height: 32px; max-width: 140px; object-fit: contain;">
+      </a>
+      <button class="mobile-drawer-close" onclick="closeMobileMenu()" aria-label="Fechar menu">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="mobile-drawer-links">
+      <a href="#recursos" class="mobile-drawer-link" onclick="closeMobileMenu()">
+        <ion-icon name="flash-outline"></ion-icon>
+        <span data-i18n="navFeatures">Recursos</span>
+      </a>
+      <a href="#rede-social" class="mobile-drawer-link drawer-network" onclick="closeMobileMenu()">
+        <ion-icon name="planet-outline"></ion-icon>
+        <span data-i18n="navNetwork">Rede Musical</span>
+        <span class="badge-new" data-i18n="navBadgeNew">NOVO</span>
+      </a>
+      <a href="#modo-palco" class="mobile-drawer-link" onclick="closeMobileMenu()">
+        <ion-icon name="musical-notes-outline"></ion-icon>
+        <span data-i18n="navStageMode">Modo Palco</span>
+      </a>
+      <a href="#sincronizacao" class="mobile-drawer-link" onclick="closeMobileMenu()">
+        <ion-icon name="qr-code-outline"></ion-icon>
+        <span data-i18n="navSync">Sincronização QR</span>
+      </a>
+      <a href="#download" class="mobile-drawer-link" onclick="closeMobileMenu()">
+        <ion-icon name="cloud-download-outline"></ion-icon>
+        <span data-i18n="navDownload">Baixar App</span>
+      </a>
+      <a href="#faq" class="mobile-drawer-link" onclick="closeMobileMenu()">
+        <ion-icon name="help-circle-outline"></ion-icon>
+        <span data-i18n="navFaq">FAQ</span>
+      </a>
+    </nav>
+
+    <!-- Language Selector inside Drawer -->
+    <div class="mobile-drawer-lang-section">
+      <div class="mobile-drawer-lang-title">
+        <ion-icon name="globe-outline"></ion-icon>
+        <span data-i18n="drawerLangTitle">Idioma / Language</span>
+      </div>
+      <div class="mobile-drawer-lang-btns">
+        <button type="button" class="lang-btn" data-lang="pt" onclick="setLandingLanguage('pt')">🇧🇷 PT</button>
+        <button type="button" class="lang-btn" data-lang="en" onclick="setLandingLanguage('en')">🇺🇸 EN</button>
+        <button type="button" class="lang-btn" data-lang="es" onclick="setLandingLanguage('es')">🇪🇸 ES</button>
+      </div>
+    </div>
+
+    <!-- Drawer CTAs -->
+    <div class="mobile-drawer-actions">
+      <a href="/app" class="btn btn-primary" style="width: 100%; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; font-weight: 700;">
+        <ion-icon name="log-in-outline" style="font-size: 1.25rem;"></ion-icon>
+        <span data-i18n="navLoginWeb">Entrar na Rede Web</span>
+      </a>
+      <a href="#download" onclick="closeMobileMenu()" class="btn btn-outline" style="width: 100%; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; font-weight: 700;">
+        <ion-icon name="logo-google-playstore" style="font-size: 1.2rem;"></ion-icon>
+        <span data-i18n="navBtnDownload">Baixar App</span>
+      </a>
+    </div>
+  </aside>
 
   <!-- ==========================================================
        HERO SECTION
@@ -3815,6 +4150,12 @@ O oposto do que disse antes!
         pageTitle: 'BandLink • O App e Rede Social Definitiva para Músicos, Bandas e Palco',
         pageMetaDesc: 'Organize o repertório da sua banda, encontre músicos na sua cidade, divulgue vagas e shows, edite cifras no PC e controle o autoscroll no palco. 100% offline e gratuito.',
         navFeatures: 'Recursos',
+        navLoginWeb: 'Entrar a la Red Web',
+        navLoginWebShort: 'Entrar',
+        drawerLangTitle: 'Idioma de la Plataforma',
+        navLoginWeb: 'Entrar na Rede Web',
+        navLoginWebShort: 'Entrar',
+        drawerLangTitle: 'Idioma da Plataforma',
         navNetwork: 'Rede Musical',
         navBadgeNew: 'NOVO',
         navStageMode: 'Modo Palco',
@@ -3977,6 +4318,9 @@ O oposto do que disse antes!
         pageTitle: 'BandLink • The Ultimate App & Music Social Network for Musicians, Bands & Stage',
         pageMetaDesc: 'Organize your band repertoire, discover musicians in your city, post auditions and gigs, edit chords on PC, and control stage autoscroll. 100% offline and free.',
         navFeatures: 'Features',
+        navLoginWeb: 'Sign In to Web App',
+        navLoginWebShort: 'Sign In',
+        drawerLangTitle: 'Platform Language',
         navNetwork: 'Music Network',
         navBadgeNew: 'NEW',
         navStageMode: 'Stage Mode',
@@ -4238,10 +4582,14 @@ O oposto do que disse antes!
       localStorage.setItem('bandlink_landing_lang', lang);
       document.documentElement.lang = lang === 'pt' ? 'pt-BR' : (lang === 'es' ? 'es-ES' : 'en');
 
-      // Update button active state
-      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('lang-' + lang);
-      if (activeBtn) activeBtn.classList.add('active');
+      // Update button active state across header and mobile drawer
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        if (btn.getAttribute('data-lang') === lang || btn.id === 'lang-' + lang) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
 
       const dict = translations[lang];
 
@@ -4517,6 +4865,48 @@ O oposto do que disse antes!
 
       window.startPhoneTimer();
     });
+
+    // Mobile Drawer Controls
+    function openMobileMenu() {
+      const drawer = document.getElementById('mobileNavDrawer');
+      const backdrop = document.getElementById('mobileNavBackdrop');
+      const btn = document.getElementById('mobileMenuBtn');
+      if (drawer) {
+        drawer.classList.add('active');
+        drawer.setAttribute('aria-hidden', 'false');
+      }
+      if (backdrop) backdrop.classList.add('active');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileMenu() {
+      const drawer = document.getElementById('mobileNavDrawer');
+      const backdrop = document.getElementById('mobileNavBackdrop');
+      const btn = document.getElementById('mobileMenuBtn');
+      if (drawer) {
+        drawer.classList.remove('active');
+        drawer.setAttribute('aria-hidden', 'true');
+      }
+      if (backdrop) backdrop.classList.remove('active');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    function toggleMobileMenu() {
+      const drawer = document.getElementById('mobileNavDrawer');
+      if (drawer && drawer.classList.contains('active')) {
+        closeMobileMenu();
+      } else {
+        openMobileMenu();
+      }
+    }
+
+    // Close on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMobileMenu();
+    });
+
   
   </script>
 
