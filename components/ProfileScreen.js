@@ -2681,8 +2681,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         {/* ── ABAS DE OPÇÕES COM DEGRADÊ CINTILANTE ── */}
         <View style={styles.tabBar}>
           {[
-            { id: 'bio', type: 'ion', icon: 'person', iconOutline: 'person-outline', label: t('bioTab') || 'Bio' },
-            { id: 'skills', type: 'ion', icon: 'star', iconOutline: 'star-outline', label: t('skillsTab') || 'Habilidades' },
+            { id: 'bio', type: 'ion', icon: 'leaf', iconOutline: 'leaf-outline', label: t('bioTab') || 'Bio' },
+            { id: 'skills', type: 'ion', icon: 'flash', iconOutline: 'flash-outline', label: t('skillsTab') || 'Habilidades' },
             { id: 'instruments', type: 'mci', icon: 'guitar-acoustic', label: t('instrumentsTab') || 'Instrumentos' },
             { id: 'projects', type: 'ion', icon: 'people', iconOutline: 'people-outline', label: t('projectsTab') || 'Projetos' },
             { id: 'agenda', type: 'ion', icon: 'calendar', iconOutline: 'calendar-outline', label: t('agendaTab') || 'Agenda' }

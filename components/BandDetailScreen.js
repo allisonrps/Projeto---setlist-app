@@ -775,7 +775,12 @@ export default function BandDetailScreen({
   const [showEventYearPicker, setShowEventYearPicker] = useState(false);
   const [expandedEventMonths, setExpandedEventMonths] = useState({});
   const [selectedFinanceYear, setSelectedFinanceYear] = useState(currentYearNum);
+  const [showFinanceYearPicker, setShowFinanceYearPicker] = useState(false);
   const [expandedFinanceMonths, setExpandedFinanceMonths] = useState({});
+  const [showEditBandCashModal, setShowEditBandCashModal] = useState(false);
+  const [bandCashInput, setBandCashInput] = useState('');
+  const [bandCashNotesInput, setBandCashNotesInput] = useState('');
+  const [bandCashBalance, setBandCashBalance] = useState(band?.manualCashBalance !== undefined && band?.manualCashBalance !== null ? band.manualCashBalance : null);
 
   const toggleEventMonth = (monthName) => {
     setExpandedEventMonths(prev => {
@@ -794,6 +799,9 @@ export default function BandDetailScreen({
   useEffect(() => {
     if (band) {
       setMyMemberId(band.myMemberId || null);
+      if (band.manualCashBalance !== undefined && band.manualCashBalance !== null) {
+        setBandCashBalance(band.manualCashBalance);
+      }
     }
   }, [band]);
 
@@ -1128,6 +1136,13 @@ export default function BandDetailScreen({
               }
             }
           } catch (e) {}
+
+          // 7. Saldo manual do Caixa da Banda (se configurado)
+          if (snapshot.manualCashBalance !== undefined && snapshot.manualCashBalance !== null) {
+            setBandCashBalance(parseFloat(snapshot.manualCashBalance) || 0);
+          } else {
+            setBandCashBalance(null);
+          }
         }
       } catch (err) {
         console.error('Erro ao consultar dados da banda na API (Modo Online):', err);
@@ -1164,6 +1179,17 @@ export default function BandDetailScreen({
 
         const bLogs = await bandService.getBandActivityLogs(band.id, 50);
         setActivityLogs(bLogs || []);
+
+        if (band.manualCashBalance !== undefined && band.manualCashBalance !== null) {
+          setBandCashBalance(parseFloat(band.manualCashBalance) || 0);
+        } else {
+          try {
+            const freshBand = await bandService.getBandById(band.id);
+            if (freshBand && freshBand.manualCashBalance !== undefined && freshBand.manualCashBalance !== null) {
+              setBandCashBalance(parseFloat(freshBand.manualCashBalance) || 0);
+            }
+          } catch (e) {}
+        }
       } catch (err) {
         console.error('Erro ao consultar dados da banda no SQLite (Modo Offline):', err);
       }
@@ -1383,6 +1409,81 @@ export default function BandDetailScreen({
     });
   };
 
+  const handleSaveBandCash = async () => {
+    const cleanVal = String(bandCashInput).replace(/[^\d.,]/g, '').replace(',', '.');
+    const parsedVal = parseFloat(cleanVal);
+    if (isNaN(parsedVal) || parsedVal < 0) {
+      Alert.alert(t('error') || 'Erro', t('validAmountRequired') || 'Informe um valor válido para o saldo do caixa.');
+      return;
+    }
+
+    try {
+      setBandCashBalance(parsedVal);
+      if (band?.cloudId) {
+        const cloudData = await api.pullBand(band.cloudId);
+        const snapshot = typeof cloudData?.syncDataJson === 'string'
+          ? (JSON.parse(cloudData.syncDataJson || '{}') || {})
+          : (cloudData?.syncDataJson || {});
+
+        snapshot.manualCashBalance = parsedVal;
+        snapshot.manualCashUpdatedAt = new Date().toISOString();
+
+        const notes = bandCashNotesInput.trim();
+        if (notes) {
+          if (!Array.isArray(snapshot.finances)) snapshot.finances = [];
+          snapshot.finances.push({
+            id: `fin_adjust_${Date.now()}`,
+            title: `Ajuste de Caixa: ${notes}`,
+            amount: parsedVal,
+            type: 'income',
+            date: new Date().toISOString().split('T')[0],
+            status: 'paid',
+            notes: notes,
+            createdAt: new Date().toISOString()
+          });
+        }
+
+        await api.syncBand(band.cloudId, {
+          name: band.name,
+          genre: band.genre || '',
+          description: band.description || '',
+          imageUri: band.imageUri || '',
+          city: band.city || '',
+          state: band.state || '',
+          country: band.country || '',
+          syncDataJson: JSON.stringify(snapshot)
+        });
+      } else {
+        await bandService.updateBandCashBalance(band.id, parsedVal);
+        const notes = bandCashNotesInput.trim();
+        if (notes) {
+          await bandService.addBandFinance(
+            band.id,
+            `Ajuste de Caixa: ${notes}`,
+            parsedVal,
+            'income',
+            new Date().toISOString().split('T')[0],
+            'paid',
+            notes
+          );
+        }
+        await bandService.logBandActivity(
+          band.id,
+          'updated_finance',
+          `atualizou o saldo do caixa da banda para $ ${parsedVal.toFixed(2)}`
+        );
+      }
+
+      setShowEditBandCashModal(false);
+      setBandCashNotesInput('');
+      await loadData();
+      Alert.alert(t('success') || 'Sucesso', t('cashAdjustSuccess') || 'Saldo do caixa da banda atualizado com sucesso!');
+    } catch (err) {
+      console.error('Error saving band cash:', err);
+      Alert.alert(t('error') || 'Erro', 'Não foi possível atualizar o saldo do caixa.');
+    }
+  };
+
   // Toggle member card expansion
   const handleToggleExpandMember = (id) => {
     if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
@@ -1455,6 +1556,40 @@ export default function BandDetailScreen({
   });
 
   const netBalance = totalIncome - totalExpense;
+
+  // Caixa da Banda (Fundo de Reserva):
+  // Se definido manualmente pelo usuário, usa bandCashBalance;
+  // Caso contrário, calcula: (reserva dos shows + entradas manuais - despesas manuais)
+  const effectiveBandCash = useMemo(() => {
+    if (bandCashBalance !== null && bandCashBalance !== undefined && !isNaN(bandCashBalance)) {
+      return parseFloat(bandCashBalance) || 0;
+    }
+    let totalFromShows = 0;
+    (autoShowFinances || []).forEach(asf => {
+      if (asf.status === 'paid') {
+        totalFromShows += asf.amount;
+      }
+    });
+    let manualInc = 0;
+    let manualExp = 0;
+    (finances || []).forEach(f => {
+      const amt = typeof f.amount === 'number' ? f.amount : (parseFloat(f.amount) || 0);
+      if (f.status === 'paid') {
+        if (f.type === 'income') manualInc += amt;
+        else manualExp += amt;
+      }
+    });
+    return Math.max(0, totalFromShows + manualInc - manualExp);
+  }, [bandCashBalance, autoShowFinances, finances]);
+
+  const formatCompactMoney = (number) => {
+    if (number == null || isNaN(number)) return '0';
+    const num = Math.abs(Number(number));
+    if (num >= 1000000) return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 10000) return (number / 1000).toFixed(0) + 'k';
+    if (num >= 1000) return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return Math.round(number).toString();
+  };
 
   // Filtered band repertoire (Favoritas no topo)
   const filteredBandSongs = bandSongs.filter(song => {
@@ -3968,55 +4103,119 @@ export default function BandDetailScreen({
         {/* ABA 4: FINANCEIRO */}
         {activeTab === 'financial' && (
           <ScrollView contentContainerStyle={styles.dedicatedTabPadding}>
-            {/* CARD 1: RESUMO FINANCEIRO */}
+            {/* CARD 1: RESUMO FINANCEIRO DE 4 CÍRCULOS (ANO, RECEITA, CAIXA, DESPESAS) NO ESTILO DA WEB */}
             <View style={[styles.cardPanel, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-              <View style={[styles.cardPanelHeaderRow, { justifyContent: 'space-between' }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="wallet-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-                  <Text style={[styles.cardPanelTitle, { color: colors.text }]}>{t('financialSummary')}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 8, height: 36 }}>
-                  <Pressable onPress={() => setSelectedFinanceYear(y => y - 1)} style={{ padding: 4 }}>
-                    <Ionicons name="chevron-back" size={16} color={colors.primary} />
+              <View style={[styles.agendaSummaryRow, { paddingVertical: 4 }]}>
+                {/* CÍRCULO 1: ANO */}
+                <View style={styles.summaryCircleCol}>
+                  <Pressable
+                    onPress={() => setShowFinanceYearPicker(true)}
+                    hitSlop={6}
+                    style={({ pressed }) => [
+                      styles.summaryCircle,
+                      {
+                        backgroundColor: colors.primary + '15',
+                        borderColor: colors.primary + '35',
+                        opacity: pressed ? 0.7 : 1,
+                      }
+                    ]}
+                    accessibilityLabel="Selecionar ano financeiro"
+                  >
+                    <Text style={[styles.summaryCircleValue, { color: colors.primary, fontSize: 16 }]}>
+                      {selectedFinanceYear}
+                    </Text>
                   </Pressable>
-                  <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text, marginHorizontal: 8 }}>{selectedFinanceYear}</Text>
-                  <Pressable onPress={() => setSelectedFinanceYear(y => y + 1)} style={{ padding: 4 }}>
-                    <Ionicons name="chevron-forward" size={16} color={colors.primary} />
-                  </Pressable>
-                </View>
-              </View>
-
-              <View style={styles.financeSummaryGrid}>
-                <View style={[styles.financeSummaryCard, { backgroundColor: '#10b98115' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: '#10b981' }]}>{t('incomes')}</Text>
-                  <Text style={[styles.financeSummaryValue, { color: '#10b981' }]}>
-                    $ {totalIncome.toFixed(2)}
+                  <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                    {t('year') || 'Ano'}
                   </Text>
                 </View>
 
-                <View style={[styles.financeSummaryCard, { backgroundColor: '#ef444415' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: '#ef4444' }]}>{t('expenses')}</Text>
-                  <Text style={[styles.financeSummaryValue, { color: '#ef4444' }]}>
-                    $ {totalExpense.toFixed(2)}
+                {/* CÍRCULO 2: RECEITA */}
+                <View style={styles.summaryCircleCol}>
+                  <View style={styles.summaryOverlapWrapper}>
+                    <View style={[styles.summaryCircle, { backgroundColor: '#38bdf818', borderColor: '#38bdf845' }]}>
+                      <Text style={[styles.summaryCircleValue, { color: '#ffffff', fontSize: 14, paddingLeft: 4 }]}>
+                        {formatCompactMoney(totalIncome)}
+                      </Text>
+                    </View>
+                    <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: '#38bdf8' }]}>
+                      <Ionicons name="trending-up-outline" size={13} color="#38bdf8" />
+                    </View>
+                  </View>
+                  <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                    {t('revenueLabel') || t('incomes') || 'Receita'}
                   </Text>
                 </View>
 
-                <View style={[styles.financeSummaryCard, { backgroundColor: netBalance >= 0 ? '#3b82f615' : '#eab30815' }]}>
-                  <Text style={[styles.financeSummaryLabel, { color: netBalance >= 0 ? '#3b82f6' : '#eab308' }]}>{t('balance')}</Text>
-                  <Text style={[styles.financeSummaryValue, { color: netBalance >= 0 ? '#3b82f6' : '#eab308' }]}>
-                    $ {netBalance.toFixed(2)}
+                {/* CÍRCULO 3: CAIXA (CLICÁVEL PARA AJUSTAR O SALDO) */}
+                <View style={styles.summaryCircleCol}>
+                  <Pressable
+                    onPress={() => {
+                      setBandCashInput(effectiveBandCash ? String(effectiveBandCash) : '0');
+                      setBandCashNotesInput('');
+                      setShowEditBandCashModal(true);
+                    }}
+                    hitSlop={6}
+                    style={({ pressed }) => [
+                      styles.summaryOverlapWrapper,
+                      { opacity: pressed ? 0.75 : 1 }
+                    ]}
+                    accessibilityLabel="Ajustar caixa da banda"
+                  >
+                    <View style={[styles.summaryCircle, { backgroundColor: '#fbbf2418', borderColor: '#fbbf2445' }]}>
+                      <Text style={[styles.summaryCircleValue, { color: '#fbbf24', fontSize: 14, paddingLeft: 4 }]}>
+                        {formatCompactMoney(effectiveBandCash)}
+                      </Text>
+                    </View>
+                    <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: '#fbbf24' }]}>
+                      <Ionicons name="wallet-outline" size={13} color="#fbbf24" />
+                    </View>
+                  </Pressable>
+                  <Text style={[styles.summaryCircleLabel, { color: '#fbbf24', fontWeight: '800' }]}>
+                    {t('bandCash') || 'Caixa'}
+                  </Text>
+                </View>
+
+                {/* CÍRCULO 4: DESPESAS */}
+                <View style={styles.summaryCircleCol}>
+                  <View style={styles.summaryOverlapWrapper}>
+                    <View style={[styles.summaryCircle, { backgroundColor: '#ef444418', borderColor: '#ef444445' }]}>
+                      <Text style={[styles.summaryCircleValue, { color: '#f87171', fontSize: 14, paddingLeft: 4 }]}>
+                        {formatCompactMoney(totalExpense)}
+                      </Text>
+                    </View>
+                    <View style={[styles.summaryOverlapIconCircle, { backgroundColor: colors.cardBackground, borderColor: '#f87171' }]}>
+                      <Ionicons name="trending-down-outline" size={13} color="#f87171" />
+                    </View>
+                  </View>
+                  <Text style={[styles.summaryCircleLabel, { color: colors.textMuted }]}>
+                    {t('expenses') || 'Despesas'}
                   </Text>
                 </View>
               </View>
 
               {isUserLeader && (
-                <Pressable
-                  style={[styles.addFinanceBtn, { backgroundColor: colors.primary }]}
-                  onPress={handleOpenAddFinance}
-                >
-                  <Ionicons name="add" size={18} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={styles.addFinanceBtnText}>{t('newEntry')}</Text>
-                </Pressable>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+                  <Pressable
+                    style={[styles.addFinanceBtn, { flex: 1, backgroundColor: colors.primary }]}
+                    onPress={handleOpenAddFinance}
+                  >
+                    <Ionicons name="add" size={18} color="#ffffff" style={{ marginRight: 4 }} />
+                    <Text style={styles.addFinanceBtnText}>{t('newEntry')}</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[styles.addFinanceBtn, { backgroundColor: '#fbbf2420', borderColor: '#fbbf2450', borderWidth: 1, paddingHorizontal: 14 }]}
+                    onPress={() => {
+                      setBandCashInput(effectiveBandCash ? String(effectiveBandCash) : '0');
+                      setBandCashNotesInput('');
+                      setShowEditBandCashModal(true);
+                    }}
+                  >
+                    <Ionicons name="wallet-outline" size={16} color="#fbbf24" style={{ marginRight: 6 }} />
+                    <Text style={{ color: '#fbbf24', fontWeight: '800', fontSize: 13 }}>{t('adjustBandCash') || 'Ajustar Caixa'}</Text>
+                  </Pressable>
+                </View>
               )}
             </View>
 
@@ -5793,6 +5992,116 @@ export default function BandDetailScreen({
           if (onReloadAll) onReloadAll();
         }}
       />
+
+      {/* SELETOR EXCLUSIVO DE ANOS PARA O FINANCEIRO */}
+      <YearPickerModal
+        visible={showFinanceYearPicker}
+        selectedYear={selectedFinanceYear}
+        onSelectYear={(y) => {
+          setSelectedFinanceYear(y);
+          setShowFinanceYearPicker(false);
+        }}
+        onClose={() => setShowFinanceYearPicker(false)}
+      />
+
+      {/* MODAL: AJUSTE MANUAL DO CAIXA DA BANDA */}
+      <Modal
+        visible={showEditBandCashModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowEditBandCashModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground, maxWidth: 440, borderRadius: 20 }]}>
+            {/* Modal Header */}
+            <View style={[styles.modalHeaderRow, { marginBottom: 16 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#fbbf2420', borderWidth: 1, borderColor: '#fbbf2450', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="wallet-outline" size={20} color="#fbbf24" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.modalTitleText, { color: colors.text, fontSize: 16, marginBottom: 2 }]}>
+                    {t('adjustBandCash') || 'Ajustar Caixa da Banda'}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                    {t('bandCashSubtitle') || 'Fundo de reserva disponível'}
+                  </Text>
+                </View>
+              </View>
+              <Pressable onPress={() => setShowEditBandCashModal(false)} hitSlop={8}>
+                <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+              </Pressable>
+            </View>
+
+            {/* Modal Body */}
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={{ marginBottom: 14 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: '#fbbf24', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  {t('bandCashBalanceLabel') || 'Saldo do Caixa da Banda ($) *'}
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: colors.background,
+                    borderColor: '#fbbf2470',
+                    borderWidth: 1.5,
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    fontSize: 22,
+                    fontWeight: '900',
+                    color: '#fbbf24',
+                    textAlign: 'right'
+                  }}
+                  value={bandCashInput}
+                  onChangeText={setBandCashInput}
+                  keyboardType="decimal-pad"
+                  placeholder="0.00"
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={15}
+                />
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 6, lineHeight: 15 }}>
+                  {t('bandCashHelp') || 'Ao salvar, este valor se tornará o saldo oficial do fundo de reserva da banda.'}
+                </Text>
+              </View>
+
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 6 }}>
+                  {t('adjustReason') || 'Motivo do Ajuste (Opcional)'}
+                </Text>
+                <TextInput
+                  style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+                  value={bandCashNotesInput}
+                  onChangeText={setBandCashNotesInput}
+                  placeholder={t('adjustReasonPlaceholder') || 'Ex: Aporte inicial, conferência de saldo, retirada...'}
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={200}
+                />
+              </View>
+
+              {/* Actions */}
+              <View style={[styles.modalFooterRow, { marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }]}>
+                <Pressable
+                  style={[styles.modalCancelBtn, { borderColor: colors.border }]}
+                  onPress={() => setShowEditBandCashModal(false)}
+                >
+                  <Text style={{ color: colors.text }}>{t('cancel') || 'Cancelar'}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalConfirmBtn, { backgroundColor: '#fbbf24', borderColor: '#fbbf24' }]}
+                  onPress={handleSaveBandCash}
+                >
+                  <Text style={{ color: '#000000', fontWeight: '900' }}>
+                    {t('saveBalance') || 'Salvar Saldo'}
+                  </Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
     </Modal>
   );

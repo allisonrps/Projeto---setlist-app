@@ -264,6 +264,16 @@ export const bandService = {
     }
   },
 
+  async updateBandCashBalance(bandId, balance) {
+    try {
+      await db.runAsync('UPDATE my_bands SET manualCashBalance = ?, hasLocalChanges = 1 WHERE id = ?;', [balance, bandId]);
+      return true;
+    } catch (error) {
+      console.error('Error in bandService.updateBandCashBalance:', error);
+      return false;
+    }
+  },
+
   // ===== GESTÃO DE REPERTÓRIO DA BANDA (band_songs) =====
   async getBandSongs(bandId) {
     try {
@@ -851,6 +861,9 @@ export const bandService = {
         finances: finalFinances,
         songs: finalSongs,
         setlists: finalSetlists,
+        manualCashBalance: localBand.manualCashBalance !== undefined && localBand.manualCashBalance !== null
+          ? localBand.manualCashBalance
+          : (existingCloudSnapshot?.manualCashBalance ?? null),
         syncedAt: new Date().toISOString()
       };
 
@@ -1014,6 +1027,12 @@ export const bandService = {
             bandId
           ]
         );
+      }
+
+      if (snapshot.manualCashBalance !== undefined && snapshot.manualCashBalance !== null) {
+        try {
+          await db.runAsync('UPDATE my_bands SET manualCashBalance = ? WHERE id = ?;', [parseFloat(snapshot.manualCashBalance) || 0, bandId]);
+        } catch (e) {}
       }
 
       // 2. Synchronize songs & repertoire into local SQLite

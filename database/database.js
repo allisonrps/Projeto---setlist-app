@@ -1386,6 +1386,9 @@ export const createTables = async () => {
     try {
       await db.execAsync("ALTER TABLE my_bands ADD COLUMN publicSlug TEXT;");
     } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE my_bands ADD COLUMN manualCashBalance REAL;");
+    } catch (e) {}
 
     // Migração de chords em songs
     try {

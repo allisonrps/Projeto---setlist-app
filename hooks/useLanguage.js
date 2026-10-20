@@ -712,6 +712,19 @@ const translations = {
     addSubstitute: 'Adicionar Substituto',
     substituteName: 'Nome do substituto',
     removeSubstitute: 'Remover',
+
+    // Band Cash (Caixa da Banda)
+    bandCash: 'Caixa',
+    revenueLabel: 'Receita',
+    adjustBandCash: 'Ajustar Caixa da Banda',
+    bandCashSubtitle: 'Fundo de reserva disponível',
+    bandCashBalanceLabel: 'Saldo do Caixa da Banda ($) *',
+    bandCashHelp: 'Ao salvar, este valor se tornará o saldo oficial do fundo de reserva da banda.',
+    adjustReason: 'Motivo do Ajuste (Opcional)',
+    adjustReasonPlaceholder: 'Ex: Aporte inicial, conferência de saldo, retirada...',
+    saveBalance: 'Salvar Saldo',
+    cashAdjustSuccess: 'Saldo do caixa da banda atualizado com sucesso!',
+    validAmountRequired: 'Informe um valor válido para o saldo do caixa.',
     // Rede & Comunidade (Network)
     announce: 'Anunciar',
     announcements: 'Anúncios',
@@ -1852,6 +1865,19 @@ const translations = {
     addSubstitute: 'Add Substitute',
     substituteName: 'Substitute name',
     removeSubstitute: 'Remove',
+
+    // Band Cash (Caixa da Banda)
+    bandCash: 'Cash',
+    revenueLabel: 'Revenue',
+    adjustBandCash: 'Adjust Band Cash',
+    bandCashSubtitle: 'Available reserve fund',
+    bandCashBalanceLabel: 'Band Cash Balance ($) *',
+    bandCashHelp: 'Upon saving, this value will become the official reserve balance for the band.',
+    adjustReason: 'Adjustment Reason (Optional)',
+    adjustReasonPlaceholder: 'Ex: Initial contribution, balance check, withdrawal...',
+    saveBalance: 'Save Balance',
+    cashAdjustSuccess: 'Band cash balance updated successfully!',
+    validAmountRequired: 'Please enter a valid amount for the cash balance.',
     // Network & Community
     announce: 'Post Ad',
     announcements: 'Ads',
@@ -2992,6 +3018,19 @@ const translations = {
     addSubstitute: 'Añadir Sustituto',
     substituteName: 'Nombre del sustituto',
     removeSubstitute: 'Eliminar',
+
+    // Band Cash (Caixa da Banda)
+    bandCash: 'Caja',
+    revenueLabel: 'Ingresos',
+    adjustBandCash: 'Ajustar Caja de la Banda',
+    bandCashSubtitle: 'Fondo de reserva disponible',
+    bandCashBalanceLabel: 'Saldo de Caja de la Banda ($) *',
+    bandCashHelp: 'Al guardar, este valor se convertirá en el saldo oficial del fondo de reserva de la banda.',
+    adjustReason: 'Motivo del Ajuste (Opcional)',
+    adjustReasonPlaceholder: 'Ej: Aporte inicial, revisión de saldo, retiro...',
+    saveBalance: 'Guardar Saldo',
+    cashAdjustSuccess: '¡Saldo de caja de la banda actualizado con éxito!',
+    validAmountRequired: 'Ingrese un valor válido para el saldo de caja.',
     // Red y Comunidad
     announce: 'Anunciar',
     announcements: 'Anuncios',
