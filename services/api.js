@@ -713,7 +713,13 @@ export const api = {
   getMyCloudBands: async () => {
     try {
       const headers = await getHeaders();
-      const response = await fetchWithTimeout(`${API_URL}/Bands/my-bands`, { headers }, 8000);
+      const response = await fetchWithTimeout(`${API_URL}/Bands/my-bands?_t=${Date.now()}`, {
+        headers: {
+          ...headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      }, 8000);
       if (response.ok) {
         return await response.json();
       }

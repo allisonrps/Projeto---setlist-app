@@ -2649,70 +2649,9 @@ export default function BandDetailScreen({
                       </View>
                     </View>
                     <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
-                      {syncStatusInfo.hasRemoteUpdates
-                        ? 'Novas alterações disponíveis na nuvem! Clique abaixo para atualizar.'
-                        : (t('bandUpdatesSynced') || 'Todas as alterações são sincronizadas na nuvem automaticamente.')}
+                      {t('bandUpdatesSynced') || 'Todas as alterações são sincronizadas na nuvem automaticamente.'}
                     </Text>
                   </View>
-                </View>
-
-                {/* Botões de Ação na Nuvem */}
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                  <Pressable
-                    style={{
-                      flex: 1,
-                      backgroundColor: syncStatusInfo.hasRemoteUpdates ? colors.primary : (colors.primary + '18'),
-                      borderColor: colors.primary,
-                      borderWidth: 1,
-                      borderRadius: 12,
-                      paddingVertical: 12,
-                      paddingHorizontal: 14,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                    }}
-                    onPress={handlePullSyncFromCloud}
-                    disabled={isSyncing}
-                  >
-                    {isSyncing ? (
-                      <ActivityIndicator size="small" color={syncStatusInfo.hasRemoteUpdates ? '#ffffff' : colors.primary} />
-                    ) : (
-                      <>
-                        <Ionicons
-                          name="cloud-download-outline"
-                          size={18}
-                          color={syncStatusInfo.hasRemoteUpdates ? '#ffffff' : colors.primary}
-                        />
-                        <Text style={{
-                          color: syncStatusInfo.hasRemoteUpdates ? '#ffffff' : colors.primary,
-                          fontWeight: '700',
-                          fontSize: 13
-                        }}>
-                          {syncStatusInfo.hasRemoteUpdates
-                            ? `${t('updateFromCloudBtn') || 'Atualizar Alterações'} (!)`
-                            : (t('updateFromCloudBtn') || 'Atualizar Alterações')}
-                        </Text>
-                      </>
-                    )}
-                  </Pressable>
-
-                  <Pressable
-                    style={{
-                      backgroundColor: colors.cardBackground,
-                      borderColor: colors.border,
-                      borderWidth: 1,
-                      borderRadius: 12,
-                      paddingVertical: 12,
-                      paddingHorizontal: 12,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                    onPress={handlePushSyncToCloud}
-                    disabled={isSyncing}
-                  >
-                    <Ionicons name="cloud-upload-outline" size={18} color={colors.textMuted} />
-                  </Pressable>
                 </View>
               </View>
             )}

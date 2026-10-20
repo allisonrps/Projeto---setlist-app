@@ -781,11 +781,12 @@ function MainApp() {
             if (payload.exp && payload.exp * 1000 > Date.now()) {
               setIsLoggedIn(true);
               // Auto-sync cloud bands in background if logged in
-              bandService.syncAllUserBandsFromCloud().then(res => {
-                if (res && res.count > 0) {
-                  reloadAllData();
-                }
-              }).catch(e => console.log('Error auto-syncing bands on startup:', e));
+              bandService.syncAllUserBandsFromCloud().then(() => {
+                reloadAllData(true);
+              }).catch(e => {
+                console.log('Error auto-syncing bands on startup:', e);
+                reloadAllData(true);
+              });
               try {
                 const isComp = await AsyncStorage.getItem('user_profile_completed');
                 if (isComp !== 'true') {
@@ -820,12 +821,13 @@ function MainApp() {
     }
   };
 
-  const reloadAllData = async () => {
+  const reloadAllData = async (forceOnline = null) => {
     try {
+      const isOnline = forceOnline !== null ? forceOnline : isLoggedIn;
       let rawBands = await bandService.getAll();
 
       // Se logado, atualiza bandas da nuvem e eventos da API em segundo plano
-      if (isLoggedIn) {
+      if (isOnline) {
         try {
           const cloudBands = await api.getMyCloudBands();
           if (Array.isArray(cloudBands)) {
@@ -914,7 +916,7 @@ function MainApp() {
       }
 
       const visibleRawBands = (rawBands || []).filter(b => {
-        if (isLoggedIn) return true;
+        if (isOnline) return true;
         // Quando deslogado, exibe apenas bandas locais offline (sem vínculo de nuvem)
         return !b.cloudId;
       });
@@ -999,10 +1001,18 @@ function MainApp() {
 
       const allStyles = await songService.getStyles();
 
+      const validBandIds = new Set((visibleRawBands || []).map(b => b.id));
+      const filteredSetlists = fullSetlists.filter(sl => {
+        if (!isOnline) {
+          return sl.myBandId && validBandIds.has(sl.myBandId);
+        }
+        return true;
+      });
+
       setBands(allBands);
       setSongs(allSongs);
       setAllSongsUnfiltered(allSongsUnfilteredData);
-      setSetlists(fullSetlists);
+      setSetlists(filteredSetlists);
       setSongStyles(allStyles);
 
       try {
@@ -3056,16 +3066,24 @@ function MainApp() {
       return true;
     };
 
-    const upcomingSetlists = setlists
+    const activeBandIds = new Set((bands || []).map(b => b.id));
+    const visibleHomeSetlists = (setlists || []).filter(s => {
+      if (!isLoggedIn) {
+        return s.myBandId && activeBandIds.has(s.myBandId);
+      }
+      return true;
+    });
+
+    const upcomingSetlists = visibleHomeSetlists
       .filter(s => isFutureDate(s.date))
       .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    const pastSetlists = setlists
+    const pastSetlists = visibleHomeSetlists
       .filter(s => !isFutureDate(s.date))
       .sort((a, b) => parseDate(b.date) - parseDate(a.date));
 
     // Eventos do ano selecionado em que o usuário participou
-    const yearParticipatedEvents = setlists.filter(s => {
+    const yearParticipatedEvents = visibleHomeSetlists.filter(s => {
       const mInfo = getMonthInfo(s.date, language);
       return mInfo.year === selectedHomeEventYear && didUserParticipateInSetlist(s, bands, userProfile);
     });
@@ -5743,7 +5761,7 @@ function MainApp() {
         console.log('Error syncing user cloud bands on login:', syncErr);
       }
       try {
-        await reloadAllData();
+        await reloadAllData(true);
       } catch (reloadErr) {
         console.log('Error reloading all data on login:', reloadErr);
       }
@@ -5783,11 +5801,15 @@ function MainApp() {
                   await api.logout();
                   try {
                     await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
+                    await db.runAsync('DELETE FROM setlists WHERE myBandId NOT IN (SELECT id FROM my_bands);');
+                    await db.runAsync('DELETE FROM band_songs WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                    await db.runAsync('DELETE FROM band_members WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                    await db.runAsync('DELETE FROM band_finances WHERE bandId NOT IN (SELECT id FROM my_bands);');
                   } catch (e) {}
                   setOnlineEvents([]);
                   setIsLoggedIn(false);
                   setCurrentTab('home');
-                  await reloadAllData();
+                  await reloadAllData(false);
                 }} 
               />
             ) : (
@@ -5797,11 +5819,15 @@ function MainApp() {
                   await api.logout();
                   try {
                     await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
+                    await db.runAsync('DELETE FROM setlists WHERE myBandId NOT IN (SELECT id FROM my_bands);');
+                    await db.runAsync('DELETE FROM band_songs WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                    await db.runAsync('DELETE FROM band_members WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                    await db.runAsync('DELETE FROM band_finances WHERE bandId NOT IN (SELECT id FROM my_bands);');
                   } catch (e) {}
                   setOnlineEvents([]);
                   setIsLoggedIn(false);
                   setCurrentTab('home');
-                  await reloadAllData();
+                  await reloadAllData(false);
                 }} 
                 onOpenBandProfile={handleOpenBandPublicProfile}
               />
