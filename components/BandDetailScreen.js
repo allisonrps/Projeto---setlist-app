@@ -20,6 +20,7 @@ import {
   Share,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
 import { Ionicons } from '@expo/vector-icons';
@@ -1208,26 +1209,24 @@ export default function BandDetailScreen({
     }
   }, [visible, band?.id, band?.cloudId, loadData]);
 
-  if (!visible || !band) return null;
-
   // Filter setlists belonging to this band sorted by date
   // MODO ONLINE: APENAS consulta os setlists da API (onlineSetlists) - NUNCA SQLite
   // MODO OFFLINE: consulta os setlists do SQLite (allSetlists)
-  const bandSetlists = (band.cloudId
+  const bandSetlists = (band?.cloudId
     ? (onlineSetlists || [])
     : (allSetlists || []).filter(s => {
-        if (!s) return false;
+        if (!s || !band) return false;
         const sBandId = Number(s.myBandId || s.bandId);
-        const bId = Number(band.id);
+        const bId = Number(band?.id);
         if (sBandId && sBandId === bId) return true;
-        if (s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+        if (s.bandName && band?.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
         return false;
       })
   ).sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
   // Eventos (shows) da banda no formato da arte de agenda do perfil
-  const bandLogoUri = band.imageUri || band.image || band.logo ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(band.name || 'Banda')}&background=random`;
+  const bandLogoUri = band?.imageUri || band?.image || band?.logo ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(band?.name || 'Banda')}&background=random`;
   const getShareDateInfo = (dateStr) => {
     const ts = parseDateForSort(dateStr);
     const badge = getFormattedDateBadge(dateStr, language);
@@ -1246,8 +1245,8 @@ export default function BandDetailScreen({
     };
   };
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-  const shareableAgendaEvents = bandSetlists
-    .filter(s => s.type === 'show')
+  const shareableAgendaEvents = (bandSetlists || [])
+    .filter(s => s && s.type === 'show')
     .slice()
     .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date))
     .map(s => {
@@ -1261,13 +1260,13 @@ export default function BandDetailScreen({
         day: dInfo.day,
         month: dInfo.month,
         weekDay: dInfo.weekDay,
-        band: band.name,
+        band: band?.name || '',
         logo: bandLogoUri,
         _ts: parseDateForSort(s.date)
       };
     });
   const upcomingAgendaIds = shareableAgendaEvents.filter(e => e._ts >= todayStart.getTime()).map(e => e.id);
-  const bandQrSlug = String(band.name || 'banda').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const bandQrSlug = String(band?.name || 'banda').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
   const openShareBandAgenda = () => {
     if (shareableAgendaEvents.length === 0) {
@@ -2226,6 +2225,7 @@ export default function BandDetailScreen({
   };
 
   const unifiedTimelineEvents = useMemo(() => {
+    if (!band) return [];
     const list = [];
     const seenEventKeys = new Set();
 
@@ -2302,7 +2302,7 @@ export default function BandDetailScreen({
     const setlistsCount = (bandSetlists || []).length;
     if (songsCount > 0 || setlistsCount > 0) {
       let ts = Date.now();
-      if (band.lastSyncedAt) {
+      if (band?.lastSyncedAt) {
         const d = new Date(band.lastSyncedAt);
         if (!isNaN(d.getTime())) ts = d.getTime();
       }
@@ -2318,11 +2318,11 @@ export default function BandDetailScreen({
 
     // 5. Criação do projeto / banda
     let createdTs = 0;
-    if (band.createdAt) {
+    if (band?.createdAt) {
       const d = new Date(band.createdAt);
       if (!isNaN(d.getTime())) createdTs = d.getTime();
     }
-    if (!createdTs && band.sinceYear) {
+    if (!createdTs && band?.sinceYear) {
       const y = parseInt(band.sinceYear, 10);
       if (!isNaN(y)) createdTs = new Date(y, 0, 1).getTime();
     }
@@ -2333,7 +2333,7 @@ export default function BandDetailScreen({
       timestamp: createdTs,
       actionType: 'band_created',
       authorName: t('foundation') || 'Fundação',
-      description: `Criação do projeto ${band.name}${band.city ? ` em ${band.city}${band.state ? '/' + band.state : ''}` : ''}`,
+      description: `Criação do projeto ${band?.name || 'Banda'}${band?.city ? ` em ${band.city}${band?.state ? '/' + band.state : ''}` : ''}`,
       createdAt: new Date(createdTs).toISOString(),
     });
 
@@ -2351,7 +2351,7 @@ export default function BandDetailScreen({
     const groups = {};
     const keys = [];
 
-    unifiedTimelineEvents.forEach(ev => {
+    (unifiedTimelineEvents || []).forEach(ev => {
       const dt = new Date(ev.timestamp);
       let yr = dt.getFullYear();
       let mIdx = dt.getMonth();
@@ -2374,6 +2374,8 @@ export default function BandDetailScreen({
     keys.sort((a, b) => b.localeCompare(a));
     return { groups, keys };
   }, [unifiedTimelineEvents, language]);
+
+  if (!visible || !band) return null;
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
@@ -2969,8 +2971,9 @@ export default function BandDetailScreen({
                   const now = new Date();
                   const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-                  return timelineMonthGroups.keys.map((monthKey, gIdx) => {
-                    const g = timelineMonthGroups.groups[monthKey];
+                  return (timelineMonthGroups?.keys || []).map((monthKey, gIdx) => {
+                    const g = timelineMonthGroups?.groups?.[monthKey];
+                    if (!g) return null;
                     const isCurrentMonth = monthKey === currentMonthKey;
                     const isExpanded = expandedTimelineMonths[monthKey] !== undefined ? expandedTimelineMonths[monthKey] : (gIdx === 0 || isCurrentMonth);
 
