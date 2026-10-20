@@ -1811,140 +1811,181 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   // ── 1. BIO TAB (COM FAIXAS SIMÉTRICAS AO CABEÇALHO E SEM TABELAS) ──
   const renderBioTab = () => (
     <View style={styles.tabContentClean}>
-      {/* Faixa: NÍVEL DE INTERESSE */}
+      {/* Faixa: NÍVEL DE INTERESSE & DISPONIBILIDADE (CÍRCULOS FIGMA PADRÃO WEB) */}
       <SectionBanner title={t('interestLevelSection') || "Nível de Interesse"} isFirst={true} />
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, paddingHorizontal: 2 }}>
-        {[
-          { key: 'Hobbie' },
-          { key: 'Profissional' },
-          { key: 'Casual' }
-        ].map(item => {
-          const isSelected = (user.interestLevel || []).some(val => {
-            const v = String(val || '').toLowerCase();
-            const k = item.key.toLowerCase();
-            if (k.includes('hobb') && v.includes('hobb')) return true;
-            if (k.includes('prof') && v.includes('prof')) return true;
-            if ((k.includes('ver') || k.includes('casual')) && (v.includes('ver') || v.includes('see') || v.includes('casual'))) return true;
-            return v === k;
-          });
+      {(() => {
+        const isHobbie = (user.interestLevel || []).some(val => String(val || '').toLowerCase().includes('hobb'));
+        const isProf = (user.interestLevel || []).some(val => String(val || '').toLowerCase().includes('prof'));
+        const isCasual = (user.interestLevel || []).some(val => {
+          const v = String(val || '').toLowerCase();
+          return v.includes('casual') || v.includes('ver') || v.includes('see');
+        });
+        const isAvail = user.availability === 'Disponível' || String(user.availability).toLowerCase() === 'available';
 
-          return (
+        return (
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingVertical: 14,
+            paddingHorizontal: 8,
+            marginBottom: 14,
+            borderRadius: 16,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)',
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'
+          }}>
+            {/* 1. Hobbie */}
             <Pressable 
-              key={item.key} 
-              onPress={() => toggleInterest(item.key)} 
-              style={({ pressed }) => [{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 9,
-                paddingHorizontal: 4,
-                borderRadius: 12,
-                backgroundColor: isSelected 
-                  ? (colors.primary + '18') 
-                  : (isDark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)'),
-                borderWidth: 1.5,
-                borderColor: isSelected 
-                  ? colors.primary 
-                  : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
-                opacity: pressed ? 0.75 : 1
-              }]}
+              onPress={() => toggleInterest('Hobbie')} 
+              style={({ pressed }) => [{ flex: 1, alignItems: 'center', opacity: pressed ? 0.75 : 1 }]}
               hitSlop={6}
             >
-              <Text style={{ 
-                color: isSelected ? colors.primary : colors.textMuted, 
-                fontSize: 12, 
-                fontWeight: isSelected ? '800' : '600', 
-                textAlign: 'center' 
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isHobbie ? '#38bdf8' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                borderWidth: 2,
+                borderColor: isHobbie ? '#7dd3fc' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                elevation: isHobbie ? 4 : 0,
+                shadowColor: '#38bdf8',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isHobbie ? 0.45 : 0,
+                shadowRadius: 6,
               }}>
-                {getInterestLevelLabel(item.key)}
+                <Ionicons name="sparkles" size={22} color={isHobbie ? '#0f172a' : (isDark ? '#64748b' : '#94a3b8')} />
+              </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: isHobbie ? '800' : '600',
+                color: isHobbie ? '#38bdf8' : colors.textMuted,
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                Hobbie
               </Text>
             </Pressable>
-          );
-        })}
-      </View>
 
-      {/* Disponibilidade – 2 pílulas modernas */}
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 4, paddingHorizontal: 2 }}>
-        <Pressable 
-          onPress={() => toggleAvailability('Disponível')} 
-          style={({ pressed }) => {
-            const isAvail = user.availability === 'Disponível' || String(user.availability).toLowerCase() === 'available';
-            return [{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              paddingVertical: 9,
-              paddingHorizontal: 8,
-              borderRadius: 12,
-              backgroundColor: isAvail 
-                ? '#10B98118' 
-                : (isDark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)'),
-              borderWidth: 1.5,
-              borderColor: isAvail 
-                ? '#10B981' 
-                : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
-              opacity: pressed ? 0.75 : 1
-            }];
-          }}
-          hitSlop={6}
-        >
-          <Ionicons 
-            name={(user.availability === 'Disponível' || String(user.availability).toLowerCase() === 'available') ? "checkmark-circle" : "checkmark-circle-outline"} 
-            size={14} 
-            color={(user.availability === 'Disponível' || String(user.availability).toLowerCase() === 'available') ? '#10B981' : colors.textMuted} 
-          />
-          <Text style={{ 
-            color: (user.availability === 'Disponível' || String(user.availability).toLowerCase() === 'available') ? '#10B981' : colors.textMuted, 
-            fontSize: 12, 
-            fontWeight: (user.availability === 'Disponível' || String(user.availability).toLowerCase() === 'available') ? '800' : '600', 
-            textAlign: 'center' 
-          }}>
-            {t('availableStatus') || "Disponível"}
-          </Text>
-        </Pressable>
+            {/* 2. Profissional */}
+            <Pressable 
+              onPress={() => toggleInterest('Profissional')} 
+              style={({ pressed }) => [{ flex: 1, alignItems: 'center', opacity: pressed ? 0.75 : 1 }]}
+              hitSlop={6}
+            >
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isProf ? '#38bdf8' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                borderWidth: 2,
+                borderColor: isProf ? '#7dd3fc' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                elevation: isProf ? 4 : 0,
+                shadowColor: '#38bdf8',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isProf ? 0.45 : 0,
+                shadowRadius: 6,
+              }}>
+                <Ionicons name="briefcase" size={22} color={isProf ? '#0f172a' : (isDark ? '#64748b' : '#94a3b8')} />
+              </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: isProf ? '800' : '600',
+                color: isProf ? '#38bdf8' : colors.textMuted,
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                Profissional
+              </Text>
+            </Pressable>
 
-        <Pressable 
-          onPress={() => toggleAvailability('Indisponível')} 
-          style={({ pressed }) => {
-            const isUnavail = user.availability === 'Indisponível' || String(user.availability).toLowerCase() === 'unavailable';
-            return [{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              paddingVertical: 9,
-              paddingHorizontal: 8,
-              borderRadius: 12,
-              backgroundColor: isUnavail 
-                ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') 
-                : (isDark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)'),
-              borderWidth: 1.5,
-              borderColor: isUnavail 
-                ? (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.22)') 
-                : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
-              opacity: pressed ? 0.75 : 1
-            }];
-          }}
-          hitSlop={6}
-        >
-          <Ionicons 
-            name="close-circle-outline" 
-            size={14} 
-            color={(user.availability === 'Indisponível' || String(user.availability).toLowerCase() === 'unavailable') ? colors.text : colors.textMuted} 
-          />
-          <Text style={{ 
-            color: (user.availability === 'Indisponível' || String(user.availability).toLowerCase() === 'unavailable') ? colors.text : colors.textMuted, 
-            fontSize: 12, 
-            fontWeight: (user.availability === 'Indisponível' || String(user.availability).toLowerCase() === 'unavailable') ? '800' : '600', 
-            textAlign: 'center' 
-          }}>
-            {t('unavailableStatus') || "Indisponível"}
-          </Text>
-        </Pressable>
-      </View>
+            {/* 3. Casual */}
+            <Pressable 
+              onPress={() => toggleInterest('Casual')} 
+              style={({ pressed }) => [{ flex: 1, alignItems: 'center', opacity: pressed ? 0.75 : 1 }]}
+              hitSlop={6}
+            >
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isCasual ? '#38bdf8' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                borderWidth: 2,
+                borderColor: isCasual ? '#7dd3fc' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                elevation: isCasual ? 4 : 0,
+                shadowColor: '#38bdf8',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isCasual ? 0.45 : 0,
+                shadowRadius: 6,
+              }}>
+                <Ionicons name="beer-outline" size={23} color={isCasual ? '#0f172a' : (isDark ? '#64748b' : '#94a3b8')} />
+              </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: isCasual ? '800' : '600',
+                color: isCasual ? '#38bdf8' : colors.textMuted,
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                Casual
+              </Text>
+            </Pressable>
+
+            {/* Divisor vertical discreto */}
+            <View style={{
+              width: 1.5,
+              height: 40,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+              marginHorizontal: 4,
+              borderRadius: 1
+            }} />
+
+            {/* 4. Disponível / Indisponível (por último!) */}
+            <Pressable 
+              onPress={() => toggleAvailability(isAvail ? 'Indisponível' : 'Disponível')} 
+              style={({ pressed }) => [{ flex: 1.15, alignItems: 'center', opacity: pressed ? 0.75 : 1 }]}
+              hitSlop={6}
+            >
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isAvail ? '#22c55e' : '#ef4444',
+                borderWidth: 2,
+                borderColor: isAvail ? '#86efac' : '#fca5a5',
+                elevation: 4,
+                shadowColor: isAvail ? '#22c55e' : '#ef4444',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.45,
+                shadowRadius: 6,
+              }}>
+                <Ionicons 
+                  name={isAvail ? "checkmark-circle" : "close-circle"} 
+                  size={26} 
+                  color={isAvail ? '#064e3b' : '#450a0a'} 
+                />
+              </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: '800',
+                color: isAvail ? '#22c55e' : '#ef4444',
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                {isAvail ? (t('availableStatus') || 'Disponível') : (t('unavailableStatus') || 'Indisponível')}
+              </Text>
+            </Pressable>
+          </View>
+        );
+      })()}
 
       {/* Faixa: SOBRE MIM */}
       <SectionBanner 
@@ -2142,6 +2183,67 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           );
         })
       )}
+
+      {/* 2. HABILIDADES EXTRAS (DIFERENCIAIS P/ BANDA & PRODUÇÃO) */}
+      <View style={{ marginTop: 24, paddingTop: 18, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="sparkles" size={16} color="#fbbf24" />
+            <Text style={{ fontSize: 13, fontWeight: '800', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              {t('extraSkills') || 'Habilidades Extras'}
+            </Text>
+          </View>
+          <Pressable 
+            style={[styles.addButton, { backgroundColor: 'rgba(251, 191, 36, 0.15)', borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.35)' }]} 
+            onPress={() => setShowExtraSkillModal(true)}
+          >
+            <Ionicons name="add" size={15} color="#fbbf24" />
+            <Text style={{ color: '#fbbf24', fontSize: 12, fontWeight: '700', marginLeft: 4 }}>
+              {t('addBtn') || 'Adicionar'}
+            </Text>
+          </Pressable>
+        </View>
+
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 12, paddingHorizontal: 2 }}>
+          {t('extraSkillsSubtitle') || 'Diferenciais para bandas e produção.'}
+        </Text>
+
+        {extraSkills.length === 0 ? (
+          <View style={[styles.fullWidthCard, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border, alignItems: 'center', paddingVertical: 20 }]}>
+            <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
+              Nenhuma habilidade extra cadastrada. Toque em Adicionar para incluir.
+            </Text>
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {extraSkills.map((es, idx) => (
+              <View 
+                key={es.id || idx}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  paddingLeft: 12,
+                  paddingRight: 8,
+                  paddingVertical: 7,
+                  borderRadius: 16,
+                  backgroundColor: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(251, 191, 36, 0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(251, 191, 36, 0.35)',
+                }}
+              >
+                <Ionicons name="sparkles" size={13} color="#fbbf24" />
+                <Text style={{ fontSize: 12.5, fontWeight: '700', color: isDark ? '#fef3c7' : '#92400e' }}>
+                  {es.name || es}
+                </Text>
+                <Pressable onPress={() => handleRemoveExtraSkill(es.id || es)} hitSlop={6} style={{ padding: 2 }}>
+                  <Ionicons name="close-circle" size={16} color={isDark ? '#fbbf24' : '#b45309'} />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
     </View>
   );
 
@@ -3170,6 +3272,62 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                 multiline
                 maxLength={1000}
               />
+
+              {/* 4. MARCADOR DE NEGOCIÁVEL & VALOR */}
+              <View style={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                borderRadius: 10,
+                padding: 12,
+                marginBottom: 14
+              }}>
+                <Pressable
+                  onPress={() => setGearIsNegotiable(!gearIsNegotiable)}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="pricetag-outline" size={18} color={gearIsNegotiable ? '#22c55e' : colors.textMuted} />
+                    <Text style={{ fontWeight: '700', color: colors.text, fontSize: 14 }}>
+                      {t('negotiable') || 'Negociável'}
+                    </Text>
+                  </View>
+                  <Ionicons 
+                    name={gearIsNegotiable ? "checkbox" : "square-outline"} 
+                    size={22} 
+                    color={gearIsNegotiable ? '#22c55e' : colors.textMuted} 
+                  />
+                </Pressable>
+
+                {gearIsNegotiable && (
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '700', marginBottom: 6 }}>
+                      {t('intendedPrice') || 'VALOR PRETENDIDO ($)'}
+                    </Text>
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9',
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: 8,
+                      paddingHorizontal: 10,
+                      height: 42
+                    }}>
+                      <Text style={{ fontWeight: '900', color: '#22c55e', fontSize: 14, marginRight: 6 }}>$</Text>
+                      <TextInput
+                        style={{ flex: 1, color: colors.text, fontWeight: '700', fontSize: 14 }}
+                        placeholder="0,00"
+                        placeholderTextColor={colors.textMuted}
+                        keyboardType="numeric"
+                        value={gearPrice}
+                        onChangeText={setGearPrice}
+                        maxLength={12}
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
             </ScrollView>
 
             {/* Botão de Excluir dentro do Modal de Edição */}
@@ -3204,29 +3362,152 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ── UNIFIED EDIT PROFILE MODAL (NOME, ANIVERSÁRIO, LOCALIZAÇÃO) ── */}
+      {/* ── UNIFIED EDIT PROFILE MODAL (STANDARDIZED WITH WEB VERSION) ── */}
       <Modal visible={showEditProfileModal} transparent animationType='slide' onRequestClose={() => setShowEditProfileModal(false)}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
           <Pressable style={styles.modalBackdrop} onPress={() => setShowEditProfileModal(false)} />
-          <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, maxHeight: '85%' }]}>
+          <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, maxHeight: '88%' }]}>
             <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]} />
-            <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 16 }]}>{t('editProfile') || 'Editar Perfil'}</Text>
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <Ionicons name="person-circle-outline" size={24} color={colors.primary} />
+              <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 0 }]}>{t('editProfile') || 'Editar Perfil & Foto'}</Text>
+            </View>
             
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-              {/* Nome de Exibição */}
+              
+              {/* 1. FOTO DE PERFIL COM PREVIEW CIRCULAR & BOTÃO DE UPLOAD */}
+              <View style={{ marginBottom: 16, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+                <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 8 }]}>{t('profilePhoto') || 'FOTO DE PERFIL'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                  <View style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: isDark ? '#121824' : '#e2e8f0',
+                    borderWidth: 2,
+                    borderColor: colors.primary,
+                    overflow: 'hidden',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {(editProfilePictureUrl || profileImage) ? (
+                      <Image source={{ uri: editProfilePictureUrl || profileImage }} style={{ width: '100%', height: '100%' }} />
+                    ) : (
+                      <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary }}>
+                        {(editProfileName || user?.username || 'M')[0].toUpperCase()}
+                      </Text>
+                    )}
+                  </View>
+
+                  <View style={{ flex: 1, gap: 6 }}>
+                    <Pressable 
+                      onPress={pickProfileImage}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        backgroundColor: colors.primary + '18',
+                        borderWidth: 1,
+                        borderColor: colors.primary + '40',
+                        borderRadius: 8,
+                        paddingVertical: 8,
+                        paddingHorizontal: 12
+                      }}
+                    >
+                      <Ionicons name="cloud-upload-outline" size={16} color={colors.primary} />
+                      <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>
+                        {t('uploadPhoto') || 'Carregar Foto'}
+                      </Text>
+                    </Pressable>
+
+                    {(editProfilePictureUrl || profileImage) ? (
+                      <Pressable 
+                        onPress={() => {
+                          setEditProfilePictureUrl('');
+                          setProfileImage(null);
+                        }}
+                        style={{ alignSelf: 'center', paddingVertical: 2 }}
+                      >
+                        <Text style={{ color: '#ef4444', fontSize: 11, fontWeight: '700' }}>
+                          {t('removePhoto') || 'Remover Foto'}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </View>
+
+                {/* URL da Foto (Opcional) */}
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9', marginTop: 10, height: 38, fontSize: 12 }]}
+                  value={editProfilePictureUrl}
+                  onChangeText={setEditProfilePictureUrl}
+                  placeholder={t('photoUrlPlaceholder') || 'Ou informe a URL da foto...'}
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+
+              {/* 2. USERNAME COM VERIFICAÇÃO LIVE (@) */}
               <View style={{ marginBottom: 14 }}>
-                <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('displayName') || 'NOME DE EXIBIÇÃO'}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>USERNAME (@)</Text>
+                  {usernameStatus === 'checking' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <ActivityIndicator size="small" color={colors.primary} />
+                      <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '700' }}>{t('checkingUsername') || 'Verificando...'}</Text>
+                    </View>
+                  )}
+                  {usernameStatus === 'available' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="checkmark-circle" size={14} color="#22c55e" />
+                      <Text style={{ fontSize: 11, color: '#22c55e', fontWeight: '700' }}>{usernameMessage || 'Disponível'}</Text>
+                    </View>
+                  )}
+                  {(usernameStatus === 'taken' || usernameStatus === 'invalid') && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="alert-circle" size={14} color="#ef4444" />
+                      <Text style={{ fontSize: 11, color: '#ef4444', fontWeight: '700' }}>{usernameMessage}</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9',
+                  borderWidth: 1,
+                  borderColor: (usernameStatus === 'taken' || usernameStatus === 'invalid') ? '#ef4444' : (usernameStatus === 'available' ? '#22c55e' : colors.border),
+                  borderRadius: 8,
+                  paddingHorizontal: 10
+                }}>
+                  <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 14, marginRight: 2 }}>@</Text>
+                  <TextInput
+                    style={{ flex: 1, height: 42, color: colors.text, fontWeight: '700', fontSize: 14 }}
+                    value={editProfileUsername}
+                    onChangeText={handleUsernameChange}
+                    placeholder="allison_rps"
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    maxLength={30}
+                  />
+                </View>
+              </View>
+
+              {/* 3. NOME DE EXIBIÇÃO */}
+              <View style={{ marginBottom: 14 }}>
+                <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('displayName') || 'NOME DE EXIBIÇÃO (NOME COMPLETO / ARTÍSTICO) *'}</Text>
                 <TextInput
                   style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9' }]}
                   value={editProfileName}
                   onChangeText={setEditProfileName}
-                  placeholder={t('displayNamePlaceholder') || 'Seu nome no palco'}
+                  placeholder={t('displayNamePlaceholder') || 'e.g. Allison Rodrigues'}
                   placeholderTextColor={colors.textMuted}
-                  maxLength={50}
+                  maxLength={100}
                 />
               </View>
 
-              {/* Data de Nascimento */}
+              {/* 4. DATA DE NASCIMENTO */}
               <View style={{ marginBottom: 14 }}>
                 <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('birthDate') || 'DATA DE NASCIMENTO'}</Text>
                 <TextInput
@@ -3238,46 +3519,55 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                   keyboardType="number-pad"
                   maxLength={10}
                 />
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>
+                  Sua idade será calculada automaticamente e exibida no cabeçalho do perfil.
+                </Text>
               </View>
 
-              {/* País e Estado em Linha */}
-              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
-                <View style={{ flex: 1.2 }}>
-                  <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('countryLabel') || 'PAÍS'}</Text>
-                  <TextInput
-                    style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9' }]}
-                    value={editProfileCountry}
-                    onChangeText={setEditProfileCountry}
-                    placeholder={t('countryPlaceholder') || 'Brasil'}
-                    placeholderTextColor={colors.textMuted}
-                    maxLength={50}
-                  />
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('stateUfLabel') || 'ESTADO (UF)'}</Text>
-                  <TextInput
-                    style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9' }]}
-                    value={editProfileState}
-                    onChangeText={setEditProfileState}
-                    placeholder={t('statePlaceholder') || 'UF / Estado'}
-                    placeholderTextColor={colors.textMuted}
-                    maxLength={50}
-                  />
-                </View>
-              </View>
-
-              {/* Cidade */}
+              {/* 5. LOCALIZAÇÃO */}
               <View style={{ marginBottom: 14 }}>
-                <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('cityLabel') || 'CIDADE'}</Text>
-                <TextInput
-                  style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9' }]}
-                  value={editProfileCity}
-                  onChangeText={setEditProfileCity}
-                  placeholder={t('cityPlaceholder') || 'Cidade'}
-                  placeholderTextColor={colors.textMuted}
-                  maxLength={100}
-                />
+                <Text style={[styles.inputSubLabel, { color: colors.textMuted }]}>{t('locationLabel') || 'LOCALIZAÇÃO'}</Text>
+                
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                  <View style={{ flex: 1.5 }}>
+                    <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 2 }}>CIDADE</Text>
+                    <TextInput
+                      style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9', height: 40 }]}
+                      value={editProfileCity}
+                      onChangeText={setEditProfileCity}
+                      placeholder="e.g. Curitiba"
+                      placeholderTextColor={colors.textMuted}
+                      maxLength={100}
+                    />
+                  </View>
+                  <View style={{ flex: 0.8 }}>
+                    <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 2 }}>ESTADO (UF)</Text>
+                    <TextInput
+                      style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9', height: 40 }]}
+                      value={editProfileState}
+                      onChangeText={setEditProfileState}
+                      placeholder="e.g. PR"
+                      placeholderTextColor={colors.textMuted}
+                      maxLength={50}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 2 }}>PAÍS</Text>
+                    <TextInput
+                      style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9', height: 40 }]}
+                      value={editProfileCountry}
+                      onChangeText={setEditProfileCountry}
+                      placeholder="e.g. Brasil"
+                      placeholderTextColor={colors.textMuted}
+                      maxLength={50}
+                    />
+                  </View>
+                </View>
+
+                {/* Nota de rodapé idêntica à Web */}
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4, lineHeight: 16 }}>
+                  {t('otherSectionsNote') || 'Demais seções (Bio, Habilidades, Influências e Redes) são editadas diretamente nos botões verdes do perfil.'}
+                </Text>
               </View>
             </ScrollView>
 
@@ -3286,7 +3576,128 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                 <Text style={{ color: colors.text, fontWeight: 'bold' }}>{t('cancelBtn') || 'Cancelar'}</Text>
               </Pressable>
               <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary }]} onPress={handleSaveUserProfile}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('saveBtn') || 'Salvar'}</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('saveBtn') || 'Salvar Perfil'}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── MODAL PARA ADICIONAR HABILIDADE EXTRA ── */}
+      <Modal visible={showExtraSkillModal} transparent animationType='slide' onRequestClose={() => setShowExtraSkillModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setShowExtraSkillModal(false)} />
+          <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, maxHeight: '85%' }]}>
+            <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]} />
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <Ionicons name="sparkles" size={20} color="#fbbf24" />
+              <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 0 }]}>
+                {t('addExtraSkill') || 'Habilidade Extra / Produção'}
+              </Text>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {/* Opções Sugeridas */}
+              <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
+                {t('presetSkills') || 'SELECIONE UMA OPÇÃO SUGERIDA'}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                {PRESET_EXTRA_SKILLS.map(preset => {
+                  const isAdded = extraSkills.some(s => (s.name || s).toLowerCase() === preset.toLowerCase());
+                  return (
+                    <Pressable
+                      key={preset}
+                      disabled={isAdded}
+                      onPress={() => handleAddExtraSkill(preset)}
+                      style={{
+                        paddingVertical: 7,
+                        paddingHorizontal: 12,
+                        borderRadius: 16,
+                        borderWidth: 1,
+                        borderColor: isAdded ? colors.border : 'rgba(251, 191, 36, 0.4)',
+                        backgroundColor: isAdded ? (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)') : 'rgba(251, 191, 36, 0.12)',
+                        opacity: isAdded ? 0.4 : 1
+                      }}
+                    >
+                      <Text style={{
+                        fontSize: 12,
+                        fontWeight: '700',
+                        color: isAdded ? colors.textMuted : (isDark ? '#fef3c7' : '#92400e')
+                      }}>
+                        {isAdded ? '✓ ' : '+ '}{preset}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Opção personalizada */}
+              <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
+                OU DIGITE UMA OPÇÃO PERSONALIZADA:
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+                <TextInput
+                  style={[styles.input, { flex: 1, color: colors.text, borderColor: colors.border, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9' }]}
+                  value={customExtraSkill}
+                  onChangeText={setCustomExtraSkill}
+                  placeholder={t('customSkillPlaceholder') || 'Ex: Direção de Palco, Gravação, Mixagem...'}
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={100}
+                />
+                <Pressable
+                  onPress={() => handleAddExtraSkill(customExtraSkill)}
+                  style={{
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 8,
+                    paddingHorizontal: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>{t('addBtn') || 'Adicionar'}</Text>
+                </Pressable>
+              </View>
+
+              {/* Habilidades cadastradas no perfil */}
+              {extraSkills.length > 0 && (
+                <View style={{ paddingTop: 12, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
+                    HABILIDADES CADASTRADAS NO SEU PERFIL:
+                  </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {extraSkills.map((es, idx) => (
+                      <View 
+                        key={es.id || idx}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          paddingLeft: 10,
+                          paddingRight: 6,
+                          paddingVertical: 6,
+                          borderRadius: 14,
+                          backgroundColor: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(251, 191, 36, 0.15)',
+                          borderWidth: 1,
+                          borderColor: 'rgba(251, 191, 36, 0.35)',
+                        }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: isDark ? '#fef3c7' : '#92400e' }}>
+                          {es.name || es}
+                        </Text>
+                        <Pressable onPress={() => handleRemoveExtraSkill(es.id || es)} hitSlop={6}>
+                          <Ionicons name="close-circle" size={16} color={isDark ? '#fbbf24' : '#b45309'} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={{ marginTop: 16 }}>
+              <Pressable style={[styles.syncButton, { backgroundColor: colors.primary }]} onPress={() => setShowExtraSkillModal(false)}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Concluir</Text>
               </Pressable>
             </View>
           </View>

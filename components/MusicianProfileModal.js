@@ -917,133 +917,165 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
   // ── 1. BIO TAB (IDÊNTICO AO PROFILE SCREEN, SEM BOTÕES DE EDITAR) ──
   const renderBioTab = () => (
     <View style={styles.tabContentClean}>
-      {/* Faixa: NÍVEL DE INTERESSE */}
+      {/* Faixa: NÍVEL DE INTERESSE & DISPONIBILIDADE (CÍRCULOS FIGMA PADRÃO WEB) */}
       <SectionBanner title={t('interestLevelSection') || "Nível de Interesse"} isFirst={true} />
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, paddingHorizontal: 2 }}>
-        {[
-          { key: 'Hobbie' },
-          { key: 'Profissional' },
-          { key: 'Casual' }
-        ].map(item => {
-          const isSelected = interestLevel.some(val => {
-            const v = String(val || '').toLowerCase();
-            const k = item.key.toLowerCase();
-            if (k.includes('hobb') && v.includes('hobb')) return true;
-            if (k.includes('prof') && v.includes('prof')) return true;
-            if ((k.includes('ver') || k.includes('casual')) && (v.includes('ver') || v.includes('see') || v.includes('casual'))) return true;
-            return v === k;
-          });
+      {(() => {
+        const isHobbie = interestLevel.some(val => String(val || '').toLowerCase().includes('hobb'));
+        const isProf = interestLevel.some(val => String(val || '').toLowerCase().includes('prof'));
+        const isCasual = interestLevel.some(val => {
+          const v = String(val || '').toLowerCase();
+          return v.includes('casual') || v.includes('ver') || v.includes('see');
+        });
+        const isAvail = availability === 'Disponível' || String(availability).toLowerCase() === 'available';
 
-          return (
-            <View 
-              key={item.key} 
-              style={{
-                flex: 1,
+        return (
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingVertical: 14,
+            paddingHorizontal: 8,
+            marginBottom: 12,
+            borderRadius: 16,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)',
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'
+          }}>
+            {/* 1. Hobbie */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingVertical: 9,
-                paddingHorizontal: 4,
-                borderRadius: 12,
-                backgroundColor: isSelected 
-                  ? (colors.primary + '18') 
-                  : (isDark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)'),
-                borderWidth: 1.5,
-                borderColor: isSelected 
-                  ? colors.primary 
-                  : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
-              }}
-            >
-              <Text style={{ 
-                color: isSelected ? colors.primary : colors.textMuted, 
-                fontSize: 12, 
-                fontWeight: isSelected ? '800' : '600', 
-                textAlign: 'center' 
+                backgroundColor: isHobbie ? '#38bdf8' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                borderWidth: 2,
+                borderColor: isHobbie ? '#7dd3fc' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                elevation: isHobbie ? 4 : 0,
+                shadowColor: '#38bdf8',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isHobbie ? 0.45 : 0,
+                shadowRadius: 6,
               }}>
-                {getInterestLevelLabel(item.key)}
+                <Ionicons name="sparkles" size={22} color={isHobbie ? '#0f172a' : (isDark ? '#64748b' : '#94a3b8')} />
+              </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: isHobbie ? '800' : '600',
+                color: isHobbie ? '#38bdf8' : colors.textMuted,
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                Hobbie
               </Text>
             </View>
-          );
-        })}
-      </View>
 
-      {/* Disponibilidade – 2 pílulas */}
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 4, paddingHorizontal: 2 }}>
-        {(() => {
-          const isAvail = availability === 'Disponível' || String(availability).toLowerCase() === 'available';
-          const isUnavail = availability === 'Indisponível' || String(availability).toLowerCase() === 'unavailable';
-          return (
-            <>
-              <View 
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  paddingVertical: 9,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: isAvail 
-                    ? '#10B98118' 
-                    : (isDark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)'),
-                  borderWidth: 1.5,
-                  borderColor: isAvail 
-                    ? '#10B981' 
-                    : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
-                }}
-              >
-                <Ionicons 
-                  name={isAvail ? "checkmark-circle" : "checkmark-circle-outline"} 
-                  size={14} 
-                  color={isAvail ? '#10B981' : colors.textMuted} 
-                />
-                <Text style={{ 
-                  color: isAvail ? '#10B981' : colors.textMuted, 
-                  fontSize: 12, 
-                  fontWeight: isAvail ? '800' : '600', 
-                  textAlign: 'center' 
-                }}>
-                  {t('availableStatus') || "Disponível"}
-                </Text>
+            {/* 2. Profissional */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isProf ? '#38bdf8' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                borderWidth: 2,
+                borderColor: isProf ? '#7dd3fc' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                elevation: isProf ? 4 : 0,
+                shadowColor: '#38bdf8',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isProf ? 0.45 : 0,
+                shadowRadius: 6,
+              }}>
+                <Ionicons name="briefcase" size={22} color={isProf ? '#0f172a' : (isDark ? '#64748b' : '#94a3b8')} />
               </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: isProf ? '800' : '600',
+                color: isProf ? '#38bdf8' : colors.textMuted,
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                Profissional
+              </Text>
+            </View>
 
-              <View 
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  paddingVertical: 9,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: isUnavail 
-                    ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') 
-                    : (isDark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)'),
-                  borderWidth: 1.5,
-                  borderColor: isUnavail 
-                    ? (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.22)') 
-                    : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
-                }}
-              >
-                <Ionicons 
-                  name="close-circle-outline" 
-                  size={14} 
-                  color={isUnavail ? colors.text : colors.textMuted} 
-                />
-                <Text style={{ 
-                  color: isUnavail ? colors.text : colors.textMuted, 
-                  fontSize: 12, 
-                  fontWeight: isUnavail ? '800' : '600', 
-                  textAlign: 'center' 
-                }}>
-                  {t('unavailableStatus') || "Indisponível"}
-                </Text>
+            {/* 3. Casual */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isCasual ? '#38bdf8' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                borderWidth: 2,
+                borderColor: isCasual ? '#7dd3fc' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                elevation: isCasual ? 4 : 0,
+                shadowColor: '#38bdf8',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isCasual ? 0.45 : 0,
+                shadowRadius: 6,
+              }}>
+                <Ionicons name="beer-outline" size={23} color={isCasual ? '#0f172a' : (isDark ? '#64748b' : '#94a3b8')} />
               </View>
-            </>
-          );
-        })()}
-      </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: isCasual ? '800' : '600',
+                color: isCasual ? '#38bdf8' : colors.textMuted,
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                Casual
+              </Text>
+            </View>
+
+            {/* Divisor vertical discreto */}
+            <View style={{
+              width: 1.5,
+              height: 40,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+              marginHorizontal: 4,
+              borderRadius: 1
+            }} />
+
+            {/* 4. Disponível / Indisponível (por último!) */}
+            <View style={{ flex: 1.15, alignItems: 'center' }}>
+              <View style={{
+                width: 54,
+                height: 54,
+                borderRadius: 27,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isAvail ? '#22c55e' : '#ef4444',
+                borderWidth: 2,
+                borderColor: isAvail ? '#86efac' : '#fca5a5',
+                elevation: 4,
+                shadowColor: isAvail ? '#22c55e' : '#ef4444',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.45,
+                shadowRadius: 6,
+              }}>
+                <Ionicons 
+                  name={isAvail ? "checkmark-circle" : "close-circle"} 
+                  size={26} 
+                  color={isAvail ? '#064e3b' : '#450a0a'} 
+                />
+              </View>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: '800',
+                color: isAvail ? '#22c55e' : '#ef4444',
+                marginTop: 6,
+                textAlign: 'center'
+              }}>
+                {isAvail ? (t('availableStatus') || 'Disponível') : (t('unavailableStatus') || 'Indisponível')}
+              </Text>
+            </View>
+          </View>
+        );
+      })()}
 
       {/* Faixa: SOBRE MIM (Sem botão de editar) */}
       <SectionBanner title={t('aboutMeSection') || "Sobre mim"} />
