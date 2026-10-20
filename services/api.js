@@ -309,6 +309,10 @@ export const api = {
     await secureToken.remove("jwt_token");
     await AsyncStorage.removeItem("user_info");
     await AsyncStorage.removeItem("user_profile_cache");
+    await AsyncStorage.removeItem("user_display_name");
+    await AsyncStorage.removeItem("user_gear");
+    await AsyncStorage.removeItem("user_profile_completed");
+    await AsyncStorage.removeItem("profileImage");
     // Clean up legacy plaintext credentials if they exist
     await AsyncStorage.removeItem("saved_login_credentials");
   },
@@ -338,7 +342,13 @@ export const api = {
     try {
       const headers = await getHeaders();
       const clean = encodeURIComponent(String(username || '').replace(/^@+/, '').trim());
-      const response = await fetchWithTimeout(`${API_URL}/Users/${clean}`, { headers }, 8000);
+      const response = await fetchWithTimeout(`${API_URL}/Users/${clean}?_t=${Date.now()}`, {
+        headers: {
+          ...headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      }, 8000);
       if (response.ok) {
         return await response.json();
       }
@@ -585,9 +595,16 @@ export const api = {
       if (filters.city) params.append('city', filters.city);
       if (filters.state) params.append('state', filters.state);
       if (filters.instrument) params.append('instrument', filters.instrument);
+      params.append('_t', String(Date.now()));
 
       const qs = params.toString() ? `?${params.toString()}` : '';
-      const response = await fetchWithTimeout(`${API_URL}/Users${qs}`, { headers }, 8000);
+      const response = await fetchWithTimeout(`${API_URL}/Users${qs}`, {
+        headers: {
+          ...headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      }, 8000);
       if (response.ok) {
         return await response.json();
       }
