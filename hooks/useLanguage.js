@@ -725,6 +725,9 @@ const translations = {
     saveBalance: 'Salvar Saldo',
     cashAdjustSuccess: 'Saldo do caixa da banda atualizado com sucesso!',
     validAmountRequired: 'Informe um valor válido para o saldo do caixa.',
+    destinedToReserve: 'Valor retido para o fundo da banda',
+    showTotal: 'Total Show',
+    remaining: 'Saldo',
     // Rede & Comunidade (Network)
     announce: 'Anunciar',
     announcements: 'Anúncios',
@@ -1878,6 +1881,9 @@ const translations = {
     saveBalance: 'Save Balance',
     cashAdjustSuccess: 'Band cash balance updated successfully!',
     validAmountRequired: 'Please enter a valid amount for the cash balance.',
+    destinedToReserve: 'Amount retained for band fund',
+    showTotal: 'Show Total',
+    remaining: 'Balance',
     // Network & Community
     announce: 'Post Ad',
     announcements: 'Ads',
@@ -3031,6 +3037,9 @@ const translations = {
     saveBalance: 'Guardar Saldo',
     cashAdjustSuccess: '¡Saldo de caja de la banda actualizado con éxito!',
     validAmountRequired: 'Ingrese un valor válido para el saldo de caja.',
+    destinedToReserve: 'Monto retenido para el fondo de la banda',
+    showTotal: 'Total Show',
+    remaining: 'Saldo',
     // Red y Comunidad
     announce: 'Anunciar',
     announcements: 'Anuncios',

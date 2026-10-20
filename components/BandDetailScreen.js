@@ -941,6 +941,7 @@ export default function BandDetailScreen({
   const [showCacheSplitModal, setShowCacheSplitModal] = useState(false);
   const [selectedShowForSplit, setSelectedShowForSplit] = useState(null);
   const [selectedShowCacheStatus, setSelectedShowCacheStatus] = useState('paid');
+  const [splitBandFund, setSplitBandFund] = useState('');
   const [memberSplits, setMemberSplits] = useState({});
   const [substitutes, setSubstitutes] = useState([]);
 
@@ -1322,29 +1323,49 @@ export default function BandDetailScreen({
   const handleOpenCacheSplitModal = async (showSetlist) => {
     setSelectedShowForSplit(showSetlist);
     setSelectedShowCacheStatus(showSetlist.cacheStatus || 'paid');
-    const existing = await bandService.getShowCacheSplit(showSetlist.id);
+    let existing = await bandService.getShowCacheSplit(showSetlist.id);
+    if (!existing || Object.keys(existing).length === 0) {
+      if (showSetlist.cacheSplit && typeof showSetlist.cacheSplit === 'object') {
+        existing = showSetlist.cacheSplit;
+      }
+    }
     const rawCache = showSetlist.cachê || showSetlist.cache || showSetlist.valCache || showSetlist.value;
     const totalVal = parseCurrency(rawCache);
 
+    let initialFund = 0;
+    if (existing && typeof existing === 'object') {
+      if (existing.bandFund !== undefined) initialFund = parseFloat(existing.bandFund) || 0;
+      else if (existing.band_fund !== undefined) initialFund = parseFloat(existing.band_fund) || 0;
+      else if (showSetlist.cacheSplit?.bandFund !== undefined) initialFund = parseFloat(showSetlist.cacheSplit.bandFund) || 0;
+    }
+    setSplitBandFund(initialFund > 0 ? String(initialFund) : '');
+
     if (existing && Object.keys(existing).length > 0) {
-      // Separate substitute entries from member entries
       const subs = [];
       const memberEntries = {};
-      Object.keys(existing).forEach(key => {
-        if (key.startsWith('sub_')) {
-          const idx = parseInt(key.split('_')[1], 10);
-          subs[idx] = existing[key];
-        } else {
-          memberEntries[key] = existing[key];
-        }
-      });
+
+      if (existing.members && typeof existing.members === 'object') {
+        Object.assign(memberEntries, existing.members);
+      }
+
+      if (Array.isArray(existing.substitutes)) {
+        setSubstitutes(existing.substitutes);
+      } else {
+        Object.keys(existing).forEach(key => {
+          if (key.startsWith('sub_')) {
+            const idx = parseInt(key.split('_')[1], 10);
+            subs[idx] = existing[key];
+          } else if (key !== 'bandFund' && key !== 'band_fund' && key !== 'status' && key !== 'updatedAt' && key !== 'members' && key !== 'substitutes') {
+            if (!memberEntries[key]) memberEntries[key] = existing[key];
+          }
+        });
+        const parsedSubs = subs.filter(Boolean).map(s => {
+          if (typeof s === 'object') return s;
+          try { return JSON.parse(s); } catch(e) { return { name: '', amount: s }; }
+        });
+        setSubstitutes(parsedSubs.length > 0 ? parsedSubs : []);
+      }
       setMemberSplits(memberEntries);
-      // Parse substitutes: stored as { name, amount } objects
-      const parsedSubs = subs.filter(Boolean).map(s => {
-        if (typeof s === 'object') return s;
-        try { return JSON.parse(s); } catch(e) { return { name: '', amount: s }; }
-      });
-      setSubstitutes(parsedSubs.length > 0 ? parsedSubs : []);
     } else {
       const activeM = activeMembers;
       const share = activeM.length > 0 ? (totalVal / activeM.length).toFixed(2) : '0';
@@ -1364,7 +1385,16 @@ export default function BandDetailScreen({
     const totalVal = parseCurrency(rawCache);
     const activeM = activeMembers;
     if (activeM.length === 0) return;
-    const share = (totalVal / activeM.length).toFixed(2);
+
+    // Subtrai valor destinado ao caixa da banda e aos substitutos (idêntico à Web)
+    const fundVal = parseFloat(String(splitBandFund || '0').replace(',', '.')) || 0;
+    let subsTotal = 0;
+    substitutes.forEach(s => {
+      subsTotal += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+    });
+
+    const remain = Math.max(0, totalVal - fundVal - subsTotal);
+    const share = (remain / activeM.length).toFixed(2);
     const updated = {};
     activeM.forEach(m => {
       updated[m.id] = share;
@@ -1375,14 +1405,60 @@ export default function BandDetailScreen({
   const handleSaveCachetSplit = async () => {
     if (!selectedShowForSplit) return;
     try {
-      // Merge member splits with substitute entries
-      const fullSplits = { ...memberSplits };
+      const fundVal = parseFloat(String(splitBandFund || '0').replace(',', '.')) || 0;
+      // Merge member splits with substitute entries and bandFund
+      const fullSplits = {
+        ...memberSplits,
+        bandFund: fundVal,
+        band_fund: fundVal,
+        status: selectedShowCacheStatus
+      };
       substitutes.forEach((sub, idx) => {
         if (sub.name || sub.amount) {
           fullSplits[`sub_${idx}`] = JSON.stringify({ name: sub.name, amount: sub.amount });
         }
       });
       await bandService.saveShowCacheSplit(selectedShowForSplit.id, fullSplits, selectedShowCacheStatus);
+
+      // Se for banda online, sincroniza o split no snapshot da nuvem
+      if (band?.cloudId) {
+        try {
+          const cloudData = await api.pullBand(band.cloudId);
+          const snapshot = typeof cloudData?.syncDataJson === 'string'
+            ? (JSON.parse(cloudData.syncDataJson || '{}') || {})
+            : (cloudData?.syncDataJson || {});
+
+          if (Array.isArray(snapshot.setlists)) {
+            const targetSl = snapshot.setlists.find(s =>
+              (selectedShowForSplit.id && s.id === selectedShowForSplit.id) ||
+              (s.name === selectedShowForSplit.name && s.date === selectedShowForSplit.date)
+            );
+            if (targetSl) {
+              targetSl.cacheSplit = {
+                members: { ...memberSplits },
+                substitutes: [...substitutes],
+                bandFund: fundVal,
+                status: selectedShowCacheStatus,
+                updatedAt: new Date().toISOString()
+              };
+              targetSl.cacheStatus = selectedShowCacheStatus;
+              await api.syncBand(band.cloudId, {
+                name: band.name,
+                genre: band.genre || '',
+                description: band.description || '',
+                imageUri: band.imageUri || '',
+                city: band.city || '',
+                state: band.state || '',
+                country: band.country || '',
+                syncDataJson: JSON.stringify(snapshot)
+              });
+            }
+          }
+        } catch (syncErr) {
+          console.warn('Erro ao sincronizar split com a nuvem:', syncErr);
+        }
+      }
+
       await loadData();
       if (onReloadAll) onReloadAll();
       setShowCacheSplitModal(false);
@@ -1391,8 +1467,8 @@ export default function BandDetailScreen({
       console.error('Error saving cache split:', err);
       Alert.alert(t('error') || 'Erro', t('errorSavingCacheSplit') || 'Não foi possível salvar a divisão do cachê.');
     }
-  };
-
+  };
+
   const handleAddSubstitute = () => {
     setSubstitutes(prev => [...prev, { name: '', amount: '' }]);
   };
@@ -1565,9 +1641,19 @@ export default function BandDetailScreen({
       return parseFloat(bandCashBalance) || 0;
     }
     let totalFromShows = 0;
-    (autoShowFinances || []).forEach(asf => {
-      if (asf.status === 'paid') {
-        totalFromShows += asf.amount;
+    (bandSetlists || []).forEach(sl => {
+      if (sl.type === 'show') {
+        const isPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
+                       (sl.cacheSplit?.status === 'paid') ||
+                       (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
+                       (!sl.cacheStatus && !sl.cacheSplit && !sl.status);
+        if (isPaid) {
+          if (sl.cacheSplit?.bandFund !== undefined) {
+            totalFromShows += (parseFloat(sl.cacheSplit.bandFund) || 0);
+          } else if (sl.cacheSplit?.['band_fund'] !== undefined) {
+            totalFromShows += (parseFloat(sl.cacheSplit['band_fund']) || 0);
+          }
+        }
       }
     });
     let manualInc = 0;
@@ -5496,6 +5582,59 @@ export default function BandDetailScreen({
             </View>
 
             
+            {/* OPÇÃO: CAIXA DA BANDA (IDÊNTICO À WEB) */}
+            <View style={{
+              backgroundColor: isDark ? 'rgba(56, 189, 248, 0.08)' : 'rgba(56, 189, 248, 0.1)',
+              borderColor: 'rgba(56, 189, 248, 0.25)',
+              borderWidth: 1,
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: 9,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginVertical: 4
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View style={{
+                  width: 34, height: 34, borderRadius: 10,
+                  backgroundColor: 'rgba(56, 189, 248, 0.18)',
+                  borderColor: 'rgba(56, 189, 248, 0.35)',
+                  borderWidth: 1,
+                  alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Ionicons name="wallet-outline" size={17} color="#38bdf8" />
+                </View>
+                <View>
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                    {t('bandCash') || 'Caixa da Banda'}
+                  </Text>
+                  <Text style={{ fontSize: 10.5, color: colors.textMuted }}>
+                    {t('destinedToReserve') || 'Valor retido para o fundo da banda'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={{ fontSize: 14, fontWeight: '900', color: '#38bdf8' }}>$</Text>
+                <TextInput
+                  style={[styles.splitCurrencyInput, {
+                    color: '#38bdf8',
+                    borderColor: 'rgba(56, 189, 248, 0.4)',
+                    backgroundColor: isDark ? '#18181b' : '#f4f4f5',
+                    width: 85,
+                    fontWeight: '900'
+                  }]}
+                  keyboardType="numeric"
+                  value={splitBandFund}
+                  onChangeText={setSplitBandFund}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={12}
+                />
+              </View>
+            </View>
+
             {/* Toggle Pago/Pendente */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 12 }}>
               <Pressable 
@@ -5618,6 +5757,87 @@ export default function BandDetailScreen({
                 )}
               </View>
             </ScrollView>
+
+            {/* RESUMO CONTÁBIL DA DIVISÃO (4 COLUNAS: TOTAL SHOW, CAIXA, MÚSICOS, SALDO) */}
+            {(() => {
+              const rawCache = selectedShowForSplit ? (selectedShowForSplit.cachê || selectedShowForSplit.cache || selectedShowForSplit.valCache || selectedShowForSplit.value) : 0;
+              const grossNum = parseCurrency(rawCache);
+              const fundNum = parseFloat(String(splitBandFund || '0').replace(',', '.')) || 0;
+
+              let membersSum = 0;
+              Object.values(memberSplits).forEach(v => {
+                membersSum += parseFloat(String(v || '0').replace(',', '.')) || 0;
+              });
+
+              let subsSum = 0;
+              substitutes.forEach(s => {
+                subsSum += parseFloat(String(s.amount || '0').replace(',', '.')) || 0;
+              });
+
+              const totalDistributed = membersSum + subsSum;
+              const balance = grossNum - (fundNum + totalDistributed);
+
+              const isBalanced = Math.abs(balance) < 0.01;
+              const isExcess = balance < -0.01;
+              const balanceColor = isBalanced ? '#4ade80' : isExcess ? '#f87171' : '#fbbf24';
+
+              return (
+                <View style={{
+                  backgroundColor: isDark ? '#101624' : '#f8fafc',
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 8,
+                  marginTop: 6,
+                  marginBottom: 10,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9.5, color: colors.textMuted, fontWeight: '700', textTransform: 'uppercase' }}>
+                      {t('showTotal') || 'Total Show'}
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.text, marginTop: 2 }}>
+                      $ {grossNum.toFixed(2)}
+                    </Text>
+                  </View>
+
+                  <View style={{ width: 1, height: 24, backgroundColor: colors.border }} />
+
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9.5, color: '#38bdf8', fontWeight: '700', textTransform: 'uppercase' }}>
+                      {t('bandCash') || 'Caixa'}
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: '#38bdf8', marginTop: 2 }}>
+                      $ {fundNum.toFixed(2)}
+                    </Text>
+                  </View>
+
+                  <View style={{ width: 1, height: 24, backgroundColor: colors.border }} />
+
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9.5, color: '#4ade80', fontWeight: '700', textTransform: 'uppercase' }}>
+                      {t('musicians') || 'Músicos'}
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: '#4ade80', marginTop: 2 }}>
+                      $ {totalDistributed.toFixed(2)}
+                    </Text>
+                  </View>
+
+                  <View style={{ width: 1, height: 24, backgroundColor: colors.border }} />
+
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9.5, color: balanceColor, fontWeight: '700', textTransform: 'uppercase' }}>
+                      {t('remaining') || 'Saldo'}
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: balanceColor, marginTop: 2 }}>
+                      $ {isBalanced ? '0.00' : balance.toFixed(2)}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })()}
 
             <View style={styles.modalFooterRow}>
               <Pressable style={[styles.modalCancelBtn, { borderColor: colors.border }]} onPress={() => setShowCacheSplitModal(false)}>
