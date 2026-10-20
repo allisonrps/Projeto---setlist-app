@@ -524,13 +524,16 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
     : [];
 
   // Habilidades Extras
-  const extraSkills = useMemo(() => {
+  let extraSkills = [];
+  try {
     let raw = activeMusician.extraSkills || activeMusician.extraSkillsJson;
     if (typeof raw === 'string') {
-      try { raw = JSON.parse(raw); } catch (e) { raw = []; }
+      raw = JSON.parse(raw);
     }
-    return Array.isArray(raw) ? raw : [];
-  }, [activeMusician.extraSkills, activeMusician.extraSkillsJson]);
+    if (Array.isArray(raw)) extraSkills = raw;
+  } catch (e) {
+    extraSkills = [];
+  }
 
   // Bandas e Projetos
   const rawProjects = (() => {
