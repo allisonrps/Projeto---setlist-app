@@ -800,11 +800,20 @@ const createWebDB = () => {
           local: isFull ? (params.length >= 8 ? params[5] : params[4]) : params[3],
           cachê: isFull ? (params.length >= 8 ? params[6] : params[5]) : params[4],
           notes: isFull ? (params.length >= 8 ? params[7] : params[6]) : '',
+          cacheStatus: isFull && params.length >= 9 ? params[8] : 'paid',
           isFavorite: 0,
           createdAt: new Date().toISOString(),
         });
         saveToStorage();
         return { lastInsertRowId: id };
+      }
+      if (sql.includes('UPDATE setlists SET cacheStatus = ? WHERE id = ?')) {
+        const cStatus = params[0];
+        const sId = params[1];
+        const setlist = (data.setlists || []).find(s => s.id === sId);
+        if (setlist) setlist.cacheStatus = cStatus;
+        saveToStorage();
+        return {};
       }
       if (sql.includes('UPDATE setlists SET myBandId = NULL WHERE myBandId = ?')) {
         const bandId = params[0];
@@ -1177,6 +1186,7 @@ export const createTables = async () => {
         local TEXT,
         cachê TEXT,
         notes TEXT,
+        cacheStatus TEXT DEFAULT 'paid',
         isFavorite INTEGER DEFAULT 0,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (myBandId) REFERENCES my_bands(id) ON DELETE SET NULL
@@ -1518,6 +1528,18 @@ export const createTables = async () => {
         console.log("Nativo: Coluna 'time' já existe em setlists.");
       } else {
         console.log("Nativo: Nota da migração de time em setlists:", e.message);
+      }
+    }
+
+    // Migração de cacheStatus em setlists
+    try {
+      await db.execAsync("ALTER TABLE setlists ADD COLUMN cacheStatus TEXT DEFAULT 'paid';");
+      console.log("Nativo: Coluna 'cacheStatus' adicionada em 'setlists'!");
+    } catch (e) {
+      if (e.message && e.message.includes("duplicate column name")) {
+        console.log("Nativo: Coluna 'cacheStatus' já existe em setlists.");
+      } else {
+        console.log("Nativo: Nota da migração de cacheStatus em setlists:", e.message);
       }
     }
 

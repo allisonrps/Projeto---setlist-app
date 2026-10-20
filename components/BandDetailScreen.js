@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Modal,
   Pressable,
@@ -255,13 +255,16 @@ const formatActivityDateTime = (dateStr, lang = 'pt') => {
 
 const getActivityIconAndColor = (actionType, colors) => {
   switch (actionType) {
-    // Aba Agenda / Setlists (Ícone da aba: calendar)
+    // Aba Agenda / Setlists
     case 'created_setlist':
     case 'updated_setlist':
     case 'deleted_setlist':
-      return { icon: 'calendar', color: '#10b981', bg: '#10b98120' };
+    case 'show_scheduled':
+      return { icon: 'calendar', color: '#38bdf8', bg: '#38bdf820' };
+    case 'rehearsal_scheduled':
+      return { icon: 'headset', color: '#fbbf24', bg: '#fbbf2420' };
 
-    // Aba Repertório / Músicas (Ícone da aba: musical-notes)
+    // Aba Repertório / Músicas
     case 'added_song':
     case 'added_songs':
     case 'removed_song':
@@ -272,20 +275,28 @@ const getActivityIconAndColor = (actionType, colors) => {
     case 'update_song':
       return { icon: 'musical-notes', color: '#8b5cf6', bg: '#8b5cf620' };
 
-    // Aba Integrantes / Membros (Ícone da aba: people)
+    // Sincronização do Repertório
+    case 'repertoire_sync':
+      return { icon: 'cloud-done', color: '#10b981', bg: '#10b98120' };
+
+    // Aba Integrantes / Membros
     case 'added_member':
     case 'updated_member':
     case 'update_member':
     case 'removed_member':
       return { icon: 'people', color: '#06b6d4', bg: '#06b6d420' };
 
-    // Aba Financeiro (Ícone da aba: wallet)
+    // Candidato interessado
+    case 'candidate_interest':
+      return { icon: 'paper-plane', color: '#22c55e', bg: '#22c55e20' };
+
+    // Aba Financeiro
     case 'added_finance':
     case 'updated_finance':
     case 'deleted_finance':
       return { icon: 'wallet', color: '#eab308', bg: '#eab30820' };
 
-    // Aba Estatísticas (Ícone da aba: stats-chart)
+    // Aba Estatísticas
     case 'stats_update':
       return { icon: 'stats-chart', color: '#3b82f6', bg: '#3b82f620' };
 
@@ -293,8 +304,12 @@ const getActivityIconAndColor = (actionType, colors) => {
     case 'online_mode':
       return { icon: 'cloud-done', color: '#10b981', bg: '#10b98120' };
 
-    // Dados da Banda / Criação
+    // Criação da Banda / Fundação
+    case 'band_created':
     case 'created_band':
+      return { icon: 'flag', color: '#a855f7', bg: '#a855f720' };
+
+    // Dados da Banda
     case 'updated_band':
     case 'update_band':
     default:
@@ -504,6 +519,14 @@ export default function BandDetailScreen({
     })
   ).current;
   const [activityLogs, setActivityLogs] = useState([]);
+  const [candidateInterests, setCandidateInterests] = useState([]);
+  const [expandedTimelineMonths, setExpandedTimelineMonths] = useState({});
+  const toggleTimelineMonth = (monthKey) => {
+    setExpandedTimelineMonths(prev => ({
+      ...prev,
+      [monthKey]: !prev[monthKey]
+    }));
+  };
   const [onlineSetlists, setOnlineSetlists] = useState([]);
   const [isLoadingOnline, setIsLoadingOnline] = useState(false);
   const [isTurningOnline, setIsTurningOnline] = useState(false);
@@ -938,29 +961,70 @@ export default function BandDetailScreen({
             isFavorite: Boolean(s.isFavorite)
           })));
 
-          // 2. Integrantes da API (tabela relacional da nuvem + dados do snapshot)
-          const apiMembers = Array.isArray(cloudData.members) && cloudData.members.length > 0
+          // 2. Integrantes da API (tabela relacional da nuvem + dados do snapshot unificados)
+          const cloudMembers = Array.isArray(cloudData.members) && cloudData.members.length > 0
             ? cloudData.members
-            : (Array.isArray(snapshot.members) ? snapshot.members : []);
+            : [];
+          const snapshotMembers = Array.isArray(snapshot.members) ? snapshot.members : [];
 
-          const unifiedMembers = apiMembers.map((m, idx) => ({
-            id: m.id || m.userId || `cloud_mem_${idx}`,
-            userId: m.userId || null,
-            name: m.displayName || m.name || m.username || 'Membro',
-            username: (m.username || '').replace(/^@+/, ''),
-            role: m.role || 'Member',
-            phone: m.phone || '',
-            startDate: m.startDate || '',
-            endDate: m.endDate || '',
-            status: m.status === 'Accepted' ? 'active' : (m.status || 'active'),
-            isLeader: m.isLeader ? 1 : (m.role === 'Leader' || m.role === 'Admin' ? 1 : 0),
-            pictureUrl: m.pictureUrl || ''
-          }));
-          setMembers(unifiedMembers);
+          const seenMemberKeys = new Set();
+          const mergedApiMembers = [];
+
+          for (const cm of cloudMembers) {
+            const uClean = (cm.username || '').trim().toLowerCase().replace(/^@+/, '');
+            const nameClean = (cm.displayName || cm.name || cm.username || '').trim().toLowerCase();
+            const key = uClean || nameClean;
+            if (key) seenMemberKeys.add(key);
+
+            const matchSnap = snapshotMembers.find(sm => {
+              const smUser = (sm.username || '').trim().toLowerCase().replace(/^@+/, '');
+              const smName = (sm.name || '').trim().toLowerCase();
+              return (smUser && smUser === uClean) || (smName && smName === nameClean);
+            });
+
+            mergedApiMembers.push({
+              id: cm.id || cm.userId || `cloud_mem_${mergedApiMembers.length}`,
+              userId: cm.userId || null,
+              name: cm.displayName || cm.name || cm.username || matchSnap?.name || 'Membro',
+              username: uClean,
+              role: cm.role || matchSnap?.role || 'Member',
+              phone: matchSnap?.phone || '',
+              startDate: matchSnap?.startDate || '',
+              endDate: matchSnap?.endDate || '',
+              status: cm.status === 'Accepted' ? 'active' : (cm.status || 'active'),
+              isLeader: cm.isLeader ? 1 : (cm.role === 'Leader' || cm.role === 'Admin' || matchSnap?.isLeader ? 1 : 0),
+              pictureUrl: cm.pictureUrl || matchSnap?.pictureUrl || ''
+            });
+          }
+
+          for (const sm of snapshotMembers) {
+            const smUser = (sm.username || '').trim().toLowerCase().replace(/^@+/, '');
+            const smName = (sm.name || '').trim().toLowerCase();
+            const key = smUser || smName;
+            if (key && seenMemberKeys.has(key)) continue;
+            if (!sm.name && !smUser) continue;
+            if (key) seenMemberKeys.add(key);
+
+            mergedApiMembers.push({
+              id: sm.id || `snap_mem_${mergedApiMembers.length}`,
+              userId: sm.userId || null,
+              name: sm.name || sm.displayName || sm.username || 'Membro',
+              username: smUser,
+              role: sm.role || 'Member',
+              phone: sm.phone || '',
+              startDate: sm.startDate || '',
+              endDate: sm.endDate || '',
+              status: sm.status === 'Accepted' ? 'active' : (sm.status || 'active'),
+              isLeader: sm.isLeader ? 1 : (sm.role === 'Leader' || sm.role === 'Admin' ? 1 : 0),
+              pictureUrl: sm.pictureUrl || ''
+            });
+          }
+
+          setMembers(mergedApiMembers);
 
           // Fotos dos membros
           const photosMap = {};
-          unifiedMembers.forEach(m => {
+          mergedApiMembers.forEach(m => {
             if (m.pictureUrl) photosMap[m.id] = m.pictureUrl;
           });
           setMemberPhotos(photosMap);
@@ -988,6 +1052,8 @@ export default function BandDetailScreen({
                       local: ev.location || ev.city || '',
                       cachê: ev.cacheValue != null ? String(ev.cacheValue) : '',
                       notes: ev.notes || '',
+                      status: ev.status,
+                      cacheStatus: (ev.status === 'Confirmed' || ev.status === 'paid' || ev.status === 'Recebido') ? 'paid' : 'pending',
                       songs: []
                     });
                   }
@@ -996,18 +1062,27 @@ export default function BandDetailScreen({
             }
           } catch (e) {}
 
-          setOnlineSetlists(apiSetlists.map(sl => ({
-            ...sl,
-            id: sl.id || `cloud_sl_${sl.name}_${sl.date}`,
-            myBandId: band.id,
-            type: sl.type || 'show',
-            date: sl.date || '',
-            time: sl.time || '',
-            local: sl.local || sl.venue || sl.location || '',
-            cachê: sl.cache || sl.cachê || '',
-            notes: sl.notes || '',
-            songs: Array.isArray(sl.songs) ? sl.songs : []
-          })));
+          setOnlineSetlists(apiSetlists.map(sl => {
+            const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
+                             (sl.cacheSplit?.status === 'paid') ||
+                             (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
+                             (!sl.cacheStatus && !sl.cacheSplit && !sl.status);
+            const resolvedCacheStatus = isSlPaid ? 'paid' : 'pending';
+            return {
+              ...sl,
+              id: sl.id || `cloud_sl_${sl.name}_${sl.date}`,
+              myBandId: band.id,
+              type: sl.type || 'show',
+              date: sl.date || '',
+              time: sl.time || '',
+              local: sl.local || sl.venue || sl.location || '',
+              cachê: sl.cache || sl.cachê || '',
+              notes: sl.notes || '',
+              cacheStatus: resolvedCacheStatus,
+              cacheSplit: sl.cacheSplit || null,
+              songs: Array.isArray(sl.songs) ? sl.songs : []
+            };
+          }));
 
           // 4. Finanças da API
           const apiFinances = Array.isArray(snapshot.finances) ? snapshot.finances : [];
@@ -1034,6 +1109,24 @@ export default function BandDetailScreen({
             description: log.description || '',
             createdAt: log.createdAt || ''
           })));
+
+          // 6. Candidatos interessados
+          try {
+            const rawCand = await AsyncStorage.getItem('bandlink_candidate_interests');
+            if (rawCand) {
+              const parsedCand = JSON.parse(rawCand);
+              if (Array.isArray(parsedCand)) {
+                const bNameClean = (band.name || '').trim().toLowerCase();
+                const matched = parsedCand.filter(item => {
+                  if (band.id && item.bandId && String(item.bandId) === String(band.id)) return true;
+                  if (band.cloudId && item.bandId && String(item.bandId) === String(band.cloudId)) return true;
+                  if (bNameClean && item.bandName && item.bandName.trim().toLowerCase() === bNameClean) return true;
+                  return false;
+                });
+                setCandidateInterests(matched);
+              }
+            }
+          } catch (e) {}
         }
       } catch (err) {
         console.error('Erro ao consultar dados da banda na API (Modo Online):', err);
@@ -1328,14 +1421,19 @@ export default function BandDetailScreen({
     if (sl.type === 'show' && rawCache) {
       const amt = parseCurrency(rawCache);
       if (amt > 0) {
+        const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
+                         (sl.cacheSplit?.status === 'paid') ||
+                         (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
+                         (!sl.cacheStatus && !sl.cacheSplit && !sl.status);
         autoShowFinances.push({
           id: `auto_show_${sl.id}`,
           title: `Show: ${sl.name || 'Sem título'}`,
           amount: amt,
           type: 'income',
           date: sl.date || '',
-          status: sl.cacheStatus || 'paid',
+          status: isSlPaid ? 'paid' : 'pending',
           isAutoShow: true,
+          rawSetlist: sl,
         });
       }
     }
@@ -2107,6 +2205,176 @@ export default function BandDetailScreen({
     return null;
   };
 
+  const parseTimelineDate = (dStr) => {
+    if (!dStr) return 0;
+    const clean = String(dStr).trim();
+    if (clean.includes('/')) {
+      const parts = clean.split('/');
+      if (parts.length === 3) {
+        let yr = parseInt(parts[2], 10);
+        if (yr < 100) yr += 2000;
+        return new Date(yr, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
+    } else if (clean.includes('-')) {
+      const parts = clean.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      }
+    }
+    const d = new Date(clean);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  const unifiedTimelineEvents = useMemo(() => {
+    const list = [];
+    const seenEventKeys = new Set();
+
+    // 1. Mensagens de candidatos interessados
+    (candidateInterests || []).forEach(ci => {
+      const d = ci.createdAt ? new Date(ci.createdAt) : null;
+      const ts = d && !isNaN(d.getTime()) ? d.getTime() : Date.now();
+      list.push({
+        id: `cand_${ci.id || ts}_${list.length}`,
+        timestamp: ts,
+        isInterest: true,
+        actionType: 'candidate_interest',
+        title: `${ci.authorDisplayName || ci.authorUsername || 'Candidato'} demonstrou interesse na vaga de ${ci.instrument || 'Músico'}!`,
+        message: ci.message,
+        phone: ci.phone,
+        username: ci.authorUsername,
+        createdAt: new Date(ts).toISOString(),
+      });
+    });
+
+    // 2. Logs de atividade explícitos (do snapshot ou SQLite)
+    (activityLogs || []).forEach(l => {
+      const d = l.createdAt ? new Date(l.createdAt) : null;
+      const ts = d && !isNaN(d.getTime()) ? d.getTime() : Date.now();
+      const desc = l.description || 'realizou uma alteração';
+      const key = `${l.actionType}_${desc}_${l.createdAt}`;
+      if (seenEventKeys.has(key)) return;
+      seenEventKeys.add(key);
+
+      list.push({
+        id: l.id || `act_${ts}_${list.length}`,
+        timestamp: ts,
+        actionType: l.actionType || 'update',
+        authorName: l.authorName || 'Integrante',
+        description: desc,
+        createdAt: l.createdAt || new Date(ts).toISOString(),
+      });
+    });
+
+    // 3. Eventos e Setlists da Agenda adicionados na banda
+    (bandSetlists || []).forEach(sl => {
+      const isRehearsal = sl.type === 'rehearsal' || (sl.name || '').toLowerCase().includes('ensaio');
+      let ts = 0;
+      if (sl.updatedAt) {
+        const d = new Date(sl.updatedAt);
+        if (!isNaN(d.getTime())) ts = d.getTime();
+      }
+      if (!ts && sl.createdAt) {
+        const d = new Date(sl.createdAt);
+        if (!isNaN(d.getTime())) ts = d.getTime();
+      }
+      if (!ts && sl.date) {
+        ts = parseTimelineDate(sl.date);
+      }
+      if (!ts) ts = Date.now();
+
+      const desc = `${isRehearsal ? (t('rehearsalScheduled') || 'Ensaio agendado') : (t('showScheduled') || 'Show agendado')}: ${sl.name || 'Sem título'}${sl.local ? ` em ${sl.local}` : ''}`;
+      const key = `sl_${sl.name}_${sl.date}`;
+      if (seenEventKeys.has(key)) return;
+      seenEventKeys.add(key);
+
+      list.push({
+        id: `sl_${sl.id || ts}`,
+        timestamp: ts,
+        actionType: isRehearsal ? 'rehearsal_scheduled' : 'show_scheduled',
+        authorName: t('agenda') || 'Agenda',
+        description: desc,
+        createdAt: new Date(ts).toISOString(),
+      });
+    });
+
+    // 4. Registro de sincronização do repertório
+    const songsCount = (bandSongs || []).length;
+    const setlistsCount = (bandSetlists || []).length;
+    if (songsCount > 0 || setlistsCount > 0) {
+      let ts = Date.now();
+      if (band.lastSyncedAt) {
+        const d = new Date(band.lastSyncedAt);
+        if (!isNaN(d.getTime())) ts = d.getTime();
+      }
+      list.push({
+        id: `sync_${ts}`,
+        timestamp: ts,
+        actionType: 'repertoire_sync',
+        authorName: t('syncLabel') || 'Sincronização',
+        description: `Repertório: ${songsCount} música${songsCount === 1 ? '' : 's'} e ${setlistsCount} setlist${setlistsCount === 1 ? '' : 's'} sincronizados`,
+        createdAt: new Date(ts).toISOString(),
+      });
+    }
+
+    // 5. Criação do projeto / banda
+    let createdTs = 0;
+    if (band.createdAt) {
+      const d = new Date(band.createdAt);
+      if (!isNaN(d.getTime())) createdTs = d.getTime();
+    }
+    if (!createdTs && band.sinceYear) {
+      const y = parseInt(band.sinceYear, 10);
+      if (!isNaN(y)) createdTs = new Date(y, 0, 1).getTime();
+    }
+    if (!createdTs) createdTs = new Date(2020, 0, 1).getTime();
+
+    list.push({
+      id: `created_${createdTs}`,
+      timestamp: createdTs,
+      actionType: 'band_created',
+      authorName: t('foundation') || 'Fundação',
+      description: `Criação do projeto ${band.name}${band.city ? ` em ${band.city}${band.state ? '/' + band.state : ''}` : ''}`,
+      createdAt: new Date(createdTs).toISOString(),
+    });
+
+    list.sort((a, b) => b.timestamp - a.timestamp);
+    return list;
+  }, [candidateInterests, activityLogs, bandSetlists, bandSongs, band, language]);
+
+  const timelineMonthGroups = useMemo(() => {
+    const monthNames = language === 'en'
+      ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      : language === 'es'
+      ? ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+      : ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    const groups = {};
+    const keys = [];
+
+    unifiedTimelineEvents.forEach(ev => {
+      const dt = new Date(ev.timestamp);
+      let yr = dt.getFullYear();
+      let mIdx = dt.getMonth();
+      if (isNaN(yr) || yr < 1970) {
+        yr = new Date().getFullYear();
+        mIdx = new Date().getMonth();
+      }
+      const key = `${yr}-${String(mIdx + 1).padStart(2, '0')}`;
+      if (!groups[key]) {
+        groups[key] = {
+          key,
+          title: `${monthNames[mIdx] || 'Mês'} ${yr}`,
+          list: []
+        };
+        keys.push(key);
+      }
+      groups[key].list.push(ev);
+    });
+
+    keys.sort((a, b) => b.localeCompare(a));
+    return { groups, keys };
+  }, [unifiedTimelineEvents, language]);
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onBack}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -2666,17 +2934,17 @@ export default function BandDetailScreen({
                   {t('bandFeedSubtitle') || 'Linha do tempo das mudanças feitas na banda'}
                 </Text>
               </View>
-              {activityLogs.length > 0 && (
+              {unifiedTimelineEvents.length > 0 && (
                 <View style={{ backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
-                    {activityLogs.length} {activityLogs.length === 1 ? 'registro' : 'registros'}
+                    {unifiedTimelineEvents.length} {unifiedTimelineEvents.length === 1 ? 'registro' : 'registros'}
                   </Text>
                 </View>
               )}
             </View>
 
-            {/* Lista da Linha do Tempo */}
-            {activityLogs.length === 0 ? (
+            {/* Lista da Linha do Tempo com Réguas Mensais */}
+            {unifiedTimelineEvents.length === 0 ? (
               <View style={{
                 backgroundColor: colors.cardBackground,
                 borderColor: colors.border,
@@ -2697,65 +2965,172 @@ export default function BandDetailScreen({
               </View>
             ) : (
               <View style={{ marginTop: 4 }}>
-                {activityLogs.map((logItem, index) => {
-                  const itemStyle = getActivityIconAndColor(logItem.actionType, colors);
-                  const isLast = index === activityLogs.length - 1;
-                  return (
-                    <View key={logItem.id || index} style={{ flexDirection: 'row', minHeight: 64 }}>
-                      {/* Timeline Coluna Esquerda: Ícone e Linha Conectora */}
-                      <View style={{ alignItems: 'center', width: 38, marginRight: 12 }}>
-                        <View style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 18,
-                          backgroundColor: itemStyle.bg,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          borderWidth: 1.5,
-                          borderColor: itemStyle.color
-                        }}>
-                          <Ionicons name={itemStyle.icon} size={17} color={itemStyle.color} />
-                        </View>
-                        {!isLast && (
+                {(() => {
+                  const now = new Date();
+                  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+                  return timelineMonthGroups.keys.map((monthKey, gIdx) => {
+                    const g = timelineMonthGroups.groups[monthKey];
+                    const isCurrentMonth = monthKey === currentMonthKey;
+                    const isExpanded = expandedTimelineMonths[monthKey] !== undefined ? expandedTimelineMonths[monthKey] : (gIdx === 0 || isCurrentMonth);
+
+                    return (
+                      <View key={monthKey} style={{ marginBottom: 10 }}>
+                        {/* Régua Mensal (Cabeçalho do Mês) */}
+                        <Pressable
+                          onPress={() => toggleTimelineMonth(monthKey)}
+                          style={{
+                            marginTop: 10,
+                            marginBottom: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8
+                          }}
+                        >
                           <View style={{
-                            width: 2,
-                            flex: 1,
-                            backgroundColor: colors.border,
-                            marginVertical: 4,
-                          }} />
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 4,
+                            backgroundColor: colors.primary + '18',
+                            borderColor: colors.primary + '40',
+                            borderWidth: 1,
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 12
+                          }}>
+                            <Ionicons name="time-outline" size={12} color={colors.primary} />
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>
+                              {g.list.length}
+                            </Text>
+                          </View>
+
+                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
+                            {g.title.toUpperCase()}
+                          </Text>
+
+                          <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
+
+                          <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
+                        </Pressable>
+
+                        {/* Itens do Mês */}
+                        {isExpanded && (
+                          <View style={{ marginTop: 2 }}>
+                            {g.list.map((logItem, index) => {
+                              const itemStyle = getActivityIconAndColor(logItem.actionType, colors);
+                              const isLast = index === g.list.length - 1;
+
+                              if (logItem.isInterest) {
+                                return (
+                                  <View
+                                    key={logItem.id || index}
+                                    style={{
+                                      backgroundColor: '#22c55e10',
+                                      borderColor: '#22c55e35',
+                                      borderWidth: 1,
+                                      borderRadius: 14,
+                                      padding: 12,
+                                      marginBottom: isLast ? 6 : 10,
+                                    }}
+                                  >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                                      <View style={{ backgroundColor: '#22c55e25', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 10, borderWidth: 1, borderColor: '#22c55e50' }}>
+                                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#22c55e' }}>
+                                          {t('candidateLabel') || 'CANDIDATO'}
+                                        </Text>
+                                      </View>
+                                      <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
+                                        {formatActivityDateTime(logItem.createdAt, language)}
+                                      </Text>
+                                    </View>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text, marginTop: 4 }}>
+                                      {logItem.title}
+                                    </Text>
+                                    {logItem.message ? (
+                                      <View style={{
+                                        backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
+                                        borderLeftWidth: 3,
+                                        borderLeftColor: '#22c55e',
+                                        padding: 8,
+                                        borderRadius: 6,
+                                        marginVertical: 6,
+                                      }}>
+                                        <Text style={{ fontSize: 12, color: colors.text, fontStyle: 'italic', lineHeight: 16 }}>
+                                          "{logItem.message}"
+                                        </Text>
+                                      </View>
+                                    ) : null}
+                                    {logItem.phone ? (
+                                      <Text style={{ fontSize: 11, color: '#22c55e', fontWeight: '600', marginTop: 2 }}>
+                                        Contato: {logItem.phone}
+                                      </Text>
+                                    ) : null}
+                                  </View>
+                                );
+                              }
+
+                              return (
+                                <View key={logItem.id || index} style={{ flexDirection: 'row', minHeight: 64 }}>
+                                  {/* Timeline Coluna Esquerda: Ícone e Linha Conectora */}
+                                  <View style={{ alignItems: 'center', width: 38, marginRight: 12 }}>
+                                    <View style={{
+                                      width: 36,
+                                      height: 36,
+                                      borderRadius: 18,
+                                      backgroundColor: itemStyle.bg,
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      borderWidth: 1.5,
+                                      borderColor: itemStyle.color
+                                    }}>
+                                      <Ionicons name={itemStyle.icon} size={17} color={itemStyle.color} />
+                                    </View>
+                                    {!isLast && (
+                                      <View style={{
+                                        width: 2,
+                                        flex: 1,
+                                        backgroundColor: colors.border,
+                                        marginVertical: 4,
+                                      }} />
+                                    )}
+                                  </View>
+
+                                  {/* Card de Conteúdo da Atividade */}
+                                  <View style={{
+                                    flex: 1,
+                                    backgroundColor: colors.cardBackground,
+                                    borderColor: colors.border,
+                                    borderWidth: 1,
+                                    borderRadius: 12,
+                                    padding: 12,
+                                    marginBottom: isLast ? 6 : 12,
+                                  }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                                      <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
+                                        {formatActivityDateTime(logItem.createdAt, language)}
+                                      </Text>
+                                      {logItem.authorName && (
+                                        <View style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6 }}>
+                                          <Text style={{ fontSize: 10, fontWeight: '700', color: colors.primary }}>
+                                            {logItem.authorName}
+                                          </Text>
+                                        </View>
+                                      )}
+                                    </View>
+
+                                    <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18, fontWeight: '500' }}>
+                                      {logItem.description ? (logItem.description.charAt(0).toUpperCase() + logItem.description.slice(1)) : ''}
+                                    </Text>
+                                  </View>
+                                </View>
+                              );
+                            })}
+                          </View>
                         )}
                       </View>
-
-                      {/* Card de Conteúdo da Atividade */}
-                      <View style={{
-                        flex: 1,
-                        backgroundColor: colors.cardBackground,
-                        borderColor: colors.border,
-                        borderWidth: 1,
-                        borderRadius: 12,
-                        padding: 12,
-                        marginBottom: isLast ? 0 : 12,
-                      }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
-                            {formatActivityDateTime(logItem.createdAt, language)}
-                          </Text>
-                          {logItem.authorName && (
-                            <View style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6 }}>
-                              <Text style={{ fontSize: 10, fontWeight: '700', color: colors.primary }}>
-                                {logItem.authorName}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-
-                        <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18, fontWeight: '500' }}>
-                          {logItem.description ? (logItem.description.charAt(0).toUpperCase() + logItem.description.slice(1)) : ''}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </View>
             )}
           </ScrollView>
@@ -3655,6 +4030,10 @@ export default function BandDetailScreen({
                 const combinedItems = [
                   ...(bandSetlists || []).filter(s => s && s.type === 'show').map(sl => {
                     const rawCache = sl.cachê || sl.cache || sl.valCache || sl.value;
+                    const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
+                                     (sl.cacheSplit?.status === 'paid') ||
+                                     (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
+                                     (!sl.cacheStatus && !sl.cacheSplit && !sl.status);
                     return {
                       id: `show_${sl.id}`,
                       date: sl.date,
@@ -3664,7 +4043,7 @@ export default function BandDetailScreen({
                       type: 'income',
                       isShow: true,
                       rawSetlist: sl,
-                      status: sl.cacheStatus || 'paid',
+                      status: isSlPaid ? 'paid' : 'pending',
                     };
                   }),
                   ...(finances || []).map(item => ({
@@ -3806,18 +4185,35 @@ export default function BandDetailScreen({
                             <Text style={{ fontSize: 14, fontWeight: '900', color: valueColor }}>
                               {isIncome ? '+' : '-'} $ {item.amount.toFixed(2)}
                             </Text>
-                            <View style={{
-                              backgroundColor: valueColor + '20',
-                              paddingHorizontal: 6,
-                              paddingVertical: 1.5,
-                              borderRadius: 4,
-                              marginTop: 2
-                            }}>
-                              <Text style={{ color: valueColor, fontSize: 9, fontWeight: '900' }}>
-                                {item.isShow
-                                  ? (item.amount > 0 ? t('showCachet') : t('toBeDefined'))
-                                  : (isIncome ? t('income') : t('expense'))}
-                              </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                              <View style={{
+                                backgroundColor: valueColor + '20',
+                                paddingHorizontal: 6,
+                                paddingVertical: 1.5,
+                                borderRadius: 4
+                              }}>
+                                <Text style={{ color: valueColor, fontSize: 9, fontWeight: '900' }}>
+                                  {item.isShow
+                                    ? (item.amount > 0 ? t('showCachet') : t('toBeDefined'))
+                                    : (isIncome ? t('income') : t('expense'))}
+                                </Text>
+                              </View>
+                              <View style={{
+                                backgroundColor: item.status === 'pending' ? '#eab30820' : '#10b98120',
+                                borderColor: item.status === 'pending' ? '#eab30850' : '#10b98150',
+                                borderWidth: 1,
+                                paddingHorizontal: 5,
+                                paddingVertical: 1.5,
+                                borderRadius: 4
+                              }}>
+                                <Text style={{
+                                  color: item.status === 'pending' ? '#eab308' : '#10b981',
+                                  fontSize: 8.5,
+                                  fontWeight: '900'
+                                }}>
+                                  {item.status === 'pending' ? (t('pendingStatus') || 'PENDENTE') : (item.type === 'income' ? (t('receivedStatus') || 'RECEBIDO') : (t('paidStatus') || 'PAGO'))}
+                                </Text>
+                              </View>
                             </View>
                           </View>
 

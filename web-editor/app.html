@@ -17370,6 +17370,7 @@
       };
 
       currentSplitShow.cacheSplit = splitObj;
+      currentSplitShow.cacheStatus = status;
 
       if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
       if (!currentBandSyncData.setlists) currentBandSyncData.setlists = [];
@@ -17380,6 +17381,7 @@
       );
       if (targetSl) {
         targetSl.cacheSplit = splitObj;
+        targetSl.cacheStatus = status;
       } else {
         currentBandSyncData.setlists.push(currentSplitShow);
       }

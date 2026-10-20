@@ -1126,11 +1126,17 @@ export const bandService = {
             } catch (e) {}
           }
 
+          const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
+                           (sl.cacheSplit?.status === 'paid') ||
+                           (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
+                           (!sl.cacheStatus && !sl.cacheSplit && !sl.status);
+          const slCacheStatus = isSlPaid ? 'paid' : 'pending';
+
           if (!localSetlistId) {
             const slLocal = sl.local || sl.venue || sl.location || sl.place || '';
             const insSl = await db.runAsync(
-              `INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+              `INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, cacheStatus, isFavorite)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
               [
                 sl.name,
                 sl.type || 'show',
@@ -1140,6 +1146,7 @@ export const bandService = {
                 slLocal,
                 sl.cache || sl.cachê || '',
                 sl.notes || '',
+                slCacheStatus,
                 sl.isFavorite ? 1 : 0
               ]
             );
@@ -1151,7 +1158,8 @@ export const bandService = {
               myBandId: bandId,
               date: sl.date || '',
               time: sl.time || '',
-              local: slLocal
+              local: slLocal,
+              cacheStatus: slCacheStatus
             });
             matchedLocalIds.add(localSetlistId);
           } else {
@@ -1166,7 +1174,8 @@ export const bandService = {
                 time = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE time END,
                 local = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE local END,
                 cachê = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE cachê END,
-                notes = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE notes END
+                notes = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE notes END,
+                cacheStatus = ?
                WHERE id = ?;`,
               [
                 sl.name,
@@ -1176,6 +1185,7 @@ export const bandService = {
                 slLocal, slLocal, slLocal,
                 sl.cache || sl.cachê, sl.cache || sl.cachê, sl.cache || sl.cachê,
                 sl.notes, sl.notes, sl.notes,
+                slCacheStatus,
                 localSetlistId
               ]
             );
@@ -1425,10 +1435,10 @@ export const bandService = {
             );
           }
 
-          // If remote version is newer, or forced, or never synced, pull updates
+          // If remote version changed, forced, or never synced, pull updates
           const remoteVer = cb.version || 0;
           const localVer = local.cloudVersion || 0;
-          if (force || remoteVer > localVer || !local.lastSyncedAt) {
+          if (force || remoteVer !== localVer || !local.lastSyncedAt || cb.lastSyncedAt !== local.lastSyncedAt) {
             try {
               await this.pullBandFromCloud(localBandId);
               importedOrUpdatedCount++;
