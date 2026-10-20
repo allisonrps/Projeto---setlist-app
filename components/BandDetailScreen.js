@@ -965,8 +965,37 @@ export default function BandDetailScreen({
           });
           setMemberPhotos(photosMap);
 
-          // 3. Setlists / Agenda da API
-          const apiSetlists = Array.isArray(snapshot.setlists) ? snapshot.setlists : [];
+          // 3. Setlists / Agenda da API (snapshot + /api/Events)
+          let apiSetlists = Array.isArray(snapshot.setlists) ? [...snapshot.setlists] : [];
+          try {
+            const apiEvents = await api.getEvents();
+            if (Array.isArray(apiEvents)) {
+              apiEvents.forEach(ev => {
+                if (ev.bandId && String(ev.bandId) === String(band.cloudId)) {
+                  const exists = apiSetlists.some(sl => 
+                    (sl.cloudEventId && sl.cloudEventId === ev.id) ||
+                    (String(sl.name || sl.title || '').toLowerCase().trim() === String(ev.title || '').toLowerCase().trim() && (sl.date || '').trim() === (ev.date || '').trim())
+                  );
+                  if (!exists) {
+                    apiSetlists.push({
+                      id: `cloud_ev_${ev.id}`,
+                      cloudEventId: ev.id,
+                      name: ev.title || 'Show',
+                      title: ev.title || 'Show',
+                      type: (ev.eventType || 'show').toLowerCase() === 'rehearsal' ? 'ensaio' : 'show',
+                      date: ev.date || '',
+                      time: ev.time || '',
+                      local: ev.location || ev.city || '',
+                      cachê: ev.cacheValue != null ? String(ev.cacheValue) : '',
+                      notes: ev.notes || '',
+                      songs: []
+                    });
+                  }
+                }
+              });
+            }
+          } catch (e) {}
+
           setOnlineSetlists(apiSetlists.map(sl => ({
             ...sl,
             id: sl.id || `cloud_sl_${sl.name}_${sl.date}`,

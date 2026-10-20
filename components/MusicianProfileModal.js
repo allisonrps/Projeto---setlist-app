@@ -183,7 +183,7 @@ const getMonthYearHeader = (dateStr, lang = 'pt') => {
   return lang === 'en' ? 'EVENTS' : lang === 'es' ? 'EVENTOS' : 'EVENTOS';
 };
 
-export default function MusicianProfileModal({ visible, musician, onClose, onInvite, onOpenBandProfile }) {
+export default function MusicianProfileModal({ visible, musician: propMusician, onClose, onInvite, onOpenBandProfile }) {
   const { colors } = useTheme();
   const isDark = colors.isDark;
   const { t, language } = useLanguage();
@@ -410,13 +410,25 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
   const [inviteMessage, setInviteMessage] = useState('');
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [expandedPastMonths, setExpandedPastMonths] = useState([]);
+  const [freshMusician, setFreshMusician] = useState(propMusician);
 
   useEffect(() => {
-    if (visible) {
+    setFreshMusician(propMusician);
+    if (visible && propMusician) {
       setActiveTab('bio');
       loadMyBands();
+
+      // Atualiza o perfil em tempo real diretamente da Cloud API
+      const uName = propMusician.username || propMusician.name;
+      if (uName) {
+        musiciansService.getMusicianByUsername(uName, propMusician.name).then(fresh => {
+          if (fresh) {
+            setFreshMusician(prev => ({ ...(prev || {}), ...fresh }));
+          }
+        }).catch(() => {});
+      }
     }
-  }, [visible, musician]);
+  }, [visible, propMusician]);
 
   const loadMyBands = async () => {
     try {
@@ -430,36 +442,37 @@ export default function MusicianProfileModal({ visible, musician, onClose, onInv
     }
   };
 
+  const musician = freshMusician || propMusician;
   if (!musician) return null;
 
   // ── Normalização idêntica ao ProfileScreen ──
-  const currentDisplayName = musician.displayName || musician.name || musician.username || 'Músico';
-  const cleanUsername = (musician.username || 'musico').toLowerCase().replace(/^@+/, '');
-  const profileImage = musician.imageUri || musician.profileImage || musician.pictureUrl || null;
+  const currentDisplayName = activeMusician.displayName || activeMusician.name || activeMusician.username || 'Músico';
+  const cleanUsername = (activeMusician.username || 'musico').toLowerCase().replace(/^@+/, '');
+  const profileImage = activeMusician.imageUri || activeMusician.profileImage || activeMusician.pictureUrl || null;
 
   // Nível de interesse
-  const interestLevel = Array.isArray(musician.interestLevel)
-    ? musician.interestLevel
-    : (typeof musician.interestLevel === 'string' && musician.interestLevel.startsWith('[')
-        ? JSON.parse(musician.interestLevel)
-        : (musician.interestLevel ? [musician.interestLevel] : ['Profissional']));
+  const interestLevel = Array.isArray(activeMusician.interestLevel)
+    ? activeMusician.interestLevel
+    : (typeof activeMusician.interestLevel === 'string' && activeMusician.interestLevel.startsWith('[')
+        ? JSON.parse(activeMusician.interestLevel)
+        : (activeMusician.interestLevel ? [activeMusician.interestLevel] : ['Profissional']));
 
   // Disponibilidade
-  const availability = musician.availability || 'Disponível';
+  const availability = activeMusician.availability || 'Disponível';
 
   // Bio
-  const bio = musician.bio || 'Músico ativo na cena musical e na comunidade Setlist.';
+  const bio = activeMusician.bio || 'Músico ativo na cena musical e na comunidade Setlist.';
 
   // Influências (com estrelas)
   let rawInfluences = [];
-  if (Array.isArray(musician.influences)) {
-    rawInfluences = musician.influences;
-  } else if (typeof musician.influences === 'string' && musician.influences.trim()) {
+  if (Array.isArray(activeMusician.influences)) {
+    rawInfluences = activeMusician.influences;
+  } else if (typeof activeMusician.influences === 'string' && activeMusician.influences.trim()) {
     try {
-      const parsedInf = JSON.parse(musician.influences);
+      const parsedInf = JSON.parse(activeMusician.influences);
       rawInfluences = Array.isArray(parsedInf) ? parsedInf : [parsedInf];
     } catch {
-      rawInfluences = musician.influences.split(',').map(s => s.trim()).filter(Boolean);
+      rawInfluences = activeMusician.influences.split(',').map(s => s.trim()).filter(Boolean);
     }
   }
 

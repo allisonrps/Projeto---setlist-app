@@ -325,11 +325,12 @@ export const musiciansService = {
     } catch (e) {}
 
     const isCurrentMe = cleanUser === 'me' || cleanUser === 'voce' || cleanUser === 'você' || (cleanUser && currentLoggedUser && cleanUser === currentLoggedUser);
+    const targetUserToFetch = (isCurrentMe && currentLoggedUser) ? currentLoggedUser : cleanUser;
 
-    // 1. Se for outro usuário registrado (não o próprio usuário logado), consultar Cloud API
-    if (cleanUser && !isCurrentMe) {
+    // 1. Consultar Cloud API prioritariamente para obter dados frescos em tempo real
+    if (targetUserToFetch && targetUserToFetch !== 'me' && targetUserToFetch !== 'voce' && targetUserToFetch !== 'você') {
       try {
-        const cloudUser = await api.getUserProfile(cleanUser);
+        const cloudUser = await api.getUserProfile(targetUserToFetch);
         if (cloudUser) {
           let cloudSkills = [];
           if (typeof cloudUser.instruments === 'string' && cloudUser.instruments.trim()) {
@@ -462,11 +463,28 @@ export const musiciansService = {
             }
           }
 
-          return {
+          let parsedGear = [];
+          const rawGear = cloudUser.gearJson || cloudUser.Gear || cloudUser.gear;
+          if (rawGear) {
+            try {
+              parsedGear = typeof rawGear === 'string' ? JSON.parse(rawGear) : rawGear;
+            } catch (e) {}
+          }
+
+          let parsedExtraSkills = [];
+          const rawExtra = cloudUser.extraSkillsJson || cloudUser.ExtraSkills || cloudUser.extraSkills;
+          if (rawExtra) {
+            try {
+              parsedExtraSkills = typeof rawExtra === 'string' ? JSON.parse(rawExtra) : rawExtra;
+            } catch (e) {}
+          }
+
+          const resolvedName = cloudUser.displayName || cloudUser.name || cloudUser.username;
+          const profObj = {
             id: 'mus-cloud-' + (cloudUser.id || cloudUser.Id),
             cloudId: cloudUser.id || cloudUser.Id,
-            name: cloudUser.username,
-            displayName: cloudUser.username,
+            name: resolvedName,
+            displayName: resolvedName,
             username: cloudUser.username,
             imageUri: cloudUser.pictureUrl || cloudUser.PictureUrl || null,
             pictureUrl: cloudUser.pictureUrl || cloudUser.PictureUrl || null,
@@ -495,10 +513,19 @@ export const musiciansService = {
             spotify: cloudUser.spotify || '',
             tiktok: cloudUser.tikTok || cloudUser.tiktok || '',
             agenda: cloudAgenda,
-            gear: [],
+            gear: Array.isArray(parsedGear) ? parsedGear : [],
+            extraSkills: Array.isArray(parsedExtraSkills) ? parsedExtraSkills : [],
             bands: cloudBands,
             projects: cloudBands
           };
+
+          if (isCurrentMe) {
+            try {
+              AsyncStorage.setItem('user_profile_cache', JSON.stringify(profObj));
+            } catch (e) {}
+          }
+
+          return profObj;
         }
       } catch (cloudErr) {
         console.log('Error fetching user profile from cloud:', cloudErr);

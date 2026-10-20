@@ -802,9 +802,36 @@ export const bandService = {
         console.warn('Could not read activity logs for band sync:', ale);
       }
 
-      // Snapshot structure
+      // Snapshot structure - preserva dados existentes na nuvem se as tabelas locais estiverem vazias (modo online)
+      let existingCloudSnapshot = null;
+      if (localBand.syncDataJson) {
+        try {
+          existingCloudSnapshot = typeof localBand.syncDataJson === 'string' ? JSON.parse(localBand.syncDataJson) : localBand.syncDataJson;
+        } catch (e) {}
+      }
+
+      const finalMembers = (members && members.length > 0) ? members : (existingCloudSnapshot?.members || []);
+      const finalFinances = (finances && finances.length > 0) ? finances : (existingCloudSnapshot?.finances || []);
+      const finalSongs = (repertoireSongs && repertoireSongs.length > 0)
+        ? (repertoireSongs || []).map(s => ({
+            id: s.id || s.songId,
+            name: s.name,
+            originalBand: s.originalBand,
+            style: s.style,
+            duration: s.duration,
+            defaultView: s.defaultView,
+            lyrics: s.lyrics,
+            chords: s.chords,
+            tabs: s.tabs,
+            isFavorite: s.isFavorite,
+            links: s.links || []
+          }))
+        : (existingCloudSnapshot?.songs || []);
+      const finalSetlists = (setlists && setlists.length > 0) ? setlists : (existingCloudSnapshot?.setlists || []);
+      const finalActivityLogs = (activityLogs && activityLogs.length > 0) ? activityLogs : (existingCloudSnapshot?.activityLogs || []);
+
       const syncPayloadData = {
-        activityLogs: activityLogs || [],
+        activityLogs: finalActivityLogs,
         band: {
           name: localBand.name,
           imageUri: syncImageUri,
@@ -820,22 +847,10 @@ export const bandService = {
           tiktok: localBand.tiktok,
           facebook: localBand.facebook,
         },
-        members: members || [],
-        finances: finances || [],
-        songs: (repertoireSongs || []).map(s => ({
-          id: s.id || s.songId,
-          name: s.name,
-          originalBand: s.originalBand,
-          style: s.style,
-          duration: s.duration,
-          defaultView: s.defaultView,
-          lyrics: s.lyrics,
-          chords: s.chords,
-          tabs: s.tabs,
-          isFavorite: s.isFavorite,
-          links: s.links || []
-        })),
-        setlists: setlists || [],
+        members: finalMembers,
+        finances: finalFinances,
+        songs: finalSongs,
+        setlists: finalSetlists,
         syncedAt: new Date().toISOString()
       };
 

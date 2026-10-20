@@ -15,6 +15,7 @@ import {
   PanResponder,
   Animated,
   ActivityIndicator,
+  RefreshControl,
   StatusBar as RNStatusBar,
   LayoutAnimation,
   Dimensions,
@@ -831,7 +832,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         agenda: await (async () => {
           try {
             const allSetlists = await setlistService.getAll();
-            return (allSetlists || [])
+            const localEvents = (allSetlists || [])
               .filter(s => (s.date && s.date.trim()) || (s.local && s.local.trim()))
               .map(s => {
                 let formattedDate = s.date || 'A definir';
@@ -849,6 +850,41 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                   logo: s.bandImageUri || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.bandName || s.name || 'Show')}&background=random`
                 };
               });
+
+            let cloudEvents = [];
+            try {
+              const resEvents = await api.getEvents();
+              if (Array.isArray(resEvents)) {
+                cloudEvents = resEvents.map(ev => {
+                  let formattedDate = ev.date || 'A definir';
+                  if (ev.time) formattedDate += ` • ${ev.time}`;
+                  return {
+                    id: `cloudev_${ev.id}`,
+                    name: ev.title || 'Show',
+                    type: (ev.eventType || 'show').toLowerCase(),
+                    band: ev.bandName || '',
+                    date: ev.date || '',
+                    rawDate: ev.date || '',
+                    time: ev.time || '',
+                    formattedDate: formattedDate,
+                    local: ev.location || ev.city || '',
+                    logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(ev.bandName || ev.title || 'Show')}&background=random`
+                  };
+                });
+              }
+            } catch (ce) {}
+
+            const seen = new Set();
+            const combined = [...localEvents, ...cloudEvents];
+            const deduped = [];
+            for (const item of combined) {
+              const key = `${(item.name || '').trim().toLowerCase()}_${(item.date || '').trim()}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                deduped.push(item);
+              }
+            }
+            return deduped;
           } catch (err) {
             console.log('Error loading band events for agenda:', err);
             return [];
@@ -919,6 +955,13 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const handlePullToRefresh = async () => {
+    setIsRefreshing(true);
+    await loadUser();
+    setIsRefreshing(false);
   };
 
   useEffect(() => { loadUser(); }, []);
@@ -2680,6 +2723,14 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           scrollEnabled={scrollEnabled}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handlePullToRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
         >
           {!isProfileComplete && (
             <View style={[styles.incompleteProfileBanner, { backgroundColor: colors.isDark ? 'rgba(234, 179, 8, 0.15)' : '#fef9c3', borderColor: colors.isDark ? 'rgba(234, 179, 8, 0.35)' : '#fde047' }]}>

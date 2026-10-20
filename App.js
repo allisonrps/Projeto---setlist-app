@@ -718,6 +718,7 @@ function MainApp() {
   const [showShareHomeAgendaModal, setShowShareHomeAgendaModal] = useState(false);
   const [showPublishBandModal, setShowPublishBandModal] = useState(false);
   const [selectedBandForPublish, setSelectedBandForPublish] = useState(null);
+  const [onlineEvents, setOnlineEvents] = useState([]);
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -821,7 +822,67 @@ function MainApp() {
 
   const reloadAllData = async () => {
     try {
-      const rawBands = await bandService.getAll();
+      let rawBands = await bandService.getAll();
+
+      // Se logado, atualiza bandas da nuvem e eventos da API em segundo plano
+      if (isLoggedIn) {
+        try {
+          const cloudBands = await api.getMyCloudBands();
+          if (Array.isArray(cloudBands)) {
+            for (const cb of cloudBands) {
+              const localMatch = (rawBands || []).find(b => (b.cloudId && String(b.cloudId) === String(cb.id)) || String(b.id) === String(cb.id));
+              if (localMatch) {
+                if (cb.syncDataJson && cb.syncDataJson !== localMatch.syncDataJson) {
+                  await bandService.updateCloudInfo(localMatch.id, cb.id, cb.version || 1, cb.updatedAt || new Date().toISOString(), cb.syncDataJson);
+                  localMatch.syncDataJson = cb.syncDataJson;
+                }
+                localMatch.name = cb.name || localMatch.name;
+                localMatch.cloudId = cb.id;
+                localMatch.isLeader = cb.isLeader;
+                localMatch.membersCount = cb.membersCount || localMatch.membersCount;
+              } else {
+                try {
+                  const createdId = await bandService.create({
+                    name: cb.name,
+                    genres: cb.genre || '',
+                    imageUri: cb.imageUri || null,
+                    city: cb.city || '',
+                    state: cb.state || '',
+                    country: cb.country || '',
+                    bandType: cb.bandType || '',
+                    publicSlug: cb.publicSlug || cb.username || '',
+                    cloudId: cb.id,
+                    cloudVersion: cb.version || 1,
+                    lastSyncedAt: cb.updatedAt || new Date().toISOString(),
+                    syncDataJson: cb.syncDataJson || null
+                  });
+                  rawBands.push({
+                    id: createdId,
+                    name: cb.name,
+                    cloudId: cb.id,
+                    cloudVersion: cb.version || 1,
+                    syncDataJson: cb.syncDataJson || null,
+                    isLeader: cb.isLeader,
+                    membersCount: cb.membersCount || 0
+                  });
+                } catch (createErr) {}
+              }
+            }
+          }
+        } catch (cloudBandErr) {
+          console.log('Error refreshing cloud bands in App.js:', cloudBandErr);
+        }
+
+        try {
+          const myOnlineEvents = await api.getEvents();
+          if (Array.isArray(myOnlineEvents)) {
+            setOnlineEvents(myOnlineEvents);
+          }
+        } catch (evErr) {
+          console.log('Error refreshing online events in App.js:', evErr);
+        }
+      }
+
       const visibleRawBands = (rawBands || []).filter(b => {
         if (isLoggedIn) return true;
         // Quando deslogado, exibe apenas bandas locais offline (sem vínculo de nuvem)
@@ -4621,30 +4682,110 @@ function MainApp() {
   const renderSetlistsTab = () => {
     const activeBand = bands.find(b => String(b.id) === String(selectedBandId));
 
-    // MODO ONLINE: se uma banda online foi selecionada no filtro, usa ESTRITAMENTE a API (syncDataJson)
-    // MODO OFFLINE: usa setlists do SQLite
+    // Mapear eventos globais da API (/Events)
+    const mappedApiEvents = (onlineEvents || []).map(ev => {
+      const matchBand = bands.find(b => b.cloudId && String(b.cloudId) === String(ev.bandId));
+      return {
+        id: `apiev_${ev.id}`,
+        cloudEventId: ev.id,
+        name: ev.title || 'Show',
+        title: ev.title || 'Show',
+        type: (ev.eventType || 'show').toLowerCase() === 'rehearsal' ? 'ensaio' : 'show',
+        date: ev.date || '',
+        time: ev.time || '',
+        local: ev.location || ev.city || '',
+        venue: ev.location || '',
+        city: ev.city || '',
+        state: ev.state || '',
+        cachê: ev.cacheValue != null ? String(ev.cacheValue) : '',
+        cache: ev.cacheValue != null ? String(ev.cacheValue) : '',
+        notes: ev.notes || '',
+        status: ev.status || 'Confirmed',
+        myBandId: matchBand ? matchBand.id : (ev.bandId ? String(ev.bandId) : null),
+        bandName: ev.bandName || (matchBand ? matchBand.name : ''),
+        bandImageUri: matchBand?.imageUri || null,
+        isOnline: true
+      };
+    });
+
+    // MODO ONLINE: se uma banda online foi selecionada no filtro, usa ESTRITAMENTE a API (syncDataJson + apiEvents)
     let bandOnlineSetlists = null;
-    if (activeBand && activeBand.cloudId && activeBand.syncDataJson) {
-      try {
-        const sync = typeof activeBand.syncDataJson === 'string' ? JSON.parse(activeBand.syncDataJson) : activeBand.syncDataJson;
-        if (sync && Array.isArray(sync.setlists)) {
-          bandOnlineSetlists = sync.setlists.map(sl => ({
-            ...sl,
-            myBandId: activeBand.id,
-            id: sl.id || `cloud_${sl.name}`
-          }));
-        } else {
-          bandOnlineSetlists = [];
-        }
-      } catch (e) {
-        bandOnlineSetlists = [];
+    if (activeBand && activeBand.cloudId) {
+      bandOnlineSetlists = [];
+      if (activeBand.syncDataJson) {
+        try {
+          const sync = typeof activeBand.syncDataJson === 'string' ? JSON.parse(activeBand.syncDataJson) : activeBand.syncDataJson;
+          if (sync && Array.isArray(sync.setlists)) {
+            sync.setlists.forEach(sl => {
+              bandOnlineSetlists.push({
+                ...sl,
+                myBandId: activeBand.id,
+                bandName: activeBand.name,
+                bandImageUri: activeBand.imageUri,
+                id: sl.id || `cloud_${sl.name}`,
+                isOnline: true
+              });
+            });
+          }
+        } catch (e) {}
       }
+      mappedApiEvents.forEach(ev => {
+        if (ev.myBandId && String(ev.myBandId) === String(activeBand.id)) {
+          const exists = bandOnlineSetlists.some(s => 
+            (s.cloudEventId && s.cloudEventId === ev.cloudEventId) ||
+            (s.name?.toLowerCase().trim() === ev.name?.toLowerCase().trim() && (s.date || '').trim() === (ev.date || '').trim())
+          );
+          if (!exists) bandOnlineSetlists.push(ev);
+        }
+      });
     }
 
-    // 1. Filtrar setlists pela banda selecionada
-    let filteredSetlists = selectedBandId 
-      ? (activeBand?.cloudId ? (bandOnlineSetlists || []) : setlists.filter(s => String(s.myBandId) === String(selectedBandId)))
-      : setlists;
+    // 1. Filtrar setlists pela banda selecionada ou mesclar tudo no modo "Todas as Bandas"
+    let filteredSetlists = [];
+    if (selectedBandId) {
+      filteredSetlists = activeBand?.cloudId 
+        ? (bandOnlineSetlists || []) 
+        : setlists.filter(s => String(s.myBandId) === String(selectedBandId));
+    } else {
+      // 1. Setlists offline do SQLite
+      const offlineSetlists = setlists.filter(s => {
+        const b = bands.find(x => x.id === s.myBandId);
+        return !b || !b.cloudId;
+      });
+
+      // 2. Setlists de todas as bandas online
+      const allOnlineBandSetlists = [];
+      bands.forEach(b => {
+        if (b.cloudId && b.syncDataJson) {
+          try {
+            const sync = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+            if (sync && Array.isArray(sync.setlists)) {
+              sync.setlists.forEach(sl => {
+                allOnlineBandSetlists.push({
+                  ...sl,
+                  myBandId: b.id,
+                  bandName: b.name,
+                  bandImageUri: b.imageUri,
+                  id: sl.id || `cloud_${b.id}_${sl.name}`,
+                  isOnline: true
+                });
+              });
+            }
+          } catch (e) {}
+        }
+      });
+
+      // Mescla tudo deduplicando
+      const seenKeys = new Set();
+      const combined = [...offlineSetlists, ...allOnlineBandSetlists, ...mappedApiEvents];
+      for (const item of combined) {
+        const key = `${(item.name || item.title || '').trim().toLowerCase()}_${(item.date || '').trim()}_${(item.myBandId || '')}`;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          filteredSetlists.push(item);
+        }
+      }
+    }
 
     // 2. Filtrar setlists pelo tipo selecionado
     if (selectedSetlistType !== '') {
