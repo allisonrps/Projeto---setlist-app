@@ -444,10 +444,11 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
 
   const musician = freshMusician || propMusician;
   if (!musician) return null;
+  const activeMusician = musician;
 
   // ── Normalização idêntica ao ProfileScreen ──
   const currentDisplayName = activeMusician.displayName || activeMusician.name || activeMusician.username || 'Músico';
-  const cleanUsername = (activeMusician.username || 'musico').toLowerCase().replace(/^@+/, '');
+  const cleanUsername = String(activeMusician.username || activeMusician.name || 'musico').toLowerCase().replace(/^@+/, '');
   const profileImage = activeMusician.imageUri || activeMusician.profileImage || activeMusician.pictureUrl || null;
 
   // Nível de interesse

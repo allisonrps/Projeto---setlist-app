@@ -656,7 +656,6 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       } else if (savedDisplayName && savedDisplayName.trim()) {
         api.updateProfile({ displayName: savedDisplayName }).catch(() => {});
       }
-      setDisplayName(resolvedDisplayName);
 
       const savedCustomBg = await AsyncStorage.getItem('agenda_custom_bg');
       if (savedCustomBg) setCustomBgUri(savedCustomBg);
@@ -808,7 +807,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       }
       const enrichedProfile = {
         ...data,
-        imageUri: savedImage || data.pictureUrl || data.imageUri || null,
+        imageUri: cloudPic || null,
         displayName: savedDisplayName || data.displayName || data.username || 'Músico',
         bio: data.bio || 'Escreva algo sobre você...',
         city: data.city || '',
@@ -1408,7 +1407,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   };
 
   const openEditProfileModal = () => {
-    setEditProfileName(user?.displayName || currentDisplayName || '');
+    setEditProfileName(user?.displayName || user?.name || user?.username || '');
     setEditProfileBirthDate(user?.birthDate ? formatBirthDateDisplay(user.birthDate) : '');
     setEditProfileCity(user?.city || '');
     setEditProfileState(user?.state || '');
@@ -1499,7 +1498,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     try {
       const cleanVal = (editField.value || '').trim();
       if (editField.key === 'displayName') {
-        const val = cleanVal || user.username;
+        const val = cleanVal || user?.username || user?.name || '';
         await AsyncStorage.setItem('user_display_name', val);
         const updated = { ...user, displayName: val };
         setUser(updated);
@@ -2519,7 +2518,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
     );
   }
 
-  const currentDisplayName = user.displayName || user.username;
+  const currentDisplayName = user?.displayName || user?.name || user?.username || 'Músico';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -2632,7 +2631,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
             {/* Linha 2: username + verificado */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <Text style={[styles.uniqueId, { color: colors.textMuted }]}>
-                @{user.username.toLowerCase().replace(/\s+/g, '')}
+                @{String(user?.username || user?.name || 'musico').toLowerCase().replace(/\s+/g, '')}
               </Text>
 
               {user.isEmailConfirmed ? (
