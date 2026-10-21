@@ -440,7 +440,15 @@ export default function SongDetailScreen({
           ) : null}
 
           {/* PLAY (Modo Palco com efeito pulsante) */}
-          <PulsingStageButton variant="icon" onPress={handlePlayStage} color={colors.primary} iconName="mic" />
+          <PulsingStageButton
+            variant="button"
+            size="small"
+            onPress={handlePlayStage}
+            color={colors.primary}
+            iconName="mic"
+            label={t('startStage') || 'Palco'}
+            style={{ marginVertical: 0 }}
+          />
         </View>
       </View>
 

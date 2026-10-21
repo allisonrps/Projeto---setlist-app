@@ -523,6 +523,29 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
       }))
     : [];
 
+  const PRESET_EXTRA_SKILLS = [
+    { key: 'Transporte Próprio (Van/Carro)', transKey: 'skill_transport' },
+    { key: 'Técnico de Som / PA', transKey: 'skill_sound_tech' },
+    { key: 'Design Gráfico & Flyers', transKey: 'skill_design' },
+    { key: 'Filmagem & Edição de Vídeo', transKey: 'skill_video' },
+    { key: 'Social Media & Anúncios', transKey: 'skill_social' },
+    { key: 'Roadie & Montagem de Palco', transKey: 'skill_roadie' },
+    { key: 'Venda de Shows & Booking', transKey: 'skill_booking' },
+    { key: 'Luthieria & Regulagem', transKey: 'skill_luthier' },
+    { key: 'Fotografia Profissional', transKey: 'skill_photo' },
+    { key: 'Técnico de Iluminação / Luz', transKey: 'skill_lighting' },
+    { key: 'Produção Musical & Gravação', transKey: 'skill_production' },
+  ];
+
+  const getExtraSkillDisplay = (item) => {
+    const name = typeof item === 'string' ? item : (item.name || item.title || '');
+    const preset = PRESET_EXTRA_SKILLS.find(p => p.key.toLowerCase() === name.toLowerCase());
+    if (preset) {
+      return t(preset.transKey) || preset.key;
+    }
+    return name;
+  };
+
   // Habilidades Extras
   let extraSkills = [];
   try {

@@ -516,18 +516,27 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const [selectedPresetExtraSkill, setSelectedPresetExtraSkill] = useState('');
 
   const PRESET_EXTRA_SKILLS = [
-    'Transporte Próprio (Van/Carro)',
-    'Técnico de Som / PA',
-    'Design Gráfico & Flyers',
-    'Filmagem & Edição de Vídeo',
-    'Social Media & Anúncios',
-    'Roadie & Montagem de Palco',
-    'Venda de Shows & Booking',
-    'Luthieria & Regulagem',
-    'Fotografia Profissional',
-    'Técnico de Iluminação / Luz',
-    'Produção Musical & Gravação'
+    { key: 'Transporte Próprio (Van/Carro)', transKey: 'skill_transport' },
+    { key: 'Técnico de Som / PA', transKey: 'skill_sound_tech' },
+    { key: 'Design Gráfico & Flyers', transKey: 'skill_design' },
+    { key: 'Filmagem & Edição de Vídeo', transKey: 'skill_video' },
+    { key: 'Social Media & Anúncios', transKey: 'skill_social' },
+    { key: 'Roadie & Montagem de Palco', transKey: 'skill_roadie' },
+    { key: 'Venda de Shows & Booking', transKey: 'skill_booking' },
+    { key: 'Luthieria & Regulagem', transKey: 'skill_luthier' },
+    { key: 'Fotografia Profissional', transKey: 'skill_photo' },
+    { key: 'Técnico de Iluminação / Luz', transKey: 'skill_lighting' },
+    { key: 'Produção Musical & Gravação', transKey: 'skill_production' },
   ];
+
+  const getExtraSkillDisplay = (item) => {
+    const name = typeof item === 'string' ? item : (item.name || item.title || '');
+    const preset = PRESET_EXTRA_SKILLS.find(p => p.key.toLowerCase() === name.toLowerCase());
+    if (preset) {
+      return t(preset.transKey) || preset.key;
+    }
+    return name;
+  };
 
   // Location Modal
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -3600,16 +3609,17 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {/* Opções Sugeridas */}
               <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
-                {t('presetSkills') || 'SELECIONE UMA OPÇÃO SUGERIDA'}
+                {t('selectSuggestedOption') || 'SELECIONE UMA OPÇÃO SUGERIDA:'}
               </Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-                {PRESET_EXTRA_SKILLS.map(preset => {
-                  const isAdded = extraSkills.some(s => (s.name || s).toLowerCase() === preset.toLowerCase());
+                {PRESET_EXTRA_SKILLS.map(presetObj => {
+                  const isAdded = extraSkills.some(s => (s.name || s).toLowerCase() === presetObj.key.toLowerCase());
+                  const label = t(presetObj.transKey) || presetObj.key;
                   return (
                     <Pressable
-                      key={preset}
+                      key={presetObj.key}
                       disabled={isAdded}
-                      onPress={() => handleAddExtraSkill(preset)}
+                      onPress={() => handleAddExtraSkill(presetObj.key)}
                       style={{
                         paddingVertical: 7,
                         paddingHorizontal: 12,
@@ -3625,7 +3635,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                         fontWeight: '700',
                         color: isAdded ? colors.textMuted : (isDark ? '#fef3c7' : '#92400e')
                       }}>
-                        {isAdded ? '✓ ' : '+ '}{preset}
+                        {isAdded ? '✓ ' : '+ '}{label}
                       </Text>
                     </Pressable>
                   );
@@ -3634,7 +3644,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
 
               {/* Opção personalizada */}
               <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
-                OU DIGITE UMA OPÇÃO PERSONALIZADA:
+                {t('orTypeCustomSkill') || 'OU DIGITE UMA OPÇÃO PERSONALIZADA:'}
               </Text>
               <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
                 <TextInput
@@ -3663,7 +3673,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               {extraSkills.length > 0 && (
                 <View style={{ paddingTop: 12, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
                   <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
-                    HABILIDADES CADASTRADAS NO SEU PERFIL:
+                    {t('registeredExtraSkills') || 'HABILIDADES CADASTRADAS NO SEU PERFIL:'}
                   </Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                     {extraSkills.map((es, idx) => (
@@ -3683,7 +3693,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                         }}
                       >
                         <Text style={{ fontSize: 12, fontWeight: '700', color: isDark ? '#fef3c7' : '#92400e' }}>
-                          {es.name || es}
+                          {getExtraSkillDisplay(es)}
                         </Text>
                         <Pressable onPress={() => handleRemoveExtraSkill(es.id || es)} hitSlop={6}>
                           <Ionicons name="close-circle" size={16} color={isDark ? '#fbbf24' : '#b45309'} />
@@ -3697,7 +3707,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
 
             <View style={{ marginTop: 16 }}>
               <Pressable style={[styles.syncButton, { backgroundColor: colors.primary }]} onPress={() => setShowExtraSkillModal(false)}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Concluir</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('done') || 'Concluir'}</Text>
               </Pressable>
             </View>
           </View>

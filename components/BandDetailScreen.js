@@ -224,6 +224,40 @@ const STYLE_COLOR_PALETTE = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#eab308', '#10b981', '#06b6d4', '#6366f1', '#f43f5e', '#a855f7', '#84cc16'
 ];
 
+const formatTimelineDescription = (desc, actionType, lang) => {
+  if (!desc) return '';
+  if (lang === 'pt') return desc;
+  let text = String(desc);
+  if (lang === 'en') {
+    text = text
+      .replace(/conectou a banda à comunidade online!/gi, 'connected the band to the online community!')
+      .replace(/atualizou o saldo do caixa da banda para/gi, 'updated the band cash balance to')
+      .replace(/adicionou (\d+) música\(s\) do Songbook ao repertório/gi, 'added $1 song(s) from Songbook to repertoire')
+      .replace(/adicionou (\d+) músicas do Songbook ao repertório/gi, 'added $1 songs from Songbook to repertoire')
+      .replace(/adicionou (\d+) música do Songbook ao repertório/gi, 'added $1 song from Songbook to repertoire')
+      .replace(/removeu "(.*?)" do repertório/gi, 'removed "$1" from repertoire')
+      .replace(/adicionou o membro/gi, 'added member')
+      .replace(/removeu o membro/gi, 'removed member')
+      .replace(/atualizou os dados do integrante/gi, 'updated member details')
+      .replace(/atualizou as informações da banda/gi, 'updated band information')
+      .replace(/realizou uma alteração/gi, 'made a change');
+  } else if (lang === 'es') {
+    text = text
+      .replace(/conectou a banda à comunidade online!/gi, '¡conectó la banda a la comunidad online!')
+      .replace(/atualizou o saldo do caixa da banda para/gi, 'actualizó el saldo de caja de la banda a')
+      .replace(/adicionou (\d+) música\(s\) do Songbook ao repertório/gi, 'añadió $1 canción(es) del Songbook al repertorio')
+      .replace(/adicionou (\d+) músicas do Songbook ao repertório/gi, 'añadió $1 canciones del Songbook al repertorio')
+      .replace(/adicionou (\d+) música do Songbook ao repertório/gi, 'añadió $1 canción del Songbook al repertorio')
+      .replace(/removeu "(.*?)" do repertório/gi, 'eliminó "$1" del repertorio')
+      .replace(/adicionou o membro/gi, 'añadió al miembro')
+      .replace(/removeu o membro/gi, 'eliminó al miembro')
+      .replace(/atualizou os dados do integrante/gi, 'actualizó los datos del integrante')
+      .replace(/atualizou as informações da banda/gi, 'actualizó la información de la banda')
+      .replace(/realizou uma alteração/gi, 'realizó una modificación');
+  }
+  return text;
+};
+
 const formatActivityDateTime = (dateStr, lang = 'pt') => {
   if (!dateStr) return '';
   try {
@@ -2459,7 +2493,11 @@ export default function BandDetailScreen({
         timestamp: ts,
         isInterest: true,
         actionType: 'candidate_interest',
-        title: `${ci.authorDisplayName || ci.authorUsername || 'Candidato'} demonstrou interesse na vaga de ${ci.instrument || 'Músico'}!`,
+        title: language === 'en'
+          ? `${ci.authorDisplayName || ci.authorUsername || 'Candidate'} showed interest in the opening for ${ci.instrument || 'Musician'}!`
+          : language === 'es'
+          ? `¡${ci.authorDisplayName || ci.authorUsername || 'Candidato'} demostró interés en la vacante de ${ci.instrument || 'Músico'}!`
+          : `${ci.authorDisplayName || ci.authorUsername || 'Candidato'} demonstrou interesse na vaga de ${ci.instrument || 'Músico'}!`,
         message: ci.message,
         phone: ci.phone,
         username: ci.authorUsername,
@@ -2527,12 +2565,18 @@ export default function BandDetailScreen({
         const d = new Date(band.lastSyncedAt);
         if (!isNaN(d.getTime())) ts = d.getTime();
       }
+      const songWord = language === 'en' ? (songsCount === 1 ? 'song' : 'songs') : (language === 'es' ? (songsCount === 1 ? 'canción' : 'canciones') : (songsCount === 1 ? 'música' : 'músicas'));
+      const setlistWord = language === 'en' ? (setlistsCount === 1 ? 'setlist' : 'setlists') : (language === 'es' ? (setlistsCount === 1 ? 'setlist' : 'setlists') : (setlistsCount === 1 ? 'setlist' : 'setlists'));
+      const andWord = language === 'en' ? 'and' : (language === 'es' ? 'y' : 'e');
+      const syncedWord = language === 'en' ? 'synced' : (language === 'es' ? 'sincronizados' : 'sincronizados');
+      const repWord = language === 'en' ? 'Repertoire' : (language === 'es' ? 'Repertorio' : 'Repertório');
+
       list.push({
         id: `sync_${ts}`,
         timestamp: ts,
         actionType: 'repertoire_sync',
         authorName: t('syncLabel') || 'Sincronização',
-        description: `Repertório: ${songsCount} música${songsCount === 1 ? '' : 's'} e ${setlistsCount} setlist${setlistsCount === 1 ? '' : 's'} sincronizados`,
+        description: `${repWord}: ${songsCount} ${songWord} ${andWord} ${setlistsCount} ${setlistWord} ${syncedWord}`,
         createdAt: new Date(ts).toISOString(),
       });
     }
@@ -2549,12 +2593,15 @@ export default function BandDetailScreen({
     }
     if (!createdTs) createdTs = new Date(2020, 0, 1).getTime();
 
+    const createdWord = language === 'en' ? 'Creation of project' : (language === 'es' ? 'Creación del proyecto' : 'Criação do projeto');
+    const inWord = language === 'en' ? 'in' : (language === 'es' ? 'en' : 'em');
+
     list.push({
       id: `created_${createdTs}`,
       timestamp: createdTs,
       actionType: 'band_created',
       authorName: t('foundation') || 'Fundação',
-      description: `Criação do projeto ${band?.name || 'Banda'}${band?.city ? ` em ${band.city}${band?.state ? '/' + band.state : ''}` : ''}`,
+      description: `${createdWord} ${band?.name || 'Banda'}${band?.city ? ` ${inWord} ${band.city}${band?.state ? '/' + band.state : ''}` : ''}`,
       createdAt: new Date(createdTs).toISOString(),
     });
 
@@ -3113,39 +3160,7 @@ export default function BandDetailScreen({
                   )}
                 </Pressable>
               </View>
-            ) : (
-              // BANDA ONLINE
-              <View style={{
-                backgroundColor: colors.cardBackground,
-                borderColor: syncStatusInfo.hasRemoteUpdates ? colors.primary : colors.border,
-                borderWidth: syncStatusInfo.hasRemoteUpdates ? 1.5 : 1,
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 20,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
-              }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#10b98120', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                    <Ionicons name="cloud-done" size={22} color="#10b981" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{t('onlineBand') || 'Banda Online'}</Text>
-                      <View style={{ backgroundColor: '#10b98120', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#10b981' }}>NUVEM ATIVA</Text>
-                      </View>
-                    </View>
-                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
-                      {t('bandUpdatesSynced') || 'Todas as alterações são sincronizadas na nuvem automaticamente.'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
+            ) : null}
 
             {/* Cabeçalho da Linha do Tempo / Histórico */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -3160,7 +3175,7 @@ export default function BandDetailScreen({
               {unifiedTimelineEvents.length > 0 && (
                 <View style={{ backgroundColor: colors.cardBackground, borderColor: colors.border, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>
-                    {unifiedTimelineEvents.length} {unifiedTimelineEvents.length === 1 ? 'registro' : 'registros'}
+                    {unifiedTimelineEvents.length} {unifiedTimelineEvents.length === 1 ? (t('record') || 'registro') : (t('records') || 'registros')}
                   </Text>
                 </View>
               )}
@@ -3286,7 +3301,7 @@ export default function BandDetailScreen({
                                     ) : null}
                                     {logItem.phone ? (
                                       <Text style={{ fontSize: 11, color: '#22c55e', fontWeight: '600', marginTop: 2 }}>
-                                        Contato: {logItem.phone}
+                                        {(t('contact') || 'Contato')}: {logItem.phone}
                                       </Text>
                                     ) : null}
                                   </View>
@@ -3336,14 +3351,14 @@ export default function BandDetailScreen({
                                       {logItem.authorName && (
                                         <View style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6 }}>
                                           <Text style={{ fontSize: 10, fontWeight: '700', color: colors.primary }}>
-                                            {logItem.authorName}
+                                            {logItem.authorName === 'Integrante' ? (language === 'en' ? 'Member' : 'Integrante') : (logItem.authorName === 'Fundação' ? (t('foundation') || 'Fundação') : (logItem.authorName === 'Sincronização' ? (t('syncLabel') || 'Sincronização') : (logItem.authorName === 'Agenda' ? (t('agenda') || 'Agenda') : logItem.authorName)))}
                                           </Text>
                                         </View>
                                       )}
                                     </View>
 
                                     <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18, fontWeight: '500' }}>
-                                      {logItem.description ? (logItem.description.charAt(0).toUpperCase() + logItem.description.slice(1)) : ''}
+                                      {logItem.description ? (formatTimelineDescription(logItem.description, logItem.actionType, language).charAt(0).toUpperCase() + formatTimelineDescription(logItem.description, logItem.actionType, language).slice(1)) : ''}
                                     </Text>
                                   </View>
                                 </View>

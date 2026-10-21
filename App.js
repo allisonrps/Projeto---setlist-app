@@ -678,6 +678,8 @@ function MainApp() {
   const [splashFinished, setSplashFinished] = useState(false);
   const [refreshingBands, setRefreshingBands] = useState(false);
   const [cloudBandsMap, setCloudBandsMap] = useState({});
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+  const [bandLastViewedMap, setBandLastViewedMap] = useState({});
 
   // Convites Recebidos de Bandas / Projetos
   const [receivedInvites, setReceivedInvites] = useState([]);
@@ -781,11 +783,14 @@ function MainApp() {
             if (payload.exp && payload.exp * 1000 > Date.now()) {
               setIsLoggedIn(true);
               // Auto-sync cloud bands in background if logged in
+              setIsCloudSyncing(true);
               bandService.syncAllUserBandsFromCloud().then(() => {
                 reloadAllData(true);
               }).catch(e => {
                 console.log('Error auto-syncing bands on startup:', e);
                 reloadAllData(true);
+              }).finally(() => {
+                setIsCloudSyncing(false);
               });
               try {
                 const isComp = await AsyncStorage.getItem('user_profile_completed');
@@ -1066,6 +1071,86 @@ function MainApp() {
     }
   };
 
+  useEffect(() => {
+    AsyncStorage.getItem('band_last_viewed_map').then(val => {
+      if (val) {
+        try {
+          setBandLastViewedMap(JSON.parse(val));
+        } catch (e) {}
+      }
+    }).catch(() => {});
+  }, []);
+
+  const markBandViewed = (bandId) => {
+    if (!bandId) return;
+    const now = Date.now();
+    setBandLastViewedMap(prev => {
+      const updated = { ...prev, [String(bandId)]: now };
+      AsyncStorage.setItem('band_last_viewed_map', JSON.stringify(updated)).catch(() => {});
+      return updated;
+    });
+  };
+
+  const handleOpenBand = (band) => {
+    if (band && band.id) {
+      markBandViewed(band.id);
+    }
+    setActiveBandDetail(band);
+  };
+
+  const hasBandTimelineNews = (band) => {
+    if (!band) return false;
+    try {
+      const lastViewed = bandLastViewedMap[String(band.id)] || 0;
+
+      // 1. Candidatos interessados que chegaram após a última visualização
+      const candidateInterests = (receivedInvites || []).filter(ci => {
+        const bId = ci.bandId || ci.band_id;
+        const bName = ci.bandName || ci.band_name;
+        return (bId && String(bId) === String(band.id)) ||
+               (bName && band.name && bName.toLowerCase() === band.name.toLowerCase());
+      });
+      if (candidateInterests.length > 0) {
+        if (!lastViewed) return true;
+        const hasNewCandidates = candidateInterests.some(ci => {
+          const t = ci.createdAt ? new Date(ci.createdAt).getTime() : 0;
+          return t > lastViewed;
+        });
+        if (hasNewCandidates) return true;
+      }
+
+      // 2. Registros de atividades ou alterações recentes na banda
+      let logs = [];
+      if (band.syncDataJson) {
+        try {
+          const parsed = JSON.parse(band.syncDataJson);
+          if (Array.isArray(parsed?.activityLogs)) logs = parsed.activityLogs;
+        } catch (e) {}
+      }
+      if (logs.length > 0) {
+        const lastLog = logs[0] || logs[logs.length - 1];
+        if (lastLog?.createdAt) {
+          const logTime = new Date(lastLog.createdAt).getTime();
+          if (lastViewed) {
+            if (logTime > lastViewed) return true;
+          } else {
+            const diffHours = (Date.now() - logTime) / (1000 * 60 * 60);
+            if (diffHours < 72) return true;
+          }
+        }
+      }
+
+      // 3. Atualização pendente da nuvem
+      const cloudBand = cloudBandsMap[band.cloudId] || cloudBandsMap[Number(band.cloudId)];
+      const remoteVer = cloudBand ? (cloudBand.version || 0) : 0;
+      const localVer = band.cloudVersion || 0;
+      if (remoteVer > localVer) return true;
+    } catch (e) {
+      return false;
+    }
+    return false;
+  };
+
   const getBandSyncStatus = (band) => {
     if (!band || !band.cloudId) {
       return {
@@ -1111,6 +1196,7 @@ function MainApp() {
 
   const handleRefreshBands = async () => {
     setRefreshingBands(true);
+    setIsCloudSyncing(true);
     try {
       const syncRes = await bandService.syncAllUserBandsFromCloud(true);
       await reloadAllData();
@@ -1121,6 +1207,7 @@ function MainApp() {
       console.log('Error refreshing bands:', e);
     } finally {
       setRefreshingBands(false);
+      setIsCloudSyncing(false);
     }
   };
 
@@ -3312,6 +3399,27 @@ function MainApp() {
           contentContainerStyle={{ paddingTop: 10, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* BANNER DE SINCRONIZAÇÃO NUVEM NO HOME */}
+          {isCloudSyncing && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              marginBottom: 12,
+              borderRadius: 14,
+              backgroundColor: colors.primary + '14',
+              borderWidth: 1,
+              borderColor: colors.primary + '30',
+            }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                {t('syncingWithCloud') || 'Sincronizando dados com a nuvem...'}
+              </Text>
+            </View>
+          )}
           {/* CONTADOR TOTAL NO TOPO DA PÁGINA (CIRCULARES IGUAL DA AGENDA DA BANDA) */}
           <View style={[styles.agendaSummaryCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
             <View style={styles.agendaSummaryRow}>
@@ -3997,7 +4105,7 @@ function MainApp() {
               selectedBandId={selectedBandId}
               getBandSyncStatus={getBandSyncStatus}
             onSelectBand={(band) => {
-              setActiveBandDetail(band);
+              handleOpenBand(band);
             }}
             onAddBand={() => {
               setEditingBand(null);
@@ -4007,9 +4115,44 @@ function MainApp() {
             onDeleteBand={handleDeleteBand}
           />
 
+          {isCloudSyncing && bands.length > 0 && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              paddingVertical: 9,
+              paddingHorizontal: 16,
+              marginBottom: 12,
+              borderRadius: 12,
+              backgroundColor: colors.primary + '14',
+              borderWidth: 1,
+              borderColor: colors.primary + '30',
+            }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                {t('syncingCloudBands') || 'Sincronizando bandas com a nuvem...'}
+              </Text>
+            </View>
+          )}
+
           {(() => {
             const pendingInvites = (receivedInvites || []).filter(i => i.status === 'pending');
             const hasNoContent = filteredBands.length === 0 && pendingInvites.length === 0;
+
+            if (isCloudSyncing && bands.length === 0) {
+              return (
+                <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 20 }}>
+                  <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 16 }} />
+                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
+                    {t('loadingCloudBands') || 'Sincronizando seus projetos com a nuvem...'}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', marginTop: 6 }}>
+                    {t('loadingCloudBandsSub') || 'Carregando repertório, eventos e membros...'}
+                  </Text>
+                </View>
+              );
+            }
 
             if (hasNoContent) {
               return (
@@ -4388,7 +4531,7 @@ function MainApp() {
                       transform: [{ scale: pressed ? 0.98 : 1 }]
                     }
                   ]}
-                  onPress={() => setActiveBandDetail(band)}
+                  onPress={() => handleOpenBand(band)}
                 >
                   {/* Cabeçalho do Card (Logo + Nome + Data Desde) */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -4413,32 +4556,9 @@ function MainApp() {
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                        <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, letterSpacing: -0.2, flexShrink: 1 }} numberOfLines={1}>
-                          {band.name}
-                        </Text>
-                        {(() => {
-                          const syncStatus = getBandSyncStatus(band);
-                          return (
-                            <View style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 4,
-                              backgroundColor: syncStatus.bg,
-                              borderColor: syncStatus.color + '40',
-                              borderWidth: 1,
-                              borderRadius: 10,
-                              paddingHorizontal: 7,
-                              paddingVertical: 2,
-                            }}>
-                              <Ionicons name={syncStatus.icon} size={11} color={syncStatus.color} />
-                              <Text style={{ fontSize: 10, fontWeight: '800', color: syncStatus.color }}>
-                                {syncStatus.label}
-                              </Text>
-                            </View>
-                          );
-                        })()}
-                      </View>
+                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, letterSpacing: -0.2 }} numberOfLines={1}>
+                        {band.name}
+                      </Text>
 
                       <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginTop: 2 }}>
                         {t('since')}: {band.startDate ? band.startDate : (currentYear - 1)}{band.endDate ? ` ${t('until')} ${band.endDate}` : ''}
@@ -4454,7 +4574,40 @@ function MainApp() {
                       )}
                     </View>
 
-                    <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
+                    {/* SINO DE NOVIDADES / NOTIFICAÇÃO DA BANDA (PADRÃO WEB) + CHEVRON */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 8 }}>
+                      {(() => {
+                        const hasNews = hasBandTimelineNews(band);
+                        return (
+                          <Pressable
+                            style={({ pressed }) => [
+                              {
+                                width: 34,
+                                height: 34,
+                                borderRadius: 17,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: hasNews ? 'rgba(34, 197, 94, 0.18)' : (isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'),
+                                borderWidth: 1,
+                                borderColor: hasNews ? 'rgba(34, 197, 94, 0.45)' : (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'),
+                              },
+                              pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+                            ]}
+                            onPress={() => handleOpenBand(band)}
+                            hitSlop={6}
+                            accessibilityLabel={hasNews ? (t('bandTimelineNewsTitle') || 'Novidades na banda') : (t('bandAllUpdated') || 'Tudo atualizado')}
+                          >
+                            <Ionicons
+                              name={hasNews ? "notifications" : "notifications-outline"}
+                              size={17}
+                              color={hasNews ? "#22c55e" : colors.textMuted}
+                            />
+                          </Pressable>
+                        );
+                      })()}
+
+                      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                    </View>
                   </View>
 
                   {/* Mostradores: Somente Ícones com os Números */}
@@ -5755,6 +5908,7 @@ function MainApp() {
 
     const handleUserLogin = async () => {
       setIsLoggedIn(true);
+      setIsCloudSyncing(true);
       try {
         await bandService.syncAllUserBandsFromCloud();
       } catch (syncErr) {
@@ -5765,6 +5919,7 @@ function MainApp() {
       } catch (reloadErr) {
         console.log('Error reloading all data on login:', reloadErr);
       }
+      setIsCloudSyncing(false);
       try {
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
         if (isCompleted === 'true') {
