@@ -20546,16 +20546,50 @@
       }
 
       try {
-        const res = await fetch(`${API_URL}/gear/classifieds${qs}`);
-        if (!res.ok) {
-          if (container) {
-            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Não foi possível carregar os classificados no momento.</div>`;
+        let items = [];
+        try {
+          const res = await fetch(`${API_URL}/gear/classifieds${qs}`);
+          if (res.ok) {
+            const data = await res.json();
+            items = data.items || (Array.isArray(data) ? data : []);
           }
-          return;
-        }
+        } catch (e) {}
 
-        const data = await res.json();
-        const items = data.items || (Array.isArray(data) ? data : []);
+        // Fallback: If dedicated route not available or empty, extract from users pool
+        if (!items || items.length === 0) {
+          try {
+            const uRes = await fetch(`${API_URL}/Users${qs}`, { headers: getAuthHeaders() });
+            if (uRes.ok) {
+              const users = await uRes.json();
+              if (Array.isArray(users)) {
+                users.forEach(u => {
+                  let gear = [];
+                  try {
+                    gear = typeof u.gearJson === 'string' ? JSON.parse(u.gearJson) : (u.gear || []);
+                  } catch (e) {}
+                  if (Array.isArray(gear)) {
+                    gear.forEach(g => {
+                      if (g.isNegotiable === true || g.isNegotiable === 1 || String(g.isNegotiable).toLowerCase() === 'true') {
+                        items.push({
+                          id: g.id,
+                          userId: u.id,
+                          username: (u.username || '').replace(/^@+/, ''),
+                          name: g.name || '',
+                          category: g.category || 'Equipamento',
+                          description: g.details || g.description || '',
+                          price: g.price || '',
+                          isNegotiable: true
+                        });
+                      }
+                    });
+                  }
+                });
+              }
+            }
+          } catch (fallbackErr) {
+            console.warn('Classifieds fallback error:', fallbackErr);
+          }
+        }
 
         const countBadge = document.getElementById('socialCountClassifieds');
         if (countBadge) countBadge.innerText = items.length;

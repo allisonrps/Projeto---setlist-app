@@ -662,11 +662,48 @@ export const api = {
       const response = await fetchWithTimeout(`${API_URL}/gear/classifieds${qs}`, {}, 8000);
       if (response.ok) {
         const res = await response.json();
-        return res?.items || (Array.isArray(res) ? res : []);
+        const items = res?.items || (Array.isArray(res) ? res : []);
+        if (items.length > 0) return items;
       }
     } catch (err) {
-      console.log('Error fetching classifieds:', err);
+      console.log('Classifieds API route unavailable, falling back to users pool:', err);
     }
+
+    // Fallback: extract negotiable gear from users list
+    try {
+      const users = await api.getUsers();
+      if (Array.isArray(users)) {
+        const fallbackItems = [];
+        users.forEach(u => {
+          let gear = [];
+          try {
+            gear = typeof u.gearJson === 'string' ? JSON.parse(u.gearJson) : (u.gear || []);
+          } catch (e) {}
+          if (Array.isArray(gear)) {
+            gear.forEach(g => {
+              if (g.isNegotiable === true || g.isNegotiable === 1 || String(g.isNegotiable).toLowerCase() === 'true') {
+                fallbackItems.push({
+                  id: g.id || `gear-${u.id}-${Math.random()}`,
+                  userId: u.id,
+                  username: (u.username || '').replace(/^@+/, ''),
+                  name: g.name || '',
+                  category: g.category || 'Equipamento',
+                  description: g.details || g.description || '',
+                  price: g.price || '',
+                  isNegotiable: true,
+                  city: u.city || '',
+                  state: u.state || ''
+                });
+              }
+            });
+          }
+        });
+        return fallbackItems;
+      }
+    } catch (fallbackErr) {
+      console.log('Error in classifieds fallback:', fallbackErr);
+    }
+
     return [];
   },
 

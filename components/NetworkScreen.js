@@ -539,11 +539,46 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     setIsLoadingClassifieds(true);
     try {
       const list = await api.getClassifieds();
-      if (Array.isArray(list)) {
-        setClassifieds(list);
-      } else {
-        setClassifieds([]);
+      let combined = Array.isArray(list) ? [...list] : [];
+
+      // Also ensure current user's locally configured negotiable gear is included
+      try {
+        let userGear = currentUser?.gear;
+        if (!Array.isArray(userGear)) {
+          const cachedProfile = await AsyncStorage.getItem('user_profile_cache');
+          if (cachedProfile) {
+            const parsed = JSON.parse(cachedProfile);
+            userGear = parsed.gear || (parsed.gearJson ? JSON.parse(parsed.gearJson) : []);
+          }
+        }
+        if (Array.isArray(userGear)) {
+          const myUser = (currentUser?.username || '').replace(/^@+/, '');
+          userGear.forEach(g => {
+            if (g.isNegotiable === true || g.isNegotiable === 1 || String(g.isNegotiable).toLowerCase() === 'true') {
+              const alreadyInList = combined.some(item =>
+                (g.id && String(item.id) === String(g.id)) ||
+                (item.name?.toLowerCase() === g.name?.toLowerCase() && item.username === myUser)
+              );
+              if (!alreadyInList) {
+                combined.unshift({
+                  id: g.id || `my-gear-${Date.now()}`,
+                  userId: currentUser?.id || null,
+                  username: myUser || 'você',
+                  name: g.name,
+                  category: g.category || 'Equipamento',
+                  description: g.details || g.description || '',
+                  price: g.price || '',
+                  isNegotiable: true
+                });
+              }
+            }
+          });
+        }
+      } catch (locErr) {
+        console.log('Error merging local gear in classifieds:', locErr);
       }
+
+      setClassifieds(combined);
     } catch (e) {
       console.log('Error loading classifieds:', e);
       setClassifieds([]);
