@@ -2869,7 +2869,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
           </Text>
         </View>
       ) : (
-        (user.projects || []).map(proj => {
+        (user.projects || []).map((proj, idx) => {
           const projTags = (() => {
             if (!proj.genres) return [];
             try {
@@ -3125,7 +3125,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
       return acc;
     }, {});
 
-    const renderEventCard = (event) => {
+    const renderEventCard = (event, eventIndex = 0) => {
       const badge = getFormattedDateBadge(event.rawDate || event.date, language);
       const eventTime = event.time || (event.date && event.date.includes(' • ') ? event.date.split(' • ')[1] : '');
       const eventTitle = event.name || event.title || event.local || 'Show';
@@ -3135,7 +3135,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
       return (
         <Pressable 
-          key={`agenda_ev_${event.id || index}_${index}`} 
+          key={`agenda_ev_${event.id || eventIndex}_${eventIndex}`} 
           onPress={() => {
             if (onOpenSetlist) {
               onOpenSetlist(event.setlistRef || event);
@@ -3390,7 +3390,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                 </Text>
               </View>
             ) : (
-              upcomingEvents.map(event => {
+              upcomingEvents.map((event, idx) => {
                 const header = getMonthYearHeader(event.rawDate || event.date, language);
                 const showHeader = header !== lastUpcomingHeader;
                 if (showHeader) lastUpcomingHeader = header;
@@ -3448,7 +3448,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                         </View>
                       );
                     })()}
-                    {renderEventCard(event)}
+                    {renderEventCard(event, idx)}
                   </View>
                 );
               })
@@ -3541,7 +3541,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
                       {isExpanded && (
                         <View style={{ marginTop: 2 }}>
-                          {monthEvents.map(event => renderEventCard(event))}
+                          {monthEvents.map((event, evIdx) => renderEventCard(event, evIdx))}
                         </View>
                       )}
                     </View>
