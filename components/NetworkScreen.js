@@ -740,7 +740,10 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                   category: g.category || 'Equipamento',
                   description: g.details || g.description || '',
                   price: g.price || '',
-                  isNegotiable: true
+                  isNegotiable: true,
+                  city: currentUser?.city || '',
+                  state: currentUser?.state || '',
+                  country: currentUser?.country || ''
                 });
               }
             }
@@ -1643,6 +1646,18 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
   // Classifieds calculations
   const filteredClassifieds = useMemo(() => {
     return (classifieds || []).filter(c => {
+      if (filterCity.trim()) {
+        const cCity = (c.city || c.City || '').toLowerCase();
+        if (cCity && !cCity.includes(filterCity.trim().toLowerCase())) return false;
+      }
+      if (filterState.trim()) {
+        const cState = (c.state || c.State || '').toLowerCase();
+        if (cState && !cState.includes(filterState.trim().toLowerCase())) return false;
+      }
+      if (filterCountry.trim()) {
+        const cCountry = (c.country || c.Country || '').toLowerCase();
+        if (cCountry && !cCountry.includes(filterCountry.trim().toLowerCase())) return false;
+      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const inName = (c.name || '').toLowerCase().includes(q);
@@ -1653,7 +1668,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
       }
       return true;
     });
-  }, [classifieds, searchQuery]);
+  }, [classifieds, searchQuery, filterCity, filterState, filterCountry]);
 
   const totalClassifiedsPages = Math.max(1, Math.ceil(filteredClassifieds.length / ITEMS_PER_PAGE));
   const paginatedClassifieds = useMemo(() => {
@@ -1870,14 +1885,14 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => {
               if (totalPages > 5 && Math.abs(pageNum - currentPage) > 2 && pageNum !== 1 && pageNum !== totalPages) {
                 if (Math.abs(pageNum - currentPage) === 3) {
-                  return <Text key={pageNum} style={{ color: colors.textMuted, fontSize: 12 }}>...</Text>;
+                  return <Text key={'ellipsis-' + pageNum} style={{ color: colors.textMuted, fontSize: 12 }}>...</Text>;
                 }
                 return null;
               }
               const isActive = pageNum === currentPage;
               return (
                 <Pressable
-                  key={pageNum}
+                  key={'page-' + pageNum}
                   style={[
                     styles.pageNumberPill,
                     {
@@ -2004,9 +2019,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
               ) : null}
             </View>
 
-            {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}
+            {/* BARRA DE PESQUISA (ARREDONDADA E RESPONSIVA) */}
             <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f1f5f9', borderColor: colors.border }]}>
-              <Ionicons name="search" size={17} color={colors.textMuted} style={{ marginLeft: 4 }} />
+              <Ionicons name="search" size={16} color={colors.textMuted} style={{ marginLeft: 4 }} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}
                 value={searchQuery}
@@ -2028,7 +2043,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 style={[
                   styles.locationInputBox,
                   {
-                    flex: 1.8,
+                    flex: 1.4,
                     backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                     borderColor: filterCity ? colors.primary : colors.border
                   }
@@ -2036,9 +2051,9 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
               >
                 <Ionicons
                   name="location-outline"
-                  size={14}
+                  size={13}
                   color={filterCity ? colors.primary : colors.textMuted}
-                  style={{ marginRight: 4 }}
+                  style={{ marginRight: 3 }}
                 />
                 <TextInput
                   style={[styles.locationTextInput, { color: colors.text }]}
@@ -2051,7 +2066,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 />
                 {filterCity ? (
                   <Pressable onPress={() => setFilterCity('')} hitSlop={6}>
-                    <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+                    <Ionicons name="close-circle" size={13} color={colors.textMuted} />
                   </Pressable>
                 ) : null}
               </View>
@@ -2061,11 +2076,11 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 style={[
                   styles.locationInputBox,
                   {
-                    width: 58,
+                    width: 52,
                     backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                     borderColor: filterState ? colors.primary : colors.border,
                     justifyContent: 'center',
-                    paddingHorizontal: 6
+                    paddingHorizontal: 4
                   }
                 ]}
               >
@@ -2091,7 +2106,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 style={[
                   styles.locationInputBox,
                   {
-                    flex: 1.3,
+                    flex: 1.1,
                     backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                     borderColor: filterCountry ? colors.primary : colors.border
                   }
@@ -2108,7 +2123,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 />
                 {filterCountry ? (
                   <Pressable onPress={() => setFilterCountry('')} hitSlop={6}>
-                    <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+                    <Ionicons name="close-circle" size={13} color={colors.textMuted} />
                   </Pressable>
                 ) : null}
               </View>
@@ -2278,25 +2293,30 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
           /* ── FEED DE ANÚNCIOS ── */
           <View>
             {/* BOTÃO PUBLICAR ANÚNCIO (NA PRIMEIRA LINHA DA ABA DE ANÚNCIOS) */}
+            {/* BOTÃO PUBLICAR ANÚNCIO (NA PRIMEIRA LINHA DA ABA DE ANÚNCIOS - DISCRETO E INTEGRADO) */}
             <Pressable
               style={({ pressed }) => [
                 styles.postAdTopBanner,
-                { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 }
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.cardBackground,
+                  borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border,
+                  opacity: pressed ? 0.85 : 1
+                }
               ]}
               onPress={openNewProjectModal}
             >
-              <View style={styles.postAdTopBannerIcon}>
-                <Ionicons name="add" size={20} color="#fff" />
+              <View style={[styles.postAdTopBannerIcon, { backgroundColor: colors.primary + '18' }]}>
+                <Ionicons name="add" size={18} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.postAdTopBannerTitle}>
+                <Text style={[styles.postAdTopBannerTitle, { color: colors.text }]}>
                   {t('createAnnouncement') || 'Publicar Anúncio'}
                 </Text>
-                <Text style={styles.postAdTopBannerSubtitle}>
-                  Procurando músicos ou divulgando sua banda? Anuncie aqui
+                <Text style={[styles.postAdTopBannerSubtitle, { color: colors.textMuted }]}>
+                  {t('postAdSubtitle') || 'Procurando músicos ou divulgando sua banda?'}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
+              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
             </Pressable>
 
             {filteredProjects.length === 0 ? (
@@ -2313,7 +2333,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 </Pressable>
               </View>
             ) : (
-              paginatedProjects.map(proj => {
+              paginatedProjects.map((proj, pIndex) => {
                 const isMyProject = Boolean(
                   (currentUser?.id && proj.creatorId && String(proj.creatorId) === String(currentUser.id)) ||
                   (currentUser?.username && proj.creatorUsername && proj.creatorUsername.toLowerCase() === currentUser.username.toLowerCase()) ||
@@ -2329,7 +2349,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
 
                 return (
                   <View
-                    key={proj.id}
+                    key={'proj-' + (proj.id || pIndex) + '-' + pIndex}
                     style={[
                       styles.projectCard,
                       {
@@ -2596,7 +2616,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 ) : null}
               </View>
             ) : (
-            paginatedBands.map(band => {
+            paginatedBands.map((band, bandIndex) => {
                 const isMyBand = !!band.isMyBand;
                 const genres = Array.isArray(band.genres) ? band.genres : [];
                 const rawObjectives = Array.isArray(band.options) && band.options.length > 0
@@ -2609,7 +2629,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
 
                 return (
                   <Pressable
-                    key={band.id || band.name}
+                    key={'band-' + (band.cloudId || band.id || band.name || bandIndex) + '-' + bandIndex}
                     onPress={() => handleOpenBandProfile(band)}
                     style={({ pressed }) => [
                       styles.projectCard,
@@ -2643,14 +2663,15 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
 
                       {/* Informações da Banda */}
                       <View style={{ flex: 1, justifyContent: 'center' }}>
-                        {/* Linha 1: Nome da Banda + Badge Sua Banda */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <Text style={[styles.projectBandName, { color: colors.text }]} numberOfLines={1}>
+                        {/* Linha 1: Nome da Banda + Badge Minha Banda */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                          <Text style={[styles.projectBandName, { color: colors.text, flex: 1 }]} numberOfLines={1}>
                             {band.name || band.bandName}
                           </Text>
                           {isMyBand && (
-                            <View style={[styles.meBadge, { backgroundColor: colors.primary + '18' }]}>
-                              <Text style={[styles.meBadgeText, { color: colors.primary }]}>{t('myBandBadge') || 'Sua Banda'}</Text>
+                            <View style={[styles.myBandPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                              <Ionicons name="star" size={10} color={colors.primary} style={{ marginRight: 3 }} />
+                              <Text style={[styles.myBandPillText, { color: colors.primary }]}>{t('myBandBadge') || 'Minha Banda'}</Text>
                             </View>
                           )}
                         </View>
@@ -2730,15 +2751,19 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 </Text>
               </View>
             ) : (
-              paginatedClassifieds.map(item => {
+              paginatedClassifieds.map((item, itemIndex) => {
                 const formattedPrice = item.price && String(item.price).trim()
                   ? (String(item.price).trim().startsWith('$') || String(item.price).trim().startsWith('R$') ? String(item.price).trim() : `$ ${String(item.price).trim()}`)
                   : (t('negotiable') || 'Negociável');
                 const cleanUsername = (item.username || '').replace(/^@+/, '');
+                const itemCity = item.city || item.City || '';
+                const itemState = item.state || item.State || '';
+                const itemCountry = item.country || item.Country || '';
+                const locationDisplay = [itemCity, itemState].filter(Boolean).join(', ') || itemCountry || '';
 
                 return (
                   <View
-                    key={'gear-' + item.id}
+                    key={'gear-' + (item.id || itemIndex) + '-' + itemIndex}
                     style={[
                       styles.classifiedCard,
                       {
@@ -2747,41 +2772,58 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                       }
                     ]}
                   >
-                    {/* 1. Pílula do tipo */}
-                    <View style={[styles.classifiedCategoryPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
-                      <Text style={[styles.classifiedCategoryText, { color: colors.primary }]} numberOfLines={1}>
-                        {getCategoryLabel(item.category)}
+                    {/* Linha 1: Pílula do tipo + Preço + Nome & Descrição */}
+                    <View style={styles.classifiedMainRow}>
+                      {/* 1. Pílula do tipo */}
+                      <View style={[styles.classifiedCategoryPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                        <Text style={[styles.classifiedCategoryText, { color: colors.primary }]} numberOfLines={1}>
+                          {getCategoryLabel(item.category)}
+                        </Text>
+                      </View>
+
+                      {/* 2. Preço */}
+                      <Text style={styles.classifiedPriceText} numberOfLines={1}>
+                        {formattedPrice}
                       </Text>
+
+                      {/* 3. Nome e Descrição */}
+                      <View style={styles.classifiedContentCol}>
+                        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.classifiedNameAndDesc}>
+                          <Text style={{ fontWeight: '700', color: colors.text }}>{item.name}</Text>
+                          {item.description ? (
+                            <Text style={{ color: colors.textMuted, fontSize: 12 }}> — {item.description}</Text>
+                          ) : null}
+                        </Text>
+                      </View>
                     </View>
 
-                    {/* 2. Preço */}
-                    <Text style={styles.classifiedPriceText} numberOfLines={1}>
-                      {formattedPrice}
-                    </Text>
+                    {/* Linha 2 (texto menor): Username clicável + Localização */}
+                    <View style={styles.classifiedSubRow}>
+                      <Pressable
+                        onPress={() => handleOpenMusicianProfile({ username: cleanUsername, name: cleanUsername })}
+                        style={({ pressed }) => [
+                          styles.classifiedUserRow,
+                          { opacity: pressed ? 0.7 : 1 }
+                        ]}
+                        hitSlop={6}
+                      >
+                        <Text style={[styles.classifiedUsernameText, { color: colors.primary }]} numberOfLines={1}>
+                          @{cleanUsername}
+                        </Text>
+                      </Pressable>
 
-                    {/* 3. Nome e 4. Descrição se houver (em linha contínua) */}
-                    <View style={styles.classifiedContentCol}>
-                      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.classifiedNameAndDesc}>
-                        <Text style={{ fontWeight: '700', color: colors.text }}>{item.name}</Text>
-                        {item.description ? (
-                          <Text style={{ color: colors.textMuted, fontSize: 12 }}> — {item.description}</Text>
-                        ) : null}
-                      </Text>
+                      {locationDisplay ? (
+                        <>
+                          <Text style={{ color: colors.textMuted, fontSize: 10.5, opacity: 0.4 }}>•</Text>
+                          <View style={styles.classifiedLocationRow}>
+                            <Ionicons name="location-outline" size={11.5} color={colors.textMuted} />
+                            <Text style={[styles.classifiedLocationText, { color: colors.textMuted }]} numberOfLines={1}>
+                              {locationDisplay}
+                            </Text>
+                          </View>
+                        </>
+                      ) : null}
                     </View>
-
-                    {/* 5. Username clicável (sem avatar e sem localização) */}
-                    <Pressable
-                      onPress={() => handleOpenMusicianProfile({ username: cleanUsername, name: cleanUsername })}
-                      style={({ pressed }) => [
-                        styles.classifiedUserRow,
-                        { opacity: pressed ? 0.7 : 1 }
-                      ]}
-                      hitSlop={8}
-                    >
-                      <Text style={[styles.classifiedUsernameText, { color: colors.primary }]} numberOfLines={1}>
-                        @{cleanUsername}
-                      </Text>
-                    </Pressable>
                   </View>
                 );
               })
@@ -2915,7 +2957,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 )}
               </View>
             ) : (
-              paginatedMusicians.map(m => {
+              paginatedMusicians.map((m, mIndex) => {
                 const locationParts = [m.city, m.state, m.country].filter(Boolean);
                 const locationStr = locationParts.length > 0 ? locationParts.join(', ') : '';
 
@@ -2941,7 +2983,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
 
                 return (
                   <Pressable
-                    key={m.id}
+                    key={'mus-' + (m.cloudId || m.id || m.username || mIndex) + '-' + mIndex}
                     onPress={() => handleOpenMusicianProfile(m)}
                     style={({ pressed }) => [
                       styles.userCardWrapper,
@@ -3656,7 +3698,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   headerHeroContainer: { 
-    paddingHorizontal: 16, 
+    paddingHorizontal: 12, 
     paddingTop: 4, 
     paddingBottom: 8,
   },
@@ -3743,13 +3785,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    height: 40,
-    marginBottom: 12,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    height: 38,
+    marginBottom: 8,
     gap: 8,
   },
   searchInput: { flex: 1, fontSize: 13, paddingVertical: 0 },
+
+  // My Band Badge Pill
+  myBandPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexShrink: 0,
+  },
+  myBandPillText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
 
   // Tab Buttons com ícones (Usuários, Anúncios, Bandas, Classificados)
   tabButtonsContainer: {
@@ -3794,17 +3852,36 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  // Classifieds Single-Line Card Styles
+  // Classifieds Card Styles (Linha 1: Tipo + Preço + Nome/Desc | Linha 2: Username + Localização)
   classifiedCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     marginBottom: 8,
     width: '100%',
+  },
+  classifiedMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    width: '100%',
+  },
+  classifiedSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    paddingLeft: 2,
+  },
+  classifiedLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  classifiedLocationText: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   classifiedCategoryPill: {
     paddingHorizontal: 8,
@@ -4451,58 +4528,56 @@ const styles = StyleSheet.create({
   locationFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
+    gap: 6,
+    paddingHorizontal: 0,
+    paddingVertical: 4,
+    borderBottomWidth: 0,
+    width: '100%',
   },
   locationInputBox: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    height: 38,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    height: 36,
   },
   locationTextInput: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 12.5,
     paddingVertical: 0,
   },
   clearLocationBtn: {
-    padding: 6,
-    borderRadius: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  /* ── POST AD TOP BANNER ── */
+  /* ── POST AD TOP BANNER (DISCRETO E INTEGRADO) ── */
   postAdTopBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 14,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
+    gap: 10,
   },
   postAdTopBannerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   postAdTopBannerTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 13.5,
+    fontWeight: '700',
   },
   postAdTopBannerSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 2,
+    fontSize: 11.5,
+    marginTop: 1,
   },
 });
