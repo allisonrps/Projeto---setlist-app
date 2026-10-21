@@ -1201,6 +1201,11 @@ const translations = {
     skill_photo: 'Fotografia Profissional',
     skill_lighting: 'Técnico de Iluminação / Luz',
     skill_production: 'Produção Musical & Gravação',
+    // Classificados
+    classifieds: 'Classificados',
+    classifiedsSubtitle: 'Instrumentos e equipamentos negociáveis da comunidade',
+    noClassifiedsFound: 'Nenhum equipamento anunciado no momento',
+    noClassifiedsSub: 'Marque seus equipamentos como negociáveis no seu perfil para exibi-los aqui!',
   },
 
   en: {
@@ -2402,6 +2407,11 @@ const translations = {
     skill_photo: 'Professional Photography',
     skill_lighting: 'Lighting Technician',
     skill_production: 'Music Production & Recording',
+    // Classifieds
+    classifieds: 'Classifieds',
+    classifiedsSubtitle: 'Negotiable instruments and gear from the community',
+    noClassifiedsFound: 'No gear listed at the moment',
+    noClassifiedsSub: 'Mark your gear as negotiable in your profile to display them here!',
   },
 
   es: {
@@ -3602,6 +3612,11 @@ const translations = {
     skill_photo: 'Fotografía Profesional',
     skill_lighting: 'Técnico de Iluminación / Luz',
     skill_production: 'Producción Musical y Grabación',
+    // Clasificados
+    classifieds: 'Clasificados',
+    classifiedsSubtitle: 'Instrumentos y equipos negociables de la comunidad',
+    noClassifiedsFound: 'Ningún equipo anunciado por el momento',
+    noClassifiedsSub: '¡Marca tus equipos como negociables en tu perfil para mostrarlos aquí!',
   }
 };
 

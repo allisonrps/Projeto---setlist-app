@@ -649,6 +649,27 @@ export const api = {
     return null;
   },
 
+  getClassifieds: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.state) params.append('state', filters.state);
+      if (filters.page) params.append('page', filters.page);
+
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetchWithTimeout(`${API_URL}/gear/classifieds${qs}`, {}, 8000);
+      if (response.ok) {
+        const res = await response.json();
+        return res?.items || (Array.isArray(res) ? res : []);
+      }
+    } catch (err) {
+      console.log('Error fetching classifieds:', err);
+    }
+    return [];
+  },
+
   checkBandUsername: async (username, excludeBandId = null) => {
     try {
       const clean = (username || '').trim().toLowerCase().replace('@', '');

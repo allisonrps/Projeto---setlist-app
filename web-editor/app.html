@@ -6967,6 +6967,11 @@
             <span class="tab-name-label">Bandas</span>
             <span class="badge" id="socialCountBands" style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
           </button>
+          <button class="profile-tab-btn" id="socialSubClassifieds" onclick="switchSocialSub('classifieds')" title="Classificados & Equipamentos">
+            <ion-icon name="pricetag" class="tab-icon"></ion-icon>
+            <span class="tab-name-label" data-i18n="classifieds">Classificados</span>
+            <span class="badge" id="socialCountClassifieds" style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
+          </button>
         </div>
 
         <!-- SOCIAL CONTENT CONTAINER (EXPANDED TO FULL LINE WIDTH & RESPONSIVE) -->
@@ -7005,6 +7010,7 @@
             <div id="socialViewMus" class="user-cards-vertical-list" style="display: flex; flex-direction: column; gap: 18px;"></div>
             <div id="socialViewAnn" class="announcements-vertical-list" style="display: none; flex-direction: column; gap: 20px;"></div>
             <div id="socialViewBands" class="profile-bands-grid" style="display: none;"></div>
+            <div id="socialViewClassifieds" class="classifieds-vertical-list" style="display: none; flex-direction: column; gap: 14px;"></div>
           </div>
         </div>
       </section>
@@ -19762,17 +19768,19 @@
         await loadMusiciansNetwork();
       } else if (currentSocialSub === 'bands') {
         await loadPublicBands();
+      } else if (currentSocialSub === 'classifieds') {
+        await loadClassifiedsNetwork();
       }
     }
 
     function switchSocialSub(sub) {
       currentSocialSub = sub;
-      ['socialSubMus', 'socialSubAnn', 'socialSubBands'].forEach(id => {
+      ['socialSubMus', 'socialSubAnn', 'socialSubBands', 'socialSubClassifieds'].forEach(id => {
         const b = document.getElementById(id);
         if (b) b.classList.remove('active');
       });
 
-      ['socialViewMus', 'socialViewAnn', 'socialViewBands'].forEach(id => {
+      ['socialViewMus', 'socialViewAnn', 'socialViewBands', 'socialViewClassifieds'].forEach(id => {
         const v = document.getElementById(id);
         if (v) v.style.display = 'none';
       });
@@ -19797,6 +19805,11 @@
         if (b) b.classList.add('active');
         const v = document.getElementById('socialViewBands');
         if (v) v.style.display = 'grid';
+      } else if (sub === 'classifieds') {
+        const b = document.getElementById('socialSubClassifieds');
+        if (b) b.classList.add('active');
+        const v = document.getElementById('socialViewClassifieds');
+        if (v) v.style.display = 'flex';
       }
       loadSocialData(false);
     }
@@ -20513,6 +20526,101 @@
       } catch (err) {
         console.error('Error loading public bands:', err);
         container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Erro ao carregar as bandas. Verifique sua conexão.</div>`;
+      }
+    }
+
+
+    // ==========================================================
+    // CLASSIFIEDS NETWORK (INSTRUMENTOS & EQUIPAMENTOS NEGOCIÁVEIS)
+    // ==========================================================
+    async function loadClassifiedsNetwork() {
+      const search = document.getElementById('socialSearchInput')?.value.trim() || '';
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (currentSocialCity) params.append('city', currentSocialCity);
+      if (currentSocialState) params.append('state', currentSocialState);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const container = document.getElementById('socialViewClassifieds');
+      if (container) {
+        container.innerHTML = getSocialLoadingHtml('Carregando classificados & equipamentos...');
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/gear/classifieds${qs}`);
+        if (!res.ok) {
+          if (container) {
+            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Não foi possível carregar os classificados no momento.</div>`;
+          }
+          return;
+        }
+
+        const data = await res.json();
+        const items = data.items || (Array.isArray(data) ? data : []);
+
+        const countBadge = document.getElementById('socialCountClassifieds');
+        if (countBadge) countBadge.innerText = items.length;
+
+        if (items.length === 0) {
+          if (container) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 48px 20px; color: var(--text-dim); width: 100%; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+                <ion-icon name="pricetag-outline" style="font-size: 2.6rem; color: #22c55e; margin-bottom: 10px;"></ion-icon>
+                <h4 style="color: #fff; font-size: 1.15rem; margin-bottom: 6px;">Nenhum equipamento classificado encontrado</h4>
+                <p style="font-size: 0.88rem; color: #94a3b8; max-width: 440px; margin: 0 auto;">Equipamentos marcados como negociáveis pelos músicos aparecerão aqui.</p>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        if (container) {
+          container.innerHTML = items.map(item => {
+            const rawPrice = item.price ? String(item.price).trim() : '';
+            const formattedPrice = rawPrice
+              ? (rawPrice.startsWith('$') || rawPrice.startsWith('R$') ? rawPrice : '$ ' + rawPrice)
+              : 'Negociável';
+            const cleanUser = (item.username || '').replace(/^@+/, '');
+            const descHtml = item.description 
+              ? `<div style="font-size: 0.88rem; color: #94a3b8; line-height: 1.45; white-space: pre-wrap;">${escapeHtml(item.description)}</div>` 
+              : '';
+
+            return `
+              <div class="classified-item-card" style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s, transform 0.15s; width: 100%; box-sizing: border-box;">
+                <!-- 1. Pílula do tipo + 2. Preço -->
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                  <!-- 1. Pílula do tipo -->
+                  <span style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${escapeHtml(item.category || 'Equipamento')}
+                  </span>
+                  <!-- 2. Preço -->
+                  <span style="font-size: 1.05rem; font-weight: 800; color: #22c55e; letter-spacing: -0.2px;">
+                    ${escapeHtml(formattedPrice)}
+                  </span>
+                </div>
+
+                <!-- 3. Nome do Equipamento -->
+                <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; line-height: 1.3;">
+                  ${escapeHtml(item.name || '')}
+                </div>
+
+                <!-- 4. Descrição se houver -->
+                ${descHtml}
+
+                <!-- 5. Por último o username sem puxar o avatar e localização, só o username clicável -->
+                <div style="margin-top: 2px;">
+                  <a href="javascript:void(0)" onclick="openPublicMusicianProfile('${escapeHtml(cleanUser)}')" style="font-size: 0.88rem; font-weight: 700; color: #0ea5e9; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.15s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#0ea5e9'">
+                    @${escapeHtml(cleanUser)}
+                  </a>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error loading classifieds:', err);
+        if (container) {
+          container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Erro ao carregar classificados. Verifique sua conexão.</div>`;
+        }
       }
     }
 

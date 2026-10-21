@@ -178,7 +178,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfileImage, setUserProfileImage] = useState(null);
 
-  // Sub-tabs: 'musicians' | 'projects' | 'bands'
+  // Sub-tabs: 'musicians' | 'projects' | 'bands' | 'classifieds'
   const [subTab, setSubTab] = useState('musicians');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -192,6 +192,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const [projectsPage, setProjectsPage] = useState(1);
   const [musiciansPage, setMusiciansPage] = useState(1);
   const [bandsPage, setBandsPage] = useState(1);
+  const [classifiedsPage, setClassifiedsPage] = useState(1);
   const mainScrollRef = useRef(null);
   const ITEMS_PER_PAGE = 8;
 
@@ -200,6 +201,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
   const [userBands, setUserBands] = useState([]);
   const [cloudMusicians, setCloudMusicians] = useState([]);
   const [publicBands, setPublicBands] = useState([]);
+  const [classifieds, setClassifieds] = useState([]);
+  const [isLoadingClassifieds, setIsLoadingClassifieds] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -210,7 +213,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         loadProjects(),
         loadMusicians(),
         loadPublicBands(),
-        loadUserBands()
+        loadUserBands(),
+        loadClassifieds()
       ]);
     } catch (e) {}
     setRefreshing(false);
@@ -269,6 +273,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     loadMusicians();
     loadPublicBands();
     loadUserBands();
+    loadClassifieds();
   }, []);
 
   // Reset pagination when search, location filters, or tab changes
@@ -276,6 +281,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     setProjectsPage(1);
     setMusiciansPage(1);
     setBandsPage(1);
+    setClassifiedsPage(1);
   }, [searchQuery, filterCity, filterState, filterCountry, subTab]);
 
   // Candidate Scanner: looping magnifying glass animation
@@ -526,6 +532,23 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     } catch (e) {
       console.log('Error loading public bands:', e);
       setPublicBands([]);
+    }
+  };
+
+  const loadClassifieds = async () => {
+    setIsLoadingClassifieds(true);
+    try {
+      const list = await api.getClassifieds();
+      if (Array.isArray(list)) {
+        setClassifieds(list);
+      } else {
+        setClassifieds([]);
+      }
+    } catch (e) {
+      console.log('Error loading classifieds:', e);
+      setClassifieds([]);
+    } finally {
+      setIsLoadingClassifieds(false);
     }
   };
 
@@ -1410,6 +1433,27 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     return displayedMusicians.slice(start, start + ITEMS_PER_PAGE);
   }, [displayedMusicians, musiciansPage]);
 
+  // Classifieds calculations
+  const filteredClassifieds = useMemo(() => {
+    return (classifieds || []).filter(c => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const inName = (c.name || '').toLowerCase().includes(q);
+        const inCat = (c.category || '').toLowerCase().includes(q);
+        const inDesc = (c.description || '').toLowerCase().includes(q);
+        const inUser = (c.username || '').toLowerCase().includes(q);
+        if (!inName && !inCat && !inDesc && !inUser) return false;
+      }
+      return true;
+    });
+  }, [classifieds, searchQuery]);
+
+  const totalClassifiedsPages = Math.max(1, Math.ceil(filteredClassifieds.length / ITEMS_PER_PAGE));
+  const paginatedClassifieds = useMemo(() => {
+    const start = (classifiedsPage - 1) * ITEMS_PER_PAGE;
+    return filteredClassifieds.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredClassifieds, classifiedsPage]);
+
   // Assemble all visible bands (User's visible bands + Announcements projects bands + Network ecosystem bands)
   const allBands = useMemo(() => {
     const list = [];
@@ -2011,6 +2055,55 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                 </Text>
               </View>
             </Pressable>
+
+            {/* Botão Classificados */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.tabButton,
+                subTab === 'classifieds'
+                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
+                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
+                pressed && { opacity: 0.85 }
+              ]}
+              onPress={() => setSubTab('classifieds')}
+            >
+              <Ionicons
+                name={subTab === 'classifieds' ? 'pricetag' : 'pricetag-outline'}
+                size={16}
+                color={subTab === 'classifieds' ? '#ffffff' : colors.textMuted}
+              />
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  {
+                    color: subTab === 'classifieds' ? '#ffffff' : colors.text,
+                    fontWeight: subTab === 'classifieds' ? '700' : '600'
+                  }
+                ]}
+                numberOfLines={1}
+              >
+                {t('classifieds') || 'Classificados'}
+              </Text>
+              <View
+                style={[
+                  styles.tabButtonBadge,
+                  {
+                    backgroundColor: subTab === 'classifieds'
+                      ? 'rgba(255,255,255,0.25)'
+                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonBadgeText,
+                    { color: subTab === 'classifieds' ? '#ffffff' : colors.textMuted }
+                  ]}
+                >
+                  {filteredClassifieds.length}
+                </Text>
+              </View>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -2471,6 +2564,83 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
               })
             )}
             {renderPagination(bandsPage, totalBandsPages, filteredBands.length, setBandsPage)}
+          </View>
+        ) : subTab === 'classifieds' ? (
+          /* ── FEED DE CLASSIFICADOS (EQUIPAMENTOS NEGOCIÁVEIS) ── */
+          <View>
+            {filteredClassifieds.length === 0 ? (
+              <View style={[styles.emptyContainer, { backgroundColor: colors.cardBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]}>
+                <Ionicons name="pricetag-outline" size={40} color={colors.textMuted} />
+                <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+                  {t('noClassifiedsFound') || 'Nenhum equipamento classificado encontrado.'}
+                </Text>
+                <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', marginTop: 4, maxWidth: 320 }}>
+                  {t('noClassifiedsSub') || 'Os equipamentos marcados como negociáveis pelos músicos aparecerão aqui.'}
+                </Text>
+              </View>
+            ) : (
+              paginatedClassifieds.map(item => {
+                const formattedPrice = item.price && String(item.price).trim()
+                  ? (String(item.price).trim().startsWith('$') || String(item.price).trim().startsWith('R$') ? String(item.price).trim() : `$ ${String(item.price).trim()}`)
+                  : (t('negotiable') || 'Negociável');
+                const cleanUsername = (item.username || '').replace(/^@+/, '');
+
+                return (
+                  <View
+                    key={'gear-' + item.id}
+                    style={[
+                      styles.classifiedCard,
+                      {
+                        backgroundColor: colors.cardBackground,
+                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border,
+                      }
+                    ]}
+                  >
+                    {/* 1. Pílula do tipo + 2. Preço */}
+                    <View style={styles.classifiedTopRow}>
+                      {/* 1. Pílula do tipo */}
+                      <View style={[styles.classifiedCategoryPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                        <Text style={[styles.classifiedCategoryText, { color: colors.primary }]} numberOfLines={1}>
+                          {item.category || 'Equipamento'}
+                        </Text>
+                      </View>
+
+                      {/* 2. Preço */}
+                      <Text style={styles.classifiedPriceText}>
+                        {formattedPrice}
+                      </Text>
+                    </View>
+
+                    {/* 3. Nome do equipamento */}
+                    <Text style={[styles.classifiedNameText, { color: colors.text }]} numberOfLines={2}>
+                      {item.name}
+                    </Text>
+
+                    {/* 4. Descrição se houver */}
+                    {item.description ? (
+                      <Text style={[styles.classifiedDescText, { color: colors.textMuted }]}>
+                        {item.description}
+                      </Text>
+                    ) : null}
+
+                    {/* 5. Username clicável (sem avatar e sem localização) */}
+                    <Pressable
+                      onPress={() => handleOpenMusicianProfile({ username: cleanUsername, name: cleanUsername })}
+                      style={({ pressed }) => [
+                        styles.classifiedUserRow,
+                        { opacity: pressed ? 0.7 : 1 }
+                      ]}
+                      hitSlop={8}
+                    >
+                      <Text style={[styles.classifiedUsernameText, { color: colors.primary }]}>
+                        @{cleanUsername}
+                      </Text>
+                    </Pressable>
+                  </View>
+                );
+              })
+            )}
+            {renderPagination(classifiedsPage, totalClassifiedsPages, filteredClassifieds.length, setClassifiedsPage)}
           </View>
         ) : isScanningCandidates ? (
           /* ── TELA DE LOADING COM LUPA ANIMADA PROCURANDO CANDIDATOS ── */
@@ -3383,10 +3553,10 @@ const styles = StyleSheet.create({
   },
   searchInput: { flex: 1, fontSize: 13, paddingVertical: 0 },
 
-  // Tab Buttons com ícones (Usuários, Anúncios, Bandas)
+  // Tab Buttons com ícones (Usuários, Anúncios, Bandas, Classificados)
   tabButtonsContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     paddingVertical: 6,
     width: '100%',
   },
@@ -3395,9 +3565,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 9,
-    paddingHorizontal: 6,
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     borderRadius: 14,
     borderWidth: 1,
   },
@@ -3410,20 +3580,75 @@ const styles = StyleSheet.create({
   },
   tabButtonInactive: {},
   tabButtonText: {
-    fontSize: 13,
+    fontSize: 11.5,
     letterSpacing: -0.2,
   },
   tabButtonBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
     borderRadius: 10,
-    minWidth: 18,
+    minWidth: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabButtonBadgeText: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: '800',
+  },
+
+  // Classifieds Card Styles
+  classifiedCard: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
+    width: '100%',
+  },
+  classifiedTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    gap: 8,
+  },
+  classifiedCategoryPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3.5,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  classifiedCategoryText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  classifiedPriceText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#22c55e',
+    letterSpacing: -0.2,
+  },
+  classifiedNameText: {
+    fontSize: 16,
+    fontWeight: '800',
+    lineHeight: 22,
+    marginBottom: 6,
+  },
+  classifiedDescText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  classifiedUserRow: {
+    alignSelf: 'flex-start',
+    marginTop: 2,
+    paddingVertical: 2,
+  },
+  classifiedUsernameText: {
+    fontSize: 13.5,
+    fontWeight: '700',
   },
 
   scrollContent: { paddingBottom: 60, paddingTop: 14, paddingHorizontal: 0 },
