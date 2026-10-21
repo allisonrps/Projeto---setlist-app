@@ -34,7 +34,6 @@ import { setlistService } from './services/setlistService';
 import { musiciansService } from './services/musiciansService';
 
 // Componentes
-import BandCarousel from './components/BandCarousel';
 import SongListItem from './components/SongListItem';
 import SetlistCard from './components/SetlistCard';
 import LoginScreen from './components/LoginScreen';
@@ -722,6 +721,7 @@ function MainApp() {
   const [showPublishBandModal, setShowPublishBandModal] = useState(false);
   const [selectedBandForPublish, setSelectedBandForPublish] = useState(null);
   const [onlineEvents, setOnlineEvents] = useState([]);
+  const [syncingBandsMap, setSyncingBandsMap] = useState({});
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -785,7 +785,14 @@ function MainApp() {
               setIsLoggedIn(true);
               // Auto-sync cloud bands in background if logged in
               setIsCloudSyncing(true);
-              bandService.syncAllUserBandsFromCloud().then(() => {
+              bandService.syncAllUserBandsFromCloud(false, (bandId, isSyncing) => {
+                setSyncingBandsMap(prev => {
+                  const next = { ...prev };
+                  if (isSyncing) next[String(bandId)] = true;
+                  else delete next[String(bandId)];
+                  return next;
+                });
+              }).then(() => {
                 reloadAllData(true);
               }).catch(e => {
                 console.log('Error auto-syncing bands on startup:', e);
@@ -850,20 +857,34 @@ function MainApp() {
                 localMatch.membersCount = cb.membersCount || localMatch.membersCount;
               } else {
                 try {
-                  const createdId = await bandService.create({
-                    name: cb.name,
-                    genres: cb.genre || '',
-                    imageUri: cb.imageUri || null,
-                    city: cb.city || '',
-                    state: cb.state || '',
-                    country: cb.country || '',
-                    bandType: cb.bandType || '',
-                    publicSlug: cb.publicSlug || cb.username || '',
-                    cloudId: cb.id,
-                    cloudVersion: cb.version || 1,
-                    lastSyncedAt: cb.updatedAt || new Date().toISOString(),
-                    syncDataJson: cb.syncDataJson || null
-                  });
+                  const createdId = await bandService.insert(
+                    cb.name || 'Minha Banda',
+                    cb.imageUri || null,
+                    '',
+                    '',
+                    cb.bandType || 'cover',
+                    cb.bandType === 'autoral' ? 0 : 1,
+                    cb.bandType === 'autoral' ? 1 : 0,
+                    cb.city || '',
+                    cb.state || '',
+                    cb.country || 'Brasil',
+                    cb.genresJson || cb.genre || '[]',
+                    '{}',
+                    cb.instagram || '',
+                    cb.youtube || '',
+                    cb.spotify || '',
+                    '',
+                    '',
+                    cb.publicSlug || cb.username || '',
+                    true // skipLog = true to avoid fake activity logs on reload
+                  );
+                  await bandService.updateCloudInfo(
+                    createdId,
+                    cb.id,
+                    cb.version || 1,
+                    cb.updatedAt || new Date().toISOString(),
+                    cb.syncDataJson || null
+                  );
                   rawBands.push({
                     id: createdId,
                     name: cb.name,
@@ -873,8 +894,31 @@ function MainApp() {
                     isLeader: cb.isLeader,
                     membersCount: cb.membersCount || 0
                   });
-                } catch (createErr) {}
+                } catch (createErr) {
+                  console.log('Error creating cloud band in reloadAllData:', createErr);
+                }
               }
+            }
+            // Auto-sync em segundo plano de qualquer banda online que ainda não tenha dados locais completos
+            const bandsNeedingPull = (rawBands || []).filter(b => b && b.cloudId && (!b.syncDataJson || b.cloudVersion === 0));
+            if (bandsNeedingPull.length > 0) {
+              setTimeout(async () => {
+                for (const b of bandsNeedingPull) {
+                  setSyncingBandsMap(prev => ({ ...prev, [String(b.id)]: true }));
+                  try {
+                    await bandService.pullBandFromCloud(b.id);
+                  } catch (e) {
+                    console.log('Auto-pull band err:', e);
+                  } finally {
+                    setSyncingBandsMap(prev => {
+                      const n = { ...prev };
+                      delete n[String(b.id)];
+                      return n;
+                    });
+                  }
+                }
+                await reloadAllData(true);
+              }, 400);
             }
           }
         } catch (cloudBandErr) {
@@ -1128,15 +1172,20 @@ function MainApp() {
           if (Array.isArray(parsed?.activityLogs)) logs = parsed.activityLogs;
         } catch (e) {}
       }
-      if (logs.length > 0) {
-        const lastLog = logs[0] || logs[logs.length - 1];
+      // Filtrar logs irrelevantes para notificações (criação da banda e ações feitas pelo próprio usuário)
+      const relevantLogs = (logs || []).filter(l => {
+        if (!l) return false;
+        if (l.actionType === 'created_band' || l.actionType === 'band_created') return false;
+        if (l.authorName === 'Você') return false;
+        return true;
+      });
+
+      if (relevantLogs.length > 0) {
+        const lastLog = relevantLogs[0] || relevantLogs[relevantLogs.length - 1];
         if (lastLog?.createdAt) {
           const logTime = new Date(lastLog.createdAt).getTime();
-          if (lastViewed) {
-            if (logTime > lastViewed) return true;
-          } else {
-            const diffHours = (Date.now() - logTime) / (1000 * 60 * 60);
-            if (diffHours < 72) return true;
+          if (lastViewed && logTime > lastViewed) {
+            return true;
           }
         }
       }
@@ -1199,7 +1248,14 @@ function MainApp() {
     setRefreshingBands(true);
     setIsCloudSyncing(true);
     try {
-      const syncRes = await bandService.syncAllUserBandsFromCloud(true);
+      const syncRes = await bandService.syncAllUserBandsFromCloud(true, (bandId, isSyncing) => {
+        setSyncingBandsMap(prev => {
+          const next = { ...prev };
+          if (isSyncing) next[String(bandId)] = true;
+          else delete next[String(bandId)];
+          return next;
+        });
+      });
       await reloadAllData();
       if (syncRes && syncRes.count > 0) {
         Alert.alert(t('syncedTitle') || 'Sincronizado', `${syncRes.count} ${t('bands') || 'bandas'} sincronizadas com a nuvem!`);
@@ -4159,25 +4215,6 @@ function MainApp() {
             />
           }
         >
-          {/* CARROSSEL DE BANDAS NA ABA DE BANDAS */}
-          <BandCarousel
-              bands={bands}
-              setlists={setlists}
-              hideFinancialValues={hideFinancialValues}
-              onToggleHideFinancials={() => setHideFinancialValues(!hideFinancialValues)}
-              selectedBandId={selectedBandId}
-              getBandSyncStatus={getBandSyncStatus}
-            onSelectBand={(band) => {
-              handleOpenBand(band);
-            }}
-            onAddBand={() => {
-              setEditingBand(null);
-              setShowBandModal(true);
-            }}
-            onEditBand={handleEditBand}
-            onDeleteBand={handleDeleteBand}
-          />
-
           {(() => {
             const pendingInvites = (receivedInvites || []).filter(i => i.status === 'pending');
             const hasNoContent = filteredBands.length === 0 && pendingInvites.length === 0;
@@ -4456,24 +4493,33 @@ function MainApp() {
                 } catch (e) {}
               }
 
-              // MODO ONLINE: consulta apenas dados da API (syncDataJson)
+              const isSyncingThisBand = Boolean(syncingBandsMap[String(band.id)] || (band.cloudId && syncingBandsMap[String(band.cloudId)]));
+
+              // MODO ONLINE: consulta dados da API (syncDataJson), com fallback para o SQLite
               // MODO OFFLINE: consulta dados do SQLite (setlists, songs, etc)
+              const localSetlists = setlists.filter(s => s && s.myBandId === band.id);
               const bSetlists = isOnline
-                ? (onlineSync?.setlists || [])
-                : setlists.filter(s => s && s.myBandId === band.id);
+                ? ((onlineSync?.setlists && onlineSync.setlists.length > 0) ? onlineSync.setlists : localSetlists)
+                : localSetlists;
               const showsCount = bSetlists.filter(s => s.type === 'show').length;
               const rehearsalsCount = bSetlists.filter(s => s.type !== 'show').length;
-              const songsCount = isOnline ? (onlineSync?.songs?.length || 0) : (band.songsCount || 0);
-              const membersCount = isOnline ? (band.membersCount || onlineSync?.members?.length || 0) : (band.membersCount || 0);
+
+              const localSongs = (band.songsList && band.songsList.length > 0)
+                ? band.songsList
+                : songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase()))));
+              const songsCount = isOnline 
+                ? ((onlineSync?.songs && onlineSync.songs.length > 0) ? onlineSync.songs.length : (band.songsCount || localSongs.length))
+                : (band.songsCount || localSongs.length);
+              const membersCount = isOnline 
+                ? (band.membersCount || onlineSync?.members?.length || 0) 
+                : (band.membersCount || 0);
 
               // Top 4 style tags by percentage
               const tagCounts = {};
               let totalTagsCount = 0;
               const bSongs = isOnline
-                ? (onlineSync?.songs || [])
-                : ((band.songsList && band.songsList.length > 0)
-                  ? band.songsList
-                  : songs.filter(s => s && (s.myBandId === band.id || (s.originalBand && band.name && s.originalBand.toLowerCase().includes(band.name.toLowerCase())))));
+                ? ((onlineSync?.songs && onlineSync.songs.length > 0) ? onlineSync.songs : localSongs)
+                : localSongs;
               
               bSongs.forEach(s => {
                 if (s.style && s.style.trim()) {
@@ -4666,7 +4712,11 @@ function MainApp() {
                     {/* Músicas (Nota Musical) */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Ionicons name="musical-notes" size={18} color={colors.primary} />
-                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{songsCount}</Text>
+                      {isSyncingThisBand && songsCount === 0 ? (
+                        <ActivityIndicator size="small" color={colors.primary} style={{ transform: [{ scale: 0.7 }] }} />
+                      ) : (
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{songsCount}</Text>
+                      )}
                     </View>
 
                     {/* Integrantes */}
@@ -4688,7 +4738,12 @@ function MainApp() {
                     </View>
 
                     {/* Modalidade da Banda: Online ou Offline */}
-                    {band.cloudId ? (
+                    {isSyncingThisBand ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <ActivityIndicator size="small" color={colors.primary} style={{ transform: [{ scale: 0.8 }] }} />
+                        <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>{t('syncing') || 'Atualizando...'}</Text>
+                      </View>
+                    ) : band.cloudId ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <Ionicons name="cloud-done" size={17} color="#10b981" />
                         <Text style={{ fontSize: 12, fontWeight: '900', color: '#10b981' }}>Online</Text>
@@ -5993,7 +6048,14 @@ function MainApp() {
       setIsLoggedIn(true);
       setIsCloudSyncing(true);
       try {
-        await bandService.syncAllUserBandsFromCloud();
+        await bandService.syncAllUserBandsFromCloud(true, (bandId, isSyncing) => {
+          setSyncingBandsMap(prev => {
+            const next = { ...prev };
+            if (isSyncing) next[String(bandId)] = true;
+            else delete next[String(bandId)];
+            return next;
+          });
+        });
       } catch (syncErr) {
         console.log('Error syncing user cloud bands on login:', syncErr);
       }

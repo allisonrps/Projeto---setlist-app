@@ -109,7 +109,7 @@ export const bandService = {
     return syncRes;
   },
 
-  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '', publicSlug = '') {
+  async insert(name, imageUri, startDate = '', endDate = '', bandType = 'cover', isCover = 1, isAutoral = 0, city = '', state = '', country = '', genres = '[]', links = '{}', instagram = '', youtube = '', spotify = '', tiktok = '', facebook = '', publicSlug = '', skipLog = false) {
     try {
       const result = await db.runAsync(
         'INSERT INTO my_bands (name, imageUri, startDate, endDate, bandType, isCover, isAutoral, city, state, country, genres, links, instagram, youtube, spotify, tiktok, facebook, publicSlug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
@@ -135,9 +135,11 @@ export const bandService = {
         ]
       );
       const newId = result.lastInsertRowId;
-      try {
-        await this.logBandActivity(newId, 'created_band', `criou a banda ${name.trim()}`);
-      } catch (e) {}
+      if (!skipLog) {
+        try {
+          await this.logBandActivity(newId, 'created_band', `criou a banda ${name.trim()}`);
+        } catch (e) {}
+      }
       return newId;
     } catch (error) {
       console.error('Error in bandService.insert:', error);
@@ -944,13 +946,21 @@ export const bandService = {
 
       // Pull from cloud
       const cloudData = await api.pullBand(localBand.cloudId);
-      if (!cloudData || !cloudData.syncDataJson) {
-        throw new Error('Nenhum dado sincronizado encontrado na nuvem para esta banda.');
+      if (!cloudData) {
+        throw new Error('Nenhum dado retornado da nuvem para esta banda.');
       }
 
-      const snapshot = typeof cloudData.syncDataJson === 'string'
-        ? JSON.parse(cloudData.syncDataJson)
-        : cloudData.syncDataJson;
+      let snapshot = {};
+      if (cloudData.syncDataJson) {
+        try {
+          snapshot = typeof cloudData.syncDataJson === 'string'
+            ? JSON.parse(cloudData.syncDataJson)
+            : cloudData.syncDataJson;
+        } catch (e) {
+          console.log('Error parsing cloudData.syncDataJson in pullBandFromCloud:', e);
+          snapshot = {};
+        }
+      }
 
       // 1. Update band basic metadata and save image locally
       let incomingImage = snapshot.band?.imageUri || cloudData.imageUri;
@@ -1357,10 +1367,14 @@ export const bandService = {
         }
       }
 
-      // Update local band sync state
+      // Update local band sync state and syncDataJson cache
+      const rawSyncJson = typeof cloudData.syncDataJson === 'string'
+        ? cloudData.syncDataJson
+        : (cloudData.syncDataJson ? JSON.stringify(cloudData.syncDataJson) : null);
+
       await db.runAsync(
-        'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ? WHERE id = ?;',
-        [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), bandId]
+        'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ?, syncDataJson = COALESCE(?, syncDataJson) WHERE id = ?;',
+        [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), rawSyncJson, bandId]
       );
 
       return {
@@ -1374,7 +1388,7 @@ export const bandService = {
     }
   },
 
-  async syncAllUserBandsFromCloud(force = false) {
+  async syncAllUserBandsFromCloud(force = false, onProgress = null) {
     try {
       const loggedIn = await api.isLoggedIn();
       if (!loggedIn) return { success: false, reason: 'not_logged_in' };
@@ -1422,7 +1436,9 @@ export const bandService = {
             cb.youtube || '',
             cb.spotify || '',
             '',
-            ''
+            '',
+            cb.publicSlug || cb.username || '',
+            true // skipLog = true to avoid fake created_band activity log on sync
           );
 
           // Update cloud info on the new band
@@ -1435,13 +1451,19 @@ export const bandService = {
           );
 
           // Pull all songs, setlists, and details from cloud for this band
+          if (onProgress) {
+            try { onProgress(localBandId, true); } catch (e) {}
+          }
           try {
             await this.pullBandFromCloud(localBandId);
+            importedOrUpdatedCount++;
           } catch (pullErr) {
             console.log('Error pulling band data for new band:', cb.name, pullErr);
+          } finally {
+            if (onProgress) {
+              try { onProgress(localBandId, false); } catch (e) {}
+            }
           }
-
-          importedOrUpdatedCount++;
         } else {
           // Band already exists locally
           if (!local.cloudId || Number(local.cloudId) !== Number(cb.id)) {
@@ -1458,11 +1480,18 @@ export const bandService = {
           const remoteVer = cb.version || 0;
           const localVer = local.cloudVersion || 0;
           if (force || remoteVer !== localVer || !local.lastSyncedAt || cb.lastSyncedAt !== local.lastSyncedAt) {
+            if (onProgress) {
+              try { onProgress(localBandId, true); } catch (e) {}
+            }
             try {
               await this.pullBandFromCloud(localBandId);
               importedOrUpdatedCount++;
             } catch (pullErr) {
               console.log('Error pulling band update for:', cb.name, pullErr);
+            } finally {
+              if (onProgress) {
+                try { onProgress(localBandId, false); } catch (e) {}
+              }
             }
           }
         }

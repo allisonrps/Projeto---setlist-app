@@ -2507,6 +2507,7 @@ export default function BandDetailScreen({
 
     // 2. Logs de atividade explícitos (do snapshot ou SQLite)
     (activityLogs || []).forEach(l => {
+      if (l.actionType === 'created_band' || l.actionType === 'band_created') return;
       const d = l.createdAt ? new Date(l.createdAt) : null;
       const ts = d && !isNaN(d.getTime()) ? d.getTime() : Date.now();
       const desc = l.description || 'realizou uma alteração';
