@@ -685,7 +685,7 @@ const translations = {
     rememberCredentials: 'Lembrar dados de acesso',
     enterNetwork: 'Entrar na Rede',
     alreadyHaveAccount: 'Já possui uma conta? ',
-    dontHaveAccount: 'Não possui uma conta? ',
+    dontHaveAccount: 'Não possui uma conta?',
     signIn: 'Entrar',
     signUp: 'Cadastre-se',
     fillEmailPassword: 'Preencha o e-mail e a senha.',
@@ -1219,6 +1219,10 @@ const translations = {
     agendaRehearsals: 'Ensaios',
     agendaIncome: 'Entradas',
     selectYear: 'Selecionar Ano',
+    rememberLogin: 'Lembrar login',
+    alreadyHaveCodePrompt: 'Já possui um código de verificação?',
+    activateAccount: 'Ativar conta',
+    byContinuingAgree: 'Ao continuar, você concorda com nossos'
   },
 
   en: {
@@ -1904,7 +1908,7 @@ const translations = {
     rememberCredentials: 'Remember login details',
     enterNetwork: 'Enter Network',
     alreadyHaveAccount: 'Already have an account? ',
-    dontHaveAccount: 'Don\'t have an account? ',
+    dontHaveAccount: "Don't have an account?",
     signIn: 'Sign In',
     signUp: 'Sign Up',
     fillEmailPassword: 'Please fill in email and password.',
@@ -2286,7 +2290,7 @@ const translations = {
     noSocialLinksSet: 'No social links configured',
 
     // Auth & Network Login additions
-    forgotPassword: 'Forgot password?',
+    forgotPassword: 'Forgot password',
     forgotPasswordTitle: 'Reset Password',
     forgotPasswordSubtitle: 'Enter the email registered with your account. We will send a 6-digit security code to reset your password.',
     sendResetCode: 'Send Code',
@@ -2438,6 +2442,10 @@ const translations = {
     agendaRehearsals: 'Rehearsals',
     agendaIncome: 'Income',
     selectYear: 'Select Year',
+    rememberLogin: 'Remember login',
+    alreadyHaveCodePrompt: 'Already have a verification code?',
+    activateAccount: 'Active account',
+    byContinuingAgree: 'By continuing you agree to our'
   },
 
   es: {
@@ -3121,11 +3129,11 @@ const translations = {
     passwordLabel: 'Contraseña',
     passwordPlaceholder: 'Tu contraseña',
     rememberCredentials: 'Recordar datos de acceso',
-    enterNetwork: 'Entrar a la Red',
+    enterNetwork: 'Entrar en la Red',
     alreadyHaveAccount: '¿Ya tienes una cuenta? ',
-    dontHaveAccount: '¿No tienes una cuenta? ',
+    dontHaveAccount: '¿No tienes una cuenta?',
     signIn: 'Iniciar sesión',
-    signUp: 'Regístrate',
+    signUp: 'Registrarse',
     fillEmailPassword: 'Completa el correo y la contraseña.',
     fillUsername: 'Ingresa tu nombre de usuario.',
     loginError: 'Error al Iniciar Sesión',
@@ -3656,6 +3664,10 @@ const translations = {
     agendaRehearsals: 'Ensayos',
     agendaIncome: 'Ingresos',
     selectYear: 'Seleccionar Año',
+    rememberLogin: 'Recordar inicio de sesión',
+    alreadyHaveCodePrompt: '¿Ya tienes un código de verificación?',
+    activateAccount: 'Activar cuenta',
+    byContinuingAgree: 'Al continuar, aceptas nuestros'
   }
 };
 

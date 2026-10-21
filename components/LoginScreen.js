@@ -58,16 +58,16 @@ function AnimatedGradientSignUp({ text, onPress }) {
 
   const borderAnim = anim.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ['rgba(56, 189, 248, 0.4)', 'rgba(244, 114, 182, 0.55)', 'rgba(56, 189, 248, 0.4)'],
+    outputRange: ['rgba(56, 189, 248, 0.55)', 'rgba(244, 114, 182, 0.70)', 'rgba(56, 189, 248, 0.55)'],
   });
 
   const bgAnim = anim.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ['rgba(56, 189, 248, 0.08)', 'rgba(244, 114, 182, 0.12)', 'rgba(56, 189, 248, 0.08)'],
+    outputRange: ['rgba(56, 189, 248, 0.12)', 'rgba(244, 114, 182, 0.18)', 'rgba(56, 189, 248, 0.12)'],
   });
 
   return (
-    <Pressable onPress={onPress} hitSlop={6} style={styles.animatedSignUpPill}>
+    <Pressable onPress={onPress} hitSlop={8} style={styles.animatedSignUpPill}>
       <Animated.View style={[
         styles.animatedSignUpInner,
         {
@@ -75,11 +75,11 @@ function AnimatedGradientSignUp({ text, onPress }) {
           backgroundColor: bgAnim,
         }
       ]}>
-        <Ionicons name="sparkles" size={13} color="#f472b6" style={{ marginRight: 6 }} />
+        <Ionicons name="sparkles" size={16} color="#f472b6" style={{ marginRight: 8 }} />
         <Animated.Text style={[styles.animatedSignUpText, { color: textColor }]}>
           {text}
         </Animated.Text>
-        <Ionicons name="arrow-forward" size={13} color="#38bdf8" style={{ marginLeft: 6 }} />
+        <Ionicons name="arrow-forward" size={16} color="#38bdf8" style={{ marginLeft: 8 }} />
       </Animated.View>
     </Pressable>
   );
@@ -807,11 +807,33 @@ export default function LoginScreen({ onLogin }) {
           )}
 
           {/* Em modo de Login: Lembrar login na esquerda + Esqueci a senha na direita em linha única */}
+          {/* BOTÃO: ENTER NETWORK / CRIAR CONTA */}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.loginButton, 
+              { 
+                backgroundColor: colors.primary, 
+                opacity: pressed || loading ? 0.85 : 1,
+                marginTop: isRegistering ? 14 : 6
+              }
+            ]}
+            onPress={handleSubmit}
+            disabled={loading || googleLoading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>
+                {isRegistering ? (t('createAccount') || 'CREATE ACCOUNT') : (t('enterNetwork') || 'ENTER NETWORK')}
+              </Text>
+            )}
+          </Pressable>
+
           {!isRegistering && (
-            <View style={styles.loginRowOptions}>
-              {/* 1. Lembrar login */}
+            <>
+              {/* Remember login */}
               <Pressable 
-                style={styles.rememberRow} 
+                style={styles.centeredRememberRow} 
                 onPress={() => setRememberMe(!rememberMe)}
                 hitSlop={8}
               >
@@ -825,13 +847,13 @@ export default function LoginScreen({ onLogin }) {
                   {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
                 </View>
                 <Text style={[styles.rememberText, { color: colors.text }]}>
-                  {t('rememberCredentials') || 'Lembrar dados'}
+                  {t('rememberLogin') || 'Remember login'}
                 </Text>
               </Pressable>
 
-              {/* 2. Esqueci minha senha */}
+              {/* Forgot password */}
               <Pressable 
-                style={styles.forgotPasswordAction}
+                style={styles.centeredActionRow}
                 onPress={() => {
                   const clean = email.trim().toLowerCase();
                   if (clean) setForgotEmail(clean);
@@ -840,76 +862,51 @@ export default function LoginScreen({ onLogin }) {
                 }}
                 hitSlop={8}
               >
-                <Ionicons name="key-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                  {t('forgotPassword') || 'Esqueci a senha'}
+                <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
+                  {t('forgotPassword') || 'Forgot password'}
                 </Text>
+              </Pressable>
+
+              {/* SIGN UP maior */}
+              <View style={styles.centeredSignupContainer}>
+                <Text style={[styles.dontHaveAccountText, { color: colors.textMuted }]}>
+                  {t('dontHaveAccount') || "Don't have an account?"}
+                </Text>
+                <AnimatedGradientSignUp 
+                  text={t('signUp') || 'SIGN UP'} 
+                  onPress={() => {
+                    setIsRegistering(true);
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                />
+              </View>
+            </>
+          )}
+
+          {/* Alternar no modo Cadastro de volta para Login */}
+          {isRegistering && (
+            <View style={styles.centeredSignupContainer}>
+              <Text style={[styles.dontHaveAccountText, { color: colors.textMuted }]}>
+                {t('alreadyHaveAccount') || 'Already have an account?'}
+              </Text>
+              <Pressable
+                style={[styles.largeLoginReturnBtn, { borderColor: colors.primary + '60', backgroundColor: colors.primary + '18' }]}
+                onPress={() => {
+                  setIsRegistering(false);
+                  setPassword('');
+                  setConfirmPassword('');
+                }}
+              >
+                <Text style={[styles.largeLoginReturnText, { color: colors.primary }]}>
+                  {t('signIn') || 'Sign In'}
+                </Text>
+                <Ionicons name="arrow-forward" size={15} color={colors.primary} style={{ marginLeft: 6 }} />
               </Pressable>
             </View>
           )}
 
-          {/* Botão Principal de Login / Cadastro */}
-          <Pressable 
-            style={({ pressed }) => [
-              styles.loginButton, 
-              { 
-                backgroundColor: colors.primary, 
-                opacity: pressed || loading ? 0.85 : 1,
-                marginTop: isRegistering ? 14 : 4
-              }
-            ]}
-            onPress={handleSubmit}
-            disabled={loading || googleLoading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginButtonText}>
-                {isRegistering ? (t('createAccount') || 'Criar Conta') : (t('enterNetwork') || 'Entrar na Rede')}
-              </Text>
-            )}
-          </Pressable>
-
-          {/* Sign up em linha única (abaixo do botão de login) */}
-          {!isRegistering && (
-            <View style={styles.singleLineSignupRow}>
-              <Text style={{ color: colors.textMuted, fontSize: 13.5, fontWeight: '500' }}>
-                {t('dontHaveAccount') || 'Não possui uma conta?'}
-              </Text>
-              <AnimatedGradientSignUp 
-                text={t('signUp') || 'Cadastre-se'} 
-                onPress={() => {
-                  setIsRegistering(true);
-                  setPassword('');
-                  setConfirmPassword('');
-                }}
-              />
-            </View>
-          )}
-
-          {/* Alternar no modo Cadastro de volta para Login em linha única */}
-          {isRegistering && (
-            <Pressable
-              style={styles.singleLineSignupRow}
-              onPress={() => {
-                setIsRegistering(false);
-                setPassword('');
-                setConfirmPassword('');
-              }}
-            >
-              <Text style={{ color: colors.textMuted, fontSize: 13.5, fontWeight: '500' }}>
-                {t('alreadyHaveAccount') || 'Já possui uma conta?'}
-              </Text>
-              <View style={[styles.loginReturnPill, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '15' }]}>
-                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>
-                  {t('signIn') || 'Entrar'}
-                </Text>
-                <Ionicons name="arrow-forward" size={12} color={colors.primary} style={{ marginLeft: 4 }} />
-              </View>
-            </Pressable>
-          )}
-
-          {/* Divisor "OU" */}
+          {/* Divisor "OU / OR" */}
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#e2e8f0' }]} />
             <Text style={[styles.dividerText, { color: colors.textMuted }]}>{language === 'en' ? 'OR' : language === 'es' ? 'O' : 'OU'}</Text>
@@ -935,49 +932,56 @@ export default function LoginScreen({ onLogin }) {
               <>
                 <Ionicons name="logo-google" size={19} color="#ea4335" style={{ marginRight: 10 }} />
                 <Text style={[styles.googleButtonText, { color: colors.text }]}>
-                  {t('continueWithGoogle') || 'Continuar com o Google'}
+                  {t('continueWithGoogle') || 'Continue with Google'}
                 </Text>
               </>
             )}
           </Pressable>
 
-          {/* Link para Ativar Conta para quem já recebeu o código */}
+          {/* already have a verification code / Active account */}
           {!isRegistering && (
-            <Pressable 
-              style={{ alignSelf: 'center', marginTop: 14, paddingVertical: 4 }}
-              onPress={() => {
-                const clean = email.trim().toLowerCase();
-                if (clean) setPendingEmail(clean);
-                setWaitingConfirmation(true);
-              }}
-              hitSlop={8}
-            >
-              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                {t('alreadyHaveCode') || 'Já recebeu um código de confirmação? Ativar conta'}
+            <View style={styles.centeredActivationBlock}>
+              <Text style={[styles.activationPromptText, { color: colors.textMuted }]}>
+                {t('alreadyHaveCodePrompt') || 'already have a verification code?'}
               </Text>
-            </Pressable>
+              <Pressable 
+                style={styles.activateAccountBtn}
+                onPress={() => {
+                  const clean = email.trim().toLowerCase();
+                  if (clean) setPendingEmail(clean);
+                  setWaitingConfirmation(true);
+                }}
+                hitSlop={8}
+              >
+                <Text style={[styles.activateAccountText, { color: colors.primary }]}>
+                  {t('activateAccount') || 'Active account'}
+                </Text>
+              </Pressable>
+            </View>
           )}
 
-          
-
-          {/* Links para Termos de Serviço e Política de Privacidade */}
-          <View style={{ marginTop: 20, marginBottom: 4, paddingHorizontal: 12, alignItems: 'center' }}>
-            <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', lineHeight: 16 }}>
-              {(t('termsAndPrivacyIntro') || 'Ao continuar, você concorda com nossos')}{' '}
+          {/* By continuing you agree to our / Terms of Service and Privacy Policy */}
+          <View style={styles.centeredLegalBlock}>
+            <Text style={[styles.legalIntroText, { color: colors.textMuted }]}>
+              {t('byContinuingAgree') || 'By continuing you agree to our'}
+            </Text>
+            <View style={styles.legalLinksRow}>
               <Text 
-                style={{ color: colors.primary, fontWeight: '600', textDecorationLine: 'underline' }}
+                style={[styles.legalLink, { color: colors.primary }]}
                 onPress={() => Linking.openURL('https://bandlink.pro/terms.html')}
               >
-                {t('termsOfService') || 'Termos de Serviço'}
+                {t('termsOfService') || 'Terms of Service'}
               </Text>
-              {` ${t('andText') || 'e'} `}
+              <Text style={[styles.legalAndText, { color: colors.textMuted }]}>
+                {` ${t('andText') || 'and'} `}
+              </Text>
               <Text 
-                style={{ color: colors.primary, fontWeight: '600', textDecorationLine: 'underline' }}
+                style={[styles.legalLink, { color: colors.primary }]}
                 onPress={() => Linking.openURL('https://bandlink.pro/privacy.html')}
               >
-                {t('privacyPolicy') || 'Política de Privacidade'}
-              </Text>.
-            </Text>
+                {t('privacyPolicy') || 'Privacy Policy'}
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -1272,45 +1276,24 @@ export default function LoginScreen({ onLogin }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 },
+  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
   header: { alignItems: 'center', marginTop: 16, marginBottom: 24 },
   iconBadge: { width: 72, height: 72, borderRadius: 36, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   title: { fontSize: 24, fontWeight: '800', marginBottom: 6, letterSpacing: -0.3, textAlign: 'center' },
-  subtitle: { fontSize: 13, textAlign: 'center', lineHeight: 19, paddingHorizontal: 12 },
+  subtitle: { fontSize: 13, textAlign: 'center', lineHeight: 19, paddingHorizontal: 16, marginTop: 4 },
   
-  // Brand Header moderno do BandLink Network
+  // Brand Header com Logo Puro e Botão Shimmer
   brandHeader: {
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20,
+    marginTop: 4,
+    marginBottom: 18,
   },
-  logoOuterGlowWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  logoOuterGlow: {
-    width: 104,
-    height: 104,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    shadowColor: '#38bdf8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  brandLogo: {
-    width: 78,
-    height: 78,
-  },
-  brandTitleText: {
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: 2.5,
-    marginBottom: 8,
+  brandHeroLogo: {
+    width: 140,
+    height: 140,
+    borderRadius: 26,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
   animatedNetworkHeroBadge: {
     flexDirection: 'row',
@@ -1319,7 +1302,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1.5,
-    marginBottom: 12,
+    marginBottom: 8,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
@@ -1333,76 +1316,145 @@ const styles = StyleSheet.create({
 
   formContainerClean: {
     width: '100%',
-    marginTop: 4,
-    paddingHorizontal: 4,
+    marginTop: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
-  formContainer: {
-    width: '100%',
-    marginTop: 4,
-    paddingHorizontal: 4,
-  },
-  inputGroup: { marginBottom: 16 },
+  inputGroup: { marginBottom: 15 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, height: 50 },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 15, height: '100%' },
 
-  loginRowOptions: {
-    flexDirection: 'row',
+  // Botão Principal
+  loginButton: {
+    height: 50,
+    borderRadius: 14,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-    marginBottom: 16,
-    paddingHorizontal: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  forgotPasswordAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
-  singleLineSignupRow: {
+
+  // Remember login centralizado
+  centeredRememberRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 16,
-    marginBottom: 4,
+    marginTop: 14,
+    marginBottom: 6,
+    alignSelf: 'center',
   },
-  loginReturnPill: {
-    flexDirection: 'row',
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 5,
+    borderWidth: 1.5,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
-    borderWidth: 1,
+    marginRight: 8,
+  },
+  rememberText: {
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+
+  // Forgot password centralizado
+  centeredActionRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    marginBottom: 16,
+    alignSelf: 'center',
+  },
+  forgotPasswordText: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+
+  // SIGN UP maior centralizado
+  centeredSignupContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+    marginBottom: 4,
+    gap: 8,
+  },
+  dontHaveAccountText: {
+    fontSize: 13.5,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   animatedSignUpPill: {
-    borderRadius: 16,
+    borderRadius: 22,
+    alignSelf: 'center',
+    marginTop: 4,
   },
   animatedSignUpInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 11,
+    borderRadius: 22,
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
   },
   animatedSignUpText: {
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: 0.8,
   },
 
-  rememberRow: { flexDirection: 'row', alignItems: 'center' },
-  checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  rememberText: { fontSize: 13, fontWeight: '500' },
-  loginButton: { height: 50, borderRadius: 14, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
-  loginButtonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  
-  // Divisor OU
-  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 18 },
-  dividerLine: { flex: 1, height: 1 },
-  dividerText: { marginHorizontal: 14, fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
+  largeLoginReturnBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    marginTop: 4,
+  },
+  largeLoginReturnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+
+  // Divisor OU / OR
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 18,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    marginHorizontal: 14,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
 
   // Botão Google
   googleButton: {
@@ -1414,7 +1466,61 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  googleButtonText: { fontSize: 15, fontWeight: '700' },
+  googleButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+
+  // already have a verification code / Active account centralizado
+  centeredActivationBlock: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 18,
+    gap: 4,
+  },
+  activationPromptText: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  activateAccountBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  activateAccountText: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+
+  // By continuing you agree to our / Terms of Service and Privacy Policy
+  centeredLegalBlock: {
+    marginTop: 22,
+    marginBottom: 4,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  legalIntroText: {
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  legalLinksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    marginTop: 2,
+  },
+  legalLink: {
+    fontSize: 11,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  legalAndText: {
+    fontSize: 11,
+  },
 
   toggleRow: { marginTop: 18, alignItems: 'center', paddingVertical: 6 },
   
@@ -1432,6 +1538,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    textAlign: 'center',
   },
   rulesGrid: {
     gap: 6,
@@ -1439,11 +1546,13 @@ const styles = StyleSheet.create({
   ruleItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
   ruleText: {
     fontSize: 12,
     fontWeight: '500',
+    textAlign: 'center',
   },
 
   // Modal / Bottom Sheet de Recuperação
