@@ -800,6 +800,18 @@ function MainApp() {
   const [dbReady, setDbReady] = useState(false);
   const [splashFinished, setSplashFinished] = useState(false);
   const [refreshingBands, setRefreshingBands] = useState(false);
+  const [refreshingSongs, setRefreshingSongs] = useState(false);
+
+  const handleRefreshSongs = async () => {
+    setRefreshingSongs(true);
+    try {
+      await reloadAllData(true);
+    } catch (e) {
+      console.log('Error refreshing songs:', e);
+    } finally {
+      setRefreshingSongs(false);
+    }
+  };
   const [cloudBandsMap, setCloudBandsMap] = useState({});
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [bandLastViewedMap, setBandLastViewedMap] = useState({});
@@ -976,10 +988,11 @@ function MainApp() {
           const cloudBands = await api.getMyCloudBands();
           if (Array.isArray(cloudBands)) {
             for (const cb of cloudBands) {
-              const localMatch = (rawBands || []).find(b => (b.cloudId && String(b.cloudId) === String(cb.id)) || String(b.id) === String(cb.id));
+              const localMatch = (rawBands || []).find(b => (b.cloudId && String(b.cloudId) === String(cb.id)) || (b.name && cb.name && b.name.trim().toLowerCase() === cb.name.trim().toLowerCase()));
               if (localMatch) {
-                if (cb.syncDataJson && cb.syncDataJson !== localMatch.syncDataJson) {
-                  await bandService.updateCloudInfo(localMatch.id, cb.id, cb.version || 1, cb.updatedAt || new Date().toISOString(), cb.syncDataJson);
+                await bandService.updateCloudInfo(localMatch.id, cb.id, cb.version || 1, cb.updatedAt || new Date().toISOString(), cb.isNetworkVisible);
+                if (cb.syncDataJson) {
+                  await bandService.updateBandSyncDataJson(localMatch.id, cb.syncDataJson);
                   localMatch.syncDataJson = cb.syncDataJson;
                 }
                 localMatch.name = cb.name || localMatch.name;
@@ -1079,7 +1092,8 @@ function MainApp() {
             for (const cs of cloudSongs) {
               const localMatch = (currentDbSongs || []).find(s => 
                 (cs.id && String(s.id) === String(cs.id)) || 
-                (s.name && cs.name && s.name.trim().toLowerCase() === cs.name.trim().toLowerCase())
+                (s.name && cs.name && s.name.trim().toLowerCase() === cs.name.trim().toLowerCase() && 
+                 (!cs.originalBand || !s.originalBand || s.originalBand.trim().toLowerCase() === cs.originalBand.trim().toLowerCase()))
               );
               if (!localMatch) {
                 try {
@@ -1090,10 +1104,43 @@ function MainApp() {
                     cs.lyrics || '',
                     cs.chords || '',
                     cs.tabs || '',
-                    cs.defaultView || 'lyrics',
+                    cs.defaultView || 'chords',
                     cs.duration || null,
                     cs.scrollSpeed || 'none'
                   );
+                } catch (e) {}
+              } else {
+                // Sincroniza e atualiza alterações feitas online no Songbook para o offline
+                try {
+                  const shouldUpdate = 
+                    (cs.lyrics && cs.lyrics !== localMatch.lyrics) ||
+                    (cs.chords && cs.chords !== localMatch.chords) ||
+                    (cs.tabs && cs.tabs !== localMatch.tabs) ||
+                    (cs.style && cs.style !== localMatch.style) ||
+                    (cs.duration && cs.duration !== localMatch.duration);
+
+                  if (shouldUpdate) {
+                    await songService.update(
+                      localMatch.id,
+                      cs.name || localMatch.name,
+                      cs.originalBand !== undefined ? cs.originalBand : (localMatch.originalBand || ''),
+                      cs.style !== undefined ? cs.style : (localMatch.style || ''),
+                      cs.lyrics !== undefined ? cs.lyrics : (localMatch.lyrics || ''),
+                      cs.chords !== undefined ? cs.chords : (localMatch.chords || ''),
+                      cs.tabs !== undefined ? cs.tabs : (localMatch.tabs || ''),
+                      cs.defaultView || localMatch.defaultView || 'chords',
+                      cs.duration !== undefined ? cs.duration : (localMatch.duration || null),
+                      cs.scrollSpeed || localMatch.scrollSpeed || 'none'
+                    );
+                    if (cs.linksJson) {
+                      try {
+                        const parsedLinks = typeof cs.linksJson === 'string' ? JSON.parse(cs.linksJson) : cs.linksJson;
+                        if (Array.isArray(parsedLinks)) {
+                          await songService.syncLinks(localMatch.id, parsedLinks);
+                        }
+                      } catch (e) {}
+                    }
+                  }
                 } catch (e) {}
               }
             }
@@ -1103,11 +1150,8 @@ function MainApp() {
         }
       }
 
-      const visibleRawBands = (rawBands || []).filter(b => {
-        if (isOnline) return true;
-        // Quando deslogado, exibe apenas bandas locais offline (sem vínculo de nuvem)
-        return !b.cloudId;
-      });
+      // Todas as bandas salvas no banco local SQLite devem sempre ser visíveis (tanto online quanto offline no palco)
+      const visibleRawBands = rawBands || [];
       const allSongs = await songService.getAll(searchQuery, selectedStyles, songSortBy, songSortOrder);
       const allSongsUnfilteredData = await songService.getAll();
       const rawSetlists = await setlistService.getAll();
@@ -2359,12 +2403,32 @@ function MainApp() {
       );
 
       if (foundDuplicate) {
-        // Se a música já existe, não insere nem sobrescreve, apenas notifica
-        Alert.alert(
-          t('info') || 'Informação', 
-          t('songAlreadyExists', { name: newSong.name }).replace('{name}', newSong.name) || `A música "${newSong.name}" já existe no banco de dados e não foi duplicada.`
-        );
-        return true;
+        // Atualiza a música existente com as alterações feitas online
+        try {
+          await songService.update(
+            foundDuplicate.id,
+            newSong.name,
+            newSong.originalBand || foundDuplicate.originalBand || '',
+            newSong.style || foundDuplicate.style || '',
+            newSong.lyrics || foundDuplicate.lyrics || '',
+            newSong.chords || foundDuplicate.chords || '',
+            newSong.tabs || foundDuplicate.tabs || '',
+            newSong.defaultView || foundDuplicate.defaultView || 'chords',
+            newSong.duration || foundDuplicate.duration || null,
+            newSong.scrollSpeed || foundDuplicate.scrollSpeed || 'none'
+          );
+          if (newSong.links && Array.isArray(newSong.links)) {
+            await songService.syncLinks(foundDuplicate.id, newSong.links);
+          }
+          await reloadAllData();
+          Alert.alert(
+            t('success') || 'Sucesso', 
+            `A música "${newSong.name}" foi atualizada com as alterações importadas!`
+          );
+          return true;
+        } catch (updateErr) {
+          console.error('Erro ao atualizar música duplicada:', updateErr);
+        }
       }
 
       // Inserir música
@@ -2602,6 +2666,24 @@ function MainApp() {
 
               if (foundSong) {
                 songIdMap[song.id] = foundSong.id;
+                // Atualiza a música existente com as alterações feitas online no Web Editor / Songbook
+                try {
+                  await songService.update(
+                    foundSong.id,
+                    sName,
+                    sBand,
+                    song.style !== undefined ? song.style : (foundSong.style || ''),
+                    song.lyrics !== undefined ? song.lyrics : (foundSong.lyrics || ''),
+                    song.chords !== undefined ? song.chords : (foundSong.chords || ''),
+                    song.tabs !== undefined ? song.tabs : (foundSong.tabs || ''),
+                    song.defaultView || foundSong.defaultView || 'chords',
+                    song.duration !== undefined ? song.duration : (foundSong.duration || null),
+                    song.scrollSpeed || foundSong.scrollSpeed || 'none'
+                  );
+                  if (song.links && Array.isArray(song.links)) {
+                    await songService.syncLinks(foundSong.id, song.links);
+                  }
+                } catch (e) {}
               } else {
                 const newSongId = await songService.insert(
                   sName,
@@ -4331,6 +4413,24 @@ function MainApp() {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {isLoggedIn && (
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.quickAddButton,
+                  { 
+                    backgroundColor: colors.cardBackground,
+                    borderColor: colors.border,
+                    borderWidth: 1.5,
+                    paddingHorizontal: 10,
+                    transform: [{ scale: pressed ? 0.95 : 1 }]
+                  }
+                ]}
+                onPress={handleRefreshBands}
+                accessibilityLabel="Sincronizar Bandas da Nuvem"
+              >
+                <Ionicons name="cloud-download-outline" size={17} color={colors.primary} />
+              </Pressable>
+            )}
             <Pressable 
               style={({ pressed }) => [
                 styles.quickAddButton,
@@ -4974,7 +5074,25 @@ function MainApp() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('songbookTab') || t('songs') || 'Songbook'}</Text>
             {renderOnlineStatusIndicator()}
           </View>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {isLoggedIn && (
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.quickAddButton,
+                  { 
+                    backgroundColor: colors.cardBackground,
+                    borderColor: colors.border,
+                    borderWidth: 1.5,
+                    paddingHorizontal: 10,
+                    transform: [{ scale: pressed ? 0.95 : 1 }]
+                  }
+                ]}
+                onPress={handleRefreshSongs}
+                accessibilityLabel="Sincronizar Songbook da Nuvem"
+              >
+                <Ionicons name="cloud-download-outline" size={17} color={colors.primary} />
+              </Pressable>
+            )}
             <Pressable 
               style={({ pressed }) => [
                 styles.quickAddButton,
@@ -5164,6 +5282,14 @@ function MainApp() {
           style={{ flex: 1, marginTop: 0 }} 
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingSongs}
+              onRefresh={handleRefreshSongs}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
         >
           {songs.length === 0 ? (
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
