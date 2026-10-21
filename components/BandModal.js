@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../hooks/useTheme';
@@ -341,10 +342,21 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
 
       if (!result.canceled && result.assets?.length > 0) {
         const asset = result.assets[0];
+        let persistentUri = asset.uri;
+        try {
+          if (Platform.OS !== 'web' && FileSystem && FileSystem.documentDirectory && asset.uri) {
+            const ext = asset.uri.split('.').pop() || 'jpg';
+            const permFile = `${FileSystem.documentDirectory}band_logo_${Date.now()}.${ext}`;
+            await FileSystem.copyAsync({ from: asset.uri, to: permFile });
+            persistentUri = permFile;
+          }
+        } catch (copyErr) {
+          console.log('Error saving image permanently:', copyErr);
+        }
         if (asset.base64) {
           setImageUri(`data:image/jpeg;base64,${asset.base64}`);
         } else {
-          setImageUri(asset.uri);
+          setImageUri(persistentUri);
         }
       }
     } catch (error) {

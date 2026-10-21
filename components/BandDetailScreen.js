@@ -1039,6 +1039,11 @@ export default function BandDetailScreen({
         setIsLoadingOnline(true);
         const cloudData = await api.pullBand(band.cloudId);
         if (cloudData) {
+          const pulledImg = cloudData.imageUri || (typeof cloudData.syncDataJson === 'string' ? (() => { try { return JSON.parse(cloudData.syncDataJson)?.band?.imageUri; } catch(e){ return null; } })() : cloudData.syncDataJson?.band?.imageUri);
+          if (pulledImg) {
+            setCurrentBandImage(pulledImg);
+            setImageLoadError(false);
+          }
           const snapshot = typeof cloudData.syncDataJson === 'string'
             ? (JSON.parse(cloudData.syncDataJson || '{}') || {})
             : (cloudData.syncDataJson || {});
@@ -3039,7 +3044,7 @@ export default function BandDetailScreen({
 
             {/* NOME DA BANDA SOBRE O DEGRADÊ (base do header) */}
             <View style={styles.headerBandInfoBottom}>
-              {!(band.imageUri || band.image || band.logo) && (
+              {(!currentBandImage || imageLoadError) && (
                 <Text style={styles.headerInitialsBig}>{getBandInitials(band.name)}</Text>
               )}
               <Text style={styles.headerBandNameText}>{band.name}</Text>

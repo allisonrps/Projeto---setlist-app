@@ -872,11 +872,19 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               }
             }
 
+            let bSnapImg = null;
+            if (b.syncDataJson) {
+              try {
+                const s = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+                bSnapImg = s?.band?.imageUri || null;
+              } catch (e) {}
+            }
+            const resolvedImg = b.imageUri || bSnapImg || null;
             return {
               id: b.id,
               name: b.name,
-              imageUri: b.imageUri,
-              logo: b.imageUri,
+              imageUri: resolvedImg,
+              logo: resolvedImg,
               role: role,
               memberType: memberType,
               since: sinceYear,
@@ -972,10 +980,19 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
             for (const b of (allLocalBands || [])) {
               if (!b) continue;
+              let snap = null;
+              if (b.syncDataJson) {
+                try {
+                  snap = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+                } catch (e) {}
+              }
+              const bImg = b.imageUri || snap?.band?.imageUri || null;
               const bIdStr = b.id ? String(b.id) : '';
+              const bCloudIdStr = b.cloudId ? String(b.cloudId) : '';
               const bNameStr = (b.name || '').trim();
-              if (bIdStr) bandLogoMap[bIdStr] = b.imageUri;
-              if (bNameStr) bandLogoMap[bNameStr.toLowerCase()] = b.imageUri;
+              if (bIdStr && bImg) bandLogoMap[bIdStr] = bImg;
+              if (bCloudIdStr && bImg) bandLogoMap[bCloudIdStr] = bImg;
+              if (bNameStr && bImg) bandLogoMap[bNameStr.toLowerCase()] = bImg;
 
               let mems = [];
               try {

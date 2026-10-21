@@ -845,6 +845,7 @@ function MainApp() {
   const [selectedBandForPublish, setSelectedBandForPublish] = useState(null);
   const [onlineEvents, setOnlineEvents] = useState([]);
   const [syncingBandsMap, setSyncingBandsMap] = useState({});
+  const [failedBandImages, setFailedBandImages] = useState({});
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0, percent: 0, bandName: '' });
 
   // Estados de edição / item ativo
@@ -985,6 +986,13 @@ function MainApp() {
                 localMatch.cloudId = cb.id;
                 localMatch.isLeader = cb.isLeader;
                 localMatch.membersCount = cb.membersCount || localMatch.membersCount;
+                const cloudImg = cb.imageUri || (cb.syncDataJson ? (() => { try { return JSON.parse(cb.syncDataJson)?.band?.imageUri; } catch(e){ return null; } })() : null);
+                if (cloudImg && !localMatch.imageUri) {
+                  localMatch.imageUri = cloudImg;
+                  try {
+                    await db.runAsync('UPDATE my_bands SET imageUri = ? WHERE id = ?;', [cloudImg, localMatch.id]);
+                  } catch (imgErr) {}
+                }
               } else {
                 try {
                   const createdId = await bandService.insert(
@@ -4795,8 +4803,12 @@ function MainApp() {
                       alignItems: 'center',
                       marginRight: 14,
                     }}>
-                      {band.imageUri ? (
-                        <Image source={{ uri: band.imageUri }} style={{ width: 54, height: 54, borderRadius: 27 }} />
+                      {band.imageUri && !failedBandImages[band.id] ? (
+                        <Image
+                          source={{ uri: band.imageUri }}
+                          style={{ width: 54, height: 54, borderRadius: 27 }}
+                          onError={() => setFailedBandImages(prev => ({ ...prev, [band.id]: true }))}
+                        />
                       ) : (
                         <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary }}>
                           {getBandInitials(band.name)}
