@@ -602,19 +602,11 @@ export default function LoginScreen({ onLogin }) {
       >
         {/* Cabeçalho Hero com Logo Maior Centralizado e Efeito Shimmer Network */}
         <View style={styles.brandHeader}>
-          <View style={styles.logoOuterGlowWrapper}>
-            <View style={[styles.logoOuterGlow, {
-              backgroundColor: isDark ? 'rgba(56, 189, 248, 0.08)' : 'rgba(56, 189, 248, 0.12)',
-              borderColor: isDark ? 'rgba(56, 189, 248, 0.25)' : 'rgba(56, 189, 248, 0.35)',
-            }]}>
-              <Image 
-                source={require('../assets/bandlink_original_transparent.png')} 
-                style={styles.brandLogo} 
-                resizeMode="contain" 
-              />
-            </View>
-          </View>
-          <Text style={[styles.brandTitleText, { color: colors.text }]}>BANDLINK</Text>
+          <Image 
+            source={require('../assets/logo.png')} 
+            style={styles.brandHeroLogo} 
+            resizeMode="contain" 
+          />
           <AnimatedNetworkBadge />
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             {isRegistering 
@@ -623,10 +615,7 @@ export default function LoginScreen({ onLogin }) {
           </Text>
         </View>
 
-        <View style={[styles.formContainer, { 
-          backgroundColor: isDark ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.90)',
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
-        }]}>
+        <View style={styles.formContainerClean}>
           {isRegistering && (
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.text }]}>{t('usernameLabel') || 'Nome de Usuário'}</Text>
@@ -1289,11 +1278,10 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   brandHeroLogo: {
-    width: 140,
-    height: 140,
-    borderRadius: 26,
+    width: 96,
+    height: 96,
     alignSelf: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   animatedNetworkHeroBadge: {
     flexDirection: 'row',
