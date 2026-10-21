@@ -417,7 +417,7 @@ export default function PerformanceMode({
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <Ionicons 
-                      name={link.type === 'youtube' ? 'logo-youtube' : link.type === 'spotify' ? 'logo-spotify' : 'document-text-outline'} 
+                      name={link.type === 'youtube' ? 'logo-youtube' : link.type === 'spotify' ? 'musical-notes' : 'document-text-outline'} 
                       size={14} 
                       color={activeLinkColor} 
                     />

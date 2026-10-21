@@ -18,6 +18,8 @@ import {
   LayoutAnimation,
   RefreshControl,
   ActivityIndicator,
+  Animated,
+  Easing,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -69,6 +71,127 @@ const THEME_COLORS = [
   '#84cc16', '#475569', '#38bdf8', '#0284c7', '#14b8a6', '#f43f5e',
   '#a855f7', '#e11d48', '#fbbf24', '#22c55e', '#1e293b', '#a1a1aa'
 ];
+
+
+function SyncLoadingSpinner({ percent, colors, isDark }) {
+  const spinAnim = React.useRef(new Animated.Value(0)).current;
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    const spin = Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1300,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.96,
+          duration: 900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    spin.start();
+    pulse.start();
+    return () => {
+      spin.stop();
+      pulse.stop();
+    };
+  }, []);
+
+  const spinInterpolation = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const reverseSpinInterpolation = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['360deg', '0deg'],
+  });
+
+  return (
+    <View style={{ width: 130, height: 130, justifyContent: 'center', alignItems: 'center', marginBottom: 22 }}>
+      {/* Soft glowing aura behind the spinner */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: 126,
+          height: 126,
+          borderRadius: 63,
+          backgroundColor: colors.primary + '15',
+          transform: [{ scale: pulseAnim }],
+        }}
+      />
+
+      {/* Counter-rotating subtle dashed ring */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: 126,
+          height: 126,
+          borderRadius: 63,
+          borderWidth: 1.5,
+          borderColor: colors.primary + '35',
+          borderStyle: 'dashed',
+          transform: [{ rotate: reverseSpinInterpolation }],
+        }}
+      />
+
+      {/* Main spinning ring with styled gradient-fade arcs */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: 114,
+          height: 114,
+          borderRadius: 57,
+          borderWidth: 3.5,
+          borderTopColor: colors.primary,
+          borderRightColor: colors.primary + '99',
+          borderBottomColor: colors.primary + '20',
+          borderLeftColor: 'transparent',
+          transform: [{ rotate: spinInterpolation }],
+        }}
+      />
+
+      {/* Center circle with percentage */}
+      <View
+        style={{
+          width: 86,
+          height: 86,
+          borderRadius: 43,
+          backgroundColor: isDark ? '#141419' : '#ffffff',
+          borderWidth: 1.5,
+          borderColor: colors.primary + '40',
+          justifyContent: 'center',
+          alignItems: 'center',
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.18,
+          shadowRadius: 10,
+          elevation: 4,
+        }}
+      >
+        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary, letterSpacing: -0.5 }}>
+          {percent || 0}%
+        </Text>
+        <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary + 'b0', letterSpacing: 1.2, marginTop: -1 }}>
+          SYNC
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 export default function App() {
   return (
@@ -4242,27 +4365,7 @@ function MainApp() {
                   paddingHorizontal: 24,
                   minHeight: 340
                 }}>
-                  <View style={{
-                    width: 88,
-                    height: 88,
-                    borderRadius: 44,
-                    backgroundColor: colors.primary + '15',
-                    borderWidth: 2,
-                    borderColor: colors.primary + '40',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginBottom: 20
-                  }}>
-                    <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={{
-                      position: 'absolute',
-                      fontSize: 14,
-                      fontWeight: '900',
-                      color: colors.primary
-                    }}>
-                      {syncProgress.percent || 0}%
-                    </Text>
-                  </View>
+                  <SyncLoadingSpinner percent={syncProgress.percent || 0} colors={colors} isDark={isDark} />
                   <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text, textAlign: 'center', marginBottom: 6 }}>
                     {t('syncingBandsTitle') || 'Sincronizando Bandas...'}
                   </Text>

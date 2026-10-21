@@ -607,7 +607,16 @@ export const bandService = {
   async updateBandSyncDataJson(bandId, syncDataJson) {
     try {
       const jsonStr = typeof syncDataJson === 'string' ? syncDataJson : JSON.stringify(syncDataJson || {});
-      await db.runAsync('UPDATE my_bands SET syncDataJson = ? WHERE id = ?;', [jsonStr, bandId]);
+      try {
+        await db.runAsync('UPDATE my_bands SET syncDataJson = ? WHERE id = ?;', [jsonStr, bandId]);
+      } catch (colErr) {
+        if (colErr && String(colErr.message || colErr).includes('syncDataJson')) {
+          try {
+            await db.execAsync("ALTER TABLE my_bands ADD COLUMN syncDataJson TEXT;");
+            await db.runAsync('UPDATE my_bands SET syncDataJson = ? WHERE id = ?;', [jsonStr, bandId]);
+          } catch (e) {}
+        }
+      }
     } catch (error) {
       console.error('Error in bandService.updateBandSyncDataJson:', error);
     }
@@ -1391,10 +1400,29 @@ export const bandService = {
         ? cloudData.syncDataJson
         : (cloudData.syncDataJson ? JSON.stringify(cloudData.syncDataJson) : null);
 
-      await db.runAsync(
-        'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ?, syncDataJson = COALESCE(?, syncDataJson) WHERE id = ?;',
-        [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), rawSyncJson, bandId]
-      );
+      try {
+        await db.runAsync(
+          'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ?, syncDataJson = COALESCE(?, syncDataJson) WHERE id = ?;',
+          [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), rawSyncJson, bandId]
+        );
+      } catch (colErr) {
+        if (colErr && String(colErr.message || colErr).includes('syncDataJson')) {
+          try {
+            await db.execAsync("ALTER TABLE my_bands ADD COLUMN syncDataJson TEXT;");
+            await db.runAsync(
+              'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ?, syncDataJson = COALESCE(?, syncDataJson) WHERE id = ?;',
+              [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), rawSyncJson, bandId]
+            );
+          } catch (retryErr) {
+            await db.runAsync(
+              'UPDATE my_bands SET cloudVersion = ?, hasLocalChanges = 0, lastSyncedAt = ? WHERE id = ?;',
+              [cloudData.version || localBand.cloudVersion || 0, new Date().toISOString(), bandId]
+            );
+          }
+        } else {
+          throw colErr;
+        }
+      }
 
       return {
         success: true,
@@ -1409,6 +1437,9 @@ export const bandService = {
 
   async syncAllUserBandsFromCloud(force = false, onProgress = null) {
     try {
+      try {
+        await db.execAsync("ALTER TABLE my_bands ADD COLUMN syncDataJson TEXT;");
+      } catch (e) {}
       const loggedIn = await api.isLoggedIn();
       if (!loggedIn) return { success: false, reason: 'not_logged_in' };
 

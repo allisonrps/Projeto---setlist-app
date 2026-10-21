@@ -23,7 +23,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { bandService } from '../services/bandService';
@@ -231,29 +231,75 @@ const formatTimelineDescription = (desc, actionType, lang) => {
   if (lang === 'en') {
     text = text
       .replace(/conectou a banda à comunidade online!/gi, 'connected the band to the online community!')
-      .replace(/atualizou o saldo do caixa da banda para/gi, 'updated the band cash balance to')
+      .replace(/conectou a banda a comunidade online!/gi, 'connected the band to the online community!')
+      .replace(/publicou a banda na nuvem como @([\w\d_.-]+)!/gi, 'published band to cloud as @$1!')
+      .replace(/criou a banda/gi, 'created the band')
+      .replace(/atualizou os dados da banda:/gi, 'updated band details:')
+      .replace(/atualizou as informações da banda/gi, 'updated band information')
+      .replace(/atualizou as informacoes da banda/gi, 'updated band information')
+      .replace(/atualizou o saldo do caixa da banda para/gi, 'updated band cash balance to')
+      .replace(/adicionou a música:/gi, 'added song:')
+      .replace(/adicionou a musica:/gi, 'added song:')
+      .replace(/removeu a música:/gi, 'removed song:')
+      .replace(/removeu a musica:/gi, 'removed song:')
       .replace(/adicionou (\d+) música\(s\) do Songbook ao repertório/gi, 'added $1 song(s) from Songbook to repertoire')
       .replace(/adicionou (\d+) músicas do Songbook ao repertório/gi, 'added $1 songs from Songbook to repertoire')
       .replace(/adicionou (\d+) música do Songbook ao repertório/gi, 'added $1 song from Songbook to repertoire')
+      .replace(/adicionou (\d+) música\(s\) ao repertório/gi, 'added $1 song(s) to repertoire')
+      .replace(/adicionou (\d+) músicas ao repertório/gi, 'added $1 songs to repertoire')
+      .replace(/adicionou (\d+) música ao repertório/gi, 'added $1 song to repertoire')
       .replace(/removeu "(.*?)" do repertório/gi, 'removed "$1" from repertoire')
+      .replace(/removeu "(.*?)" do repertorio/gi, 'removed "$1" from repertoire')
+      .replace(/registrou financeiro:/gi, 'recorded financial entry:')
+      .replace(/atualizou financeiro:/gi, 'updated financial entry:')
+      .replace(/removeu registro financeiro:/gi, 'deleted financial entry:')
+      .replace(/adicionou o integrante:/gi, 'added member:')
       .replace(/adicionou o membro/gi, 'added member')
+      .replace(/atualizou o integrante:/gi, 'updated member:')
+      .replace(/removeu o integrante:/gi, 'removed member:')
       .replace(/removeu o membro/gi, 'removed member')
       .replace(/atualizou os dados do integrante/gi, 'updated member details')
-      .replace(/atualizou as informações da banda/gi, 'updated band information')
-      .replace(/realizou uma alteração/gi, 'made a change');
+      .replace(/criou a setlist:/gi, 'created setlist:')
+      .replace(/editou a setlist:/gi, 'edited setlist:')
+      .replace(/excluiu a setlist:/gi, 'deleted setlist:')
+      .replace(/realizou uma alteração/gi, 'made a change')
+      .replace(/realizou uma alteracao/gi, 'made a change');
   } else if (lang === 'es') {
     text = text
       .replace(/conectou a banda à comunidade online!/gi, '¡conectó la banda a la comunidad online!')
+      .replace(/conectou a banda a comunidade online!/gi, '¡conectó la banda a la comunidad online!')
+      .replace(/publicou a banda na nuvem como @([\w\d_.-]+)!/gi, '¡publicó la banda en la nube como @$1!')
+      .replace(/criou a banda/gi, 'creó la banda')
+      .replace(/atualizou os dados da banda:/gi, 'actualizó los datos de la banda:')
+      .replace(/atualizou as informações da banda/gi, 'actualizó la información de la banda')
+      .replace(/atualizou as informacoes da banda/gi, 'actualizó la información de la banda')
       .replace(/atualizou o saldo do caixa da banda para/gi, 'actualizó el saldo de caja de la banda a')
+      .replace(/adicionou a música:/gi, 'añadió la canción:')
+      .replace(/adicionou a musica:/gi, 'añadió la canción:')
+      .replace(/removeu a música:/gi, 'eliminó la canción:')
+      .replace(/removeu a musica:/gi, 'eliminó la canción:')
       .replace(/adicionou (\d+) música\(s\) do Songbook ao repertório/gi, 'añadió $1 canción(es) del Songbook al repertorio')
       .replace(/adicionou (\d+) músicas do Songbook ao repertório/gi, 'añadió $1 canciones del Songbook al repertorio')
       .replace(/adicionou (\d+) música do Songbook ao repertório/gi, 'añadió $1 canción del Songbook al repertorio')
+      .replace(/adicionou (\d+) música\(s\) ao repertório/gi, 'añadió $1 canción(es) al repertorio')
+      .replace(/adicionou (\d+) músicas ao repertório/gi, 'añadió $1 canciones al repertorio')
+      .replace(/adicionou (\d+) música ao repertório/gi, 'añadió $1 canción al repertorio')
       .replace(/removeu "(.*?)" do repertório/gi, 'eliminó "$1" del repertorio')
+      .replace(/removeu "(.*?)" do repertorio/gi, 'eliminó "$1" del repertorio')
+      .replace(/registrou financeiro:/gi, 'registró finanza:')
+      .replace(/atualizou financeiro:/gi, 'actualizó finanza:')
+      .replace(/removeu registro financeiro:/gi, 'eliminó registro financiero:')
+      .replace(/adicionou o integrante:/gi, 'añadió al integrante:')
       .replace(/adicionou o membro/gi, 'añadió al miembro')
+      .replace(/atualizou o integrante:/gi, 'actualizó al integrante:')
+      .replace(/removeu o integrante:/gi, 'eliminó al integrante:')
       .replace(/removeu o membro/gi, 'eliminó al miembro')
       .replace(/atualizou os dados do integrante/gi, 'actualizó los datos del integrante')
-      .replace(/atualizou as informações da banda/gi, 'actualizó la información de la banda')
-      .replace(/realizou uma alteração/gi, 'realizó una modificación');
+      .replace(/criou a setlist:/gi, 'creó el setlist:')
+      .replace(/editou a setlist:/gi, 'editó el setlist:')
+      .replace(/excluiu a setlist:/gi, 'eliminó el setlist:')
+      .replace(/realizou uma alteração/gi, 'realizó una modificación')
+      .replace(/realizou uma alteracao/gi, 'realizó una modificación');
   }
   return text;
 };
@@ -2897,7 +2943,7 @@ export default function BandDetailScreen({
                         onPress={() => handleOpenSocialLink('spotify', bandSocialLinks.spotify)}
                         accessibilityLabel="Spotify"
                       >
-                        <Ionicons name="logo-spotify" size={17} color="#1DB954" />
+                        <FontAwesome name="spotify" size={17} color="#1DB954" />
                       </Pressable>
                     ) : null}
 
@@ -3334,7 +3380,7 @@ export default function BandDetailScreen({
                               if (logItem.isInterest) {
                                 return (
                                   <View
-                                    key={logItem.id || index}
+                                    key={`tl_${logItem.id || index}_${index}`}
                                     style={{
                                       backgroundColor: '#22c55e10',
                                       borderColor: '#22c55e35',
@@ -4461,7 +4507,8 @@ export default function BandDetailScreen({
                   const valueColor = item.status === 'pending' ? '#eab308' : (isIncome ? '#10b981' : '#ef4444');
 
                   return (
-                    <View key={item.id}>
+                    <View key={`fin_item_${item.id || index}_${index}`}>
+
                       {showHeader && (() => {
                         const monthGroup = combinedItems.filter(i => getMonthInfo(i.date, language).name === header);
                         const monthIncomeTotal = monthGroup

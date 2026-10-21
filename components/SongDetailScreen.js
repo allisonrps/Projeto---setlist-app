@@ -753,7 +753,7 @@ export default function SongDetailScreen({
                               onPress={() => updateLink(index, 'type', type)}
                             >
                               <Ionicons
-                                name={type === 'youtube' ? 'logo-youtube' : type === 'spotify' ? 'logo-spotify' : 'document-text-outline'}
+                                name={type === 'youtube' ? 'logo-youtube' : type === 'spotify' ? 'musical-notes' : 'document-text-outline'}
                                 size={11}
                                 color={isTypeActive ? '#ffffff' : colors.textMuted}
                               />

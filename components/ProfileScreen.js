@@ -2858,7 +2858,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
           return (
             <Pressable 
-              key={proj.id} 
+              key={`proj_${proj.id || idx}_${idx}`} 
               onPress={() => onOpenBandProfile && onOpenBandProfile(proj)}
               style={({ pressed }) => [
                 styles.fullWidthCard, 
@@ -3109,7 +3109,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
       return (
         <Pressable 
-          key={event.id} 
+          key={`agenda_ev_${event.id || index}_${index}`} 
           onPress={() => {
             if (onOpenSetlist) {
               onOpenSetlist(event.setlistRef || event);
@@ -3370,7 +3370,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                 if (showHeader) lastUpcomingHeader = header;
 
                 return (
-                  <View key={event.id}>
+                  <View key={`up_ev_${event.id || idx}_${idx}`}>
                     {showHeader && (() => {
                       const mEvents = upcomingEvents.filter(e => getMonthYearHeader(e.rawDate || e.date, language) === header);
                       const mShows = mEvents.filter(s => {

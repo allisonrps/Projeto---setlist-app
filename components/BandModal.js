@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -1067,7 +1067,7 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
               {/* Spotify */}
               <View style={{ marginBottom: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <Ionicons name="logo-spotify" size={16} color="#1DB954" />
+                  <FontAwesome name="spotify" size={16} color="#1DB954" />
                   <Text style={[styles.inputSubLabel, { color: colors.textMuted, marginBottom: 0 }]}>Spotify</Text>
                 </View>
                 <TextInput
