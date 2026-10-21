@@ -7252,6 +7252,72 @@
     </div>
   </div>
 
+  <!-- PUBLIC BAND PROFILE MODAL (READ-ONLY FOR NON-MEMBERS & NETWORK VIEW) -->
+  <div class="modal-overlay" id="publicBandModal">
+    <div class="modal-card large">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <ion-icon name="musical-notes-outline" style="color: var(--cyan);"></ion-icon>
+          <span>Perfil Público da Banda</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('publicBandModal')">&times;</button>
+      </div>
+
+      <div id="publicBandContent" style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Hero / Dados Básicos da Banda -->
+        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding: 16px; background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(139, 92, 246, 0.08)); border-radius: var(--radius-md); border: 1px solid rgba(56, 189, 248, 0.2);">
+          <div id="pubBandAvatarBox" style="width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, var(--cyan), var(--violet)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid var(--cyan); box-shadow: 0 6px 20px rgba(0,0,0,0.35);">
+            <span style="font-size: 2rem; font-weight: 900; color: #fff;" id="pubBandInitials">BD</span>
+          </div>
+          <div style="flex: 1; min-width: 220px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <h2 id="pubBandName" style="font-size: 1.5rem; font-weight: 900; color: #fff; margin: 0;">Banda</h2>
+              <span class="band-page-hero-since-badge" id="pubBandSinceBadge" style="font-size: 0.72rem; padding: 3px 9px; border-radius: 9999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 800;">DESDE --</span>
+            </div>
+            <div id="pubBandHandle" style="font-size: 0.9rem; font-weight: 700; color: var(--cyan-light); margin: 3px 0 6px 0;">@banda</div>
+            <div id="pubBandLocation" style="font-size: 0.85rem; color: var(--text-dim); display: flex; align-items: center; gap: 5px; margin-bottom: 10px;">
+              <ion-icon name="location-outline"></ion-icon> <span>Cidade, Estado, País</span>
+            </div>
+            <div id="pubBandStyleTags" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
+          </div>
+        </div>
+
+        <!-- Descrição / Sobre (se houver) -->
+        <div id="pubBandBioSection" style="display: none; padding: 14px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 6px;">Sobre a Banda</div>
+          <p id="pubBandBio" style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55; white-space: pre-line; margin: 0;"></p>
+        </div>
+
+        <!-- Seção 1: Membros -->
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <ion-icon name="people-outline" style="color: var(--cyan); font-size: 1.1rem;"></ion-icon>
+            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px;">Membros da Banda</span>
+            <span id="pubBandMembersCount" class="band-members-count-circle" style="width: 22px; height: 22px; font-size: 0.72rem;">0</span>
+          </div>
+          <div id="pubBandMembers" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- Seção 2: Shows -->
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <ion-icon name="calendar-outline" style="color: var(--cyan); font-size: 1.1rem;"></ion-icon>
+            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px;">Shows</span>
+            <span id="pubBandShowsCount" class="band-members-count-circle" style="width: 22px; height: 22px; font-size: 0.72rem;">0</span>
+          </div>
+          <div id="pubBandShows" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- Redes Sociais -->
+        <div id="pubBandSocialsRow" style="display: none; gap: 10px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-subtle);"></div>
+
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 6px;">
+          <button class="btn btn-primary" onclick="closeModal('publicBandModal')">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- AUTH MODAL -->
   <div class="modal-overlay" id="authModal">
     <div class="modal-card">
@@ -12241,7 +12307,16 @@
       }
 
       if (!band) {
+        hideLoading();
         showToast('Banda não encontrada.', 'error');
+        return;
+      }
+
+      // Se o usuário não for membro desta banda, abre apenas o modal público (somente leitura)
+      if (!isCurrentUserMemberOfBand(band, currentBandSyncData)) {
+        hideLoading();
+        renderPublicBandModal(band, currentBandSyncData);
+        openModal('publicBandModal');
         return;
       }
 
@@ -18351,7 +18426,7 @@
           const bImg = normalizeImageUri(b.imageUri);
           const bInit = (b.name || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
           return `
-            <div class="card clickable-card" onclick="window.open('/banda?id=${b.id}', '_blank')" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px;">
+            <div class="card clickable-card" onclick="closeModal('publicMusicianModal'); openPublicBandProfile('${b.id || escapeHtml(b.name || '')}')" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer;">
               <div style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #121824; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex-shrink: 0;">
                 ${bImg ? `<img src="${bImg}" style="width: 100%; height: 100%; object-fit: cover;">` : bInit}
               </div>
@@ -18380,6 +18455,289 @@
 
       // External link
       document.getElementById('pubMusExternalLink').href = `/musico?u=${encodeURIComponent(user.username)}`;
+    }
+
+    // ==========================================
+    // PUBLIC BAND PROFILE MODAL (SOMENTE LEITURA)
+    // ==========================================
+    function isCurrentUserMemberOfBand(band, syncData) {
+      if (!band) return false;
+      if (Array.isArray(myBands) && myBands.some(mb => String(mb.id) === String(band.id))) {
+        return true;
+      }
+      if (!currentUser) return false;
+      const myId = currentUser.id || currentUser.userId;
+      const myUser = (currentUser.username || '').trim().toLowerCase().replace(/^@+/, '');
+      const ownerId = band.ownerId || band.owner?.id || band.Owner?.Id;
+      const ownerUser = (band.owner?.username || band.Owner?.Username || band.ownerUsername || '').trim().toLowerCase().replace(/^@+/, '');
+      if (myId && ownerId && String(myId) === String(ownerId)) return true;
+      if (myUser && ownerUser && myUser === ownerUser) return true;
+
+      const apiMembers = Array.isArray(band.members || band.Members) ? (band.members || band.Members) : [];
+      for (const m of apiMembers) {
+        const st = String(m.status || m.Status || 'Accepted').toLowerCase();
+        if (st === 'pending' || st === 'rejected' || st === 'inactive') continue;
+        const mUid = m.userId || m.UserId;
+        const mUname = (m.username || m.Username || '').trim().toLowerCase().replace(/^@+/, '');
+        if (myId && mUid && String(myId) === String(mUid)) return true;
+        if (myUser && mUname && myUser === mUname) return true;
+      }
+
+      const parsedSync = syncData || parseJsonSafe(band.syncDataJson || band.SyncDataJson);
+      const syncMembers = Array.isArray(parsedSync?.members) ? parsedSync.members : [];
+      for (const sm of syncMembers) {
+        const st = String(sm.status || 'active').toLowerCase();
+        if (st === 'pending' || st === 'rejected' || st === 'inactive') continue;
+        const smUid = sm.userId;
+        const smUname = (sm.username || '').trim().toLowerCase().replace(/^@+/, '');
+        if (myId && smUid && String(myId) === String(smUid)) return true;
+        if (myUser && smUname && myUser === smUname) return true;
+      }
+      return false;
+    }
+
+    async function openPublicBandProfile(bandIdOrSlug) {
+      if (!bandIdOrSlug) return;
+      showLoading('Carregando perfil da banda...');
+      try {
+        const res = await fetch(`${API_URL}/Bands/public/${encodeURIComponent(bandIdOrSlug)}`);
+        if (!res.ok) throw new Error('Banda não encontrada');
+        const band = await res.json();
+        const syncData = parseJsonSafe(band.syncDataJson || band.SyncDataJson) || {};
+        renderPublicBandModal(band, syncData);
+        openModal('publicBandModal');
+      } catch (err) {
+        console.error('Erro ao abrir perfil público da banda:', err);
+        showToast('Não foi possível carregar o perfil público desta banda.', 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderPublicBandModal(band, syncData) {
+      if (!band) return;
+      const parsedSync = syncData || parseJsonSafe(band.syncDataJson || band.SyncDataJson) || {};
+      const bName = band.name || band.Name || 'Banda';
+      const initials = bName.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'BD';
+
+      // 1. Logo
+      const normImg = normalizeImageUri(band.imageUri || band.ImageUri);
+      const avatarBox = document.getElementById('pubBandAvatarBox');
+      if (avatarBox) {
+        if (normImg) {
+          avatarBox.innerHTML = `<img src="${normImg}" alt="${escapeHtml(bName)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span style="display:none; font-size: 2rem; font-weight: 900; color: #fff;">${initials}</span>`;
+        } else {
+          avatarBox.innerHTML = `<span style="font-size: 2rem; font-weight: 900; color: #fff;">${initials}</span>`;
+        }
+      }
+
+      // 2. Nome e Handle
+      const nameEl = document.getElementById('pubBandName');
+      if (nameEl) nameEl.textContent = bName;
+
+      const rawSlug = band.publicSlug || band.PublicSlug || band.username || band.owner?.username || band.Owner?.Username || bName.toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+      const handleEl = document.getElementById('pubBandHandle');
+      if (handleEl) handleEl.textContent = `@${String(rawSlug).replace(/^@+/, '')}`;
+
+      // 3. Desde
+      let sinceYr = band.sinceYear || parsedSync.sinceYear || '';
+      if (!sinceYr && (band.startDate || parsedSync.startDate)) {
+        const m = String(band.startDate || parsedSync.startDate).match(/(19\d{2}|20\d{2})/);
+        if (m) sinceYr = m[1];
+      }
+      if (!sinceYr && (band.createdAt || band.updatedAt || band.UpdatedAt)) {
+        const d = new Date(band.createdAt || band.updatedAt || band.UpdatedAt);
+        if (!isNaN(d.getTime())) sinceYr = d.getFullYear();
+      }
+      const sinceEl = document.getElementById('pubBandSinceBadge');
+      if (sinceEl) {
+        sinceEl.textContent = `DESDE ${sinceYr || '2024'}`;
+        sinceEl.style.display = 'inline-flex';
+      }
+
+      // 4. Cidade, Estado, País
+      const locParts = [band.city || band.City, band.state || band.State, band.country || band.Country || 'Brasil'].map(x => (x || '').trim()).filter(Boolean);
+      const dedupLoc = [];
+      locParts.forEach(p => {
+        if (!dedupLoc.some(e => e.toLowerCase() === p.toLowerCase())) dedupLoc.push(p);
+      });
+      const locEl = document.getElementById('pubBandLocation');
+      if (locEl) {
+        locEl.innerHTML = `<ion-icon name="location-outline"></ion-icon> <span>${escapeHtml(dedupLoc.join(', ') || 'Brasil')}</span>`;
+      }
+
+      // 5. Tags de Estilo (Cover / Autoral + Gêneros)
+      const tagsEl = document.getElementById('pubBandStyleTags');
+      if (tagsEl) {
+        tagsEl.innerHTML = renderBandHeroPills({
+          ...band,
+          bandType: band.bandType || band.BandType || parsedSync.bandType,
+          genre: band.genre || band.Genre,
+          genresJson: band.genresJson || band.GenresJson
+        });
+      }
+
+      // 6. Sobre / Descrição (se houver e não for repetição da cidade)
+      const bioSec = document.getElementById('pubBandBioSection');
+      const bioEl = document.getElementById('pubBandBio');
+      const desc = (band.description || band.Description || '').trim();
+      const normDesc = desc.toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+      const normLoc = dedupLoc.join(' ').toLowerCase().replace(/[\s,./\\-]+/g, ' ');
+      if (desc && normDesc !== normLoc) {
+        if (bioSec) bioSec.style.display = 'block';
+        if (bioEl) bioEl.textContent = desc;
+      } else {
+        if (bioSec) bioSec.style.display = 'none';
+      }
+
+      // 7. Membros da Banda (Somente Leitura)
+      const membersList = [];
+      const seenMembers = new Set();
+      const addMemberUnique = (memObj) => {
+        if (!memObj) return;
+        const st = String(memObj.status || memObj.Status || 'active').toLowerCase();
+        if (st === 'pending' || st === 'rejected' || st === 'inactive') return;
+        const uClean = String(memObj.username || memObj.Username || '').trim().toLowerCase().replace(/^@+/, '');
+        const nClean = String(memObj.name || memObj.displayName || memObj.DisplayName || '').trim().toLowerCase();
+        const key = uClean || nClean;
+        if (!key || seenMembers.has(key)) return;
+        seenMembers.add(key);
+        membersList.push({
+          name: memObj.name || memObj.displayName || memObj.DisplayName || memObj.username || memObj.Username || 'Integrante',
+          username: uClean,
+          role: memObj.role || memObj.Role || 'Músico',
+          extraSkills: memObj.extraSkills || '',
+          pictureUrl: memObj.avatarUri || memObj.pictureUrl || memObj.PictureUrl || memObj.imageUri || memObj.photo || '',
+          isLeader: Boolean(memObj.isLeader || String(memObj.role || memObj.Role || '').toLowerCase() === 'admin' || String(memObj.role || memObj.Role || '').toLowerCase() === 'líder')
+        });
+      };
+
+      if (Array.isArray(parsedSync.members)) {
+        parsedSync.members.forEach(addMemberUnique);
+      }
+      if (Array.isArray(band.members || band.Members)) {
+        (band.members || band.Members).forEach(addMemberUnique);
+      }
+      const ownerObj = band.owner || band.Owner;
+      if (ownerObj && (ownerObj.username || ownerObj.Username || ownerObj.displayName || ownerObj.DisplayName)) {
+        addMemberUnique({
+          name: ownerObj.displayName || ownerObj.DisplayName || ownerObj.username || ownerObj.Username,
+          username: ownerObj.username || ownerObj.Username,
+          pictureUrl: ownerObj.pictureUrl || ownerObj.PictureUrl,
+          role: 'Líder',
+          isLeader: true
+        });
+      }
+
+      const membersCountEl = document.getElementById('pubBandMembersCount');
+      if (membersCountEl) membersCountEl.textContent = membersList.length;
+
+      const membersContainer = document.getElementById('pubBandMembers');
+      if (membersContainer) {
+        if (membersList.length === 0) {
+          membersContainer.innerHTML = '<div style="padding: 18px; text-align: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-dim); font-size: 0.85rem;">Nenhum integrante listado publicamente.</div>';
+        } else {
+          membersContainer.innerHTML = membersList.map(mem => {
+            const mInit = (mem.name || 'M').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+            const mImg = normalizeImageUri(mem.pictureUrl);
+            const roleTags = String(mem.role || 'Músico').split(',').map(r => r.trim()).filter(Boolean);
+            const rolePillsHtml = (roleTags.length > 0 ? roleTags : ['Músico'])
+              .map(t => `<span class="member-role-pill">${escapeHtml(t)}</span>`).join('');
+            const clickAttr = mem.username
+              ? `onclick="closeModal('publicBandModal'); openPublicMusicianProfile('${escapeHtml(mem.username)}')" style="cursor: pointer;" title="Ver perfil de @${escapeHtml(mem.username)}"`
+              : '';
+            return `
+              <div class="band-member-card-row" ${clickAttr}>
+                <div class="band-member-avatar-protruding">
+                  ${mImg
+                    ? `<img src="${mImg}" alt="${escapeHtml(mem.name)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display:none;">${mInit}</span>`
+                    : `<span>${mInit}</span>`
+                  }
+                </div>
+                <div class="band-member-info-col">
+                  <div class="band-member-row-name">
+                    <span class="band-member-name">${escapeHtml(mem.name)}</span>
+                    ${mem.isLeader ? '<span class="badge badge-violet" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 800;">LÍDER</span>' : ''}
+                  </div>
+                  <div class="band-member-row-username">
+                    <span class="band-member-username">${mem.username ? '@' + escapeHtml(mem.username) : ''}</span>
+                  </div>
+                  <div class="band-member-row-pills">
+                    ${rolePillsHtml}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 8. Shows da Banda (Somente Leitura - apenas shows, sem ensaios e sem cachê/edição)
+      const rawSetlists = Array.isArray(parsedSync.setlists) ? parsedSync.setlists : [];
+      const showsList = rawSetlists.filter(sl => {
+        if (!sl) return false;
+        const tVal = String(sl.type || 'show').toLowerCase().trim();
+        const nVal = String(sl.name || sl.title || '').toLowerCase().trim();
+        if (tVal === 'rehearsal' || tVal === 'ensaio' || tVal === 'repertório' || tVal === 'repertoire') return false;
+        if (nVal.includes('ensaio') || nVal.includes('all songs')) return false;
+        return true;
+      }).slice().sort((a, b) => parseTimelineDate(b.date) - parseTimelineDate(a.date));
+
+      const showsCountEl = document.getElementById('pubBandShowsCount');
+      if (showsCountEl) showsCountEl.textContent = showsList.length;
+
+      const showsContainer = document.getElementById('pubBandShows');
+      if (showsContainer) {
+        if (showsList.length === 0) {
+          showsContainer.innerHTML = '<div style="padding: 18px; text-align: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-dim); font-size: 0.85rem;">Nenhum show divulgado na agenda no momento.</div>';
+        } else {
+          showsContainer.innerHTML = showsList.map(sl => {
+            const badge = getFormattedDateBadge(sl.date);
+            const showName = sl.name || sl.title || 'Show';
+            const showLocal = sl.local || sl.venue || sl.location || '';
+            const showTime = sl.time || '';
+            return `
+              <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: rgba(255,255,255,0.025); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+                <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <span style="font-size: 1rem; font-weight: 900; color: #fff; line-height: 1.1;">${escapeHtml(badge.day)}</span>
+                  <span style="font-size: 0.65rem; font-weight: 800; color: var(--cyan-light); text-transform: uppercase;">${escapeHtml(badge.month)}</span>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                    <span style="font-size: 0.96rem; font-weight: 800; color: #fff;">${escapeHtml(showName)}</span>
+                    <span class="badge badge-cyan" style="font-size: 0.62rem; padding: 2px 7px; font-weight: 800;">SHOW</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-dim);">
+                    ${showLocal ? `<span style="display: inline-flex; align-items: center; gap: 4px;"><ion-icon name="location-outline"></ion-icon> ${escapeHtml(showLocal)}</span>` : ''}
+                    ${showTime ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: var(--cyan-light);"><ion-icon name="time-outline"></ion-icon> ${escapeHtml(showTime)}</span>` : ''}
+                    ${sl.date ? `<span style="display: inline-flex; align-items: center; gap: 4px;"><ion-icon name="calendar-outline"></ion-icon> ${escapeHtml(formatDateDisplay(sl.date))}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 9. Redes Sociais
+      const socialsRow = document.getElementById('pubBandSocialsRow');
+      if (socialsRow) {
+        socialsRow.innerHTML = '';
+        const ig = band.instagram || band.Instagram || parsedSync.instagram;
+        const yt = band.youtube || band.Youtube || parsedSync.youtube;
+        const sp = band.spotify || band.Spotify || parsedSync.spotify;
+        if (ig) {
+          const igUrl = ig.startsWith('http') ? ig : `https://instagram.com/${ig.replace(/^@+/, '')}`;
+          socialsRow.innerHTML += `<a href="${escapeHtml(igUrl)}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="logo-instagram"></ion-icon> Instagram</a>`;
+        }
+        if (yt) {
+          socialsRow.innerHTML += `<a href="${escapeHtml(yt)}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="logo-youtube"></ion-icon> YouTube</a>`;
+        }
+        if (sp) {
+          socialsRow.innerHTML += `<a href="${escapeHtml(sp)}" target="_blank" class="btn btn-sm btn-outline"><ion-icon name="musical-notes-outline"></ion-icon> Spotify</a>`;
+        }
+        socialsRow.style.display = socialsRow.innerHTML ? 'flex' : 'none';
+      }
     }
 
     // ==========================================
@@ -20522,7 +20880,7 @@
           ));
 
           return `
-            <div class="card band-card" onclick="openBandProfileView(${b.id})" title="Clique para ver o perfil de ${escapeHtml(b.name)}" style="cursor: pointer;">
+            <div class="card band-card" onclick="openPublicBandProfile(${b.id})" title="Clique para ver o perfil público de ${escapeHtml(b.name)}" style="cursor: pointer;">
               <div class="band-card-cover">
                 ${normImg ? `
                   <img src="${normImg}" alt="${escapeHtml(b.name)}" class="band-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
