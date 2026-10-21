@@ -14,6 +14,8 @@ import {
   Animated,
   Easing,
   RefreshControl,
+  PanResponder,
+  Dimensions,
   StatusBar as RNStatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +27,9 @@ import MusicianProfileModal from './MusicianProfileModal';
 import BandProfileModal from './BandProfileModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const NETWORK_TABS = ['musicians', 'projects', 'bands', 'classifieds'];
 
 const BRAZIL_STATES = [
   { uf: 'AC', name: 'Acre' },
@@ -180,6 +185,157 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
 
   // Sub-tabs: 'musicians' | 'projects' | 'bands' | 'classifieds'
   const [subTab, setSubTab] = useState('musicians');
+  const translateX = useRef(new Animated.Value(0)).current;
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+  const [isTabSwiping, setIsTabSwiping] = useState(false);
+  const subTabRef = useRef('musicians');
+  subTabRef.current = subTab;
+
+  const handleTabChange = (nextTabId) => {
+    if (nextTabId === subTabRef.current) return;
+    const oldIdx = NETWORK_TABS.indexOf(subTabRef.current);
+    const newIdx = NETWORK_TABS.indexOf(nextTabId);
+    const direction = newIdx > oldIdx ? -1 : 1;
+
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: direction * 35,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tabOpacity, {
+        toValue: 0.15,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setSubTab(nextTabId);
+      translateX.setValue(-direction * 35);
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: 0,
+          tension: 75,
+          friction: 11,
+          useNativeDriver: true,
+        }),
+        Animated.timing(tabOpacity, {
+          toValue: 1,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.2;
+      },
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 12 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.2;
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        translateX.stopAnimation();
+        tabOpacity.stopAnimation();
+        setIsTabSwiping(true);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const curIdx = NETWORK_TABS.indexOf(subTabRef.current);
+        const isFirst = curIdx === 0 && gestureState.dx > 0;
+        const isLast = curIdx === NETWORK_TABS.length - 1 && gestureState.dx < 0;
+        const damped = isFirst || isLast ? gestureState.dx * 0.22 : gestureState.dx;
+        translateX.setValue(damped);
+
+        const dragProgress = Math.min(1, Math.abs(damped) / (SCREEN_WIDTH * 0.45));
+        tabOpacity.setValue(Math.max(0.2, 1 - dragProgress * 0.8));
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        setIsTabSwiping(false);
+        const curIdx = NETWORK_TABS.indexOf(subTabRef.current);
+        const swipeThreshold = 25;
+        const speedThreshold = 0.18;
+
+        if ((gestureState.dx < -swipeThreshold || gestureState.vx < -speedThreshold) && curIdx < NETWORK_TABS.length - 1) {
+          const nextTab = NETWORK_TABS[curIdx + 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: -SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setSubTab(nextTab);
+            translateX.setValue(SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else if ((gestureState.dx > swipeThreshold || gestureState.vx > speedThreshold) && curIdx > 0) {
+          const prevTab = NETWORK_TABS[curIdx - 1];
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: SCREEN_WIDTH * 0.35,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 0.1,
+              duration: 90,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setSubTab(prevTab);
+            translateX.setValue(-SCREEN_WIDTH * 0.35);
+            Animated.parallel([
+              Animated.spring(translateX, {
+                toValue: 0,
+                tension: 85,
+                friction: 12,
+                useNativeDriver: true,
+              }),
+              Animated.timing(tabOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateX, {
+              toValue: 0,
+              tension: 85,
+              friction: 10,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tabOpacity, {
+              toValue: 1,
+              duration: 120,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      }
+    })
+  ).current;
   const [searchQuery, setSearchQuery] = useState('');
 
   // Location filter state (Cidade, UF, País)
@@ -1061,7 +1217,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
   // Open Candidate Scanner: switches to musicians tab with animated search
   const handleOpenScanner = (project) => {
     setSelectedScanProject(project);
-    setSubTab('musicians');
+    handleTabChange('musicians');
     setIsScanningCandidates(true);
   };
 
@@ -1786,342 +1942,15 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
   const userDisplayName = currentUser?.displayName || currentUser?.username || 'Músico';
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ── CABEÇALHO COM TÍTULO "EXPLORAR" (SEM SUBTEXTO) E AVATAR ── */}
-      <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
-        <View style={styles.webContainer}>
-          <View style={styles.headerTopRow}>
-            {/* Logo e Título "Social" */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={[styles.networkIconCircle, { backgroundColor: colors.primary + '18' }]}>
-                <Ionicons name="globe-outline" size={22} color={colors.primary} />
-              </View>
-              <Text style={[styles.headerTitle, { color: colors.text }]}>{t('socialTab') || 'Social'}</Text>
-            </View>
-
-            {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" (Apenas se onOpenProfile for fornecido) */}
-            {onOpenProfile ? (
-              <Pressable
-                onPress={onOpenProfile}
-                style={({ pressed }) => [
-                  styles.unifiedProfileBtn,
-                  {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                    borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
-                    opacity: pressed ? 0.8 : 1
-                  }
-                ]}
-                accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
-              >
-                <View style={styles.unifiedAvatarBox}>
-                  {userProfileImage ? (
-                    <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
-                  ) : (
-                    <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
-                      <Text style={styles.unifiedAvatarInitial}>
-                        {userDisplayName.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
-                  )}
-                  <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
-                </View>
-                <Text style={[styles.unifiedProfileText, { color: colors.text }]}>{t('profile') || 'Perfil'}</Text>
-                <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
-              </Pressable>
-            ) : null}
-          </View>
-
-          {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}
-          <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f1f5f9', borderColor: colors.border }]}>
-            <Ionicons name="search" size={17} color={colors.textMuted} style={{ marginLeft: 4 }} />
-            <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoComplete="off"
-              maxLength={100}
-            />
-            {searchQuery ? (
-              <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={16} color={colors.textMuted} />
-              </Pressable>
-            ) : null}
-          </View>
-
-          {/* FILTRO DE LOCALIDADE EM 3 CAMPOS: CIDADE, UF (2 LETRAS), PAÍS */}
-          <View style={styles.locationFilterRow}>
-            {/* 1. Cidade */}
-            <View
-              style={[
-                styles.locationInputBox,
-                {
-                  flex: 1.8,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                  borderColor: filterCity ? colors.primary : colors.border
-                }
-              ]}
-            >
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color={filterCity ? colors.primary : colors.textMuted}
-                style={{ marginRight: 4 }}
-              />
-              <TextInput
-                style={[styles.locationTextInput, { color: colors.text }]}
-                value={filterCity}
-                onChangeText={setFilterCity}
-                placeholder={t('cityPlaceholder') || 'Cidade'}
-                placeholderTextColor={colors.textMuted}
-                autoComplete="off"
-                maxLength={60}
-              />
-              {filterCity ? (
-                <Pressable onPress={() => setFilterCity('')} hitSlop={6}>
-                  <Ionicons name="close-circle" size={14} color={colors.textMuted} />
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* 2. UF (2 letras) */}
-            <View
-              style={[
-                styles.locationInputBox,
-                {
-                  width: 58,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                  borderColor: filterState ? colors.primary : colors.border,
-                  justifyContent: 'center',
-                  paddingHorizontal: 6
-                }
-              ]}
-            >
-              <TextInput
-                style={[styles.locationTextInput, { color: colors.text, textAlign: 'center', fontWeight: '700' }]}
-                value={filterState}
-                onChangeText={(val) => setFilterState(val.toUpperCase())}
-                placeholder="UF"
-                placeholderTextColor={colors.textMuted}
-                autoCapitalize="characters"
-                autoComplete="off"
-                maxLength={2}
-              />
-              {filterState ? (
-                <Pressable onPress={() => setFilterState('')} hitSlop={4}>
-                  <Ionicons name="close-circle" size={12} color={colors.textMuted} />
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* 3. País */}
-            <View
-              style={[
-                styles.locationInputBox,
-                {
-                  flex: 1.3,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                  borderColor: filterCountry ? colors.primary : colors.border
-                }
-              ]}
-            >
-              <TextInput
-                style={[styles.locationTextInput, { color: colors.text }]}
-                value={filterCountry}
-                onChangeText={setFilterCountry}
-                placeholder={t('countryPlaceholder') || 'País'}
-                placeholderTextColor={colors.textMuted}
-                autoComplete="off"
-                maxLength={40}
-              />
-              {filterCountry ? (
-                <Pressable onPress={() => setFilterCountry('')} hitSlop={6}>
-                  <Ionicons name="close-circle" size={14} color={colors.textMuted} />
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* Botão limpar todos os 3 campos */}
-            {(filterCity || filterState || filterCountry) ? (
-              <Pressable
-                onPress={() => {
-                  setFilterCity('');
-                  setFilterState('');
-                  setFilterCountry('');
-                }}
-                style={({ pressed }) => [
-                  styles.clearLocationBtn,
-                  { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.7 : 1 }
-                ]}
-                hitSlop={6}
-                title="Limpar filtros de localidade"
-              >
-                <Ionicons name="trash-outline" size={15} color={colors.textMuted} />
-              </Pressable>
-            ) : null}
-          </View>
-
-          {/* BOTÕES COM ÍCONES: USUÁRIOS | ANÚNCIOS | BANDAS | CLASSIFICADOS */}
-          <View style={styles.tabButtonsContainer}>
-            {/* Botão Usuários */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.tabButton,
-                subTab === 'musicians'
-                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
-                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
-                pressed && { opacity: 0.85 }
-              ]}
-              onPress={() => setSubTab('musicians')}
-              accessibilityLabel={t('usersTab') || t('musicians') || 'Usuários'}
-            >
-              <Ionicons
-                name={subTab === 'musicians' ? 'people' : 'people-outline'}
-                size={20}
-                color={subTab === 'musicians' ? '#ffffff' : colors.textMuted}
-              />
-              <View
-                style={[
-                  styles.tabButtonBadge,
-                  {
-                    backgroundColor: subTab === 'musicians'
-                      ? 'rgba(255,255,255,0.25)'
-                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
-                  }
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabButtonBadgeText,
-                    { color: subTab === 'musicians' ? '#ffffff' : colors.textMuted }
-                  ]}
-                >
-                  {displayedMusicians.length}
-                </Text>
-              </View>
-            </Pressable>
-
-            {/* Botão Anúncios */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.tabButton,
-                subTab === 'projects'
-                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
-                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
-                pressed && { opacity: 0.85 }
-              ]}
-              onPress={() => setSubTab('projects')}
-              accessibilityLabel={t('announcements') || 'Anúncios'}
-            >
-              <Ionicons
-                name={subTab === 'projects' ? 'megaphone' : 'megaphone-outline'}
-                size={19}
-                color={subTab === 'projects' ? '#ffffff' : colors.textMuted}
-              />
-              <View
-                style={[
-                  styles.tabButtonBadge,
-                  {
-                    backgroundColor: subTab === 'projects'
-                      ? 'rgba(255,255,255,0.25)'
-                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
-                  }
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabButtonBadgeText,
-                    { color: subTab === 'projects' ? '#ffffff' : colors.textMuted }
-                  ]}
-                >
-                  {filteredProjects.length}
-                </Text>
-              </View>
-            </Pressable>
-
-            {/* Botão Bandas */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.tabButton,
-                subTab === 'bands'
-                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
-                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
-                pressed && { opacity: 0.85 }
-              ]}
-              onPress={() => setSubTab('bands')}
-              accessibilityLabel={t('bandsTab') || 'Bandas'}
-            >
-              <Ionicons
-                name={subTab === 'bands' ? 'musical-notes' : 'musical-notes-outline'}
-                size={20}
-                color={subTab === 'bands' ? '#ffffff' : colors.textMuted}
-              />
-              <View
-                style={[
-                  styles.tabButtonBadge,
-                  {
-                    backgroundColor: subTab === 'bands'
-                      ? 'rgba(255,255,255,0.25)'
-                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
-                  }
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabButtonBadgeText,
-                    { color: subTab === 'bands' ? '#ffffff' : colors.textMuted }
-                  ]}
-                >
-                  {filteredBands.length}
-                </Text>
-              </View>
-            </Pressable>
-
-            {/* Botão Classificados */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.tabButton,
-                subTab === 'classifieds'
-                  ? [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }]
-                  : [styles.tabButtonInactive, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: colors.border }],
-                pressed && { opacity: 0.85 }
-              ]}
-              onPress={() => setSubTab('classifieds')}
-              accessibilityLabel={t('classifieds') || 'Classificados'}
-            >
-              <Ionicons
-                name={subTab === 'classifieds' ? 'pricetag' : 'pricetag-outline'}
-                size={18}
-                color={subTab === 'classifieds' ? '#ffffff' : colors.textMuted}
-              />
-              <View
-                style={[
-                  styles.tabButtonBadge,
-                  {
-                    backgroundColor: subTab === 'classifieds'
-                      ? 'rgba(255,255,255,0.25)'
-                      : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
-                  }
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabButtonBadgeText,
-                    { color: subTab === 'classifieds' ? '#ffffff' : colors.textMuted }
-                  ]}
-                >
-                  {filteredClassifieds.length}
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-
-      {/* ── CONTEÚDO PRINCIPAL (SCROLLVIEW) ── */}
+    <View style={[styles.container, { backgroundColor: colors.cardBackground }]}>
+      {/* ── SCROLLVIEW COM CABEÇALHO RETRÁTIL E MENU DE ABAS FIXO (STICKY) ── */}
       <ScrollView 
         ref={mainScrollRef} 
+        style={{ flex: 1, backgroundColor: colors.background }}
         contentContainerStyle={styles.scrollContent} 
+        stickyHeaderIndices={[1]}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!isTabSwiping}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 
@@ -2131,7 +1960,320 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
           />
         }
       >
-        <View style={styles.webContainer}>
+        {/* INDEX 0: CABEÇALHO HERO RETRÁTIL (LOGO/TÍTULO, AVATAR, BUSCA E FILTROS DE LOCALIDADE) */}
+        <View style={[styles.headerHeroContainer, { backgroundColor: colors.cardBackground }]}>
+          <View style={styles.webContainer}>
+            <View style={styles.headerTopRow}>
+              {/* Logo e Título "Social" */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={[styles.networkIconCircle, { backgroundColor: colors.primary + '18' }]}>
+                  <Ionicons name="globe-outline" size={22} color={colors.primary} />
+                </View>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>{t('socialTab') || 'Social'}</Text>
+              </View>
+
+              {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" (Apenas se onOpenProfile for fornecido) */}
+              {onOpenProfile ? (
+                <Pressable
+                  onPress={onOpenProfile}
+                  style={({ pressed }) => [
+                    styles.unifiedProfileBtn,
+                    {
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                      borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
+                      opacity: pressed ? 0.8 : 1
+                    }
+                  ]}
+                  accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
+                >
+                  <View style={styles.unifiedAvatarBox}>
+                    {userProfileImage ? (
+                      <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
+                    ) : (
+                      <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
+                        <Text style={styles.unifiedAvatarInitial}>
+                          {userDisplayName.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
+                  </View>
+                  <Text style={[styles.unifiedProfileText, { color: colors.text }]}>{t('profile') || 'Perfil'}</Text>
+                  <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
+                </Pressable>
+              ) : null}
+            </View>
+
+            {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}
+            <View style={[styles.searchContainer, { backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : '#f1f5f9', borderColor: colors.border }]}>
+              <Ionicons name="search" size={17} color={colors.textMuted} style={{ marginLeft: 4 }} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoComplete="off"
+                maxLength={100}
+              />
+              {searchQuery ? (
+                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                  <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
+
+            {/* FILTRO DE LOCALIDADE EM 3 CAMPOS: CIDADE, UF (2 LETRAS), PAÍS */}
+            <View style={styles.locationFilterRow}>
+              {/* 1. Cidade */}
+              <View
+                style={[
+                  styles.locationInputBox,
+                  {
+                    flex: 1.8,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    borderColor: filterCity ? colors.primary : colors.border
+                  }
+                ]}
+              >
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={filterCity ? colors.primary : colors.textMuted}
+                  style={{ marginRight: 4 }}
+                />
+                <TextInput
+                  style={[styles.locationTextInput, { color: colors.text }]}
+                  value={filterCity}
+                  onChangeText={setFilterCity}
+                  placeholder={t('cityPlaceholder') || 'Cidade'}
+                  placeholderTextColor={colors.textMuted}
+                  autoComplete="off"
+                  maxLength={60}
+                />
+                {filterCity ? (
+                  <Pressable onPress={() => setFilterCity('')} hitSlop={6}>
+                    <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+                  </Pressable>
+                ) : null}
+              </View>
+
+              {/* 2. UF (2 letras) */}
+              <View
+                style={[
+                  styles.locationInputBox,
+                  {
+                    width: 58,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    borderColor: filterState ? colors.primary : colors.border,
+                    justifyContent: 'center',
+                    paddingHorizontal: 6
+                  }
+                ]}
+              >
+                <TextInput
+                  style={[styles.locationTextInput, { color: colors.text, textAlign: 'center', fontWeight: '700' }]}
+                  value={filterState}
+                  onChangeText={(val) => setFilterState(val.toUpperCase())}
+                  placeholder="UF"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  maxLength={2}
+                />
+                {filterState ? (
+                  <Pressable onPress={() => setFilterState('')} hitSlop={4}>
+                    <Ionicons name="close-circle" size={12} color={colors.textMuted} />
+                  </Pressable>
+                ) : null}
+              </View>
+
+              {/* 3. País */}
+              <View
+                style={[
+                  styles.locationInputBox,
+                  {
+                    flex: 1.3,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    borderColor: filterCountry ? colors.primary : colors.border
+                  }
+                ]}
+              >
+                <TextInput
+                  style={[styles.locationTextInput, { color: colors.text }]}
+                  value={filterCountry}
+                  onChangeText={setFilterCountry}
+                  placeholder={t('countryPlaceholder') || 'País'}
+                  placeholderTextColor={colors.textMuted}
+                  autoComplete="off"
+                  maxLength={40}
+                />
+                {filterCountry ? (
+                  <Pressable onPress={() => setFilterCountry('')} hitSlop={6}>
+                    <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+                  </Pressable>
+                ) : null}
+              </View>
+
+              {/* Botão limpar todos os 3 campos */}
+              {(filterCity || filterState || filterCountry) ? (
+                <Pressable
+                  onPress={() => {
+                    setFilterCity('');
+                    setFilterState('');
+                    setFilterCountry('');
+                  }}
+                  style={({ pressed }) => [
+                    styles.clearLocationBtn,
+                    { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', opacity: pressed ? 0.7 : 1 }
+                  ]}
+                  hitSlop={6}
+                  title="Limpar filtros de localidade"
+                >
+                  <Ionicons name="trash-outline" size={15} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        </View>
+
+        {/* INDEX 1: STICKY TAB BAR (FIXA NO TOPO AO ROLAR) */}
+        <View style={[styles.tabBarContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
+          <View style={[styles.webContainer, styles.tabBarRow]}>
+            {/* 1. Músicos / Usuários */}
+            <Pressable
+              style={[
+                styles.tabItemIconOnly,
+                subTab === 'musicians' && [styles.activeTabItem, { borderBottomColor: colors.primary }]
+              ]}
+              onPress={() => handleTabChange('musicians')}
+              accessibilityLabel={t('usersTab') || t('musicians') || 'Usuários'}
+            >
+              <View style={styles.tabIconBadgeWrapper}>
+                <Ionicons
+                  name={subTab === 'musicians' ? 'people' : 'people-outline'}
+                  size={22}
+                  color={subTab === 'musicians' ? colors.primary : colors.textMuted}
+                />
+                {displayedMusicians.length > 0 && (
+                  <View style={[
+                    styles.tabCounterBadge,
+                    {
+                      backgroundColor: subTab === 'musicians'
+                        ? colors.primary
+                        : (isDark ? '#475569' : '#94a3b8')
+                    }
+                  ]}>
+                    <Text style={styles.tabCounterBadgeText}>
+                      {displayedMusicians.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+
+            {/* 2. Anúncios */}
+            <Pressable
+              style={[
+                styles.tabItemIconOnly,
+                subTab === 'projects' && [styles.activeTabItem, { borderBottomColor: colors.primary }]
+              ]}
+              onPress={() => handleTabChange('projects')}
+              accessibilityLabel={t('announcements') || 'Anúncios'}
+            >
+              <View style={styles.tabIconBadgeWrapper}>
+                <Ionicons
+                  name={subTab === 'projects' ? 'megaphone' : 'megaphone-outline'}
+                  size={20}
+                  color={subTab === 'projects' ? colors.primary : colors.textMuted}
+                />
+                {filteredProjects.length > 0 && (
+                  <View style={[
+                    styles.tabCounterBadge,
+                    {
+                      backgroundColor: subTab === 'projects'
+                        ? colors.primary
+                        : (isDark ? '#475569' : '#94a3b8')
+                    }
+                  ]}>
+                    <Text style={styles.tabCounterBadgeText}>
+                      {filteredProjects.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+
+            {/* 3. Bandas */}
+            <Pressable
+              style={[
+                styles.tabItemIconOnly,
+                subTab === 'bands' && [styles.activeTabItem, { borderBottomColor: colors.primary }]
+              ]}
+              onPress={() => handleTabChange('bands')}
+              accessibilityLabel={t('bandsTab') || 'Bandas'}
+            >
+              <View style={styles.tabIconBadgeWrapper}>
+                <Ionicons
+                  name={subTab === 'bands' ? 'musical-notes' : 'musical-notes-outline'}
+                  size={22}
+                  color={subTab === 'bands' ? colors.primary : colors.textMuted}
+                />
+                {filteredBands.length > 0 && (
+                  <View style={[
+                    styles.tabCounterBadge,
+                    {
+                      backgroundColor: subTab === 'bands'
+                        ? colors.primary
+                        : (isDark ? '#475569' : '#94a3b8')
+                    }
+                  ]}>
+                    <Text style={styles.tabCounterBadgeText}>
+                      {filteredBands.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+
+            {/* 4. Classificados */}
+            <Pressable
+              style={[
+                styles.tabItemIconOnly,
+                subTab === 'classifieds' && [styles.activeTabItem, { borderBottomColor: colors.primary }]
+              ]}
+              onPress={() => handleTabChange('classifieds')}
+              accessibilityLabel={t('classifieds') || 'Classificados'}
+            >
+              <View style={styles.tabIconBadgeWrapper}>
+                <Ionicons
+                  name={subTab === 'classifieds' ? 'pricetag' : 'pricetag-outline'}
+                  size={19}
+                  color={subTab === 'classifieds' ? colors.primary : colors.textMuted}
+                />
+                {filteredClassifieds.length > 0 && (
+                  <View style={[
+                    styles.tabCounterBadge,
+                    {
+                      backgroundColor: subTab === 'classifieds'
+                        ? colors.primary
+                        : (isDark ? '#475569' : '#94a3b8')
+                    }
+                  ]}>
+                    <Text style={styles.tabCounterBadgeText}>
+                      {filteredClassifieds.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* INDEX 2: CONTEÚDO DAS ABAS COM TRANSIÇÃO ANIMADA E GESTOS HORIZONTAIS */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={{ flex: 1, opacity: tabOpacity, transform: [{ translateX }] }}
+        >
+          <View style={[styles.webContainer, { paddingTop: 14 }]}>
           {subTab === 'projects' ? (
           /* ── FEED DE ANÚNCIOS ── */
           <View>
@@ -2952,7 +3094,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
             {renderPagination(musiciansPage, totalMusiciansPages, displayedMusicians.length, setMusiciansPage)}
           </View>
         )}
-        </View>
+          </View>
+        </Animated.View>
       </ScrollView>
 
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -3503,15 +3646,66 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { 
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 10 : 44,
+  },
   webContainer: {
     width: '100%',
     maxWidth: 820,
     alignSelf: 'center',
   },
+  headerHeroContainer: { 
+    paddingHorizontal: 16, 
+    paddingTop: 4, 
+    paddingBottom: 8,
+  },
+  tabBarContainer: { 
+    borderBottomWidth: 1, 
+    height: 48, 
+    zIndex: 10,
+  },
+  tabBarRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-around', 
+    alignItems: 'center', 
+    height: 48,
+  },
+  tabItemIconOnly: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 48,
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
+  },
+  activeTabItem: { 
+    borderBottomWidth: 3,
+  },
+  tabIconBadgeWrapper: {
+    position: 'relative',
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabCounterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    borderRadius: 10,
+    minWidth: 15,
+    height: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  tabCounterBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
   header: { 
     borderBottomWidth: 1, 
-    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 10 : 44, 
     paddingHorizontal: 16, 
     paddingBottom: 6 
   },
@@ -3650,7 +3844,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  scrollContent: { paddingBottom: 60, paddingTop: 14, paddingHorizontal: 0 },
+  scrollContent: { paddingBottom: 60, paddingTop: 0, paddingHorizontal: 0 },
 
   // Project card
   projectCard: {
