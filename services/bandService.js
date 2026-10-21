@@ -604,6 +604,15 @@ export const bandService = {
     }
   },
 
+  async updateBandSyncDataJson(bandId, syncDataJson) {
+    try {
+      const jsonStr = typeof syncDataJson === 'string' ? syncDataJson : JSON.stringify(syncDataJson || {});
+      await db.runAsync('UPDATE my_bands SET syncDataJson = ? WHERE id = ?;', [jsonStr, bandId]);
+    } catch (error) {
+      console.error('Error in bandService.updateBandSyncDataJson:', error);
+    }
+  },
+
   // ==========================================
   // CLOUD COLLABORATION & SYNC (OFFLINE-FIRST)
   // ==========================================

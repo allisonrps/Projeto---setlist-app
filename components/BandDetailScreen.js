@@ -1472,12 +1472,27 @@ export default function BandDetailScreen({
         band_fund: fundVal,
         status: selectedShowCacheStatus
       };
+
+      // Mapeia tambem por nome, username e userId para garantir resolucao perfeita em todas as telas
+      (activeMembers || []).forEach(m => {
+        const val = memberSplits[m.id];
+        if (val !== undefined && val !== null && val !== '') {
+          if (m.name) fullSplits[m.name.trim()] = val;
+          if (m.username) fullSplits[m.username.trim()] = val;
+          if (m.userId) fullSplits[String(m.userId)] = val;
+        }
+      });
+
       substitutes.forEach((sub, idx) => {
         if (sub.name || sub.amount) {
           fullSplits[`sub_${idx}`] = JSON.stringify({ name: sub.name, amount: sub.amount });
         }
       });
       await bandService.saveShowCacheSplit(selectedShowForSplit.id, fullSplits, selectedShowCacheStatus);
+      if (selectedShowForSplit.name && selectedShowForSplit.date) {
+        const nameDateKey = `${selectedShowForSplit.name.trim().toLowerCase()}_${String(selectedShowForSplit.date).trim()}`;
+        await bandService.saveShowCacheSplit(nameDateKey, fullSplits, selectedShowCacheStatus);
+      }
 
       // Se for banda online, sincroniza o split no snapshot da nuvem
       if (band?.cloudId) {
@@ -1494,9 +1509,10 @@ export default function BandDetailScreen({
             );
             if (targetSl) {
               targetSl.cacheSplit = {
-                members: { ...memberSplits },
+                members: { ...fullSplits },
                 substitutes: [...substitutes],
                 bandFund: fundVal,
+                band_fund: fundVal,
                 status: selectedShowCacheStatus,
                 updatedAt: new Date().toISOString()
               };
@@ -1511,11 +1527,41 @@ export default function BandDetailScreen({
                 country: band.country || '',
                 syncDataJson: JSON.stringify(snapshot)
               });
+              if (band?.id) {
+                await bandService.updateBandSyncDataJson(band.id, snapshot);
+              }
             }
           }
         } catch (syncErr) {
           console.warn('Erro ao sincronizar split com a nuvem:', syncErr);
         }
+      } else if (band?.id) {
+        try {
+          const localB = await bandService.getBandById(band.id);
+          if (localB && localB.syncDataJson) {
+            const snapshot = typeof localB.syncDataJson === 'string'
+              ? JSON.parse(localB.syncDataJson || '{}')
+              : (localB.syncDataJson || {});
+            if (Array.isArray(snapshot.setlists)) {
+              const targetSl = snapshot.setlists.find(s =>
+                (selectedShowForSplit.id && s.id === selectedShowForSplit.id) ||
+                (s.name === selectedShowForSplit.name && s.date === selectedShowForSplit.date)
+              );
+              if (targetSl) {
+                targetSl.cacheSplit = {
+                  members: { ...fullSplits },
+                  substitutes: [...substitutes],
+                  bandFund: fundVal,
+                  band_fund: fundVal,
+                  status: selectedShowCacheStatus,
+                  updatedAt: new Date().toISOString()
+                };
+                targetSl.cacheStatus = selectedShowCacheStatus;
+                await bandService.updateBandSyncDataJson(band.id, snapshot);
+              }
+            }
+          }
+        } catch (localErr) {}
       }
 
       await loadData();

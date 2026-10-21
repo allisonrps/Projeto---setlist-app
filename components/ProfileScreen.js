@@ -1074,11 +1074,36 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
                 // Busca a divisão de cachê configurada na página da banda
                 let splitData = s.cacheSplit || null;
+                const nameDateKey = `${(s.name || s.local || '').trim().toLowerCase()}_${(s.date || '').trim()}`;
                 if (!splitData || Object.keys(splitData).length === 0) {
                   try {
-                    splitData = await bandService.getShowCacheSplit(s.id);
+                    if (s.id) splitData = await bandService.getShowCacheSplit(s.id);
                   } catch (e) {}
+                  if (!splitData || Object.keys(splitData).length === 0) {
+                    try {
+                      splitData = await bandService.getShowCacheSplit(nameDateKey);
+                    } catch (e) {}
+                  }
                 }
+
+                // Subtrai valor destinado ao caixa da banda e substitutos (idêntico à página da banda)
+                const fundVal = parseFloat(splitData?.bandFund ?? splitData?.band_fund ?? splitData?.fund ?? 0) || 0;
+                let subsTotal = 0;
+                if (Array.isArray(splitData?.substitutes)) {
+                  splitData.substitutes.forEach(sub => {
+                    subsTotal += parseFloat(String(sub?.amount || '0').replace(',', '.')) || 0;
+                  });
+                } else if (splitData && typeof splitData === 'object') {
+                  for (const [k, v] of Object.entries(splitData)) {
+                    if (k.startsWith('sub_')) {
+                      try {
+                        const parsedSub = typeof v === 'string' ? JSON.parse(v) : v;
+                        subsTotal += parseFloat(String(parsedSub?.amount || '0').replace(',', '.')) || 0;
+                      } catch (e) {}
+                    }
+                  }
+                }
+                const netToDivide = Math.max(0, totalGross - fundVal - subsTotal);
 
                 let memberSplits = null;
                 if (splitData && typeof splitData === 'object') {
@@ -1094,6 +1119,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                   const keysToTry = [
                     userMem?.id,
                     userMem?.id ? String(userMem.id) : null,
+                    userMem?.userId ? String(userMem.userId) : null,
                     userMem?.username,
                     userMem?.name,
                     'me',
@@ -1102,7 +1128,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                   ].filter(Boolean);
 
                   for (const k of keysToTry) {
-                    if (memberSplits[k] !== undefined) {
+                    if (memberSplits[k] !== undefined && memberSplits[k] !== null && memberSplits[k] !== '') {
                       myShare = parseCash(memberSplits[k]);
                       foundSplit = true;
                       break;
@@ -1111,14 +1137,14 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
                   if (!foundSplit) {
                     for (const [k, v] of Object.entries(memberSplits)) {
-                      if (k === 'bandFund' || k === 'band_fund' || k === 'status' || k === 'updatedAt' || k === 'substitutes' || k.startsWith('sub_')) continue;
-                      const kLower = String(k).toLowerCase();
-                      if (userMem?.name && kLower === userMem.name.toLowerCase()) {
+                      if (k === 'bandFund' || k === 'band_fund' || k === 'fund' || k === 'status' || k === 'updatedAt' || k === 'substitutes' || k.startsWith('sub_')) continue;
+                      const kLower = String(k).toLowerCase().trim();
+                      if (userMem?.name && kLower === userMem.name.toLowerCase().trim()) {
                         myShare = parseCash(v);
                         foundSplit = true;
                         break;
                       }
-                      if (userMem?.username && kLower === userMem.username.toLowerCase()) {
+                      if (userMem?.username && kLower === userMem.username.toLowerCase().trim()) {
                         myShare = parseCash(v);
                         foundSplit = true;
                         break;
@@ -1137,8 +1163,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                   }
                 }
 
+                // Se não há divisão explícita específica salva por integrante, divide o líquido restante igualmente
                 if (!foundSplit) {
-                  myShare = totalGross > 0 ? (totalGross / activeCount) : 0;
+                  myShare = netToDivide > 0 ? (netToDivide / activeCount) : 0;
                 }
 
                 eventsFromBands.push({
@@ -1176,17 +1203,65 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
               let splitData = null;
               try {
-                splitData = await bandService.getShowCacheSplit(s.id);
+                if (s.id) splitData = await bandService.getShowCacheSplit(s.id);
               } catch (e) {}
+              if (!splitData || Object.keys(splitData).length === 0) {
+                try {
+                  const sNameDateKey = `${(s.name || s.local || '').trim().toLowerCase()}_${(s.date || '').trim()}`;
+                  splitData = await bandService.getShowCacheSplit(sNameDateKey);
+                } catch (e) {}
+              }
+
+              const fundVal = parseFloat(splitData?.bandFund ?? splitData?.band_fund ?? splitData?.fund ?? 0) || 0;
+              let subsTotal = 0;
+              if (Array.isArray(splitData?.substitutes)) {
+                splitData.substitutes.forEach(sub => {
+                  subsTotal += parseFloat(String(sub?.amount || '0').replace(',', '.')) || 0;
+                });
+              } else if (splitData && typeof splitData === 'object') {
+                for (const [k, v] of Object.entries(splitData)) {
+                  if (k.startsWith('sub_')) {
+                    try {
+                      const parsedSub = typeof v === 'string' ? JSON.parse(v) : v;
+                      subsTotal += parseFloat(String(parsedSub?.amount || '0').replace(',', '.')) || 0;
+                    } catch (e) {}
+                  }
+                }
+              }
+              const netToDivide = Math.max(0, totalGross - fundVal - subsTotal);
 
               let memberSplits = splitData?.members || splitData;
-              let myShare = totalGross;
+              let myShare = netToDivide;
+              let foundSoloSplit = false;
               if (memberSplits && typeof memberSplits === 'object' && Object.keys(memberSplits).length > 0) {
-                for (const [k, v] of Object.entries(memberSplits)) {
-                  if (k === 'bandFund' || k === 'band_fund' || k === 'status' || k === 'updatedAt' || k === 'substitutes' || k.startsWith('sub_')) continue;
-                  myShare = parseCash(v);
-                  break;
+                const keysToTry = [
+                  user?.id ? String(user.id) : null,
+                  user?.username,
+                  user?.displayName,
+                  'me',
+                  cleanMyUser,
+                  cleanMyDisplay
+                ].filter(Boolean);
+
+                for (const k of keysToTry) {
+                  if (memberSplits[k] !== undefined && memberSplits[k] !== null && memberSplits[k] !== '') {
+                    myShare = parseCash(memberSplits[k]);
+                    foundSoloSplit = true;
+                    break;
+                  }
                 }
+
+                if (!foundSoloSplit) {
+                  for (const [k, v] of Object.entries(memberSplits)) {
+                    if (k === 'bandFund' || k === 'band_fund' || k === 'fund' || k === 'status' || k === 'updatedAt' || k === 'substitutes' || k.startsWith('sub_')) continue;
+                    myShare = parseCash(v);
+                    foundSoloSplit = true;
+                    break;
+                  }
+                }
+              }
+              if (!foundSoloSplit) {
+                myShare = netToDivide;
               }
 
               eventsFromBands.push({
@@ -1223,6 +1298,54 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                   const bandLogo = ev.bandImage || ev.bandLogo || (evBandId ? bandLogoMap[evBandId] : null) || (evBandName ? bandLogoMap[evBandName.toLowerCase()] : null) || null;
                   const cGross = parseCash(ev.cacheValue != null ? ev.cacheValue : (ev.cachê || ev.cache || ev.value || 0));
 
+                  let splitData = null;
+                  try {
+                    if (ev.id) splitData = await bandService.getShowCacheSplit(ev.id);
+                  } catch (e) {}
+                  if (!splitData || Object.keys(splitData).length === 0) {
+                    try {
+                      splitData = await bandService.getShowCacheSplit(evKey);
+                    } catch (e) {}
+                  }
+
+                  const fundVal = parseFloat(splitData?.bandFund ?? splitData?.band_fund ?? splitData?.fund ?? 0) || 0;
+                  let subsTotal = 0;
+                  if (Array.isArray(splitData?.substitutes)) {
+                    splitData.substitutes.forEach(sub => {
+                      subsTotal += parseFloat(String(sub?.amount || '0').replace(',', '.')) || 0;
+                    });
+                  } else if (splitData && typeof splitData === 'object') {
+                    for (const [k, v] of Object.entries(splitData)) {
+                      if (k.startsWith('sub_')) {
+                        try {
+                          const parsedSub = typeof v === 'string' ? JSON.parse(v) : v;
+                          subsTotal += parseFloat(String(parsedSub?.amount || '0').replace(',', '.')) || 0;
+                        } catch (e) {}
+                      }
+                    }
+                  }
+                  const netToDivide = Math.max(0, cGross - fundVal - subsTotal);
+
+                  let memberSplits = splitData?.members || splitData;
+                  let myShare = netToDivide;
+                  if (memberSplits && typeof memberSplits === 'object' && Object.keys(memberSplits).length > 0) {
+                    const keysToTry = [
+                      user?.id ? String(user.id) : null,
+                      user?.username,
+                      user?.displayName,
+                      'me',
+                      cleanMyUser,
+                      cleanMyDisplay
+                    ].filter(Boolean);
+
+                    for (const k of keysToTry) {
+                      if (memberSplits[k] !== undefined && memberSplits[k] !== null && memberSplits[k] !== '') {
+                        myShare = parseCash(memberSplits[k]);
+                        break;
+                      }
+                    }
+                  }
+
                   eventsFromBands.push({
                     ...ev,
                     id: `cloudev_${ev.id}`,
@@ -1235,7 +1358,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                     formattedDate: formattedDate,
                     local: ev.location || ev.city || '',
                     cachê: cGross,
-                    myShareNum: cGross,
+                    myShareNum: myShare,
                     logo: bandLogo
                   });
                 }
@@ -3450,7 +3573,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
           style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', paddingHorizontal: 24, paddingVertical: 14, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'center' }}
           onPress={handleLogout}
         >
-          <Ionicons name="log-out-outline" size={18} color={colors.text} />
+          <Ionicons name='power' size={18} color={colors.text} />
           <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>{t('switchAccountOrLogout') || 'Trocar de Conta / Sair'}</Text>
         </Pressable>
       </View>
@@ -3552,7 +3675,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               hitSlop={8}
               accessibilityLabel={t('logout') || 'Sair'}
             >
-              <Ionicons name='log-out-outline' size={18} color={colors.danger || '#ef4444'} />
+              <Ionicons name='power' size={18} color={colors.danger || '#ef4444'} />
             </Pressable>
           </View>
         </View>
