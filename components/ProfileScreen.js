@@ -2136,10 +2136,26 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
         await AsyncStorage.setItem('user_profile_completed', 'true');
       }
 
+      // Prepara imagem em Base64 para garantir persistência na nuvem caso seja arquivo local
+      let cloudPic = finalPic;
+      if (finalPic && (finalPic.startsWith('file://') || finalPic.startsWith('content://'))) {
+        try {
+          if (Platform.OS !== 'web' && FileSystem) {
+            const cleanPath = finalPic.split('?')[0];
+            const b64 = await FileSystem.readAsStringAsync(cleanPath, { encoding: FileSystem.EncodingType.Base64 });
+            if (b64) {
+              cloudPic = `data:image/jpeg;base64,${b64}`;
+            }
+          }
+        } catch (b64Err) {
+          console.log('Error converting profile picture to base64 for cloud:', b64Err);
+        }
+      }
+
       await api.updateProfile({
         displayName: cleanName,
         username: cleanUsername !== (user?.username || '').toLowerCase() ? cleanUsername : undefined,
-        pictureUrl: finalPic,
+        pictureUrl: cloudPic,
         birthDate: isoBirthDate || '',
         city: cleanCity,
         state: cleanState,

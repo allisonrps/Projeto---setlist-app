@@ -1744,10 +1744,10 @@ function MainApp() {
       setShowBandModal(false);
       setEditingBand(null);
 
-      // Sincronizar na nuvem apenas se a modalidade for online e estiver logado
+      // Sincronizar na nuvem se a modalidade for online ou se já for banda online
       try {
         const logged = await api.isLoggedIn();
-        if (bandData.isOnline && logged && savedBandId) {
+        if ((bandData.isOnline || editingBand?.cloudId) && logged && savedBandId) {
           bandService.syncBandToCloud(savedBandId).then(() => reloadAllData()).catch(() => {});
         }
       } catch (syncErr) {
