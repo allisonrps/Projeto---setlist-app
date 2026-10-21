@@ -794,6 +794,14 @@ export const bandService = {
         }
       }
 
+      // Snapshot structure - preserva dados existentes na nuvem se as tabelas locais estiverem vazias (modo online)
+      let existingCloudSnapshot = null;
+      if (localBand.syncDataJson) {
+        try {
+          existingCloudSnapshot = typeof localBand.syncDataJson === 'string' ? JSON.parse(localBand.syncDataJson) : localBand.syncDataJson;
+        } catch (e) {}
+      }
+
       // Gather setlists (Agenda / Shows / Ensaios) for this band
       let setlists = [];
       try {
@@ -801,17 +809,36 @@ export const bandService = {
         if (rawSetlists && rawSetlists.length > 0) {
           setlists = await Promise.all(rawSetlists.map(async (sl) => {
             const songsInSetlist = await db.getAllAsync(
-              'SELECT ss.*, s.name, s.originalBand, s.duration, s.style FROM setlist_songs ss JOIN songs s ON ss.songId = s.id WHERE ss.setlistId = ? ORDER BY ss.order_num ASC;',
+              `SELECT ss.songId, ss.order_num, ss.customDuration, ss.customNotes, ss.rehearsalStatus, ss.rehearsalNotes,
+                      s.name, s.originalBand, s.duration, s.style, s.lyrics, s.chords, s.tabs, s.defaultView, s.scrollSpeed
+               FROM setlist_songs ss
+               LEFT JOIN songs s ON ss.songId = s.id
+               WHERE ss.setlistId = ?
+               ORDER BY ss.order_num ASC;`,
               [sl.id]
             );
             // Deduplicate and cap at 100
             const seenSongIds = new Set();
-            const cleanList = [];
+            let cleanList = [];
             for (const item of (songsInSetlist || [])) {
               if (item.songId >= 0 && seenSongIds.has(item.songId)) continue;
               if (item.songId >= 0) seenSongIds.add(item.songId);
-              cleanList.push(item);
+              cleanList.push({
+                ...item,
+                id: item.songId,
+                songId: item.songId,
+              });
               if (cleanList.length >= 100) break;
+            }
+            // Se por algum motivo a tabela local setlist_songs estiver vazia para esta setlist, preserva as músicas que já estavam no snapshot da nuvem
+            if (cleanList.length === 0 && Array.isArray(existingCloudSnapshot?.setlists)) {
+              const cloudSl = existingCloudSnapshot.setlists.find(csl =>
+                String(csl.id) === String(sl.id) ||
+                (csl.name && sl.name && csl.name.trim().toLowerCase() === sl.name.trim().toLowerCase() && String(csl.date || '').trim() === String(sl.date || '').trim())
+              );
+              if (cloudSl && Array.isArray(cloudSl.songs) && cloudSl.songs.length > 0) {
+                cleanList = cloudSl.songs;
+              }
             }
             return { ...sl, songs: cleanList };
           }));
@@ -826,14 +853,6 @@ export const bandService = {
         activityLogs = await this.getBandActivityLogs(bandId, 60);
       } catch (ale) {
         console.warn('Could not read activity logs for band sync:', ale);
-      }
-
-      // Snapshot structure - preserva dados existentes na nuvem se as tabelas locais estiverem vazias (modo online)
-      let existingCloudSnapshot = null;
-      if (localBand.syncDataJson) {
-        try {
-          existingCloudSnapshot = typeof localBand.syncDataJson === 'string' ? JSON.parse(localBand.syncDataJson) : localBand.syncDataJson;
-        } catch (e) {}
       }
 
       const finalMembers = (members && members.length > 0) ? members : (existingCloudSnapshot?.members || []);
@@ -1252,27 +1271,77 @@ export const bandService = {
             );
           }
 
-          // Link songs in setlist
-          if (localSetlistId && sl.songs && Array.isArray(sl.songs)) {
-            // Clean previous associations to prevent duplicating songs on repeated syncs
-            await db.runAsync('DELETE FROM setlist_songs WHERE setlistId = ?;', [localSetlistId]);
+          // Link songs in setlist (apenas se houver músicas no snapshot da nuvem para não apagar setlists locais acidentalmente)
+          if (localSetlistId && Array.isArray(sl.songs) && sl.songs.length > 0) {
             const seenSongIds = new Set();
-            let orderIdx = 0;
+            const resolvedRows = [];
             for (let i = 0; i < sl.songs.length; i++) {
-              if (orderIdx >= 100) break;
+              if (resolvedRows.length >= 100) break;
               const slSong = sl.songs[i];
-              if (!slSong || !slSong.name) continue;
+              if (!slSong) continue;
+
+              const rawSongId = slSong.songId !== undefined && slSong.songId !== null ? slSong.songId : slSong.id;
+              if (rawSongId === -1 || rawSongId === -2) {
+                resolvedRows.push({
+                  songId: rawSongId,
+                  customDuration: slSong.customDuration || '',
+                  customNotes: slSong.customNotes || '',
+                  rehearsalStatus: slSong.rehearsalStatus || 'none',
+                  rehearsalNotes: slSong.rehearsalNotes || ''
+                });
+                continue;
+              }
+
+              if (!slSong.name) continue;
+              let sId = null;
               const matchSong = await db.getAllAsync(
                 'SELECT id FROM songs WHERE LOWER(name) = ?;',
                 [slSong.name.trim().toLowerCase()]
               );
               if (matchSong && matchSong.length > 0) {
-                const sId = matchSong[0].id;
+                sId = matchSong[0].id;
+              } else {
+                // Insere a música localmente caso ainda não exista para garantir vínculo íntegro na setlist
+                try {
+                  const insSong = await db.runAsync(
+                    `INSERT INTO songs (name, originalBand, style, duration, defaultView, lyrics, chords, tabs, isFavorite)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+                    [
+                      slSong.name.trim(),
+                      slSong.originalBand || '',
+                      slSong.style || '',
+                      slSong.duration || '',
+                      slSong.defaultView || 'chords',
+                      slSong.lyrics || '',
+                      slSong.chords || '',
+                      slSong.tabs || '',
+                      slSong.isFavorite ? 1 : 0
+                    ]
+                  );
+                  sId = insSong.lastInsertRowId;
+                } catch (insErr) {}
+              }
+
+              if (sId) {
                 if (seenSongIds.has(sId)) continue;
                 seenSongIds.add(sId);
+                resolvedRows.push({
+                  songId: sId,
+                  customDuration: slSong.customDuration || '',
+                  customNotes: slSong.customNotes || '',
+                  rehearsalStatus: slSong.rehearsalStatus || 'none',
+                  rehearsalNotes: slSong.rehearsalNotes || ''
+                });
+              }
+            }
+
+            if (resolvedRows.length > 0) {
+              await db.runAsync('DELETE FROM setlist_songs WHERE setlistId = ?;', [localSetlistId]);
+              for (let orderIdx = 0; orderIdx < resolvedRows.length; orderIdx++) {
+                const row = resolvedRows[orderIdx];
                 await db.runAsync(
-                  'INSERT INTO setlist_songs (setlistId, songId, order_num, customDuration, customNotes) VALUES (?, ?, ?, ?, ?);',
-                  [localSetlistId, sId, orderIdx++, slSong.customDuration || '', slSong.customNotes || '']
+                  'INSERT INTO setlist_songs (setlistId, songId, order_num, customDuration, customNotes, rehearsalStatus, rehearsalNotes) VALUES (?, ?, ?, ?, ?, ?, ?);',
+                  [localSetlistId, row.songId, orderIdx, row.customDuration, row.customNotes, row.rehearsalStatus, row.rehearsalNotes]
                 );
               }
             }

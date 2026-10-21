@@ -1173,7 +1173,23 @@ function MainApp() {
         }
 
         setOnlineSongs(mappedOnlineSongs);
-        allSongsUnfilteredData = mappedOnlineSongs;
+        // Combina o Songbook Online com músicas do banco local para garantir resolução de músicas em setlists e repertórios de bandas
+        let localSqliteSongs = [];
+        try {
+          localSqliteSongs = await songService.getAll();
+        } catch (localSongErr) {}
+        const combinedSongsList = [...mappedOnlineSongs];
+        const existingSongKeys = new Set(
+          mappedOnlineSongs.map(s => `${String(s.name || '').trim().toLowerCase()}|${String(s.originalBand || '').trim().toLowerCase()}`)
+        );
+        (localSqliteSongs || []).forEach(ls => {
+          const key = `${String(ls.name || '').trim().toLowerCase()}|${String(ls.originalBand || '').trim().toLowerCase()}`;
+          if (!existingSongKeys.has(key)) {
+            existingSongKeys.add(key);
+            combinedSongsList.push(ls);
+          }
+        });
+        allSongsUnfilteredData = combinedSongsList;
         allSongs = filterAndSortSongList(mappedOnlineSongs, searchQuery, selectedStyles, songSortBy, songSortOrder);
 
         const styleSet = new Set();
@@ -2092,11 +2108,15 @@ function MainApp() {
         );
       }
 
-      // Auto-sincroniza com a nuvem se a banda for online para que apareça na web imediatamente
+      // Auto-sincroniza com a nuvem se a banda for online para que apareça na web e na aba da banda imediatamente
       if (targetBandId) {
         const bandObj = bands.find(b => String(b.id) === String(targetBandId));
         if (bandObj && bandObj.cloudId) {
-          bandService.syncBandToCloud(bandObj.id).catch(e => console.log('Auto-sync band setlist error:', e));
+          try {
+            await bandService.syncBandToCloud(bandObj.id);
+          } catch (e) {
+            console.log('Auto-sync band setlist error:', e);
+          }
         }
       }
 
@@ -6247,7 +6267,7 @@ function MainApp() {
                     {t('aboutHeader')}
                   </Text>
                   <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
-                    BandLink • v1.3.2
+                    BandLink • v1.3.8
                   </Text>
                 </View>
               </View>
@@ -6267,7 +6287,7 @@ function MainApp() {
                   </Pressable>
                   <Text style={[styles.aboutAppTitle, { color: colors.primary, marginTop: 8 }]}>BANDLINK</Text>
                   <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.6 (Build 15)</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.8 (Build 17)</Text>
                   </View>
                   
                   <Pressable 
@@ -6867,7 +6887,26 @@ function MainApp() {
 
       <SetlistDetailScreen
         visible={!!activeSetlistDetail}
-        setlist={activeSetlistDetail && activeSetlistDetail.id ? (setlists.find(s => s.id === activeSetlistDetail.id) || activeSetlistDetail) : activeSetlistDetail}
+        setlist={(() => {
+          if (!activeSetlistDetail) return null;
+          if (!activeSetlistDetail.id && !activeSetlistDetail.name) return activeSetlistDetail;
+          const localMatch = setlists.find(s =>
+            (activeSetlistDetail.id && String(s.id) === String(activeSetlistDetail.id)) ||
+            (s.name && activeSetlistDetail.name &&
+             String(s.myBandId) === String(activeSetlistDetail.myBandId) &&
+             s.name.trim().toLowerCase() === activeSetlistDetail.name.trim().toLowerCase() &&
+             String(s.date || '').trim() === String(activeSetlistDetail.date || '').trim())
+          );
+          if (!localMatch) return activeSetlistDetail;
+          const activeHasSongs = Array.isArray(activeSetlistDetail.songs) && activeSetlistDetail.songs.length > 0;
+          const localHasSongs = Array.isArray(localMatch.songs) && localMatch.songs.length > 0;
+          return {
+            ...localMatch,
+            ...activeSetlistDetail,
+            id: localMatch.id || activeSetlistDetail.id,
+            songs: activeHasSongs ? activeSetlistDetail.songs : (localHasSongs ? localMatch.songs : [])
+          };
+        })()}
         bands={bands}
         songs={allSongsUnfiltered}
         onBack={handleCloseSetlistDetail}
@@ -6891,7 +6930,18 @@ function MainApp() {
       <PerformanceMode
         visible={showPerformanceMode}
         onClose={() => { setShowPerformanceMode(false); setActiveSetlist(null); }}
-        setlist={activeSetlist ? (setlists.find(s => s.id === activeSetlist.id) || activeSetlist) : null}
+        setlist={(() => {
+          if (!activeSetlist) return null;
+          const localMatch = setlists.find(s => String(s.id) === String(activeSetlist.id));
+          if (!localMatch) return activeSetlist;
+          const activeHasSongs = Array.isArray(activeSetlist.songs) && activeSetlist.songs.length > 0;
+          const localHasSongs = Array.isArray(localMatch.songs) && localMatch.songs.length > 0;
+          return {
+            ...localMatch,
+            ...activeSetlist,
+            songs: activeHasSongs ? activeSetlist.songs : (localHasSongs ? localMatch.songs : [])
+          };
+        })()}
         onEditSong={(song) => {
           setEditingFromPerformance(true);
           setShowPerformanceMode(false);

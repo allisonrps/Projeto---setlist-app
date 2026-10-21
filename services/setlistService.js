@@ -19,6 +19,71 @@ export const setlistService = {
     }
   },
 
+  async resolveLocalSongId(item) {
+    if (item === null || item === undefined) return null;
+    const rawId = typeof item === 'object'
+      ? (item.songId !== undefined && item.songId !== null ? item.songId : item.id)
+      : item;
+
+    if (rawId === -1 || rawId === -2) return rawId;
+
+    if (typeof item === 'object' && item.name && String(item.name).trim()) {
+      const cleanName = String(item.name).trim();
+      const cleanBand = String(item.originalBand || item.artist || '').trim();
+
+      if (rawId !== undefined && rawId !== null) {
+        try {
+          const byId = await db.getAllAsync('SELECT id, name FROM songs WHERE id = ? LIMIT 1;', [rawId]);
+          if (byId && byId.length > 0 && String(byId[0].name || '').trim().toLowerCase() === cleanName.toLowerCase()) {
+            return byId[0].id;
+          }
+        } catch (e) {}
+      }
+
+      try {
+        if (cleanBand) {
+          const byNameBand = await db.getAllAsync(
+            "SELECT id FROM songs WHERE LOWER(TRIM(name)) = ? AND LOWER(TRIM(COALESCE(originalBand, ''))) = ? LIMIT 1;",
+            [cleanName.toLowerCase(), cleanBand.toLowerCase()]
+          );
+          if (byNameBand && byNameBand.length > 0) {
+            return byNameBand[0].id;
+          }
+        }
+        const byName = await db.getAllAsync(
+          'SELECT id FROM songs WHERE LOWER(TRIM(name)) = ? LIMIT 1;',
+          [cleanName.toLowerCase()]
+        );
+        if (byName && byName.length > 0) {
+          return byName[0].id;
+        }
+      } catch (e) {}
+
+      // Caso a música venha do Songbook Online ou do snapshot da banda e ainda não exista no SQLite local, insere para manter a integridade do setlist
+      try {
+        const ins = await db.runAsync(
+          `INSERT INTO songs (name, originalBand, style, lyrics, chords, tabs, defaultView, duration, scrollSpeed, isFavorite)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+          [
+            sanitizeText(cleanName, 200),
+            sanitizeText(cleanBand, 200),
+            sanitizeText(item.style || '', 300),
+            sanitizeMultiline(item.lyrics || '', 50000),
+            sanitizeMultiline(item.chords || '', 50000),
+            sanitizeMultiline(item.tabs || '', 50000),
+            item.defaultView || 'chords',
+            sanitizeText(item.duration || '', 20),
+            item.scrollSpeed || 'none',
+            item.isFavorite ? 1 : 0
+          ]
+        );
+        return ins.lastInsertRowId;
+      } catch (e) {}
+    }
+
+    return rawId;
+  },
+
   async getAll() {
     try {
       await this.cleanDuplicateSetlists();
@@ -47,7 +112,8 @@ export const setlistService = {
       // Salvar as músicas associadas em ordem (máximo 100)
       for (let order = 0; order < cappedSongs.length; order++) {
         const item = cappedSongs[order];
-        const songId = typeof item === 'object' && item !== null ? item.id : item;
+        const songId = await this.resolveLocalSongId(item);
+        if (songId === null || songId === undefined) continue;
         const customNotes = typeof item === 'object' && item !== null ? item.customNotes : '';
         const customDuration = typeof item === 'object' && item !== null ? item.customDuration : '';
         const rehearsalStatus = typeof item === 'object' && item !== null ? item.rehearsalStatus : 'none';
@@ -74,19 +140,54 @@ export const setlistService = {
 
   async update(id, name, type, myBandId, date, local, cachê, notes, songIds = [], time = '') {
     try {
-      await db.runAsync(
-        'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, time = ?, local = ?, cachê = ?, notes = ? WHERE id = ?;',
-        [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), id]
-      );
+      let targetSetlistId = id;
+      let existsLocally = false;
+
+      if (targetSetlistId && !String(targetSetlistId).startsWith('cloud_')) {
+        try {
+          const check = await db.getAllAsync('SELECT id FROM setlists WHERE id = ? LIMIT 1;', [targetSetlistId]);
+          if (check && check.length > 0) {
+            existsLocally = true;
+            targetSetlistId = check[0].id;
+          }
+        } catch (e) {}
+      }
+
+      if (!existsLocally && myBandId && name) {
+        try {
+          const byNameDate = await db.getAllAsync(
+            'SELECT id FROM setlists WHERE myBandId = ? AND LOWER(TRIM(name)) = ? AND TRIM(COALESCE(date, "")) = ? LIMIT 1;',
+            [myBandId, String(name).trim().toLowerCase(), String(date || '').trim()]
+          );
+          if (byNameDate && byNameDate.length > 0) {
+            existsLocally = true;
+            targetSetlistId = byNameDate[0].id;
+          }
+        } catch (e) {}
+      }
+
+      if (existsLocally) {
+        await db.runAsync(
+          'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, time = ?, local = ?, cachê = ?, notes = ? WHERE id = ?;',
+          [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), targetSetlistId]
+        );
+      } else {
+        const ins = await db.runAsync(
+          'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);',
+          [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000)]
+        );
+        targetSetlistId = ins.lastInsertRowId;
+      }
 
       // Deletar associações antigas
-      await db.runAsync('DELETE FROM setlist_songs WHERE setlistId = ?;', [id]);
+      await db.runAsync('DELETE FROM setlist_songs WHERE setlistId = ?;', [targetSetlistId]);
 
       const cappedSongs = (songIds || []).slice(0, 100);
       // Salvar as novas músicas associadas em ordem (máximo 100)
       for (let order = 0; order < cappedSongs.length; order++) {
         const item = cappedSongs[order];
-        const songId = typeof item === 'object' && item !== null ? item.id : item;
+        const songId = await this.resolveLocalSongId(item);
+        if (songId === null || songId === undefined) continue;
         const customNotes = typeof item === 'object' && item !== null ? item.customNotes : '';
         const customDuration = typeof item === 'object' && item !== null ? item.customDuration : '';
         const rehearsalStatus = typeof item === 'object' && item !== null ? item.rehearsalStatus : 'none';
@@ -94,7 +195,7 @@ export const setlistService = {
 
         await db.runAsync(
           'INSERT INTO setlist_songs (setlistId, songId, order_num, customNotes, customDuration, rehearsalStatus, rehearsalNotes) VALUES (?, ?, ?, ?, ?, ?, ?);',
-          [id, songId, order, customNotes || '', customDuration || '', rehearsalStatus || 'none', rehearsalNotes || '']
+          [targetSetlistId, songId, order, customNotes || '', customDuration || '', rehearsalStatus || 'none', rehearsalNotes || '']
         );
       }
 
@@ -103,6 +204,8 @@ export const setlistService = {
           await bandService.logBandActivity(myBandId, 'update_setlist', `editou a setlist: ${name.trim() || 'Sem título'}`);
         } catch (e) {}
       }
+
+      return targetSetlistId;
     } catch (error) {
       console.error('Error in setlistService.update:', error);
       throw error;
@@ -129,19 +232,29 @@ export const setlistService = {
   async getSongsForSetlist(setlistId) {
     try {
       const rawResult = await db.getAllAsync(`
-        SELECT s.*, ss.customNotes, ss.customDuration, ss.rehearsalStatus, ss.rehearsalNotes 
+        SELECT s.*, ss.songId, ss.customNotes, ss.customDuration, ss.rehearsalStatus, ss.rehearsalNotes 
         FROM setlist_songs ss
-        JOIN songs s ON ss.songId = s.id
+        LEFT JOIN songs s ON ss.songId = s.id
         WHERE ss.setlistId = ?
         ORDER BY ss.order_num ASC;
       `, [setlistId]);
 
       // Retorna as músicas associadas em sua ordem real configurada (limitando a 100 itens de segurança)
-      const result = (rawResult || []).slice(0, 100);
+      const result = (rawResult || [])
+        .map(row => ({
+          ...row,
+          id: (row.songId === -1 || row.songId === -2) ? row.songId : (row.id || row.songId),
+          songId: row.songId !== undefined && row.songId !== null ? row.songId : row.id,
+        }))
+        .filter(row => row.id === -1 || row.id === -2 || Boolean(row.name))
+        .slice(0, 100);
       if (result.length === 0) return [];
 
       try {
-        const songIds = result.map(s => s.id);
+        const songIds = result.filter(s => s.id >= 0).map(s => s.id);
+        if (songIds.length === 0) {
+          return result.map(song => ({ ...song, links: [] }));
+        }
         const placeholders = songIds.map(() => '?').join(',');
         const allLinks = await db.getAllAsync(`SELECT * FROM song_links WHERE songId IN (${placeholders});`, songIds);
 

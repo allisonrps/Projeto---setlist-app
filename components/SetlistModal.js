@@ -511,7 +511,9 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
         setCachê(setlist.cachê || '');
         setNotes(setlist.notes || '');
         const items = Array.isArray(setlist.songs) ? setlist.songs.map((s) => ({
-          id: s.id,
+          ...s,
+          id: (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id),
+          songId: s.songId !== undefined && s.songId !== null ? s.songId : s.id,
           customNotes: s.customNotes || '',
           customDuration: s.customDuration || ''
         })) : [];
@@ -686,15 +688,49 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
 
   const orderedSongs = selectedSongs
     .map((item) => {
-      const songInfo = item.id === -1 
-        ? { id: -1, name: t('pauseItem'), originalBand: '', style: t('pauseItem') } 
-        : item.id === -2
-        ? { id: -2, name: t('noteItem'), originalBand: '', style: t('noteItem') }
-        : songs.find((s) => s.id === item.id);
-      
+      if (item.id === -1 || item.songId === -1) {
+        return {
+          id: -1,
+          name: t('pauseItem'),
+          originalBand: '',
+          style: t('pauseItem'),
+          customNotes: item.customNotes,
+          customDuration: item.customDuration
+        };
+      }
+      if (item.id === -2 || item.songId === -2) {
+        return {
+          id: -2,
+          name: t('noteItem'),
+          originalBand: '',
+          style: t('noteItem'),
+          customNotes: item.customNotes,
+          customDuration: item.customDuration
+        };
+      }
+      const byId = songs.find(
+        (s) =>
+          (item.songId !== undefined && item.songId !== null && String(s.id) === String(item.songId) && (!item.name || !s.name || s.name.trim().toLowerCase() === item.name.trim().toLowerCase())) ||
+          (String(s.id) === String(item.id) && (!item.name || !s.name || s.name.trim().toLowerCase() === item.name.trim().toLowerCase()))
+      );
+      const byNameAndBand = !byId && item.name
+        ? songs.find(
+            (s) =>
+              s.name &&
+              s.name.trim().toLowerCase() === item.name.trim().toLowerCase() &&
+              (!item.originalBand || !s.originalBand || s.originalBand.trim().toLowerCase() === item.originalBand.trim().toLowerCase())
+          ) ||
+          songs.find((s) => s.name && s.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+        : null;
+      const byIdFallback = !byId && !byNameAndBand
+        ? songs.find((s) => String(s.id) === String(item.id) || (item.songId !== undefined && item.songId !== null && String(s.id) === String(item.songId)))
+        : null;
+      const songInfo = byId || byNameAndBand || byIdFallback || (item.name ? item : null);
       if (!songInfo) return null;
       return {
+        ...item,
         ...songInfo,
+        id: songInfo.id ?? item.songId ?? item.id,
         customNotes: item.customNotes,
         customDuration: item.customDuration
       };

@@ -109,7 +109,9 @@ export default function SetlistDetailScreen({
         const sFav = Boolean(setlist.isFavorite);
         const sSongs = Array.isArray(setlist.songs)
           ? setlist.songs.map((s) => ({
-              id: s.id,
+              ...s,
+              id: (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id),
+              songId: s.songId !== undefined && s.songId !== null ? s.songId : s.id,
               customNotes: s.customNotes || '',
               customDuration: s.customDuration || '',
               rehearsalStatus: s.rehearsalStatus || 'none',
@@ -244,7 +246,7 @@ export default function SetlistDetailScreen({
       local: local.trim(),
       cachê: type === 'show' ? cachê.trim() : null,
       notes: notes.trim(),
-      songIds: selectedSongs,
+      songIds: orderedSongs.length > 0 ? orderedSongs : selectedSongs,
     };
 
     onSave(payload);
@@ -400,11 +402,15 @@ export default function SetlistDetailScreen({
       );
       toAdd = selectedArray.slice(0, availableSlots);
     }
-    const newItems = toAdd.map(id => ({
-      id,
-      customNotes: '',
-      customDuration: ''
-    }));
+    const newItems = toAdd.map(id => {
+      const found = songs.find(s => String(s.id) === String(id));
+      return {
+        ...(found || {}),
+        id,
+        customNotes: '',
+        customDuration: ''
+      };
+    });
     setSelectedSongs([...selectedSongs, ...newItems]);
     setShowSongSelectorModal(false);
   };
@@ -412,15 +418,56 @@ export default function SetlistDetailScreen({
   // Map selected songs with full song details from repository
   const orderedSongs = selectedSongs
     .map((item) => {
-      const songInfo = item.id === -1 
-        ? { id: -1, name: t('pauseItem'), originalBand: '', style: t('pauseItem') } 
-        : item.id === -2
-        ? { id: -2, name: t('noteItem'), originalBand: '', style: t('noteItem') }
-        : songs.find((s) => s.id === item.id);
-      
+      if (item.id === -1 || item.songId === -1) {
+        return {
+          id: -1,
+          name: t('pauseItem'),
+          originalBand: '',
+          style: t('pauseItem'),
+          customNotes: item.customNotes,
+          customDuration: item.customDuration,
+          rehearsalStatus: item.rehearsalStatus,
+          rehearsalNotes: item.rehearsalNotes,
+        };
+      }
+      if (item.id === -2 || item.songId === -2) {
+        return {
+          id: -2,
+          name: t('noteItem'),
+          originalBand: '',
+          style: t('noteItem'),
+          customNotes: item.customNotes,
+          customDuration: item.customDuration,
+          rehearsalStatus: item.rehearsalStatus,
+          rehearsalNotes: item.rehearsalNotes,
+        };
+      }
+
+      const byId = songs.find(
+        (s) =>
+          (item.songId !== undefined && item.songId !== null && String(s.id) === String(item.songId) && (!item.name || !s.name || s.name.trim().toLowerCase() === item.name.trim().toLowerCase())) ||
+          (String(s.id) === String(item.id) && (!item.name || !s.name || s.name.trim().toLowerCase() === item.name.trim().toLowerCase()))
+      );
+      const byNameAndBand = !byId && item.name
+        ? songs.find(
+            (s) =>
+              s.name &&
+              s.name.trim().toLowerCase() === item.name.trim().toLowerCase() &&
+              (!item.originalBand || !s.originalBand || s.originalBand.trim().toLowerCase() === item.originalBand.trim().toLowerCase())
+          ) ||
+          songs.find((s) => s.name && s.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+        : null;
+      const byIdFallback = !byId && !byNameAndBand
+        ? songs.find((s) => String(s.id) === String(item.id) || (item.songId !== undefined && item.songId !== null && String(s.id) === String(item.songId)))
+        : null;
+
+      const songInfo = byId || byNameAndBand || byIdFallback || (item.name ? item : null);
+
       if (!songInfo) return null;
       return {
+        ...item,
         ...songInfo,
+        id: songInfo.id ?? item.songId ?? item.id,
         customNotes: item.customNotes,
         customDuration: item.customDuration,
         rehearsalStatus: item.rehearsalStatus,

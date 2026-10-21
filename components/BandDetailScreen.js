@@ -1182,24 +1182,56 @@ export default function BandDetailScreen({
             }
           } catch (e) {}
 
-          if (apiSetlists.length === 0) {
-            try {
-              const localSl = await setlistService.getAll();
-              const matchedSl = (localSl || []).filter(item => item && String(item.myBandId) === String(band.id));
-              if (matchedSl.length > 0) {
-                apiSetlists.push(...matchedSl);
-              }
-            } catch (e) {}
+          let localBandSetlists = [];
+          try {
+            const localSl = await setlistService.getAll();
+            const matchedSl = (localSl || []).filter(item => item && String(item.myBandId) === String(band.id));
+            if (matchedSl.length > 0) {
+              localBandSetlists = await Promise.all(
+                matchedSl.map(async (lsl) => {
+                  const lSongs = await setlistService.getSongsForSetlist(lsl.id);
+                  return { ...lsl, songs: lSongs || [] };
+                })
+              );
+            }
+          } catch (e) {}
+
+          if (apiSetlists.length === 0 && localBandSetlists.length > 0) {
+            apiSetlists.push(...localBandSetlists);
           }
+
+          const allKnownBandSongs = [...(apiSongs || []), ...(allGeneralSongs || [])];
+
           setOnlineSetlists(apiSetlists.map(sl => {
             const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
                              (sl.cacheSplit?.status === 'paid') ||
                              (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
                              (!sl.cacheStatus && !sl.cacheSplit && !sl.status);
             const resolvedCacheStatus = isSlPaid ? 'paid' : 'pending';
+            const localMatch = localBandSetlists.find(lsl =>
+              (sl.id && String(lsl.id) === String(sl.id)) ||
+              (lsl.name && sl.name && lsl.name.trim().toLowerCase() === sl.name.trim().toLowerCase() && String(lsl.date || '').trim() === String(sl.date || '').trim())
+            );
+            const rawSongs = (Array.isArray(sl.songs) && sl.songs.length > 0)
+              ? sl.songs
+              : (localMatch && Array.isArray(localMatch.songs) ? localMatch.songs : []);
+            const hydratedSongs = rawSongs.map(s => {
+              const sId = (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id);
+              if (sId === -1 || sId === -2) return { ...s, id: sId, songId: sId };
+              const fullSong = allKnownBandSongs.find(ks =>
+                (s.name && ks.name && ks.name.trim().toLowerCase() === s.name.trim().toLowerCase()) ||
+                String(ks.id) === String(sId)
+              );
+              return {
+                ...(fullSong || {}),
+                ...s,
+                id: fullSong?.id ?? sId,
+                songId: fullSong?.id ?? sId,
+              };
+            });
             return {
               ...sl,
-              id: sl.id || `cloud_sl_${sl.name}_${sl.date}`,
+              id: localMatch?.id || sl.id || `cloud_sl_${sl.name}_${sl.date}`,
               myBandId: band.id,
               type: sl.type || 'show',
               date: sl.date || '',
@@ -1209,7 +1241,7 @@ export default function BandDetailScreen({
               notes: sl.notes || '',
               cacheStatus: resolvedCacheStatus,
               cacheSplit: sl.cacheSplit || null,
-              songs: Array.isArray(sl.songs) ? sl.songs : []
+              songs: hydratedSongs
             };
           }));
 
