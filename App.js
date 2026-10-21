@@ -6332,7 +6332,7 @@ function MainApp() {
                   opacity: isLoggedIn ? 1 : 0.6,
                 }
               ]}>
-                {t('socialTab') || 'Social'}
+                {t('networkTab') || 'Network'}
               </Text>
             </Pressable>
 

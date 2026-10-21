@@ -1984,7 +1984,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 <View style={[styles.networkIconCircle, { backgroundColor: colors.primary + '18' }]}>
                   <Ionicons name="globe-outline" size={22} color={colors.primary} />
                 </View>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>{t('socialTab') || 'Social'}</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>{t('networkTab') || 'Network'}</Text>
               </View>
 
               {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" (Apenas se onOpenProfile for fornecido) */}

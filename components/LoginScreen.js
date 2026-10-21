@@ -85,6 +85,63 @@ function AnimatedGradientSignUp({ text, onPress }) {
   );
 }
 
+
+function AnimatedNetworkBadge() {
+  const anim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 2600,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        }),
+        Animated.timing(anim, {
+          toValue: 0,
+          duration: 2600,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [anim]);
+
+  const textColor = anim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#38bdf8'],
+  });
+
+  const borderAnim = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['rgba(56, 189, 248, 0.45)', 'rgba(244, 114, 182, 0.60)', 'rgba(56, 189, 248, 0.45)'],
+  });
+
+  const bgAnim = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['rgba(56, 189, 248, 0.10)', 'rgba(244, 114, 182, 0.15)', 'rgba(56, 189, 248, 0.10)'],
+  });
+
+  return (
+    <Animated.View style={[
+      styles.animatedNetworkHeroBadge,
+      {
+        borderColor: borderAnim,
+        backgroundColor: bgAnim,
+      }
+    ]}>
+      <Ionicons name="sparkles" size={13} color="#f472b6" style={{ marginRight: 6 }} />
+      <Animated.Text style={[styles.animatedNetworkHeroText, { color: textColor }]}>
+        NETWORK
+      </Animated.Text>
+      <Ionicons name="planet-outline" size={13} color="#38bdf8" style={{ marginLeft: 6 }} />
+    </Animated.View>
+  );
+}
+
 export default function LoginScreen({ onLogin }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
@@ -543,22 +600,22 @@ export default function LoginScreen({ onLogin }) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Cabeçalho Moderno com Logo do BandLink e Subtítulo Network / Rede */}
+        {/* Cabeçalho Hero com Logo Maior Centralizado e Efeito Shimmer Network */}
         <View style={styles.brandHeader}>
-          <View style={styles.logoOuterGlow}>
-            <Image 
-              source={require('../assets/logo.png')} 
-              style={styles.brandLogo} 
-              resizeMode="contain" 
-            />
+          <View style={styles.logoOuterGlowWrapper}>
+            <View style={[styles.logoOuterGlow, {
+              backgroundColor: isDark ? 'rgba(56, 189, 248, 0.08)' : 'rgba(56, 189, 248, 0.12)',
+              borderColor: isDark ? 'rgba(56, 189, 248, 0.25)' : 'rgba(56, 189, 248, 0.35)',
+            }]}>
+              <Image 
+                source={require('../assets/bandlink_original_transparent.png')} 
+                style={styles.brandLogo} 
+                resizeMode="contain" 
+              />
+            </View>
           </View>
           <Text style={[styles.brandTitleText, { color: colors.text }]}>BANDLINK</Text>
-          <View style={[styles.networkBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '45' }]}>
-            <Ionicons name="planet-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />
-            <Text style={[styles.networkBadgeText, { color: colors.primary }]}>
-              {language === 'en' ? 'NETWORK' : 'REDE'}
-            </Text>
-          </View>
+          <AnimatedNetworkBadge />
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             {isRegistering 
               ? (t('createAccountSubtitle') || 'Crie seu perfil e conecte-se com músicos e bandas da sua região.')
@@ -749,9 +806,9 @@ export default function LoginScreen({ onLogin }) {
             </View>
           )}
 
-          {/* Em modo de Login: 1) Lembrar login, 2) Esqueci minha senha abaixo, 3) Signup abaixo com degrade */}
+          {/* Em modo de Login: Lembrar login na esquerda + Esqueci a senha na direita em linha única */}
           {!isRegistering && (
-            <View style={styles.authLinksBlock}>
+            <View style={styles.loginRowOptions}>
               {/* 1. Lembrar login */}
               <Pressable 
                 style={styles.rememberRow} 
@@ -768,11 +825,11 @@ export default function LoginScreen({ onLogin }) {
                   {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
                 </View>
                 <Text style={[styles.rememberText, { color: colors.text }]}>
-                  {t('rememberCredentials') || 'Lembrar dados de acesso'}
+                  {t('rememberCredentials') || 'Lembrar dados'}
                 </Text>
               </Pressable>
 
-              {/* 2. Esqueci minha senha (abaixo do remember login) */}
+              {/* 2. Esqueci minha senha */}
               <Pressable 
                 style={styles.forgotPasswordAction}
                 onPress={() => {
@@ -783,26 +840,11 @@ export default function LoginScreen({ onLogin }) {
                 }}
                 hitSlop={8}
               >
-                <Ionicons name="key-outline" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+                <Ionicons name="key-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
                 <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
-                  {t('forgotPassword') || 'Esqueci minha senha'}
+                  {t('forgotPassword') || 'Esqueci a senha'}
                 </Text>
               </Pressable>
-
-              {/* 3. Signup (abaixo do esqueci a senha) com efeito de degrade animado */}
-              <View style={styles.signupActionWrapper}>
-                <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-                  {t('dontHaveAccount') || 'Não possui uma conta? '}
-                </Text>
-                <AnimatedGradientSignUp 
-                  text={t('signUp') || 'Cadastre-se'} 
-                  onPress={() => {
-                    setIsRegistering(true);
-                    setPassword('');
-                    setConfirmPassword('');
-                  }}
-                />
-              </View>
             </View>
           )}
 
@@ -813,7 +855,7 @@ export default function LoginScreen({ onLogin }) {
               { 
                 backgroundColor: colors.primary, 
                 opacity: pressed || loading ? 0.85 : 1,
-                marginTop: isRegistering ? 14 : 10
+                marginTop: isRegistering ? 14 : 4
               }
             ]}
             onPress={handleSubmit}
@@ -827,6 +869,45 @@ export default function LoginScreen({ onLogin }) {
               </Text>
             )}
           </Pressable>
+
+          {/* Sign up em linha única (abaixo do botão de login) */}
+          {!isRegistering && (
+            <View style={styles.singleLineSignupRow}>
+              <Text style={{ color: colors.textMuted, fontSize: 13.5, fontWeight: '500' }}>
+                {t('dontHaveAccount') || 'Não possui uma conta?'}
+              </Text>
+              <AnimatedGradientSignUp 
+                text={t('signUp') || 'Cadastre-se'} 
+                onPress={() => {
+                  setIsRegistering(true);
+                  setPassword('');
+                  setConfirmPassword('');
+                }}
+              />
+            </View>
+          )}
+
+          {/* Alternar no modo Cadastro de volta para Login em linha única */}
+          {isRegistering && (
+            <Pressable
+              style={styles.singleLineSignupRow}
+              onPress={() => {
+                setIsRegistering(false);
+                setPassword('');
+                setConfirmPassword('');
+              }}
+            >
+              <Text style={{ color: colors.textMuted, fontSize: 13.5, fontWeight: '500' }}>
+                {t('alreadyHaveAccount') || 'Já possui uma conta?'}
+              </Text>
+              <View style={[styles.loginReturnPill, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '15' }]}>
+                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>
+                  {t('signIn') || 'Entrar'}
+                </Text>
+                <Ionicons name="arrow-forward" size={12} color={colors.primary} style={{ marginLeft: 4 }} />
+              </View>
+            </Pressable>
+          )}
 
           {/* Divisor "OU" */}
           <View style={styles.dividerRow}>
@@ -877,24 +958,7 @@ export default function LoginScreen({ onLogin }) {
             </Pressable>
           )}
 
-          {/* Alternar no modo Cadastro de volta para Login */}
-          {isRegistering && (
-            <Pressable
-              style={styles.toggleRow}
-              onPress={() => {
-                setIsRegistering(false);
-                setPassword('');
-                setConfirmPassword('');
-              }}
-            >
-              <Text style={{ color: colors.textMuted, fontSize: 14 }}>
-                {t('alreadyHaveAccount') || 'Já possui uma conta? '}
-                <Text style={{ color: colors.primary, fontWeight: '700' }}>
-                  {t('signIn') || 'Entrar'}
-                </Text>
-              </Text>
-            </Pressable>
-          )}
+          
 
           {/* Links para Termos de Serviço e Política de Privacidade */}
           <View style={{ marginTop: 20, marginBottom: 4, paddingHorizontal: 12, alignItems: 'center' }}>
@@ -1215,60 +1279,102 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 13, textAlign: 'center', lineHeight: 19, paddingHorizontal: 12 },
   
   // Brand Header moderno do BandLink Network
-  brandHeader: { alignItems: 'center', marginTop: 12, marginBottom: 20 },
+  brandHeader: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  logoOuterGlowWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
   logoOuterGlow: {
-    width: 76,
-    height: 76,
-    borderRadius: 22,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    width: 104,
+    height: 104,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.25)',
+    borderWidth: 1.5,
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  brandLogo: { width: 52, height: 52 },
-  brandTitleText: { fontSize: 22, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
-  networkBadge: {
+  brandLogo: {
+    width: 78,
+    height: 78,
+  },
+  brandTitleText: {
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: 2.5,
+    marginBottom: 8,
+  },
+  animatedNetworkHeroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  networkBadgeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
+  animatedNetworkHeroText: {
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
 
+  formContainerClean: {
+    width: '100%',
+    marginTop: 4,
+    paddingHorizontal: 4,
+  },
   formContainer: {
     width: '100%',
     marginTop: 4,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 20,
+    paddingHorizontal: 4,
   },
   inputGroup: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 48 },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, height: 50 },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 15, height: '100%' },
 
-  authLinksBlock: {
-    marginTop: 6,
-    marginBottom: 14,
-    gap: 12,
+  loginRowOptions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    marginBottom: 16,
+    paddingHorizontal: 2,
   },
   forgotPasswordAction: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 4,
   },
-  signupActionWrapper: {
+  singleLineSignupRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 2,
-    paddingVertical: 4,
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  loginReturnPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
   },
   animatedSignUpPill: {
     borderRadius: 16,
@@ -1287,11 +1393,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
-  passwordRowExtras: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, marginBottom: 18 },
   rememberRow: { flexDirection: 'row', alignItems: 'center' },
-  checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
   rememberText: { fontSize: 13, fontWeight: '500' },
-  loginButton: { height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  loginButton: { height: 50, borderRadius: 14, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
   loginButtonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   
   // Divisor OU
@@ -1301,8 +1406,8 @@ const styles = StyleSheet.create({
 
   // Botão Google
   googleButton: {
-    height: 48,
-    borderRadius: 12,
+    height: 50,
+    borderRadius: 14,
     borderWidth: 1.5,
     flexDirection: 'row',
     alignItems: 'center',

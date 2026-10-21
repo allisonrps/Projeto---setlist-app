@@ -612,6 +612,15 @@ export default function BandDetailScreen({
   const [isLoadingOnline, setIsLoadingOnline] = useState(false);
   const [isTurningOnline, setIsTurningOnline] = useState(false);
 
+  // Band Image state with resilient error fallback
+  const [currentBandImage, setCurrentBandImage] = useState(band?.bandImage || band?.imageUri || band?.image || band?.logo || '');
+  const [imageLoadError, setImageLoadError] = useState(false);
+
+  useEffect(() => {
+    setCurrentBandImage(band?.bandImage || band?.imageUri || band?.image || band?.logo || '');
+    setImageLoadError(false);
+  }, [band?.id, band?.bandImage, band?.imageUri, band?.image, band?.logo]);
+
   // Compartilhar Agenda da banda (mesmo sistema da agenda do perfil)
   const [showShareAgendaModal, setShowShareAgendaModal] = useState(false);
 
@@ -2783,12 +2792,13 @@ export default function BandDetailScreen({
           {/* INDEX 0: HEADER HERO MODERNO COM IMAGEM TRANSLÚCIDA E DEGRADÊ */}
           <View style={[styles.headerHeroContainer, { backgroundColor: isDark ? '#09090b' : '#1e293b' }]}>
             {/* 1. Imagem da banda em full-width */}
-            {(band.imageUri || band.image || band.logo) ? (
+            {(currentBandImage && !imageLoadError) ? (
               <View style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.85 : 0.92, overflow: 'hidden' }]} pointerEvents="none">
                 <Image
-                  source={{ uri: band.imageUri || band.image || band.logo }}
+                  source={{ uri: currentBandImage }}
                   style={{ width: '100%', height: '100%' }}
                   resizeMode="cover"
+                  onError={() => setImageLoadError(true)}
                 />
               </View>
             ) : (
