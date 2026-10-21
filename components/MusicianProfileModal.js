@@ -539,7 +539,11 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
 
   const getExtraSkillDisplay = (item) => {
     const name = typeof item === 'string' ? item : (item.name || item.title || '');
-    const preset = PRESET_EXTRA_SKILLS.find(p => p.key.toLowerCase() === name.toLowerCase());
+    if (!name) return '';
+    const preset = PRESET_EXTRA_SKILLS.find(p => 
+      p.key.toLowerCase() === name.toLowerCase() || 
+      (p.transKey && t(p.transKey)?.toLowerCase() === name.toLowerCase())
+    );
     if (preset) {
       return t(preset.transKey) || preset.key;
     }
@@ -1277,7 +1281,7 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
               >
                 <Ionicons name="sparkles" size={13} color="#fbbf24" />
                 <Text style={{ fontSize: 12.5, fontWeight: '700', color: isDark ? '#fef3c7' : '#92400e' }}>
-                  {es.name || es}
+                  {getExtraSkillDisplay(es)}
                 </Text>
               </View>
             ))}

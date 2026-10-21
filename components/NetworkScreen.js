@@ -1960,7 +1960,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
             ) : null}
           </View>
 
-          {/* BOTÕES COM ÍCONES: USUÁRIOS | ANÚNCIOS | BANDAS */}
+          {/* BOTÕES COM ÍCONES: USUÁRIOS | ANÚNCIOS | BANDAS | CLASSIFICADOS */}
           <View style={styles.tabButtonsContainer}>
             {/* Botão Usuários */}
             <Pressable
@@ -1972,24 +1972,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 pressed && { opacity: 0.85 }
               ]}
               onPress={() => setSubTab('musicians')}
+              accessibilityLabel={t('usersTab') || t('musicians') || 'Usuários'}
             >
               <Ionicons
                 name={subTab === 'musicians' ? 'people' : 'people-outline'}
-                size={17}
+                size={20}
                 color={subTab === 'musicians' ? '#ffffff' : colors.textMuted}
               />
-              <Text
-                style={[
-                  styles.tabButtonText,
-                  {
-                    color: subTab === 'musicians' ? '#ffffff' : colors.text,
-                    fontWeight: subTab === 'musicians' ? '700' : '600'
-                  }
-                ]}
-                numberOfLines={1}
-              >
-                {t('usersTab') || t('musicians') || 'Usuários'}
-              </Text>
               <View
                 style={[
                   styles.tabButtonBadge,
@@ -2021,24 +2010,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 pressed && { opacity: 0.85 }
               ]}
               onPress={() => setSubTab('projects')}
+              accessibilityLabel={t('announcements') || 'Anúncios'}
             >
               <Ionicons
                 name={subTab === 'projects' ? 'megaphone' : 'megaphone-outline'}
-                size={17}
+                size={19}
                 color={subTab === 'projects' ? '#ffffff' : colors.textMuted}
               />
-              <Text
-                style={[
-                  styles.tabButtonText,
-                  {
-                    color: subTab === 'projects' ? '#ffffff' : colors.text,
-                    fontWeight: subTab === 'projects' ? '700' : '600'
-                  }
-                ]}
-                numberOfLines={1}
-              >
-                {t('announcements') || 'Anúncios'}
-              </Text>
               <View
                 style={[
                   styles.tabButtonBadge,
@@ -2070,24 +2048,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 pressed && { opacity: 0.85 }
               ]}
               onPress={() => setSubTab('bands')}
+              accessibilityLabel={t('bandsTab') || 'Bandas'}
             >
               <Ionicons
                 name={subTab === 'bands' ? 'musical-notes' : 'musical-notes-outline'}
-                size={17}
+                size={20}
                 color={subTab === 'bands' ? '#ffffff' : colors.textMuted}
               />
-              <Text
-                style={[
-                  styles.tabButtonText,
-                  {
-                    color: subTab === 'bands' ? '#ffffff' : colors.text,
-                    fontWeight: subTab === 'bands' ? '700' : '600'
-                  }
-                ]}
-                numberOfLines={1}
-              >
-                {t('bandsTab') || 'Bandas'}
-              </Text>
               <View
                 style={[
                   styles.tabButtonBadge,
@@ -2119,24 +2086,13 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 pressed && { opacity: 0.85 }
               ]}
               onPress={() => setSubTab('classifieds')}
+              accessibilityLabel={t('classifieds') || 'Classificados'}
             >
               <Ionicons
                 name={subTab === 'classifieds' ? 'pricetag' : 'pricetag-outline'}
-                size={16}
+                size={18}
                 color={subTab === 'classifieds' ? '#ffffff' : colors.textMuted}
               />
-              <Text
-                style={[
-                  styles.tabButtonText,
-                  {
-                    color: subTab === 'classifieds' ? '#ffffff' : colors.text,
-                    fontWeight: subTab === 'classifieds' ? '700' : '600'
-                  }
-                ]}
-                numberOfLines={1}
-              >
-                {t('classifieds') || 'Classificados'}
-              </Text>
               <View
                 style={[
                   styles.tabButtonBadge,
@@ -3613,8 +3569,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 8,
+    gap: 6,
+    paddingVertical: 9,
     paddingHorizontal: 4,
     borderRadius: 14,
     borderWidth: 1,
@@ -3632,15 +3588,15 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   tabButtonBadge: {
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 10,
-    minWidth: 16,
+    minWidth: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabButtonBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
   },
 

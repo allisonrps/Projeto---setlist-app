@@ -1202,6 +1202,8 @@ const translations = {
     skill_photo: 'Fotografia Profissional',
     skill_lighting: 'Técnico de Iluminação / Luz',
     skill_production: 'Produção Musical & Gravação',
+    noExtraSkillsHint: 'Nenhuma habilidade extra cadastrada. Toque em Adicionar para incluir.',
+    alreadyAddedSkill: 'Você já adicionou',
     // Classificados
     classifieds: 'Classificados',
     classifiedsSubtitle: 'Instrumentos e equipamentos negociáveis da comunidade',
@@ -2409,6 +2411,8 @@ const translations = {
     skill_photo: 'Professional Photography',
     skill_lighting: 'Lighting Technician',
     skill_production: 'Music Production & Recording',
+    noExtraSkillsHint: 'No extra skills registered yet. Tap Add to include.',
+    alreadyAddedSkill: 'You already added',
     // Classifieds
     classifieds: 'Classifieds',
     classifiedsSubtitle: 'Negotiable instruments and gear from the community',
@@ -3615,6 +3619,8 @@ const translations = {
     skill_photo: 'Fotografía Profesional',
     skill_lighting: 'Técnico de Iluminación / Luz',
     skill_production: 'Producción Musical y Grabación',
+    noExtraSkillsHint: 'Ninguna habilidad extra registrada. Toca Añadir para incluir.',
+    alreadyAddedSkill: 'Ya agregaste',
     // Clasificados
     classifieds: 'Clasificados',
     classifiedsSubtitle: 'Instrumentos y equipos negociables de la comunidad',

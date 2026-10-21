@@ -531,7 +531,11 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
 
   const getExtraSkillDisplay = (item) => {
     const name = typeof item === 'string' ? item : (item.name || item.title || '');
-    const preset = PRESET_EXTRA_SKILLS.find(p => p.key.toLowerCase() === name.toLowerCase());
+    if (!name) return '';
+    const preset = PRESET_EXTRA_SKILLS.find(p => 
+      p.key.toLowerCase() === name.toLowerCase() || 
+      (p.transKey && t(p.transKey)?.toLowerCase() === name.toLowerCase())
+    );
     if (preset) {
       return t(preset.transKey) || preset.key;
     }
@@ -1357,19 +1361,45 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const handleAddExtraSkill = async (name) => {
     const cleanName = (name || '').trim();
     if (!cleanName) return;
-    if (extraSkills.some(s => (s.name || s).toLowerCase() === cleanName.toLowerCase())) {
-      Alert.alert(t('attention') || 'Atenção', `Você já adicionou "${cleanName}".`);
+
+    const preset = PRESET_EXTRA_SKILLS.find(p => 
+      p.key.toLowerCase() === cleanName.toLowerCase() || 
+      (p.transKey && t(p.transKey)?.toLowerCase() === cleanName.toLowerCase())
+    );
+    const canonicalKey = preset ? preset.key : cleanName;
+
+    const alreadyAdded = extraSkills.some(s => {
+      const sName = (s.name || s || '').toLowerCase();
+      return sName === canonicalKey.toLowerCase() || 
+             (preset && preset.transKey && t(preset.transKey)?.toLowerCase() === sName);
+    });
+
+    if (alreadyAdded) {
+      Alert.alert(t('attention') || 'Atenção', `${t('alreadyAddedSkill') || 'Você já adicionou'} "${preset ? (t(preset.transKey) || preset.key) : cleanName}".`);
       return;
     }
+
     const newSkill = {
       id: `es_${Date.now()}`,
-      name: cleanName
+      name: canonicalKey
     };
     const updated = [...extraSkills, newSkill];
     setExtraSkills(updated);
     await AsyncStorage.setItem('user_extra_skills', JSON.stringify(updated));
     try {
-      await api.updateProfile({ extraSkills: JSON.stringify(updated) });
+      const cached = await AsyncStorage.getItem('user_profile_cache');
+      if (cached) {
+        const uObj = JSON.parse(cached);
+        uObj.extraSkills = JSON.stringify(updated);
+        uObj.extraSkillsJson = JSON.stringify(updated);
+        await AsyncStorage.setItem('user_profile_cache', JSON.stringify(uObj));
+      }
+    } catch (e) {}
+    try {
+      await api.updateProfile({ 
+        extraSkills: JSON.stringify(updated),
+        extraSkillsJson: JSON.stringify(updated)
+      });
     } catch (e) {
       console.log('Error syncing extra skills:', e);
     }
@@ -1378,11 +1408,27 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   };
 
   const handleRemoveExtraSkill = async (idOrName) => {
-    const updated = extraSkills.filter(s => (s.id ? s.id !== idOrName : s !== idOrName));
+    const updated = extraSkills.filter(s => {
+      if (s.id && typeof idOrName === 'object' && idOrName.id) return s.id !== idOrName.id;
+      if (s.id) return s.id !== idOrName;
+      return s !== idOrName;
+    });
     setExtraSkills(updated);
     await AsyncStorage.setItem('user_extra_skills', JSON.stringify(updated));
     try {
-      await api.updateProfile({ extraSkills: JSON.stringify(updated) });
+      const cached = await AsyncStorage.getItem('user_profile_cache');
+      if (cached) {
+        const uObj = JSON.parse(cached);
+        uObj.extraSkills = JSON.stringify(updated);
+        uObj.extraSkillsJson = JSON.stringify(updated);
+        await AsyncStorage.setItem('user_profile_cache', JSON.stringify(uObj));
+      }
+    } catch (e) {}
+    try {
+      await api.updateProfile({ 
+        extraSkills: JSON.stringify(updated),
+        extraSkillsJson: JSON.stringify(updated)
+      });
     } catch (e) {
       console.log('Error removing extra skill:', e);
     }
@@ -2203,11 +2249,25 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
             </Text>
           </View>
           <Pressable 
-            style={[styles.addButton, { backgroundColor: 'rgba(251, 191, 36, 0.15)', borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.35)' }]} 
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: 'rgba(251, 191, 36, 0.15)',
+                borderWidth: 1.2,
+                borderColor: 'rgba(251, 191, 36, 0.45)',
+                opacity: pressed ? 0.75 : 1,
+              }
+            ]} 
             onPress={() => setShowExtraSkillModal(true)}
+            hitSlop={8}
+            accessibilityLabel={t('addExtraSkill') || 'Adicionar Habilidade Extra'}
           >
-            <Ionicons name="add" size={15} color="#fbbf24" />
-            <Text style={{ color: '#fbbf24', fontSize: 12, fontWeight: '700', marginLeft: 4 }}>
+            <Ionicons name="add" size={16} color="#fbbf24" />
+            <Text style={{ color: '#fbbf24', fontSize: 12.5, fontWeight: '800', marginLeft: 4 }}>
               {t('addBtn') || 'Adicionar'}
             </Text>
           </Pressable>
@@ -2219,8 +2279,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
 
         {extraSkills.length === 0 ? (
           <View style={[styles.fullWidthCard, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border, alignItems: 'center', paddingVertical: 20 }]}>
-            <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
-              Nenhuma habilidade extra cadastrada. Toque em Adicionar para incluir.
+            <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic', textAlign: 'center' }}>
+              {t('noExtraSkillsHint') || 'Nenhuma habilidade extra cadastrada. Toque em Adicionar para incluir.'}
             </Text>
           </View>
         ) : (
@@ -2243,7 +2303,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               >
                 <Ionicons name="sparkles" size={13} color="#fbbf24" />
                 <Text style={{ fontSize: 12.5, fontWeight: '700', color: isDark ? '#fef3c7' : '#92400e' }}>
-                  {es.name || es}
+                  {getExtraSkillDisplay(es)}
                 </Text>
                 <Pressable onPress={() => handleRemoveExtraSkill(es.id || es)} hitSlop={6} style={{ padding: 2 }}>
                   <Ionicons name="close-circle" size={16} color={isDark ? '#fbbf24' : '#b45309'} />
@@ -3613,22 +3673,26 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               </Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
                 {PRESET_EXTRA_SKILLS.map(presetObj => {
-                  const isAdded = extraSkills.some(s => (s.name || s).toLowerCase() === presetObj.key.toLowerCase());
+                  const isAdded = extraSkills.some(s => {
+                    const sName = (s.name || s || '').toLowerCase();
+                    return sName === presetObj.key.toLowerCase() || 
+                           (presetObj.transKey && t(presetObj.transKey)?.toLowerCase() === sName);
+                  });
                   const label = t(presetObj.transKey) || presetObj.key;
                   return (
                     <Pressable
                       key={presetObj.key}
                       disabled={isAdded}
                       onPress={() => handleAddExtraSkill(presetObj.key)}
-                      style={{
+                      style={({ pressed }) => [{
                         paddingVertical: 7,
                         paddingHorizontal: 12,
                         borderRadius: 16,
                         borderWidth: 1,
                         borderColor: isAdded ? colors.border : 'rgba(251, 191, 36, 0.4)',
                         backgroundColor: isAdded ? (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)') : 'rgba(251, 191, 36, 0.12)',
-                        opacity: isAdded ? 0.4 : 1
-                      }}
+                        opacity: isAdded ? 0.4 : (pressed ? 0.8 : 1)
+                      }]}
                     >
                       <Text style={{
                         fontSize: 12,
@@ -3657,13 +3721,15 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                 />
                 <Pressable
                   onPress={() => handleAddExtraSkill(customExtraSkill)}
-                  style={{
+                  style={({ pressed }) => [{
                     backgroundColor: '#f59e0b',
                     borderRadius: 8,
                     paddingHorizontal: 16,
                     justifyContent: 'center',
-                    alignItems: 'center'
-                  }}
+                    alignItems: 'center',
+                    opacity: pressed ? 0.8 : 1
+                  }]}
+                  hitSlop={6}
                 >
                   <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>{t('addBtn') || 'Adicionar'}</Text>
                 </Pressable>
