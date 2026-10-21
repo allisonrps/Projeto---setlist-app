@@ -101,7 +101,7 @@ export const bandService = {
     await db.runAsync('UPDATE my_bands SET publicSlug = ? WHERE id = ?;', [clean, bandId]);
 
     // 2. Sync to cloud (this creates the band in the cloud API and returns cloudId)
-    const syncRes = await this.syncBandToCloud(bandId);
+    const syncRes = await this.syncBandToCloud(bandId, true);
 
     // 3. Log activity
     await this.logBandActivity(bandId, 'online_mode', `publicou a banda na nuvem como @${clean}!`);
@@ -324,7 +324,7 @@ export const bandService = {
         'UPDATE band_songs SET isFavorite = ? WHERE bandId = ? AND songId = ?;',
         [newStatus, bandId, songId]
       );
-      this.syncBandToCloud(bandId).catch(e => console.log('Background sync on favorite toggle:', e));
+      this.autoSyncIfOnline(bandId).catch(e => console.log('Background sync on favorite toggle:', e));
       return newStatus;
     } catch (error) {
       console.error('Error in bandService.toggleBandSongFavorite:', error);
@@ -697,27 +697,12 @@ export const bandService = {
       if (!loggedIn) return;
 
       const local = await this.getBandById(bandId);
-      if (!local) return;
+      // Se a banda NÃO possui cloudId, ela é estritamente offline!
+      // NUNCA deve ser enviada para a nuvem de forma automática sem consentimento do usuário.
+      if (!local || !local.cloudId) return;
 
-      // Se a banda não tiver cloudId mas o usuário estiver logado, vincula com a nuvem pelo nome ou cria
-      if (!local.cloudId) {
-        try {
-          const myCloudBands = await api.getMyCloudBands();
-          const existing = myCloudBands.find(b => b.name?.trim().toLowerCase() === local.name.trim().toLowerCase());
-          if (existing && existing.id) {
-            await this.updateCloudInfo(bandId, existing.id, existing.version || 0, existing.lastSyncedAt || new Date().toISOString(), existing.isNetworkVisible ? 1 : 0);
-          } else {
-            // Sincroniza diretamente (o próprio syncBandToCloud criará na nuvem)
-            await this.syncBandToCloud(bandId);
-            return;
-          }
-        } catch (linkErr) {
-          console.log('Error auto-linking band to cloud:', linkErr);
-        }
-      }
-
-      // Dispara push silencioso em background
-      await this.syncBandToCloud(bandId);
+      // Dispara push silencioso em background apenas para bandas já conectadas à nuvem
+      await this.syncBandToCloud(bandId, false);
     } catch (e) {
       console.log('Background auto-sync note for band', bandId, ':', e.message);
     }
@@ -768,10 +753,21 @@ export const bandService = {
     }
   },
 
-  async syncBandToCloud(bandId) {
+  async syncBandToCloud(bandId, allowCreate = false) {
     try {
       const localBand = await this.getBandById(bandId);
       if (!localBand) throw new Error('Banda não encontrada localmente.');
+
+      let cloudId = localBand.cloudId;
+
+      // Se a banda não tem vínculo com a nuvem e a criação não foi expressamente autorizada, encerra
+      if (!cloudId && !allowCreate) {
+        return {
+          success: false,
+          skipped: true,
+          message: 'Banda offline não configurada para sincronização na nuvem.'
+        };
+      }
 
       const loggedIn = await api.isLoggedIn();
       if (!loggedIn) throw new Error('Você precisa estar logado na sua conta BandLink para sincronizar.');
@@ -906,10 +902,13 @@ export const bandService = {
         syncDataJson: JSON.stringify(syncPayloadData)
       };
 
-      let cloudId = localBand.cloudId;
+      cloudId = localBand.cloudId || cloudId;
 
       // If no cloudId, check if we need to create it
       if (!cloudId) {
+        if (!allowCreate) {
+          return { success: false, skipped: true, message: 'Banda offline.' };
+        }
         // Check if already in myCloudBands with same name
         const myCloudBands = await api.getMyCloudBands();
         const existing = myCloudBands.find(b => b.name?.trim().toLowerCase() === localBand.name.trim().toLowerCase());
@@ -922,8 +921,12 @@ export const bandService = {
             genre: localBand.genres,
             description: localBand.city
           });
-          cloudId = createRes.bandId;
+          cloudId = createRes?.bandId || createRes?.id;
         }
+      }
+
+      if (!cloudId) {
+        throw new Error('Não foi possível obter a identificação da banda na nuvem.');
       }
 
       // Sync payload to cloud

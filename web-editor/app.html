@@ -8337,9 +8337,15 @@
           <textarea id="editBandDescription" class="form-input" rows="3" maxlength="500"></textarea>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('editBandProfileModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Perfil da Banda</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.08); font-size: 0.82rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;" onclick="handleDeleteCurrentBandFromModal()">
+            <ion-icon name="trash-outline"></ion-icon>
+            <span>Excluir Banda</span>
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('editBandProfileModal')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Perfil da Banda</button>
+          </div>
         </div>
       </form>
     </div>
@@ -12616,6 +12622,38 @@
       closeModal('editBandProfileModal');
       showToast('Perfil da banda salvo com sucesso!', 'success');
       renderProjectsMainView();
+    }
+
+    async function handleDeleteCurrentBandFromModal() {
+      if (!currentBandData || !currentBandData.id) return;
+      const bName = currentBandData.name || 'esta banda';
+      if (!confirm(`Tem certeza que deseja excluir permanentemente a banda "${bName}" da nuvem? Esta ação não pode ser desfeita.`)) {
+        return;
+      }
+      showLoading('Excluindo banda da nuvem...');
+      try {
+        const res = await fetch(`${API_URL}/Bands/${currentBandData.id}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        if (res.ok) {
+          closeModal('editBandProfileModal');
+          showToast('Banda excluída com sucesso!', 'success');
+          myBands = (myBands || []).filter(b => b.id !== currentBandData.id);
+          try { localStorage.removeItem(`bandlink_band_${currentBandData.id}_sync`); } catch(e){}
+          currentBandData = null;
+          currentBandSyncData = null;
+          await loadUserBands();
+          switchMainView('projects');
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          showToast(errData.message || 'Erro ao excluir banda.', 'error');
+        }
+      } catch (err) {
+        showToast('Erro de conexão ao excluir banda.', 'error');
+      } finally {
+        hideLoading();
+      }
     }
 
     function toggleSetlistAccordion(idx) {

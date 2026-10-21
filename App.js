@@ -1800,7 +1800,7 @@ function MainApp() {
       try {
         const logged = await api.isLoggedIn();
         if ((bandData.isOnline || editingBand?.cloudId) && logged && savedBandId) {
-          bandService.syncBandToCloud(savedBandId).then(() => reloadAllData()).catch(() => {});
+          bandService.syncBandToCloud(savedBandId, true).then(() => reloadAllData()).catch(() => {});
         }
       } catch (syncErr) {
         console.log('Auto-sync on save error:', syncErr);

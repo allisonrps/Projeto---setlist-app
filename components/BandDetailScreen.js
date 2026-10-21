@@ -708,7 +708,7 @@ export default function BandDetailScreen({
     try {
       setIsSyncing(true);
       Vibration.vibrate(50);
-      const res = await bandService.syncBandToCloud(band.id);
+      const res = await bandService.syncBandToCloud(band.id, true);
       setSyncStatusInfo(prev => ({
         ...prev,
         isSynced: true,
@@ -747,7 +747,7 @@ export default function BandDetailScreen({
     try {
       setIsTurningOnline(true);
       if (typeof Vibration !== 'undefined') Vibration.vibrate(60);
-      const res = await bandService.syncBandToCloud(band.id);
+      const res = await bandService.syncBandToCloud(band.id, true);
       if (res && res.cloudId) {
         band.cloudId = res.cloudId;
         band.cloudVersion = res.version;
