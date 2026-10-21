@@ -999,13 +999,6 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                 mems = (await bandService.getBandMembers(b.id)) || [];
               } catch (e) {}
 
-              let snap = null;
-              if (b.syncDataJson) {
-                try {
-                  snap = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
-                } catch (e) {}
-              }
-
               if (snap?.members && Array.isArray(snap.members) && snap.members.length > 0) {
                 for (const sm of snap.members) {
                   const smName = (sm.name || sm.displayName || '').trim();
