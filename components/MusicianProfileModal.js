@@ -100,6 +100,46 @@ const isFutureDate = (dateStr) => {
   return false;
 };
 
+const isMonthEnded = (dateStr) => {
+  if (!dateStr) return false;
+  const clean = String(dateStr).split(' • ')[0].trim();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-indexed
+
+  let year = null;
+  let month = null;
+
+  const dmyMatch = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (dmyMatch) {
+    month = parseInt(dmyMatch[2], 10) - 1;
+    year = parseInt(dmyMatch[3], 10);
+    if (year < 100) year += 2000;
+  } else {
+    const ymdMatch = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+    if (ymdMatch) {
+      year = parseInt(ymdMatch[1], 10);
+      month = parseInt(ymdMatch[2], 10) - 1;
+    } else {
+      try {
+        const d = new Date(clean);
+        if (!isNaN(d.getTime())) {
+          year = d.getFullYear();
+          month = d.getMonth();
+        }
+      } catch (e) {}
+    }
+  }
+
+  if (year !== null && month !== null) {
+    if (year < currentYear) return true;
+    if (year === currentYear && month < currentMonth) return true;
+    return false;
+  }
+
+  return false;
+};
+
 const getFormattedDateBadge = (dateStr, lang = 'pt') => {
   if (!dateStr || !String(dateStr).trim()) return { day: '--', month: '---' };
   const clean = String(dateStr).split(' • ')[0].trim();
@@ -1577,11 +1617,11 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
     };
 
     const upcomingEvents = yearEvents
-      .filter(e => isFutureDate(e.rawDate || e.date))
+      .filter(e => !isMonthEnded(e.rawDate || e.date))
       .sort((a, b) => parseDateForSort(a.rawDate || a.date) - parseDateForSort(b.rawDate || b.date));
 
     const pastEvents = yearEvents
-      .filter(e => !isFutureDate(e.rawDate || e.date))
+      .filter(e => isMonthEnded(e.rawDate || e.date))
       .sort((a, b) => parseDateForSort(b.rawDate || b.date) - parseDateForSort(a.rawDate || a.date));
 
     const pastMonthsMap = pastEvents.reduce((acc, event) => {
@@ -1687,9 +1727,9 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
               {/* Linha 2: Localização completa (sem truncar com ...), horário e banda */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap', gap: 8 }}>
                 {eventLocal ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 3, flexShrink: 1 }}>
-                    <Ionicons name="location-outline" size={12} color={colors.textMuted} style={{ marginTop: 1 }} />
-                    <Text style={{ color: colors.textMuted, fontSize: 11, flexShrink: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1, paddingRight: 6 }}>
+                    <Ionicons name="location-outline" size={12} color={colors.textMuted} style={{ marginTop: 0.5 }} />
+                    <Text style={{ color: colors.textMuted, fontSize: 11, paddingRight: 4 }}>
                       {eventLocal}
                     </Text>
                   </View>
@@ -1813,23 +1853,6 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
               {t('agendaRehearsals') || 'Ensaios'}
             </Text>
           </View>
-
-          {/* Círculo 5: Entradas */}
-          <View style={styles.agendaCircleCol}>
-            <View style={styles.agendaCircleWrapper}>
-              <View style={[styles.agendaCircleDisc, { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.45)', paddingLeft: 6 }]}>
-                <Text style={[styles.agendaCircleText, { color: '#34d399', fontSize: 11 }]}>
-                  {formatCompactNumber(yearTotalIncome)}
-                </Text>
-              </View>
-              <View style={[styles.agendaCircleOverlapIcon, { backgroundColor: '#132420', borderColor: '#10b981' }]}>
-                <Ionicons name="cash-outline" size={11} color="#34d399" />
-              </View>
-            </View>
-            <Text style={[styles.agendaCircleLabel, { color: '#34d399' }]}>
-              {t('agendaIncome') || 'Entradas'}
-            </Text>
-          </View>
         </View>
 
         {yearEvents.length === 0 ? (
@@ -1856,15 +1879,28 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
                 return (
                   <View key={event.id}>
                     {showHeader && (() => {
-                      const mCount = upcomingEvents.filter(e => getMonthYearHeader(e.rawDate || e.date, language) === header).length;
+                      const mEvents = upcomingEvents.filter(e => getMonthYearHeader(e.rawDate || e.date, language) === header);
+                      const mShows = mEvents.filter(s => {
+                        const t = (s.type || '').toLowerCase();
+                        return t !== 'ensaio' && t !== 'rehearsal';
+                      }).length;
+                      const mRehearsals = mEvents.filter(s => {
+                        const t = (s.type || '').toLowerCase();
+                        return t === 'ensaio' || t === 'rehearsal';
+                      }).length;
+
                       return (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 8, gap: 8 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 8, gap: 8 }}>
                           <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary, letterSpacing: 0.8 }}>
                             {header}
                           </Text>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 2 }}>
-                            <Ionicons name="calendar-outline" size={13} color={colors.primary} />
-                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mCount}</Text>
+                            <Ionicons name="calendar-outline" size={12} color={colors.primary} />
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mShows}</Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 3 }}>
+                            <Ionicons name="headset-outline" size={12} color={colors.primary} />
+                            <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mRehearsals}</Text>
                           </View>
                           <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
                         </View>
@@ -1891,6 +1927,14 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
                 {Object.keys(pastMonthsMap).map(header => {
                   const monthEvents = pastMonthsMap[header];
                   const isExpanded = expandedPastMonths.includes(header);
+                  const mShows = monthEvents.filter(s => {
+                    const t = (s.type || '').toLowerCase();
+                    return t !== 'ensaio' && t !== 'rehearsal';
+                  }).length;
+                  const mRehearsals = monthEvents.filter(s => {
+                    const t = (s.type || '').toLowerCase();
+                    return t === 'ensaio' || t === 'rehearsal';
+                  }).length;
 
                   return (
                     <View key={header} style={{ marginBottom: 4 }}>
@@ -1918,8 +1962,12 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
                           {header}
                         </Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 2 }}>
-                          <Ionicons name="calendar-outline" size={13} color={colors.primary} />
-                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{monthEvents.length}</Text>
+                          <Ionicons name="calendar-outline" size={12} color={colors.primary} />
+                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mShows}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 3 }}>
+                          <Ionicons name="headset-outline" size={12} color={colors.primary} />
+                          <Text style={{ fontSize: 11, fontWeight: '900', color: colors.primary }}>{mRehearsals}</Text>
                         </View>
                         <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.5 }} />
                         <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={14} color={colors.primary} />
