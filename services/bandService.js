@@ -997,47 +997,58 @@ export const bandService = {
         }
       }
 
-      if (snapshot.band) {
-        await db.runAsync(
-          `UPDATE my_bands SET 
-            name = ?, 
-            imageUri = COALESCE(?, imageUri),
-            city = COALESCE(?, city),
-            state = COALESCE(?, state),
-            country = COALESCE(?, country),
-            bandType = COALESCE(?, bandType),
-            genres = COALESCE(?, genres),
-            links = COALESCE(?, links),
-            instagram = COALESCE(?, instagram),
-            youtube = COALESCE(?, youtube),
-            spotify = COALESCE(?, spotify),
-            tiktok = COALESCE(?, tiktok),
-            facebook = COALESCE(?, facebook),
-            isNetworkVisible = ?,
-            cloudVersion = ?,
-            lastSyncedAt = ?
-          WHERE id = ?;`,
-          [
-            snapshot.band.name || localBand.name,
-            finalImageUri,
-            snapshot.band.city,
-            snapshot.band.state,
-            snapshot.band.country,
-            snapshot.band.bandType,
-            snapshot.band.genres,
-            snapshot.band.links,
-            snapshot.band.instagram,
-            snapshot.band.youtube,
-            snapshot.band.spotify,
-            snapshot.band.tiktok,
-            snapshot.band.facebook,
-            cloudData.isNetworkVisible ? 1 : 0,
-            cloudData.version || localBand.cloudVersion,
-            new Date().toISOString(),
-            bandId
-          ]
-        );
-      }
+      const bandName = snapshot.band?.name || cloudData.name || localBand.name;
+      const bCity = snapshot.band?.city !== undefined ? snapshot.band.city : (cloudData.city !== undefined ? cloudData.city : localBand.city);
+      const bState = snapshot.band?.state !== undefined ? snapshot.band.state : (cloudData.state !== undefined ? cloudData.state : localBand.state);
+      const bCountry = snapshot.band?.country !== undefined ? snapshot.band.country : (cloudData.country !== undefined ? cloudData.country : localBand.country);
+      const bType = snapshot.band?.bandType !== undefined ? snapshot.band.bandType : (cloudData.bandType !== undefined ? cloudData.bandType : localBand.bandType);
+      const bGenres = snapshot.band?.genres !== undefined ? snapshot.band.genres : (cloudData.genresJson || cloudData.genre || localBand.genres);
+      const bLinks = snapshot.band?.links !== undefined ? snapshot.band.links : (cloudData.linksJson || localBand.links);
+      const bInsta = snapshot.band?.instagram !== undefined ? snapshot.band.instagram : (cloudData.instagram !== undefined ? cloudData.instagram : localBand.instagram);
+      const bYt = snapshot.band?.youtube !== undefined ? snapshot.band.youtube : (cloudData.youtube !== undefined ? cloudData.youtube : localBand.youtube);
+      const bSpot = snapshot.band?.spotify !== undefined ? snapshot.band.spotify : (cloudData.spotify !== undefined ? cloudData.spotify : localBand.spotify);
+      const bTikTok = snapshot.band?.tiktok !== undefined ? snapshot.band.tiktok : (cloudData.tiktok !== undefined ? cloudData.tiktok : localBand.tiktok);
+      const bFb = snapshot.band?.facebook !== undefined ? snapshot.band.facebook : (cloudData.facebook !== undefined ? cloudData.facebook : localBand.facebook);
+
+      await db.runAsync(
+        `UPDATE my_bands SET 
+          name = ?, 
+          imageUri = COALESCE(?, imageUri),
+          city = COALESCE(?, city),
+          state = COALESCE(?, state),
+          country = COALESCE(?, country),
+          bandType = COALESCE(?, bandType),
+          genres = COALESCE(?, genres),
+          links = COALESCE(?, links),
+          instagram = COALESCE(?, instagram),
+          youtube = COALESCE(?, youtube),
+          spotify = COALESCE(?, spotify),
+          tiktok = COALESCE(?, tiktok),
+          facebook = COALESCE(?, facebook),
+          isNetworkVisible = ?,
+          cloudVersion = ?,
+          lastSyncedAt = ?
+        WHERE id = ?;`,
+        [
+          bandName,
+          finalImageUri,
+          bCity,
+          bState,
+          bCountry,
+          bType,
+          typeof bGenres === 'string' ? bGenres : JSON.stringify(bGenres || []),
+          typeof bLinks === 'string' ? bLinks : JSON.stringify(bLinks || {}),
+          bInsta,
+          bYt,
+          bSpot,
+          bTikTok,
+          bFb,
+          cloudData.isNetworkVisible ? 1 : 0,
+          cloudData.version || localBand.cloudVersion || 0,
+          new Date().toISOString(),
+          bandId
+        ]
+      );
 
       if (snapshot.manualCashBalance !== undefined && snapshot.manualCashBalance !== null) {
         try {
@@ -1102,15 +1113,15 @@ export const bandService = {
         }
       }
 
-      // Regra Banda Online: só mantém no repertório da banda as músicas que existem na nuvem
-      if (syncedSongIds.size > 0) {
-        const placeholders = Array.from(syncedSongIds).map(() => '?').join(',');
-        await db.runAsync(
-          `DELETE FROM band_songs WHERE bandId = ? AND songId NOT IN (${placeholders});`,
-          [bandId, ...Array.from(syncedSongIds)]
-        );
-      } else if (snapshot.songs && Array.isArray(snapshot.songs)) {
-        await db.runAsync('DELETE FROM band_songs WHERE bandId = ?;', [bandId]);
+      // Regra Banda Online: só mantém no repertório da banda as músicas que existem na nuvem se a nuvem tiver músicas
+      if (snapshot.songs && Array.isArray(snapshot.songs) && snapshot.songs.length > 0) {
+        if (syncedSongIds.size > 0) {
+          const placeholders = Array.from(syncedSongIds).map(() => '?').join(',');
+          await db.runAsync(
+            `DELETE FROM band_songs WHERE bandId = ? AND songId NOT IN (${placeholders});`,
+            [bandId, ...Array.from(syncedSongIds)]
+          );
+        }
       }
 
       // 3. Synchronize setlists into local SQLite
@@ -1248,16 +1259,15 @@ export const bandService = {
         }
       }
 
-      // Regra Banda Online: se a banda é online, apenas eventos da API são mantidos vinculados a esta banda.
-      // Desvincula quaisquer setlists locais antigos/órfãos que não estejam no snapshot da nuvem.
-      if (matchedLocalIds.size > 0) {
-        const slPlaceholders = Array.from(matchedLocalIds).map(() => '?').join(',');
-        await db.runAsync(
-          `UPDATE setlists SET myBandId = NULL WHERE myBandId = ? AND id NOT IN (${slPlaceholders});`,
-          [bandId, ...Array.from(matchedLocalIds)]
-        );
-      } else {
-        await db.runAsync('UPDATE setlists SET myBandId = NULL WHERE myBandId = ?;', [bandId]);
+      // Regra Banda Online: se a banda é online, apenas eventos da API são mantidos vinculados a esta banda se houver setlists na nuvem.
+      if (snapshot.setlists && Array.isArray(snapshot.setlists) && snapshot.setlists.length > 0) {
+        if (matchedLocalIds.size > 0) {
+          const slPlaceholders = Array.from(matchedLocalIds).map(() => '?').join(',');
+          await db.runAsync(
+            `UPDATE setlists SET myBandId = NULL WHERE myBandId = ? AND id NOT IN (${slPlaceholders});`,
+            [bandId, ...Array.from(matchedLocalIds)]
+          );
+        }
       }
 
       // 4. Synchronize band members into local SQLite
@@ -1400,9 +1410,13 @@ export const bandService = {
 
       const localBands = await this.getAll();
       let importedOrUpdatedCount = 0;
+      const total = myCloudBands.length;
+      let currentIndex = 0;
 
       for (const cb of myCloudBands) {
         if (!cb || !cb.id) continue;
+        currentIndex++;
+        const percent = Math.round((currentIndex / total) * 100);
 
         // Check if band already exists locally by cloudId or by name
         let local = (localBands || []).find(b => 
@@ -1452,7 +1466,16 @@ export const bandService = {
 
           // Pull all songs, setlists, and details from cloud for this band
           if (onProgress) {
-            try { onProgress(localBandId, true); } catch (e) {}
+            try {
+              onProgress({
+                bandId: localBandId,
+                isSyncing: true,
+                current: currentIndex,
+                total,
+                percent,
+                bandName: cb.name || 'Banda'
+              });
+            } catch (e) {}
           }
           try {
             await this.pullBandFromCloud(localBandId);
@@ -1461,7 +1484,16 @@ export const bandService = {
             console.log('Error pulling band data for new band:', cb.name, pullErr);
           } finally {
             if (onProgress) {
-              try { onProgress(localBandId, false); } catch (e) {}
+              try {
+                onProgress({
+                  bandId: localBandId,
+                  isSyncing: false,
+                  current: currentIndex,
+                  total,
+                  percent,
+                  bandName: cb.name || 'Banda'
+                });
+              } catch (e) {}
             }
           }
         } else {
@@ -1481,7 +1513,16 @@ export const bandService = {
           const localVer = local.cloudVersion || 0;
           if (force || remoteVer !== localVer || !local.lastSyncedAt || cb.lastSyncedAt !== local.lastSyncedAt) {
             if (onProgress) {
-              try { onProgress(localBandId, true); } catch (e) {}
+              try {
+                onProgress({
+                  bandId: localBandId,
+                  isSyncing: true,
+                  current: currentIndex,
+                  total,
+                  percent,
+                  bandName: cb.name || 'Banda'
+                });
+              } catch (e) {}
             }
             try {
               await this.pullBandFromCloud(localBandId);
@@ -1490,7 +1531,16 @@ export const bandService = {
               console.log('Error pulling band update for:', cb.name, pullErr);
             } finally {
               if (onProgress) {
-                try { onProgress(localBandId, false); } catch (e) {}
+                try {
+                  onProgress({
+                    bandId: localBandId,
+                    isSyncing: false,
+                    current: currentIndex,
+                    total,
+                    percent,
+                    bandName: cb.name || 'Banda'
+                  });
+                } catch (e) {}
               }
             }
           }

@@ -722,6 +722,7 @@ function MainApp() {
   const [selectedBandForPublish, setSelectedBandForPublish] = useState(null);
   const [onlineEvents, setOnlineEvents] = useState([]);
   const [syncingBandsMap, setSyncingBandsMap] = useState({});
+  const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0, percent: 0, bandName: '' });
 
   // Estados de edição / item ativo
   const [editingBand, setEditingBand] = useState(null);
@@ -785,13 +786,18 @@ function MainApp() {
               setIsLoggedIn(true);
               // Auto-sync cloud bands in background if logged in
               setIsCloudSyncing(true);
-              bandService.syncAllUserBandsFromCloud(false, (bandId, isSyncing) => {
-                setSyncingBandsMap(prev => {
-                  const next = { ...prev };
-                  if (isSyncing) next[String(bandId)] = true;
-                  else delete next[String(bandId)];
-                  return next;
-                });
+              setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
+              bandService.syncAllUserBandsFromCloud(false, (progressInfo) => {
+                if (typeof progressInfo === 'object') {
+                  const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
+                  setSyncProgress({ current, total, percent, bandName: bandName || '' });
+                  setSyncingBandsMap(prev => {
+                    const next = { ...prev };
+                    if (isSyncing) next[String(bandId)] = true;
+                    else delete next[String(bandId)];
+                    return next;
+                  });
+                }
               }).then(() => {
                 reloadAllData(true);
               }).catch(e => {
@@ -799,6 +805,7 @@ function MainApp() {
                 reloadAllData(true);
               }).finally(() => {
                 setIsCloudSyncing(false);
+                setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
               });
               try {
                 const isComp = await AsyncStorage.getItem('user_profile_completed');
@@ -1247,14 +1254,19 @@ function MainApp() {
   const handleRefreshBands = async () => {
     setRefreshingBands(true);
     setIsCloudSyncing(true);
+    setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
     try {
-      const syncRes = await bandService.syncAllUserBandsFromCloud(true, (bandId, isSyncing) => {
-        setSyncingBandsMap(prev => {
-          const next = { ...prev };
-          if (isSyncing) next[String(bandId)] = true;
-          else delete next[String(bandId)];
-          return next;
-        });
+      const syncRes = await bandService.syncAllUserBandsFromCloud(true, (progressInfo) => {
+        if (typeof progressInfo === 'object') {
+          const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
+          setSyncProgress({ current, total, percent, bandName: bandName || '' });
+          setSyncingBandsMap(prev => {
+            const next = { ...prev };
+            if (isSyncing) next[String(bandId)] = true;
+            else delete next[String(bandId)];
+            return next;
+          });
+        }
       });
       await reloadAllData();
       if (syncRes && syncRes.count > 0) {
@@ -1265,6 +1277,7 @@ function MainApp() {
     } finally {
       setRefreshingBands(false);
       setIsCloudSyncing(false);
+      setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
     }
   };
 
@@ -4219,16 +4232,61 @@ function MainApp() {
             const pendingInvites = (receivedInvites || []).filter(i => i.status === 'pending');
             const hasNoContent = filteredBands.length === 0 && pendingInvites.length === 0;
 
-            if (isCloudSyncing && bands.length === 0) {
+            if (isCloudSyncing) {
               return (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 120, paddingHorizontal: 20 }}>
-                  <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 16 }} />
-                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
-                    {t('loadingCloudBands') || 'Sincronizando seus projetos com a nuvem...'}
+                <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 90,
+                  paddingHorizontal: 24,
+                  minHeight: 340
+                }}>
+                  <View style={{
+                    width: 88,
+                    height: 88,
+                    borderRadius: 44,
+                    backgroundColor: colors.primary + '15',
+                    borderWidth: 2,
+                    borderColor: colors.primary + '40',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 20
+                  }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{
+                      position: 'absolute',
+                      fontSize: 14,
+                      fontWeight: '900',
+                      color: colors.primary
+                    }}>
+                      {syncProgress.percent || 0}%
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text, textAlign: 'center', marginBottom: 6 }}>
+                    {t('syncingBandsTitle') || 'Sincronizando Bandas...'}
                   </Text>
-                  <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', marginTop: 6 }}>
-                    {t('loadingCloudBandsSub') || 'Carregando repertório, eventos e membros...'}
+                  <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center' }}>
+                    {syncProgress.bandName 
+                      ? `${t('syncingBandItem') || 'Carregando'} ${syncProgress.bandName}... (${syncProgress.current}/${syncProgress.total})`
+                      : (t('loadingCloudBandsSub') || 'Carregando repertório, eventos e membros...')}
                   </Text>
+                  {/* Barra de progresso visual */}
+                  <View style={{
+                    width: 220,
+                    height: 6,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                    borderRadius: 3,
+                    marginTop: 18,
+                    overflow: 'hidden'
+                  }}>
+                    <View style={{
+                      width: `${Math.max(5, syncProgress.percent || 0)}%`,
+                      height: '100%',
+                      backgroundColor: colors.primary,
+                      borderRadius: 3
+                    }} />
+                  </View>
                 </View>
               );
             }
@@ -6047,14 +6105,19 @@ function MainApp() {
     const handleUserLogin = async () => {
       setIsLoggedIn(true);
       setIsCloudSyncing(true);
+      setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
       try {
-        await bandService.syncAllUserBandsFromCloud(true, (bandId, isSyncing) => {
-          setSyncingBandsMap(prev => {
-            const next = { ...prev };
-            if (isSyncing) next[String(bandId)] = true;
-            else delete next[String(bandId)];
-            return next;
-          });
+        await bandService.syncAllUserBandsFromCloud(true, (progressInfo) => {
+          if (typeof progressInfo === 'object') {
+            const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
+            setSyncProgress({ current, total, percent, bandName: bandName || '' });
+            setSyncingBandsMap(prev => {
+              const next = { ...prev };
+              if (isSyncing) next[String(bandId)] = true;
+              else delete next[String(bandId)];
+              return next;
+            });
+          }
         });
       } catch (syncErr) {
         console.log('Error syncing user cloud bands on login:', syncErr);
@@ -6065,6 +6128,7 @@ function MainApp() {
         console.log('Error reloading all data on login:', reloadErr);
       }
       setIsCloudSyncing(false);
+      setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
       try {
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
         if (isCompleted === 'true') {

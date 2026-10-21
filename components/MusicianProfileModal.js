@@ -1555,7 +1555,8 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
     };
 
     const yearTotalIncome = yearEvents.reduce((acc, ev) => {
-      return acc + parseIncome(ev.cachê || ev.cache || ev.value || ev.myShareNum || 0);
+      const share = ev.myShareNum !== undefined ? ev.myShareNum : parseIncome(ev.cachê || ev.cache || ev.value || 0);
+      return acc + share;
     }, 0);
 
     const formatCompactNumber = (num) => {
@@ -1655,17 +1656,42 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
             <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '900', lineHeight: 20 }}>{badge.day}</Text>
           </View>
 
-          {/* Dados: Nome do evento no topo, localização e horário abaixo (apenas local e horário) */}
+          {/* Dados: Pílula de tipo, Nome do evento, localização e horário abaixo */}
           <View style={{ flex: 1, paddingVertical: 8, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold' }} numberOfLines={1}>
-                {eventTitle}
-              </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, flexWrap: 'wrap', gap: 8 }}>
+              {/* Linha 1: Pílula discreta de tipo (SHOW/ENSAIO) + Nome do Evento */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <View style={{
+                  backgroundColor: (event.type === 'show' || event.type === 'Show') ? '#ef444420' : '#3b82f620',
+                  paddingHorizontal: 5,
+                  paddingVertical: 1.5,
+                  borderRadius: 5,
+                  borderWidth: 0.5,
+                  borderColor: (event.type === 'show' || event.type === 'Show') ? '#ef444445' : '#3b82f645'
+                }}>
+                  <Text style={{
+                    fontSize: 8.5,
+                    fontWeight: '900',
+                    color: (event.type === 'show' || event.type === 'Show') ? '#ef4444' : '#3b82f6',
+                    textTransform: 'uppercase'
+                  }}>
+                    {(event.type === 'show' || event.type === 'Show') ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')}
+                  </Text>
+                </View>
+
+                <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold', flexShrink: 1 }}>
+                  {eventTitle}
+                </Text>
+              </View>
+
+              {/* Linha 2: Localização completa (sem truncar com ...), horário e banda */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap', gap: 8 }}>
                 {eventLocal ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
-                    <Ionicons name="location-outline" size={12} color={colors.textMuted} />
-                    <Text style={{ color: colors.textMuted, fontSize: 11 }} numberOfLines={1}>{eventLocal}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 3, flexShrink: 1 }}>
+                    <Ionicons name="location-outline" size={12} color={colors.textMuted} style={{ marginTop: 1 }} />
+                    <Text style={{ color: colors.textMuted, fontSize: 11, flexShrink: 1 }}>
+                      {eventLocal}
+                    </Text>
                   </View>
                 ) : null}
                 {eventTime ? (
@@ -2351,11 +2377,11 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   agendaCircleLabel: {
-    fontSize: 9.5,
+    fontSize: 8.5,
     fontWeight: '800',
-    marginTop: 6,
+    marginTop: 5,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     textAlign: 'center',
   },
 

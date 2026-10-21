@@ -776,7 +776,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
       let projectsData = [];
 
       try {
-        const localBands = await bandService.getAll();
+        const allLocalBands = await bandService.getAll();
+        // Apenas bandas sincronizadas na nuvem aparecem no perfil online (bandas offline ficam privadas no aparelho)
+        const localBands = (allLocalBands || []).filter(b => b && b.cloudId);
         if (localBands && localBands.length > 0) {
           const loadedProjects = await Promise.all(localBands.map(async b => {
             let role = 'Músico';
@@ -897,33 +899,101 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
         agenda: await (async () => {
           try {
             const allSetlists = await setlistService.getAll();
-            const localEvents = (allSetlists || [])
+            const bandLogoMap = {};
+            const bandMembersInfoMap = {};
+
+            for (const b of (allLocalBands || [])) {
+              if (b.id) bandLogoMap[String(b.id)] = b.imageUri;
+              if (b.name) bandLogoMap[b.name.trim().toLowerCase()] = b.imageUri;
+              try {
+                const mems = await bandService.getBandMembers(b.id);
+                const activeMems = (mems || []).filter(m => m.status !== 'inactive' && m.status !== 'rejected');
+                bandMembersInfoMap[String(b.id)] = {
+                  members: mems || [],
+                  myMemberId: b.myMemberId,
+                  count: activeMems.length > 0 ? activeMems.length : (b.membersCount || 1)
+                };
+              } catch (e) {
+                bandMembersInfoMap[String(b.id)] = { members: [], myMemberId: b.myMemberId, count: b.membersCount || 1 };
+              }
+            }
+
+            const parseCash = (val) => {
+              if (typeof val === 'number') return val;
+              if (!val) return 0;
+              const clean = String(val).replace(/[^\d.,-]/g, '');
+              if (clean.includes(',') && clean.includes('.')) {
+                if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) {
+                  return parseFloat(clean.replace(/\./g, '').replace(',', '.')) || 0;
+                } else {
+                  return parseFloat(clean.replace(/,/g, '')) || 0;
+                }
+              } else if (clean.includes(',')) {
+                return parseFloat(clean.replace(',', '.')) || 0;
+              }
+              return parseFloat(clean) || 0;
+            };
+
+            const localEvents = await Promise.all((allSetlists || [])
               .filter(s => (s.date && s.date.trim()) || (s.local && s.local.trim()))
-              .map(s => {
+              .map(async (s) => {
                 let formattedDate = s.date || 'A definir';
                 if (s.time) formattedDate += ` • ${s.time}`;
                 const sBandName = (s.bandName || '').trim();
-                const matchingBand = (projectsData || []).find(p => 
-                  (s.myBandId && String(p.id) === String(s.myBandId)) ||
-                  (sBandName && p.name && p.name.trim().toLowerCase() === sBandName.toLowerCase())
-                );
-                const bandLogo = s.bandImageUri || matchingBand?.imageUri || matchingBand?.logo || null;
+                const sBandId = s.myBandId ? String(s.myBandId) : '';
+                const bandLogo = s.bandImageUri || (sBandId ? bandLogoMap[sBandId] : null) || (sBandName ? bandLogoMap[sBandName.toLowerCase()] : null) || null;
+
+                const bandInfo = sBandId ? bandMembersInfoMap[sBandId] : null;
+                const totalGross = parseCash(s.cachê || s.cache || s.value || 0);
+                let myShare = totalGross;
+
+                if (totalGross > 0) {
+                  let splitData = null;
+                  try {
+                    splitData = await bandService.getShowCacheSplit(s.id);
+                  } catch (e) {}
+
+                  if (splitData && typeof splitData === 'object' && Object.keys(splitData).length > 0) {
+                    const myMemId = bandInfo?.myMemberId;
+                    if (myMemId && splitData[myMemId] !== undefined) {
+                      myShare = parseCash(splitData[myMemId]);
+                    } else {
+                      const currentUsername = (data.username || '').toLowerCase().replace(/^@+/, '');
+                      const currentDisplay = (data.displayName || data.name || '').toLowerCase();
+                      const matchedMem = bandInfo?.members?.find(m =>
+                        (m.userId && data.id && String(m.userId) === String(data.id)) ||
+                        (m.username && currentUsername && m.username.toLowerCase().replace(/^@+/, '') === currentUsername) ||
+                        (m.name && currentDisplay && m.name.toLowerCase() === currentDisplay)
+                      );
+                      if (matchedMem && splitData[matchedMem.id] !== undefined) {
+                        myShare = parseCash(splitData[matchedMem.id]);
+                      } else {
+                        const mCount = bandInfo?.count || 1;
+                        myShare = totalGross / mCount;
+                      }
+                    }
+                  } else if (bandInfo && bandInfo.count > 0) {
+                    myShare = totalGross / bandInfo.count;
+                  }
+                }
+
                 return {
                   ...s,
                   setlistRef: s,
                   id: s.id,
                   name: s.name || s.local || 'Show',
                   type: s.type || 'show',
-                  band: s.bandName || matchingBand?.name || '',
+                  band: s.bandName || '',
                   date: s.date || '',
                   rawDate: s.date || '',
                   time: s.time || '',
                   formattedDate: formattedDate,
                   local: s.local || '',
                   cachê: s.cachê || s.cache || s.value || 0,
+                  myShareNum: myShare,
                   logo: bandLogo
                 };
-              });
+              }));
 
             let cloudEvents = [];
             try {
@@ -933,22 +1003,23 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                   let formattedDate = ev.date || 'A definir';
                   if (ev.time) formattedDate += ` • ${ev.time}`;
                   const evBandName = (ev.bandName || '').trim();
-                  const matchingBand = (projectsData || []).find(p => 
-                    (evBandName && p.name && p.name.trim().toLowerCase() === evBandName.toLowerCase())
-                  );
-                  const bandLogo = ev.bandImage || ev.bandLogo || matchingBand?.imageUri || matchingBand?.logo || null;
+                  const evBandId = ev.bandId ? String(ev.bandId) : '';
+                  const bandLogo = ev.bandImage || ev.bandLogo || (evBandId ? bandLogoMap[evBandId] : null) || (evBandName ? bandLogoMap[evBandName.toLowerCase()] : null) || null;
+                  const cGross = parseCash(ev.cacheValue != null ? ev.cacheValue : (ev.cachê || ev.cache || ev.value || 0));
+
                   return {
                     ...ev,
                     id: `cloudev_${ev.id}`,
                     name: ev.title || 'Show',
                     type: (ev.eventType || 'show').toLowerCase(),
-                    band: ev.bandName || matchingBand?.name || '',
+                    band: ev.bandName || '',
                     date: ev.date || '',
                     rawDate: ev.date || '',
                     time: ev.time || '',
                     formattedDate: formattedDate,
                     local: ev.location || ev.city || '',
-                    cachê: ev.cachê || ev.cache || ev.value || 0,
+                    cachê: cGross,
+                    myShareNum: cGross,
                     logo: bandLogo
                   };
                 });
@@ -2663,7 +2734,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
     };
 
     const yearTotalIncome = yearEvents.reduce((acc, ev) => {
-      return acc + parseIncome(ev.cachê || ev.cache || ev.value || ev.myShareNum || 0);
+      const share = ev.myShareNum !== undefined ? ev.myShareNum : parseIncome(ev.cachê || ev.cache || ev.value || 0);
+      return acc + share;
     }, 0);
 
     const formatCompactNumber = (num) => {
@@ -2737,17 +2809,42 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
             <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '900', lineHeight: 20 }}>{badge.day}</Text>
           </View>
 
-          {/* Dados: Nome do evento no topo, localização e horário abaixo */}
+          {/* Dados: Pílula de tipo, Nome do evento, localização e horário abaixo */}
           <View style={{ flex: 1, paddingVertical: 8, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold' }} numberOfLines={1}>
-                {eventTitle}
-              </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, flexWrap: 'wrap', gap: 8 }}>
+              {/* Linha 1: Pílula discreta de tipo (SHOW/ENSAIO) + Nome do Evento */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <View style={{
+                  backgroundColor: (event.type === 'show' || event.type === 'Show') ? '#ef444420' : '#3b82f620',
+                  paddingHorizontal: 5,
+                  paddingVertical: 1.5,
+                  borderRadius: 5,
+                  borderWidth: 0.5,
+                  borderColor: (event.type === 'show' || event.type === 'Show') ? '#ef444445' : '#3b82f645'
+                }}>
+                  <Text style={{
+                    fontSize: 8.5,
+                    fontWeight: '900',
+                    color: (event.type === 'show' || event.type === 'Show') ? '#ef4444' : '#3b82f6',
+                    textTransform: 'uppercase'
+                  }}>
+                    {(event.type === 'show' || event.type === 'Show') ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')}
+                  </Text>
+                </View>
+
+                <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold', flexShrink: 1 }}>
+                  {eventTitle}
+                </Text>
+              </View>
+
+              {/* Linha 2: Localização completa (sem truncar com ...), horário e banda */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap', gap: 8 }}>
                 {eventLocal ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
-                    <Ionicons name="location-outline" size={12} color={colors.textMuted} />
-                    <Text style={{ color: colors.textMuted, fontSize: 11 }} numberOfLines={1}>{eventLocal}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 3, flexShrink: 1 }}>
+                    <Ionicons name="location-outline" size={12} color={colors.textMuted} style={{ marginTop: 1 }} />
+                    <Text style={{ color: colors.textMuted, fontSize: 11, flexShrink: 1 }}>
+                      {eventLocal}
+                    </Text>
                   </View>
                 ) : null}
                 {eventTime ? (
@@ -2769,11 +2866,11 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
             {logoUri ? (
               <Image 
                 source={{ uri: logoUri }} 
-                style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.border }} 
+                style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: colors.border }} 
                 onError={() => setFailedBandLogos(prev => ({ ...prev, [event.id]: true }))}
               />
             ) : (
-              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>
                   {getBandInitials(eventBand || eventTitle)}
                 </Text>
@@ -4157,11 +4254,11 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   agendaCircleLabel: {
-    fontSize: 9.5,
+    fontSize: 8.5,
     fontWeight: '800',
-    marginTop: 6,
+    marginTop: 5,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     textAlign: 'center',
   },
 

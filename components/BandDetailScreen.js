@@ -997,8 +997,16 @@ export default function BandDetailScreen({
             ? (JSON.parse(cloudData.syncDataJson || '{}') || {})
             : (cloudData.syncDataJson || {});
 
-          // 1. Músicas do Repertório da API
-          const apiSongs = Array.isArray(snapshot.songs) ? snapshot.songs : [];
+          // 1. Músicas do Repertório da API (com fallback para SQLite)
+          let apiSongs = Array.isArray(snapshot.songs) ? snapshot.songs : [];
+          if (apiSongs.length === 0) {
+            try {
+              const sqliteSongs = await bandService.getBandSongs(band.id);
+              if (sqliteSongs && sqliteSongs.length > 0) {
+                apiSongs = sqliteSongs;
+              }
+            } catch (e) {}
+          }
           setBandSongs(apiSongs.map(s => ({
             ...s,
             id: s.id || `cloud_${s.name}`,
@@ -1064,6 +1072,14 @@ export default function BandDetailScreen({
             });
           }
 
+          if (mergedApiMembers.length === 0) {
+            try {
+              const sqliteMems = await bandService.getBandMembers(band.id);
+              if (sqliteMems && sqliteMems.length > 0) {
+                mergedApiMembers.push(...sqliteMems);
+              }
+            } catch (e) {}
+          }
           setMembers(mergedApiMembers);
 
           // Fotos dos membros
@@ -1106,6 +1122,15 @@ export default function BandDetailScreen({
             }
           } catch (e) {}
 
+          if (apiSetlists.length === 0) {
+            try {
+              const localSl = await setlistService.getAll();
+              const matchedSl = (localSl || []).filter(item => item && String(item.myBandId) === String(band.id));
+              if (matchedSl.length > 0) {
+                apiSetlists.push(...matchedSl);
+              }
+            } catch (e) {}
+          }
           setOnlineSetlists(apiSetlists.map(sl => {
             const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
                              (sl.cacheSplit?.status === 'paid') ||
