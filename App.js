@@ -3087,6 +3087,21 @@ function MainApp() {
               await reloadAllData(false);
             }} 
             onOpenBandProfile={handleOpenBandPublicProfile}
+            onOpenSetlist={async (setlist) => {
+              if (!setlist) return;
+              let targetSetlist = setlist;
+              if (setlist.id) {
+                const found = setlists.find(s => s.id === setlist.id);
+                if (found) targetSetlist = found;
+                else {
+                  try {
+                    const loaded = await setlistService.getById(setlist.id);
+                    if (loaded) targetSetlist = loaded;
+                  } catch (e) {}
+                }
+              }
+              setActiveSetlistDetail(targetSetlist);
+            }}
           />
         </View>
       );
@@ -6368,6 +6383,23 @@ function MainApp() {
           setSelectedMusicianProfile(null);
         }}
         onOpenBandProfile={handleOpenBandPublicProfile}
+        onOpenSetlist={async (setlist) => {
+          setShowMusicianProfileModal(false);
+          setSelectedMusicianProfile(null);
+          if (!setlist) return;
+          let targetSetlist = setlist;
+          if (setlist.id) {
+            const found = setlists.find(s => s.id === setlist.id);
+            if (found) targetSetlist = found;
+            else {
+              try {
+                const loaded = await setlistService.getById(setlist.id);
+                if (loaded) targetSetlist = loaded;
+              } catch (e) {}
+            }
+          }
+          setActiveSetlistDetail(targetSetlist);
+        }}
       />
 
       {/* PÁGINA PÚBLICA DA BANDA */}
@@ -6381,6 +6413,23 @@ function MainApp() {
         onAcceptInvite={handleAcceptInvite}
         onRejectInvite={handleRejectInvite}
         onOpenBandProfile={handleOpenBandPublicProfile}
+        onOpenSetlist={async (setlist) => {
+          setShowBandProfileModal(false);
+          setSelectedBandProfile(null);
+          if (!setlist) return;
+          let targetSetlist = setlist;
+          if (setlist.id) {
+            const found = setlists.find(s => s.id === setlist.id);
+            if (found) targetSetlist = found;
+            else {
+              try {
+                const loaded = await setlistService.getById(setlist.id);
+                if (loaded) targetSetlist = loaded;
+              } catch (e) {}
+            }
+          }
+          setActiveSetlistDetail(targetSetlist);
+        }}
       />
 
       {/* MODAL COMPARTILHAR AGENDA NA HOME */}

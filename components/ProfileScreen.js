@@ -28,6 +28,7 @@ import { setlistService } from '../services/setlistService';
 import { musiciansService } from '../services/musiciansService';
 import MusicianProfileModal from './MusicianProfileModal';
 import ShareAgendaModal from './ShareAgendaModal';
+import YearPickerModal from './YearPickerModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 import { useLanguage } from '../hooks/useLanguage';
@@ -251,7 +252,7 @@ const COUNTRIES = [
   'Uruguai', 'Chile', 'México', 'Colômbia', 'Outro'
 ];
 
-export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
+export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onOpenSetlist }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
   const getInterestLevelLabel = (opt) => {
@@ -578,6 +579,11 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   const gearRef = useRef(gear);
   gearRef.current = gear;
 
+  // Agenda State (seleção de ano e dados analíticos)
+  const [selectedAgendaYear, setSelectedAgendaYear] = useState(new Date().getFullYear());
+  const [showYearPickerModal, setShowYearPickerModal] = useState(false);
+  const [failedBandLogos, setFailedBandLogos] = useState({});
+
   // Agenda Sharing State (com seleção de eventos e arte personalizada)
   const [selectedAgendaEventIds, setSelectedAgendaEventIds] = useState([]);
   const [customBgUri, setCustomBgUri] = useState(null);
@@ -896,17 +902,26 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               .map(s => {
                 let formattedDate = s.date || 'A definir';
                 if (s.time) formattedDate += ` • ${s.time}`;
+                const sBandName = (s.bandName || '').trim();
+                const matchingBand = (projectsData || []).find(p => 
+                  (s.myBandId && String(p.id) === String(s.myBandId)) ||
+                  (sBandName && p.name && p.name.trim().toLowerCase() === sBandName.toLowerCase())
+                );
+                const bandLogo = s.bandImageUri || matchingBand?.imageUri || matchingBand?.logo || null;
                 return {
+                  ...s,
+                  setlistRef: s,
                   id: s.id,
                   name: s.name || s.local || 'Show',
                   type: s.type || 'show',
-                  band: s.bandName || '',
+                  band: s.bandName || matchingBand?.name || '',
                   date: s.date || '',
                   rawDate: s.date || '',
                   time: s.time || '',
                   formattedDate: formattedDate,
                   local: s.local || '',
-                  logo: s.bandImageUri || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.bandName || s.name || 'Show')}&background=random`
+                  cachê: s.cachê || s.cache || s.value || 0,
+                  logo: bandLogo
                 };
               });
 
@@ -917,17 +932,24 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                 cloudEvents = resEvents.map(ev => {
                   let formattedDate = ev.date || 'A definir';
                   if (ev.time) formattedDate += ` • ${ev.time}`;
+                  const evBandName = (ev.bandName || '').trim();
+                  const matchingBand = (projectsData || []).find(p => 
+                    (evBandName && p.name && p.name.trim().toLowerCase() === evBandName.toLowerCase())
+                  );
+                  const bandLogo = ev.bandImage || ev.bandLogo || matchingBand?.imageUri || matchingBand?.logo || null;
                   return {
+                    ...ev,
                     id: `cloudev_${ev.id}`,
                     name: ev.title || 'Show',
                     type: (ev.eventType || 'show').toLowerCase(),
-                    band: ev.bandName || '',
+                    band: ev.bandName || matchingBand?.name || '',
                     date: ev.date || '',
                     rawDate: ev.date || '',
                     time: ev.time || '',
                     formattedDate: formattedDate,
                     local: ev.location || ev.city || '',
-                    logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(ev.bandName || ev.title || 'Show')}&background=random`
+                    cachê: ev.cachê || ev.cache || ev.value || 0,
+                    logo: bandLogo
                   };
                 });
               }
@@ -2596,11 +2618,76 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
   // ── 5. AGENDA TAB (ORGANIZADA POR MÊS, EVENTO NO TOPO E PASSADAS EM SEPARADORES OCULTOS) ──
   const renderAgendaTab = () => {
     const rawAgenda = user?.agenda || [];
-    const upcomingEvents = rawAgenda
+
+    // Helper para extrair o ano da data do evento
+    const getEventYear = (dateStr) => {
+      if (!dateStr) return null;
+      const clean = String(dateStr).split(' • ')[0].trim();
+      const match = clean.match(/\b(19\d{2}|20\d{2})\b/);
+      return match ? parseInt(match[0], 10) : null;
+    };
+
+    const currentYear = new Date().getFullYear();
+
+    // Filtra eventos pelo ano selecionado nos círculos de resumo
+    const yearEvents = rawAgenda.filter(e => {
+      const y = getEventYear(e.rawDate || e.date);
+      return y ? y === selectedAgendaYear : (selectedAgendaYear === currentYear);
+    });
+
+    // Contadores analíticos do ano (Shows vs Ensaios vs Entradas)
+    const yearShows = yearEvents.filter(s => {
+      const t = (s.type || '').toLowerCase();
+      return t !== 'ensaio' && t !== 'rehearsal';
+    }).length;
+
+    const yearRehearsals = yearEvents.filter(s => {
+      const t = (s.type || '').toLowerCase();
+      return t === 'ensaio' || t === 'rehearsal';
+    }).length;
+
+    const parseIncome = (val) => {
+      if (typeof val === 'number') return val;
+      if (!val) return 0;
+      const clean = String(val).replace(/[^\d.,-]/g, '');
+      if (clean.includes(',') && clean.includes('.')) {
+        if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) {
+          return parseFloat(clean.replace(/\./g, '').replace(',', '.')) || 0;
+        } else {
+          return parseFloat(clean.replace(/,/g, '')) || 0;
+        }
+      } else if (clean.includes(',')) {
+        return parseFloat(clean.replace(',', '.')) || 0;
+      }
+      return parseFloat(clean) || 0;
+    };
+
+    const yearTotalIncome = yearEvents.reduce((acc, ev) => {
+      return acc + parseIncome(ev.cachê || ev.cache || ev.value || ev.myShareNum || 0);
+    }, 0);
+
+    const formatCompactNumber = (num) => {
+      const val = Number(num) || 0;
+      if (Math.abs(val) < 1000) {
+        if (val % 1 === 0) return String(val);
+        return val.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+      }
+      if (Math.abs(val) < 1000000) {
+        const k = val / 1000;
+        if (k % 1 === 0) {
+          return `${k.toFixed(0)}k`;
+        }
+        return `${k.toFixed(1).replace('.0', '')}k`;
+      }
+      const m = val / 1000000;
+      return `${m.toFixed(1).replace('.0', '')}M`;
+    };
+
+    const upcomingEvents = yearEvents
       .filter(e => isFutureDate(e.rawDate || e.date))
       .sort((a, b) => parseDateForSort(a.rawDate || a.date) - parseDateForSort(b.rawDate || b.date));
 
-    const pastEvents = rawAgenda
+    const pastEvents = yearEvents
       .filter(e => !isFutureDate(e.rawDate || e.date))
       .sort((a, b) => parseDateForSort(b.rawDate || b.date) - parseDateForSort(a.rawDate || a.date));
 
@@ -2617,11 +2704,17 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
       const eventTitle = event.name || event.title || event.local || 'Show';
       const eventLocal = event.local || '';
       const eventBand = event.band && event.band !== eventTitle ? event.band : '';
+      const logoUri = !failedBandLogos[event.id] ? (event.logo || event.bandImageUri || event.bandImage || null) : null;
 
       return (
-        <View 
+        <Pressable 
           key={event.id} 
-          style={[
+          onPress={() => {
+            if (onOpenSetlist) {
+              onOpenSetlist(event.setlistRef || event);
+            }
+          }}
+          style={({ pressed }) => [
             styles.fullWidthCard, 
             { 
               backgroundColor: colors.cardBackground, 
@@ -2634,6 +2727,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
               borderRadius: 12,
               borderWidth: 1,
               borderColor: colors.border,
+              opacity: pressed ? 0.75 : 1,
             }
           ]}
         >
@@ -2670,11 +2764,23 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
                 ) : null}
               </View>
             </View>
-            {event.logo ? (
-              <Image source={{ uri: event.logo }} style={{ width: 34, height: 34, borderRadius: 17 }} />
-            ) : null}
+
+            {/* Logo da banda ou iniciais de fallback se não houver imagem ou se falhar o carregamento */}
+            {logoUri ? (
+              <Image 
+                source={{ uri: logoUri }} 
+                style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.border }} 
+                onError={() => setFailedBandLogos(prev => ({ ...prev, [event.id]: true }))}
+              />
+            ) : (
+              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '35', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>
+                  {getBandInitials(eventBand || eventTitle)}
+                </Text>
+              </View>
+            )}
           </View>
-        </View>
+        </Pressable>
       );
     };
 
@@ -2698,7 +2804,99 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           <Text style={[styles.shareAgendaPillText, { color: colors.primary }]}>{t('shareAgenda') || 'Compartilhar Agenda'}</Text>
         </Pressable>
 
-        {rawAgenda.length === 0 ? (
+        {/* ── RESUMO DA AGENDA EM 5 CÍRCULOS (ANO, EVENTOS, SHOWS, ENSAIOS, ENTRADAS) ── */}
+        <View style={[styles.bandAgendaSummary, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+          {/* Círculo 1: Ano */}
+          <View style={styles.agendaCircleCol}>
+            <Pressable 
+              onPress={() => setShowYearPickerModal(true)}
+              style={({ pressed }) => [
+                styles.agendaCircleWrapper,
+                { opacity: pressed ? 0.75 : 1 }
+              ]}
+              hitSlop={6}
+            >
+              <View style={[styles.agendaCircleDisc, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '50' }]}>
+                <Text style={[styles.agendaCircleText, { color: colors.primary, fontSize: 13 }]}>
+                  {selectedAgendaYear}
+                </Text>
+              </View>
+            </Pressable>
+            <Text style={[styles.agendaCircleLabel, { color: colors.textMuted }]}>
+              {t('agendaYear') || 'Ano'}
+            </Text>
+          </View>
+
+          {/* Círculo 2: Total de Eventos */}
+          <View style={styles.agendaCircleCol}>
+            <View style={styles.agendaCircleWrapper}>
+              <View style={[styles.agendaCircleDisc, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', paddingLeft: 6 }]}>
+                <Text style={[styles.agendaCircleText, { color: colors.text }]}>
+                  {yearEvents.length}
+                </Text>
+              </View>
+              <View style={[styles.agendaCircleOverlapIcon, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                <Ionicons name="list-outline" size={11} color={colors.primary} />
+              </View>
+            </View>
+            <Text style={[styles.agendaCircleLabel, { color: colors.textMuted }]}>
+              {t('agendaEvents') || 'Eventos'}
+            </Text>
+          </View>
+
+          {/* Círculo 3: Shows */}
+          <View style={styles.agendaCircleCol}>
+            <View style={styles.agendaCircleWrapper}>
+              <View style={[styles.agendaCircleDisc, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', paddingLeft: 6 }]}>
+                <Text style={[styles.agendaCircleText, { color: colors.text }]}>
+                  {yearShows}
+                </Text>
+              </View>
+              <View style={[styles.agendaCircleOverlapIcon, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                <Ionicons name="calendar-outline" size={11} color={colors.primary} />
+              </View>
+            </View>
+            <Text style={[styles.agendaCircleLabel, { color: colors.textMuted }]}>
+              {t('agendaShows') || 'Shows'}
+            </Text>
+          </View>
+
+          {/* Círculo 4: Ensaios */}
+          <View style={styles.agendaCircleCol}>
+            <View style={styles.agendaCircleWrapper}>
+              <View style={[styles.agendaCircleDisc, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40', paddingLeft: 6 }]}>
+                <Text style={[styles.agendaCircleText, { color: colors.text }]}>
+                  {yearRehearsals}
+                </Text>
+              </View>
+              <View style={[styles.agendaCircleOverlapIcon, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}>
+                <Ionicons name="headset-outline" size={11} color={colors.primary} />
+              </View>
+            </View>
+            <Text style={[styles.agendaCircleLabel, { color: colors.textMuted }]}>
+              {t('agendaRehearsals') || 'Ensaios'}
+            </Text>
+          </View>
+
+          {/* Círculo 5: Entradas */}
+          <View style={styles.agendaCircleCol}>
+            <View style={styles.agendaCircleWrapper}>
+              <View style={[styles.agendaCircleDisc, { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.45)', paddingLeft: 6 }]}>
+                <Text style={[styles.agendaCircleText, { color: '#34d399', fontSize: 11 }]}>
+                  {formatCompactNumber(yearTotalIncome)}
+                </Text>
+              </View>
+              <View style={[styles.agendaCircleOverlapIcon, { backgroundColor: '#132420', borderColor: '#10b981' }]}>
+                <Ionicons name="cash-outline" size={11} color="#34d399" />
+              </View>
+            </View>
+            <Text style={[styles.agendaCircleLabel, { color: '#34d399' }]}>
+              {t('agendaIncome') || 'Entradas'}
+            </Text>
+          </View>
+        </View>
+
+        {yearEvents.length === 0 ? (
           <View style={[styles.fullWidthCard, { backgroundColor: colors.cardBackground, borderTopColor: colors.border, borderBottomColor: colors.border, alignItems: 'center', paddingVertical: 20 }]}>
             <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>
               {t('noEventsScheduledShort') || 'Nenhum evento agendado.'}
@@ -2803,6 +3001,14 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
             )}
           </>
         )}
+
+        {/* Modal de seleção de Ano */}
+        <YearPickerModal
+          visible={showYearPickerModal}
+          selectedYear={selectedAgendaYear}
+          onSelectYear={(yr) => setSelectedAgendaYear(yr)}
+          onClose={() => setShowYearPickerModal(false)}
+        />
       </View>
     );
   };
@@ -3789,6 +3995,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile }) {
           setMyPublicProfile(null);
         }}
         onOpenBandProfile={onOpenBandProfile}
+        onOpenSetlist={onOpenSetlist}
       />
     </View>
   );
@@ -3899,6 +4106,63 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.3,
+  },
+
+  // Resumo da Agenda em 5 Círculos (Ano, Eventos, Shows, Ensaios, Entradas)
+  bandAgendaSummary: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  agendaCircleCol: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  agendaCircleWrapper: {
+    position: 'relative',
+    width: 52,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  agendaCircleDisc: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  agendaCircleOverlapIcon: {
+    position: 'absolute',
+    left: -2,
+    top: '50%',
+    marginTop: -10,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  agendaCircleText: {
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  agendaCircleLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    marginTop: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
 
   // Full-width Card (Symmetric with header - used for Skills, Gear, Projects, Agenda)

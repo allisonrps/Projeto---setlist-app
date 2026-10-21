@@ -1211,6 +1211,12 @@ const translations = {
     classifiedsSubtitle: 'Instrumentos e equipamentos negociáveis da comunidade',
     noClassifiedsFound: 'Nenhum equipamento anunciado no momento',
     noClassifiedsSub: 'Marque seus equipamentos como negociáveis no seu perfil para exibi-los aqui!',
+    agendaYear: 'Ano',
+    agendaEvents: 'Eventos',
+    agendaShows: 'Shows',
+    agendaRehearsals: 'Ensaios',
+    agendaIncome: 'Entradas',
+    selectYear: 'Selecionar Ano',
   },
 
   en: {
@@ -2422,6 +2428,12 @@ const translations = {
     classifiedsSubtitle: 'Negotiable instruments and gear from the community',
     noClassifiedsFound: 'No gear listed at the moment',
     noClassifiedsSub: 'Mark your gear as negotiable in your profile to display them here!',
+    agendaYear: 'Year',
+    agendaEvents: 'Events',
+    agendaShows: 'Shows',
+    agendaRehearsals: 'Rehearsals',
+    agendaIncome: 'Income',
+    selectYear: 'Select Year',
   },
 
   es: {
@@ -3632,6 +3644,12 @@ const translations = {
     classifiedsSubtitle: 'Instrumentos y equipos negociables de la comunidad',
     noClassifiedsFound: 'Ningún equipo anunciado por el momento',
     noClassifiedsSub: '¡Marca tus equipos como negociables en tu perfil para mostrarlos aquí!',
+    agendaYear: 'Año',
+    agendaEvents: 'Eventos',
+    agendaShows: 'Shows',
+    agendaRehearsals: 'Ensayos',
+    agendaIncome: 'Ingresos',
+    selectYear: 'Seleccionar Año',
   }
 };
 
