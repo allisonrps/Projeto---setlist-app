@@ -724,6 +724,7 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
             bandName: p.name,
             name: show.name || show.title || 'Show',
             title: show.name || show.title || 'Show',
+            type: (show.type || 'show').toLowerCase(),
             date: formattedDate,
             rawDate: show.date || '',
             time: show.time || '',
@@ -1701,23 +1702,29 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
             <View style={{ flex: 1, marginRight: 8 }}>
               {/* Linha 1: Pílula discreta de tipo (SHOW/ENSAIO) + Nome do Evento */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <View style={{
-                  backgroundColor: (event.type === 'show' || event.type === 'Show') ? '#ef444420' : '#3b82f620',
-                  paddingHorizontal: 5,
-                  paddingVertical: 1.5,
-                  borderRadius: 5,
-                  borderWidth: 0.5,
-                  borderColor: (event.type === 'show' || event.type === 'Show') ? '#ef444445' : '#3b82f645'
-                }}>
-                  <Text style={{
-                    fontSize: 8.5,
-                    fontWeight: '900',
-                    color: (event.type === 'show' || event.type === 'Show') ? '#ef4444' : '#3b82f6',
-                    textTransform: 'uppercase'
-                  }}>
-                    {(event.type === 'show' || event.type === 'Show') ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')}
-                  </Text>
-                </View>
+                {(() => {
+                  const evType = (event.type || '').toLowerCase();
+                  const isRehearsal = evType === 'ensaio' || evType === 'rehearsal';
+                  return (
+                    <View style={{
+                      backgroundColor: !isRehearsal ? '#ef444420' : '#3b82f620',
+                      paddingHorizontal: 5,
+                      paddingVertical: 1.5,
+                      borderRadius: 5,
+                      borderWidth: 0.5,
+                      borderColor: !isRehearsal ? '#ef444445' : '#3b82f645'
+                    }}>
+                      <Text style={{
+                        fontSize: 8.5,
+                        fontWeight: '900',
+                        color: !isRehearsal ? '#ef4444' : '#3b82f6',
+                        textTransform: 'uppercase'
+                      }}>
+                        {!isRehearsal ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')}
+                      </Text>
+                    </View>
+                  );
+                })()}
 
                 <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold', flexShrink: 1 }}>
                   {eventTitle}
@@ -1727,10 +1734,10 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
               {/* Linha 2: Localização completa (sem truncar com ...), horário e banda */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap', gap: 8 }}>
                 {eventLocal ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1, paddingRight: 6 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                     <Ionicons name="location-outline" size={12} color={colors.textMuted} style={{ marginTop: 0.5 }} />
-                    <Text style={{ color: colors.textMuted, fontSize: 11, paddingRight: 4 }}>
-                      {eventLocal}
+                    <Text style={{ color: colors.textMuted, fontSize: 11 }}>
+                      {`${eventLocal} `}
                     </Text>
                   </View>
                 ) : null}

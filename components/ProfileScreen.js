@@ -939,25 +939,20 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
         projects: projectsData,
         agenda: await (async () => {
           try {
-            const allSetlists = await setlistService.getAll();
-            const bandLogoMap = {};
-            const bandMembersInfoMap = {};
+            let currentLoggedUser = null;
+            try {
+              const uInfo = await AsyncStorage.getItem('user_info');
+              if (uInfo) currentLoggedUser = JSON.parse(uInfo);
+            } catch (e) {}
 
-            for (const b of (allLocalBands || [])) {
-              if (b.id) bandLogoMap[String(b.id)] = b.imageUri;
-              if (b.name) bandLogoMap[b.name.trim().toLowerCase()] = b.imageUri;
-              try {
-                const mems = await bandService.getBandMembers(b.id);
-                const activeMems = (mems || []).filter(m => m.status !== 'inactive' && m.status !== 'rejected');
-                bandMembersInfoMap[String(b.id)] = {
-                  members: mems || [],
-                  myMemberId: b.myMemberId,
-                  count: activeMems.length > 0 ? activeMems.length : (b.membersCount || 1)
-                };
-              } catch (e) {
-                bandMembersInfoMap[String(b.id)] = { members: [], myMemberId: b.myMemberId, count: b.membersCount || 1 };
-              }
-            }
+            const cleanMyUser = (data.username || currentLoggedUser?.username || '').toLowerCase().replace(/^@+/, '').trim();
+            const cleanMyDisplay = (data.displayName || data.name || currentLoggedUser?.name || currentLoggedUser?.displayName || '').toLowerCase().trim();
+            const myUserIdStr = data.id ? String(data.id) : (currentLoggedUser?.id ? String(currentLoggedUser.id) : null);
+
+            const allSetlists = (await setlistService.getAll()) || [];
+            const bandLogoMap = {};
+            const eventsFromBands = [];
+            const processedSetlistKeys = new Set();
 
             const parseCash = (val) => {
               if (typeof val === 'number') return val;
@@ -975,72 +970,252 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               return parseFloat(clean) || 0;
             };
 
-            const localEvents = await Promise.all((allSetlists || [])
-              .filter(s => (s.date && s.date.trim()) || (s.local && s.local.trim()))
-              .map(async (s) => {
+            for (const b of (allLocalBands || [])) {
+              if (!b) continue;
+              const bIdStr = b.id ? String(b.id) : '';
+              const bNameStr = (b.name || '').trim();
+              if (bIdStr) bandLogoMap[bIdStr] = b.imageUri;
+              if (bNameStr) bandLogoMap[bNameStr.toLowerCase()] = b.imageUri;
+
+              let mems = [];
+              try {
+                mems = (await bandService.getBandMembers(b.id)) || [];
+              } catch (e) {}
+
+              let snap = null;
+              if (b.syncDataJson) {
+                try {
+                  snap = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+                } catch (e) {}
+              }
+
+              if (snap?.members && Array.isArray(snap.members) && snap.members.length > 0) {
+                for (const sm of snap.members) {
+                  const smName = (sm.name || sm.displayName || '').trim();
+                  if (smName && !mems.some(m => (m.name || '').trim().toLowerCase() === smName.toLowerCase())) {
+                    mems.push({
+                      id: sm.id || sm.userId || sm.name,
+                      name: smName,
+                      username: sm.username || '',
+                      role: sm.role || '',
+                      status: sm.status || 'active'
+                    });
+                  }
+                }
+              }
+
+              const activeMems = mems.filter(m => m.status !== 'inactive' && m.status !== 'rejected');
+              const activeCount = activeMems.length > 0 ? activeMems.length : (b.membersCount || 1);
+
+              // Identifica o integrante correspondente ao usuário logado nesta banda
+              let userMem = mems.find(m => {
+                if (myUserIdStr && m.userId && String(m.userId) === myUserIdStr) return true;
+                if (b.myMemberId && String(m.id) === String(b.myMemberId)) return true;
+                const mUser = (m.username || '').toLowerCase().replace(/^@+/, '').trim();
+                if (mUser && (mUser === cleanMyUser || mUser === 'me')) return true;
+                const mName = (m.name || '').toLowerCase().trim();
+                if (mName === 'você' || mName === 'voce') return true;
+                if (cleanMyDisplay && mName === cleanMyDisplay) return true;
+                if (cleanMyUser && mName === cleanMyUser) return true;
+                if (cleanMyDisplay && mName && (cleanMyDisplay.startsWith(mName) || mName.startsWith(cleanMyDisplay))) return true;
+                return false;
+              });
+
+              if (!userMem && activeMems.length === 1) {
+                userMem = activeMems[0];
+              }
+
+              // Puxa setlists da banda: referência primária na página da banda (snapshot e SQLite)
+              const bandRawSetlists = [];
+              const seenBandSlKeys = new Set();
+
+              if (snap?.setlists && Array.isArray(snap.setlists)) {
+                for (const sl of snap.setlists) {
+                  if (!sl) continue;
+                  const k = `${(sl.name || '').trim().toLowerCase()}_${(sl.date || '').trim()}`;
+                  seenBandSlKeys.add(k);
+                  bandRawSetlists.push({
+                    ...sl,
+                    bandName: b.name,
+                    myBandId: b.id,
+                    bandImageUri: b.imageUri
+                  });
+                }
+              }
+
+              const localBandSetlists = allSetlists.filter(s =>
+                (b.id && String(s.myBandId) === String(b.id)) ||
+                (s.bandName && b.name && s.bandName.trim().toLowerCase() === b.name.trim().toLowerCase())
+              );
+
+              for (const sl of localBandSetlists) {
+                const k = `${(sl.name || '').trim().toLowerCase()}_${(sl.date || '').trim()}`;
+                if (!seenBandSlKeys.has(k)) {
+                  seenBandSlKeys.add(k);
+                  bandRawSetlists.push({
+                    ...sl,
+                    bandName: b.name,
+                    myBandId: b.id,
+                    bandImageUri: b.imageUri
+                  });
+                }
+              }
+
+              // Processa cada evento da banda
+              for (const s of bandRawSetlists) {
+                if (!((s.date && s.date.trim()) || (s.local && s.local.trim()))) continue;
+                const setlistKey = `${(s.name || s.local || '').trim().toLowerCase()}_${(s.date || '').trim()}`;
+                processedSetlistKeys.add(setlistKey);
+
                 let formattedDate = s.date || 'A definir';
                 if (s.time) formattedDate += ` • ${s.time}`;
-                const sBandName = (s.bandName || '').trim();
-                const sBandId = s.myBandId ? String(s.myBandId) : '';
-                const bandLogo = s.bandImageUri || (sBandId ? bandLogoMap[sBandId] : null) || (sBandName ? bandLogoMap[sBandName.toLowerCase()] : null) || null;
+                const bandLogo = s.bandImageUri || b.imageUri || null;
+                const totalGross = parseCash(s.cachê || s.cache || s.valCache || s.value || 0);
 
-                const bandInfo = sBandId ? bandMembersInfoMap[sBandId] : null;
-                const totalGross = parseCash(s.cachê || s.cache || s.value || 0);
-                let myShare = totalGross;
-
-                if (totalGross > 0) {
-                  let splitData = null;
+                // Busca a divisão de cachê configurada na página da banda
+                let splitData = s.cacheSplit || null;
+                if (!splitData || Object.keys(splitData).length === 0) {
                   try {
                     splitData = await bandService.getShowCacheSplit(s.id);
                   } catch (e) {}
+                }
 
-                  if (splitData && typeof splitData === 'object' && Object.keys(splitData).length > 0) {
-                    const myMemId = bandInfo?.myMemberId;
-                    if (myMemId && splitData[myMemId] !== undefined) {
-                      myShare = parseCash(splitData[myMemId]);
-                    } else {
-                      const currentUsername = (data.username || '').toLowerCase().replace(/^@+/, '');
-                      const currentDisplay = (data.displayName || data.name || '').toLowerCase();
-                      const matchedMem = bandInfo?.members?.find(m =>
-                        (m.userId && data.id && String(m.userId) === String(data.id)) ||
-                        (m.username && currentUsername && m.username.toLowerCase().replace(/^@+/, '') === currentUsername) ||
-                        (m.name && currentDisplay && m.name.toLowerCase() === currentDisplay)
-                      );
-                      if (matchedMem && splitData[matchedMem.id] !== undefined) {
-                        myShare = parseCash(splitData[matchedMem.id]);
-                      } else {
-                        const mCount = bandInfo?.count || 1;
-                        myShare = totalGross / mCount;
+                let memberSplits = null;
+                if (splitData && typeof splitData === 'object') {
+                  memberSplits = splitData.members && typeof splitData.members === 'object'
+                    ? splitData.members
+                    : splitData;
+                }
+
+                let myShare = 0;
+                let foundSplit = false;
+
+                if (memberSplits && typeof memberSplits === 'object' && Object.keys(memberSplits).length > 0) {
+                  const keysToTry = [
+                    userMem?.id,
+                    userMem?.id ? String(userMem.id) : null,
+                    userMem?.username,
+                    userMem?.name,
+                    'me',
+                    cleanMyUser,
+                    cleanMyDisplay
+                  ].filter(Boolean);
+
+                  for (const k of keysToTry) {
+                    if (memberSplits[k] !== undefined) {
+                      myShare = parseCash(memberSplits[k]);
+                      foundSplit = true;
+                      break;
+                    }
+                  }
+
+                  if (!foundSplit) {
+                    for (const [k, v] of Object.entries(memberSplits)) {
+                      if (k === 'bandFund' || k === 'band_fund' || k === 'status' || k === 'updatedAt' || k === 'substitutes' || k.startsWith('sub_')) continue;
+                      const kLower = String(k).toLowerCase();
+                      if (userMem?.name && kLower === userMem.name.toLowerCase()) {
+                        myShare = parseCash(v);
+                        foundSplit = true;
+                        break;
+                      }
+                      if (userMem?.username && kLower === userMem.username.toLowerCase()) {
+                        myShare = parseCash(v);
+                        foundSplit = true;
+                        break;
+                      }
+                      if (cleanMyDisplay && kLower === cleanMyDisplay) {
+                        myShare = parseCash(v);
+                        foundSplit = true;
+                        break;
+                      }
+                      if (cleanMyUser && kLower === cleanMyUser) {
+                        myShare = parseCash(v);
+                        foundSplit = true;
+                        break;
                       }
                     }
-                  } else if (bandInfo && bandInfo.count > 0) {
-                    myShare = totalGross / bandInfo.count;
                   }
                 }
 
-                return {
+                if (!foundSplit) {
+                  myShare = totalGross > 0 ? (totalGross / activeCount) : 0;
+                }
+
+                eventsFromBands.push({
                   ...s,
                   setlistRef: s,
-                  id: s.id,
+                  id: s.id || `bandev_${b.id}_${eventsFromBands.length}`,
                   name: s.name || s.local || 'Show',
-                  type: s.type || 'show',
-                  band: s.bandName || '',
+                  type: (s.type || 'show').toLowerCase(),
+                  band: b.name || s.bandName || '',
                   date: s.date || '',
                   rawDate: s.date || '',
                   time: s.time || '',
                   formattedDate: formattedDate,
-                  local: s.local || '',
-                  cachê: s.cachê || s.cache || s.value || 0,
+                  local: s.local || s.venue || s.location || '',
+                  cachê: totalGross,
                   myShareNum: myShare,
                   logo: bandLogo
-                };
-              }));
+                });
+              }
+            }
 
-            let cloudEvents = [];
+            // Setlists locais avulsos não pertencentes às bandas processadas acima
+            for (const s of allSetlists) {
+              if (!((s.date && s.date.trim()) || (s.local && s.local.trim()))) continue;
+              const setlistKey = `${(s.name || s.local || '').trim().toLowerCase()}_${(s.date || '').trim()}`;
+              if (processedSetlistKeys.has(setlistKey)) continue;
+              processedSetlistKeys.add(setlistKey);
+
+              let formattedDate = s.date || 'A definir';
+              if (s.time) formattedDate += ` • ${s.time}`;
+              const sBandName = (s.bandName || '').trim();
+              const sBandId = s.myBandId ? String(s.myBandId) : '';
+              const bandLogo = s.bandImageUri || (sBandId ? bandLogoMap[sBandId] : null) || (sBandName ? bandLogoMap[sBandName.toLowerCase()] : null) || null;
+              const totalGross = parseCash(s.cachê || s.cache || s.value || 0);
+
+              let splitData = null;
+              try {
+                splitData = await bandService.getShowCacheSplit(s.id);
+              } catch (e) {}
+
+              let memberSplits = splitData?.members || splitData;
+              let myShare = totalGross;
+              if (memberSplits && typeof memberSplits === 'object' && Object.keys(memberSplits).length > 0) {
+                for (const [k, v] of Object.entries(memberSplits)) {
+                  if (k === 'bandFund' || k === 'band_fund' || k === 'status' || k === 'updatedAt' || k === 'substitutes' || k.startsWith('sub_')) continue;
+                  myShare = parseCash(v);
+                  break;
+                }
+              }
+
+              eventsFromBands.push({
+                ...s,
+                setlistRef: s,
+                id: s.id,
+                name: s.name || s.local || 'Show',
+                type: (s.type || 'show').toLowerCase(),
+                band: s.bandName || '',
+                date: s.date || '',
+                rawDate: s.date || '',
+                time: s.time || '',
+                formattedDate: formattedDate,
+                local: s.local || '',
+                cachê: totalGross,
+                myShareNum: myShare,
+                logo: bandLogo
+              });
+            }
+
+            // Eventos da API
             try {
               const resEvents = await api.getEvents();
               if (Array.isArray(resEvents)) {
-                cloudEvents = resEvents.map(ev => {
+                for (const ev of resEvents) {
+                  const evKey = `${(ev.title || '').trim().toLowerCase()}_${(ev.date || '').trim()}`;
+                  if (processedSetlistKeys.has(evKey)) continue;
+                  processedSetlistKeys.add(evKey);
+
                   let formattedDate = ev.date || 'A definir';
                   if (ev.time) formattedDate += ` • ${ev.time}`;
                   const evBandName = (ev.bandName || '').trim();
@@ -1048,7 +1223,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                   const bandLogo = ev.bandImage || ev.bandLogo || (evBandId ? bandLogoMap[evBandId] : null) || (evBandName ? bandLogoMap[evBandName.toLowerCase()] : null) || null;
                   const cGross = parseCash(ev.cacheValue != null ? ev.cacheValue : (ev.cachê || ev.cache || ev.value || 0));
 
-                  return {
+                  eventsFromBands.push({
                     ...ev,
                     id: `cloudev_${ev.id}`,
                     name: ev.title || 'Show',
@@ -1062,22 +1237,12 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
                     cachê: cGross,
                     myShareNum: cGross,
                     logo: bandLogo
-                  };
-                });
+                  });
+                }
               }
             } catch (ce) {}
 
-            const seen = new Set();
-            const combined = [...localEvents, ...cloudEvents];
-            const deduped = [];
-            for (const item of combined) {
-              const key = `${(item.name || '').trim().toLowerCase()}_${(item.date || '').trim()}`;
-              if (!seen.has(key)) {
-                seen.add(key);
-                deduped.push(item);
-              }
-            }
-            return deduped;
+            return eventsFromBands;
           } catch (err) {
             console.log('Error loading band events for agenda:', err);
             return [];
@@ -2855,23 +3020,29 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
             <View style={{ flex: 1, marginRight: 8 }}>
               {/* Linha 1: Pílula discreta de tipo (SHOW/ENSAIO) + Nome do Evento */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <View style={{
-                  backgroundColor: (event.type === 'show' || event.type === 'Show') ? '#ef444420' : '#3b82f620',
-                  paddingHorizontal: 5,
-                  paddingVertical: 1.5,
-                  borderRadius: 5,
-                  borderWidth: 0.5,
-                  borderColor: (event.type === 'show' || event.type === 'Show') ? '#ef444445' : '#3b82f645'
-                }}>
-                  <Text style={{
-                    fontSize: 8.5,
-                    fontWeight: '900',
-                    color: (event.type === 'show' || event.type === 'Show') ? '#ef4444' : '#3b82f6',
-                    textTransform: 'uppercase'
-                  }}>
-                    {(event.type === 'show' || event.type === 'Show') ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')}
-                  </Text>
-                </View>
+                {(() => {
+                  const evType = (event.type || '').toLowerCase();
+                  const isRehearsal = evType === 'ensaio' || evType === 'rehearsal';
+                  return (
+                    <View style={{
+                      backgroundColor: !isRehearsal ? '#ef444420' : '#3b82f620',
+                      paddingHorizontal: 5,
+                      paddingVertical: 1.5,
+                      borderRadius: 5,
+                      borderWidth: 0.5,
+                      borderColor: !isRehearsal ? '#ef444445' : '#3b82f645'
+                    }}>
+                      <Text style={{
+                        fontSize: 8.5,
+                        fontWeight: '900',
+                        color: !isRehearsal ? '#ef4444' : '#3b82f6',
+                        textTransform: 'uppercase'
+                      }}>
+                        {!isRehearsal ? (t('show') || 'SHOW') : (t('rehearsal') || 'ENSAIO')}
+                      </Text>
+                    </View>
+                  );
+                })()}
 
                 <Text style={{ color: colors.text, fontSize: 14, fontWeight: 'bold', flexShrink: 1 }}>
                   {eventTitle}
@@ -2881,10 +3052,10 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               {/* Linha 2: Localização completa (sem truncar com ...), horário e pílula de cachê */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap', gap: 8 }}>
                 {eventLocal ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1, paddingRight: 6 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                     <Ionicons name="location-outline" size={12} color={colors.textMuted} style={{ marginTop: 0.5 }} />
-                    <Text style={{ color: colors.textMuted, fontSize: 11, paddingRight: 4 }}>
-                      {eventLocal}
+                    <Text style={{ color: colors.textMuted, fontSize: 11 }}>
+                      {`${eventLocal} `}
                     </Text>
                   </View>
                 ) : null}
