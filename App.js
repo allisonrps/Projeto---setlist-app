@@ -17,6 +17,7 @@ import {
   Modal,
   LayoutAnimation,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
