@@ -1387,7 +1387,21 @@
     "btnClose": "Fechar",
     "btnDelete": "Excluir",
     "btnEdit": "Editar",
-    "btnShare": "Compartilhar"
+    "btnShare": "Compartilhar",
+    "classifieds": "Classificados",
+    "classifiedsSubtitle": "Instrumentos e equipamentos negociáveis da comunidade",
+    "noClassifiedsFound": "Nenhum equipamento anunciado no momento",
+    "noClassifiedsSub": "Marque seus equipamentos como negociáveis no seu perfil para exibi-los aqui!",
+    "negotiable": "Negociável",
+    "catGuitar": "Guitarra / Violão",
+    "catBass": "Baixo",
+    "catAmp": "Amplificador",
+    "catPedal": "Pedal",
+    "catDrums": "Bateria",
+    "catKeyboard": "Teclado",
+    "catVocals": "Voz / Microfone",
+    "catAccessory": "Acessório",
+    "catOther": "Outro"
   },
   "en": {
     "home": "Home",
@@ -2772,7 +2786,21 @@
     "btnClose": "Close",
     "btnDelete": "Delete",
     "btnEdit": "Edit",
-    "btnShare": "Share"
+    "btnShare": "Share",
+    "classifieds": "Classifieds",
+    "classifiedsSubtitle": "Negotiable instruments and gear from the community",
+    "noClassifiedsFound": "No gear listed at the moment",
+    "noClassifiedsSub": "Mark your gear as negotiable in your profile to display them here!",
+    "negotiable": "Negotiable",
+    "catGuitar": "Guitar / Acoustic",
+    "catBass": "Bass",
+    "catAmp": "Amplifier",
+    "catPedal": "Pedal",
+    "catDrums": "Drums",
+    "catKeyboard": "Keyboard",
+    "catVocals": "Vocals / Mic",
+    "catAccessory": "Accessory",
+    "catOther": "Other"
   },
   "es": {
     "home": "Inicio",
@@ -4157,7 +4185,21 @@
     "btnClose": "Cerrar",
     "btnDelete": "Eliminar",
     "btnEdit": "Editar",
-    "btnShare": "Compartir"
+    "btnShare": "Compartir",
+    "classifieds": "Clasificados",
+    "classifiedsSubtitle": "Instrumentos y equipos negociables de la comunidad",
+    "noClassifiedsFound": "Ningún equipo anunciado por el momento",
+    "noClassifiedsSub": "¡Marca tus equipos como negociables en tu perfil para mostrarlos aquí!",
+    "negotiable": "Negociable",
+    "catGuitar": "Guitarra",
+    "catBass": "Bajo",
+    "catAmp": "Amplificador",
+    "catPedal": "Pedal",
+    "catDrums": "Batería",
+    "catKeyboard": "Teclado",
+    "catVocals": "Voz / Micrófono",
+    "catAccessory": "Accesorio",
+    "catOther": "Otro"
   }
 };
 

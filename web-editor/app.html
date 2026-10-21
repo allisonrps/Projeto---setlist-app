@@ -20533,6 +20533,21 @@
     // ==========================================================
     // CLASSIFIEDS NETWORK (INSTRUMENTOS & EQUIPAMENTOS NEGOCIÁVEIS)
     // ==========================================================
+    function getCategoryLabel(cat) {
+      if (!cat) return (typeof t === 'function' ? t('catOther', 'Outro') : 'Outro');
+      const c = String(cat).toLowerCase().trim();
+      if (c.includes('guitar') || c.includes('violão') || c.includes('violao')) return (typeof t === 'function' ? t('catGuitar', 'Guitarra / Violão') : 'Guitarra / Violão');
+      if (c.includes('baix') || c.includes('bass')) return (typeof t === 'function' ? t('catBass', 'Baixo') : 'Baixo');
+      if (c.includes('bater') || c.includes('drum')) return (typeof t === 'function' ? t('catDrums', 'Bateria') : 'Bateria');
+      if (c.includes('tecl') || c.includes('keyb') || c.includes('piano')) return (typeof t === 'function' ? t('catKeyboard', 'Teclado') : 'Teclado');
+      if (c.includes('voz') || c.includes('mic') || c.includes('vocal')) return (typeof t === 'function' ? t('catVocals', 'Voz / Mic') : 'Voz / Mic');
+      if (c.includes('amp')) return (typeof t === 'function' ? t('catAmp', 'Amplificador') : 'Amplificador');
+      if (c.includes('pedal')) return (typeof t === 'function' ? t('catPedal', 'Pedal') : 'Pedal');
+      if (c.includes('acess') || c.includes('access')) return (typeof t === 'function' ? t('catAccessory', 'Acessório') : 'Acessório');
+      if (c.includes('outr') || c.includes('other')) return (typeof t === 'function' ? t('catOther', 'Outro') : 'Outro');
+      return cat;
+    }
+
     async function loadClassifiedsNetwork() {
       const search = document.getElementById('socialSearchInput')?.value.trim() || '';
       const params = new URLSearchParams();
@@ -20596,11 +20611,13 @@
 
         if (items.length === 0) {
           if (container) {
+            const emptyTitle = typeof t === 'function' ? t('noClassifiedsFound', 'Nenhum equipamento anunciado no momento') : 'Nenhum equipamento anunciado no momento';
+            const emptySub = typeof t === 'function' ? t('noClassifiedsSub', 'Marque seus equipamentos como negociáveis no seu perfil para exibi-los aqui!') : 'Marque seus equipamentos como negociáveis no seu perfil para exibi-los aqui!';
             container.innerHTML = `
               <div style="text-align: center; padding: 48px 20px; color: var(--text-dim); width: 100%; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
                 <ion-icon name="pricetag-outline" style="font-size: 2.6rem; color: #22c55e; margin-bottom: 10px;"></ion-icon>
-                <h4 style="color: #fff; font-size: 1.15rem; margin-bottom: 6px;">Nenhum equipamento classificado encontrado</h4>
-                <p style="font-size: 0.88rem; color: #94a3b8; max-width: 440px; margin: 0 auto;">Equipamentos marcados como negociáveis pelos músicos aparecerão aqui.</p>
+                <h4 style="color: #fff; font-size: 1.15rem; margin-bottom: 6px;">${escapeHtml(emptyTitle)}</h4>
+                <p style="font-size: 0.88rem; color: #94a3b8; max-width: 440px; margin: 0 auto;">${escapeHtml(emptySub)}</p>
               </div>
             `;
           }
@@ -20612,37 +20629,30 @@
             const rawPrice = item.price ? String(item.price).trim() : '';
             const formattedPrice = rawPrice
               ? (rawPrice.startsWith('$') || rawPrice.startsWith('R$') ? rawPrice : '$ ' + rawPrice)
-              : 'Negociável';
+              : (typeof t === 'function' ? t('negotiable', 'Negociável') : 'Negociável');
             const cleanUser = (item.username || '').replace(/^@+/, '');
-            const descHtml = item.description 
-              ? `<div style="font-size: 0.88rem; color: #94a3b8; line-height: 1.45; white-space: pre-wrap;">${escapeHtml(item.description)}</div>` 
-              : '';
 
             return `
-              <div class="classified-item-card" style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s, transform 0.15s; width: 100%; box-sizing: border-box;">
-                <!-- 1. Pílula do tipo + 2. Preço -->
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                  <!-- 1. Pílula do tipo -->
-                  <span style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    ${escapeHtml(item.category || 'Equipamento')}
-                  </span>
-                  <!-- 2. Preço -->
-                  <span style="font-size: 1.05rem; font-weight: 800; color: #22c55e; letter-spacing: -0.2px;">
-                    ${escapeHtml(formattedPrice)}
-                  </span>
-                </div>
+              <div class="classified-item-card" style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 10px 16px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; width: 100%; box-sizing: border-box; transition: all 0.15s ease;">
+                <!-- 1. Pílula do tipo -->
+                <span style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; white-space: nowrap;">
+                  ${escapeHtml(getCategoryLabel(item.category))}
+                </span>
 
-                <!-- 3. Nome do Equipamento -->
-                <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; line-height: 1.3;">
-                  ${escapeHtml(item.name || '')}
-                </div>
+                <!-- 2. Preço -->
+                <span style="font-size: 0.95rem; font-weight: 800; color: #22c55e; letter-spacing: -0.2px; flex-shrink: 0; white-space: nowrap;">
+                  ${escapeHtml(formattedPrice)}
+                </span>
 
-                <!-- 4. Descrição se houver -->
-                ${descHtml}
+                <!-- 3. Nome do Equipamento & 4. Descrição se houver (em linha contínua) -->
+                <div style="flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                  <span style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">${escapeHtml(item.name || '')}</span>
+                  ${item.description ? `<span style="font-size: 0.82rem; color: #94a3b8; margin-left: 6px;">— ${escapeHtml(item.description)}</span>` : ''}
+                </div>
 
                 <!-- 5. Por último o username sem puxar o avatar e localização, só o username clicável -->
-                <div style="margin-top: 2px;">
-                  <a href="javascript:void(0)" onclick="openPublicMusicianProfile('${escapeHtml(cleanUser)}')" style="font-size: 0.88rem; font-weight: 700; color: #0ea5e9; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.15s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#0ea5e9'">
+                <div style="flex-shrink: 0; white-space: nowrap;">
+                  <a href="javascript:void(0)" onclick="openPublicMusicianProfile('${escapeHtml(cleanUser)}')" style="font-size: 0.85rem; font-weight: 700; color: #0ea5e9; text-decoration: none; display: inline-flex; align-items: center; transition: color 0.15s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#0ea5e9'">
                     @${escapeHtml(cleanUser)}
                   </a>
                 </div>

@@ -535,6 +535,21 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
     }
   };
 
+  const getCategoryLabel = (cat) => {
+    if (!cat) return t('catOther') || 'Outro';
+    const c = String(cat).toLowerCase().trim();
+    if (c.includes('guitar') || c.includes('violão') || c.includes('violao')) return t('catGuitar') || 'Guitarra / Violão';
+    if (c.includes('baix') || c.includes('bass')) return t('catBass') || 'Baixo';
+    if (c.includes('bater') || c.includes('drum')) return t('catDrums') || 'Bateria';
+    if (c.includes('tecl') || c.includes('keyb') || c.includes('piano')) return t('catKeyboard') || 'Teclado';
+    if (c.includes('voz') || c.includes('mic') || c.includes('vocal')) return t('catVocals') || 'Voz / Microfone';
+    if (c.includes('amp')) return t('catAmp') || 'Amplificador';
+    if (c.includes('pedal')) return t('catPedal') || 'Pedal';
+    if (c.includes('acess') || c.includes('access')) return t('catAccessory') || 'Acessório';
+    if (c.includes('outr') || c.includes('other')) return t('catOther') || 'Outro';
+    return cat;
+  };
+
   const loadClassifieds = async () => {
     setIsLoadingClassifieds(true);
     try {
@@ -2631,32 +2646,27 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                       }
                     ]}
                   >
-                    {/* 1. Pílula do tipo + 2. Preço */}
-                    <View style={styles.classifiedTopRow}>
-                      {/* 1. Pílula do tipo */}
-                      <View style={[styles.classifiedCategoryPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
-                        <Text style={[styles.classifiedCategoryText, { color: colors.primary }]} numberOfLines={1}>
-                          {item.category || 'Equipamento'}
-                        </Text>
-                      </View>
-
-                      {/* 2. Preço */}
-                      <Text style={styles.classifiedPriceText}>
-                        {formattedPrice}
+                    {/* 1. Pílula do tipo */}
+                    <View style={[styles.classifiedCategoryPill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                      <Text style={[styles.classifiedCategoryText, { color: colors.primary }]} numberOfLines={1}>
+                        {getCategoryLabel(item.category)}
                       </Text>
                     </View>
 
-                    {/* 3. Nome do equipamento */}
-                    <Text style={[styles.classifiedNameText, { color: colors.text }]} numberOfLines={2}>
-                      {item.name}
+                    {/* 2. Preço */}
+                    <Text style={styles.classifiedPriceText} numberOfLines={1}>
+                      {formattedPrice}
                     </Text>
 
-                    {/* 4. Descrição se houver */}
-                    {item.description ? (
-                      <Text style={[styles.classifiedDescText, { color: colors.textMuted }]}>
-                        {item.description}
+                    {/* 3. Nome e 4. Descrição se houver (em linha contínua) */}
+                    <View style={styles.classifiedContentCol}>
+                      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.classifiedNameAndDesc}>
+                        <Text style={{ fontWeight: '700', color: colors.text }}>{item.name}</Text>
+                        {item.description ? (
+                          <Text style={{ color: colors.textMuted, fontSize: 12 }}> — {item.description}</Text>
+                        ) : null}
                       </Text>
-                    ) : null}
+                    </View>
 
                     {/* 5. Username clicável (sem avatar e sem localização) */}
                     <Pressable
@@ -2667,7 +2677,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
                       ]}
                       hitSlop={8}
                     >
-                      <Text style={[styles.classifiedUsernameText, { color: colors.primary }]}>
+                      <Text style={[styles.classifiedUsernameText, { color: colors.primary }]} numberOfLines={1}>
                         @{cleanUsername}
                       </Text>
                     </Pressable>
@@ -3631,58 +3641,53 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  // Classifieds Card Styles
+  // Classifieds Single-Line Card Styles
   classifiedCard: {
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    marginBottom: 12,
-    width: '100%',
-  },
-  classifiedTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+    width: '100%',
     gap: 8,
   },
   classifiedCategoryPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 3.5,
-    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
     borderWidth: 1,
-    alignSelf: 'flex-start',
+    flexShrink: 0,
   },
   classifiedCategoryText: {
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   },
   classifiedPriceText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '800',
     color: '#22c55e',
     letterSpacing: -0.2,
+    flexShrink: 0,
   },
-  classifiedNameText: {
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 22,
-    marginBottom: 6,
+  classifiedContentCol: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
   },
-  classifiedDescText: {
+  classifiedNameAndDesc: {
     fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 10,
   },
   classifiedUserRow: {
-    alignSelf: 'flex-start',
-    marginTop: 2,
+    flexShrink: 0,
     paddingVertical: 2,
+    paddingLeft: 4,
   },
   classifiedUsernameText: {
-    fontSize: 13.5,
+    fontSize: 12.5,
     fontWeight: '700',
   },
 
