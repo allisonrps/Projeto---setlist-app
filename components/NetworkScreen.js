@@ -94,7 +94,7 @@ const calculateAge = (birthDateOrAge) => {
   return age > 0 && age < 120 ? age : null;
 };
 
-export default function NetworkScreen({ onOpenProfile, onLogout }) {
+export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToProfile }) {
   const { colors } = useTheme();
   const isDark = colors.isDark;
   const { t } = useLanguage();
@@ -430,7 +430,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
         if (isCompleted !== 'true') {
           const hasInfo = (normalizedUser.city && normalizedUser.city.trim()) || (normalizedUser.skills && normalizedUser.skills.length > 0) || normalizedUser.instruments;
           if (!hasInfo) {
-            if (onOpenProfile) onOpenProfile();
+            if (onNavigateToProfile) onNavigateToProfile();
+            else if (onOpenProfile) onOpenProfile();
             return;
           } else {
             await AsyncStorage.setItem('user_profile_completed', 'true');
@@ -1798,34 +1799,36 @@ export default function NetworkScreen({ onOpenProfile, onLogout }) {
               <Text style={[styles.headerTitle, { color: colors.text }]}>{t('socialTab') || 'Social'}</Text>
             </View>
 
-            {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" */}
-            <Pressable
-              onPress={onOpenProfile}
-              style={({ pressed }) => [
-                styles.unifiedProfileBtn,
-                {
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                  borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
-                  opacity: pressed ? 0.8 : 1
-                }
-              ]}
-              accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
-            >
-              <View style={styles.unifiedAvatarBox}>
-                {userProfileImage ? (
-                  <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
-                ) : (
-                  <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.unifiedAvatarInitial}>
-                      {userDisplayName.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-                <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
-              </View>
-              <Text style={[styles.unifiedProfileText, { color: colors.text }]}>Perfil</Text>
-              <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
-            </Pressable>
+            {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" (Apenas se onOpenProfile for fornecido) */}
+            {onOpenProfile ? (
+              <Pressable
+                onPress={onOpenProfile}
+                style={({ pressed }) => [
+                  styles.unifiedProfileBtn,
+                  {
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                    borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
+                    opacity: pressed ? 0.8 : 1
+                  }
+                ]}
+                accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
+              >
+                <View style={styles.unifiedAvatarBox}>
+                  {userProfileImage ? (
+                    <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
+                  ) : (
+                    <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.unifiedAvatarInitial}>
+                        {userDisplayName.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
+                </View>
+                <Text style={[styles.unifiedProfileText, { color: colors.text }]}>{t('profile') || 'Perfil'}</Text>
+                <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
+              </Pressable>
+            ) : null}
           </View>
 
           {/* BARRA DE PESQUISA (SEM PLACEHOLDERS) */}

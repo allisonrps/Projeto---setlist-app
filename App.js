@@ -3064,6 +3064,33 @@ function MainApp() {
 
   // ===== RENDERS DAS ABAS =====
   const renderHomeTab = () => {
+    if (isLoggedIn) {
+      return (
+        <View style={{
+          flex: 1,
+          marginHorizontal: -20,
+          marginTop: -(Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50),
+        }}>
+          <ProfileScreen 
+            onLogout={async () => {
+              await api.logout();
+              try {
+                await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
+                await db.runAsync('DELETE FROM setlists WHERE myBandId NOT IN (SELECT id FROM my_bands);');
+                await db.runAsync('DELETE FROM band_songs WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                await db.runAsync('DELETE FROM band_members WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                await db.runAsync('DELETE FROM band_finances WHERE bandId NOT IN (SELECT id FROM my_bands);');
+              } catch (e) {}
+              setOnlineEvents([]);
+              setIsLoggedIn(false);
+              setCurrentTab('home');
+              await reloadAllData(false);
+            }} 
+            onOpenBandProfile={handleOpenBandPublicProfile}
+          />
+        </View>
+      );
+    }
     
     const parseCurrency = (valStr) => {
       if (!valStr) return 0;
@@ -3400,27 +3427,6 @@ function MainApp() {
           contentContainerStyle={{ paddingTop: 10, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* BANNER DE SINCRONIZAÇÃO NUVEM NO HOME */}
-          {isCloudSyncing && (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              paddingVertical: 10,
-              paddingHorizontal: 16,
-              marginBottom: 12,
-              borderRadius: 14,
-              backgroundColor: colors.primary + '14',
-              borderWidth: 1,
-              borderColor: colors.primary + '30',
-            }}>
-              <ActivityIndicator size="small" color={colors.primary} />
-              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
-                {t('syncingWithCloud') || 'Sincronizando dados com a nuvem...'}
-              </Text>
-            </View>
-          )}
           {/* CONTADOR TOTAL NO TOPO DA PÁGINA (CIRCULARES IGUAL DA AGENDA DA BANDA) */}
           <View style={[styles.agendaSummaryCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
             <View style={styles.agendaSummaryRow}>
@@ -4046,6 +4052,47 @@ function MainApp() {
           )}
 
         </ScrollView>
+
+        {isCloudSyncing && (
+          <View 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)',
+              zIndex: 999,
+            }}
+            pointerEvents="none"
+          >
+            <View style={{
+              paddingVertical: 22,
+              paddingHorizontal: 28,
+              borderRadius: 20,
+              backgroundColor: colors.cardBackground,
+              borderWidth: 1.5,
+              borderColor: colors.primary + '50',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: isDark ? 0.4 : 0.15,
+              shadowRadius: 16,
+              elevation: 8,
+            }}>
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 12 }} />
+              <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
+                {t('syncingWithCloud') || 'Sincronizando dados com a nuvem...'}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 4 }}>
+                {t('pleaseWait') || 'Aguarde um momento...'}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
     );
   };
@@ -4116,34 +4163,13 @@ function MainApp() {
             onDeleteBand={handleDeleteBand}
           />
 
-          {isCloudSyncing && bands.length > 0 && (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              paddingVertical: 9,
-              paddingHorizontal: 16,
-              marginBottom: 12,
-              borderRadius: 12,
-              backgroundColor: colors.primary + '14',
-              borderWidth: 1,
-              borderColor: colors.primary + '30',
-            }}>
-              <ActivityIndicator size="small" color={colors.primary} />
-              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
-                {t('syncingCloudBands') || 'Sincronizando bandas com a nuvem...'}
-              </Text>
-            </View>
-          )}
-
           {(() => {
             const pendingInvites = (receivedInvites || []).filter(i => i.status === 'pending');
             const hasNoContent = filteredBands.length === 0 && pendingInvites.length === 0;
 
             if (isCloudSyncing && bands.length === 0) {
               return (
-                <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 20 }}>
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 120, paddingHorizontal: 20 }}>
                   <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 16 }} />
                   <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
                     {t('loadingCloudBands') || 'Sincronizando seus projetos com a nuvem...'}
@@ -4699,6 +4725,47 @@ function MainApp() {
         );
       })()}
         </ScrollView>
+
+        {isCloudSyncing && bands.length > 0 && (
+          <View 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)',
+              zIndex: 999,
+            }}
+            pointerEvents="none"
+          >
+            <View style={{
+              paddingVertical: 22,
+              paddingHorizontal: 28,
+              borderRadius: 20,
+              backgroundColor: colors.cardBackground,
+              borderWidth: 1.5,
+              borderColor: colors.primary + '50',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: isDark ? 0.4 : 0.15,
+              shadowRadius: 16,
+              elevation: 8,
+            }}>
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 12 }} />
+              <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
+                {t('syncingCloudBands') || 'Sincronizando bandas com a nuvem...'}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 4 }}>
+                {t('pleaseWait') || 'Aguarde um momento...'}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
     );
   };
@@ -5950,44 +6017,23 @@ function MainApp() {
             marginHorizontal: -20,
             marginTop: -(Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50),
           }}>
-            {socialView === 'feed' ? (
-              <NetworkScreen 
-                onOpenProfile={() => setSocialView('profile')} 
-                onLogout={async () => {
-                  await api.logout();
-                  try {
-                    await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
-                    await db.runAsync('DELETE FROM setlists WHERE myBandId NOT IN (SELECT id FROM my_bands);');
-                    await db.runAsync('DELETE FROM band_songs WHERE bandId NOT IN (SELECT id FROM my_bands);');
-                    await db.runAsync('DELETE FROM band_members WHERE bandId NOT IN (SELECT id FROM my_bands);');
-                    await db.runAsync('DELETE FROM band_finances WHERE bandId NOT IN (SELECT id FROM my_bands);');
-                  } catch (e) {}
-                  setOnlineEvents([]);
-                  setIsLoggedIn(false);
-                  setCurrentTab('home');
-                  await reloadAllData(false);
-                }} 
-              />
-            ) : (
-              <ProfileScreen 
-                onBack={() => setSocialView('feed')} 
-                onLogout={async () => {
-                  await api.logout();
-                  try {
-                    await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
-                    await db.runAsync('DELETE FROM setlists WHERE myBandId NOT IN (SELECT id FROM my_bands);');
-                    await db.runAsync('DELETE FROM band_songs WHERE bandId NOT IN (SELECT id FROM my_bands);');
-                    await db.runAsync('DELETE FROM band_members WHERE bandId NOT IN (SELECT id FROM my_bands);');
-                    await db.runAsync('DELETE FROM band_finances WHERE bandId NOT IN (SELECT id FROM my_bands);');
-                  } catch (e) {}
-                  setOnlineEvents([]);
-                  setIsLoggedIn(false);
-                  setCurrentTab('home');
-                  await reloadAllData(false);
-                }} 
-                onOpenBandProfile={handleOpenBandPublicProfile}
-              />
-            )}
+            <NetworkScreen 
+              onNavigateToProfile={() => setCurrentTab('home')}
+              onLogout={async () => {
+                await api.logout();
+                try {
+                  await db.runAsync('DELETE FROM my_bands WHERE cloudId IS NOT NULL;');
+                  await db.runAsync('DELETE FROM setlists WHERE myBandId NOT IN (SELECT id FROM my_bands);');
+                  await db.runAsync('DELETE FROM band_songs WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                  await db.runAsync('DELETE FROM band_members WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                  await db.runAsync('DELETE FROM band_finances WHERE bandId NOT IN (SELECT id FROM my_bands);');
+                } catch (e) {}
+                setOnlineEvents([]);
+                setIsLoggedIn(false);
+                setCurrentTab('home');
+                await reloadAllData(false);
+              }} 
+            />
           </View>
         ) : (
           <LoginScreen onLogin={handleUserLogin} />
@@ -6024,8 +6070,14 @@ function MainApp() {
           {/* Barra de Navegação Inferior (Ordem: Home -> Projetos -> Social (Central) -> Songbook -> Opções) */}
           <View style={[styles.bottomNav, { backgroundColor: colors.cardBackground, borderTopColor: colors.border }]}>
             <Pressable style={styles.tabItem} onPress={() => setCurrentTab('home')}>
-              <Ionicons name={currentTab === 'home' ? 'home' : 'home-outline'} size={23} color={currentTab === 'home' ? colors.primary : colors.textMuted} />
-              <Text style={[styles.tabText, { color: currentTab === 'home' ? colors.primary : colors.textMuted }]}>{t('home')}</Text>
+              <Ionicons 
+                name={isLoggedIn ? (currentTab === 'home' ? 'person' : 'person-outline') : (currentTab === 'home' ? 'home' : 'home-outline')} 
+                size={23} 
+                color={currentTab === 'home' ? colors.primary : colors.textMuted} 
+              />
+              <Text style={[styles.tabText, { color: currentTab === 'home' ? colors.primary : colors.textMuted }]}>
+                {isLoggedIn ? (t('profile') || 'Perfil') : t('home')}
+              </Text>
             </Pressable>
             
             <Pressable style={styles.tabItem} onPress={() => setCurrentTab('bands')}>
@@ -6036,28 +6088,9 @@ function MainApp() {
             {/* ABA CENTRAL DESTACADA: SOCIAL (Vivo quando logado, Morto/Muted quando offline) */}
             <Pressable
               style={styles.tabItemRaised}
-              onPress={async () => {
+              onPress={() => {
                 if (isLoggedIn) {
                   setCurrentTab('social');
-                  try {
-                    const isCompleted = await AsyncStorage.getItem('user_profile_completed');
-                    if (isCompleted === 'true') {
-                      setSocialView('feed');
-                    } else {
-                      const cached = await AsyncStorage.getItem('user_profile_cache');
-                      if (cached) {
-                        const parsed = JSON.parse(cached);
-                        if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
-                          await AsyncStorage.setItem('user_profile_completed', 'true');
-                          setSocialView('feed');
-                          return;
-                        }
-                      }
-                      setSocialView('profile');
-                    }
-                  } catch (e) {
-                    setSocialView('profile');
-                  }
                 } else {
                   setShowOfflineSocialModal(true);
                 }
