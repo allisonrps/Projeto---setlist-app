@@ -4221,7 +4221,7 @@ function MainApp() {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshingBands}
+              refreshing={refreshingBands && !isCloudSyncing}
               onRefresh={handleRefreshBands}
               colors={[colors.primary]}
               tintColor={colors.primary}
@@ -4770,11 +4770,7 @@ function MainApp() {
                     {/* Músicas (Nota Musical) */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Ionicons name="musical-notes" size={18} color={colors.primary} />
-                      {isSyncingThisBand && songsCount === 0 ? (
-                        <ActivityIndicator size="small" color={colors.primary} style={{ transform: [{ scale: 0.7 }] }} />
-                      ) : (
-                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{songsCount}</Text>
-                      )}
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: colors.text }}>{songsCount}</Text>
                     </View>
 
                     {/* Integrantes */}
@@ -4796,12 +4792,7 @@ function MainApp() {
                     </View>
 
                     {/* Modalidade da Banda: Online ou Offline */}
-                    {isSyncingThisBand ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <ActivityIndicator size="small" color={colors.primary} style={{ transform: [{ scale: 0.8 }] }} />
-                        <Text style={{ fontSize: 12, fontWeight: '900', color: colors.primary }}>{t('syncing') || 'Atualizando...'}</Text>
-                      </View>
-                    ) : band.cloudId ? (
+                    {band.cloudId ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <Ionicons name="cloud-done" size={17} color="#10b981" />
                         <Text style={{ fontSize: 12, fontWeight: '900', color: '#10b981' }}>Online</Text>
@@ -4853,47 +4844,6 @@ function MainApp() {
         );
       })()}
         </ScrollView>
-
-        {isCloudSyncing && bands.length > 0 && (
-          <View 
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)',
-              zIndex: 999,
-            }}
-            pointerEvents="none"
-          >
-            <View style={{
-              paddingVertical: 22,
-              paddingHorizontal: 28,
-              borderRadius: 20,
-              backgroundColor: colors.cardBackground,
-              borderWidth: 1.5,
-              borderColor: colors.primary + '50',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: isDark ? 0.4 : 0.15,
-              shadowRadius: 16,
-              elevation: 8,
-            }}>
-              <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 12 }} />
-              <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text, textAlign: 'center' }}>
-                {t('syncingCloudBands') || 'Sincronizando bandas com a nuvem...'}
-              </Text>
-              <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 4 }}>
-                {t('pleaseWait') || 'Aguarde um momento...'}
-              </Text>
-            </View>
-          </View>
-        )}
       </View>
     );
   };

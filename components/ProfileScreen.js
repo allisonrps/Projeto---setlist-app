@@ -774,11 +774,12 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
       }
 
       let projectsData = [];
+      let allLocalBands = [];
 
       try {
-        const allLocalBands = await bandService.getAll();
+        allLocalBands = (await bandService.getAll()) || [];
         // Apenas bandas sincronizadas na nuvem aparecem no perfil online (bandas offline ficam privadas no aparelho)
-        const localBands = (allLocalBands || []).filter(b => b && b.cloudId);
+        const localBands = allLocalBands.filter(b => b && b.cloudId);
         if (localBands && localBands.length > 0) {
           const loadedProjects = await Promise.all(localBands.map(async b => {
             let role = 'Músico';
