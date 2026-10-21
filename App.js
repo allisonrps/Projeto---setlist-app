@@ -979,6 +979,9 @@ function MainApp() {
 
   const reloadAllData = async (forceOnline = null) => {
     try {
+      try {
+        await songService.cleanDuplicateSongs();
+      } catch (cleanErr) {}
       const isOnline = forceOnline !== null ? forceOnline : isLoggedIn;
       let rawBands = await bandService.getAll();
 
@@ -1090,11 +1093,16 @@ function MainApp() {
           if (Array.isArray(cloudSongs) && cloudSongs.length > 0) {
             const currentDbSongs = await songService.getAll();
             for (const cs of cloudSongs) {
-              const localMatch = (currentDbSongs || []).find(s => 
-                (cs.id && String(s.id) === String(cs.id)) || 
-                (s.name && cs.name && s.name.trim().toLowerCase() === cs.name.trim().toLowerCase() && 
-                 (!cs.originalBand || !s.originalBand || s.originalBand.trim().toLowerCase() === cs.originalBand.trim().toLowerCase()))
-              );
+              const csName = (cs.name || '').trim().toLowerCase();
+              const csBand = (cs.originalBand || '').trim().toLowerCase();
+              if (!csName) continue;
+
+              const localMatch = (currentDbSongs || []).find(s => {
+                const sName = (s.name || '').trim().toLowerCase();
+                const sBand = (s.originalBand || '').trim().toLowerCase();
+                if (sName !== csName) return false;
+                return !csBand || !sBand || csBand === sBand;
+              });
               if (!localMatch) {
                 try {
                   await songService.insert(
@@ -5104,12 +5112,13 @@ function MainApp() {
             </Pressable>
             <Pressable 
               style={({ pressed }) => [
-                styles.quickAddButton,
-                { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.95 : 1 }] }
+                styles.circleAddButton,
+                { backgroundColor: colors.primary, transform: [{ scale: pressed ? 0.92 : 1 }] }
               ]}
               onPress={() => setActiveSongDetail({})}
+              accessibilityLabel={t('addSong') || "Adicionar Música"}
             >
-              <Text style={styles.quickAddText}>{t('addSong')}</Text>
+              <Ionicons name="add" size={24} color="#ffffff" />
             </Pressable>
           </View>
         </View>
@@ -7294,6 +7303,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     marginTop: 4,
+  },
+  circleAddButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
   },
   quickAddButton: {
     paddingHorizontal: 14,
