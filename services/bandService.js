@@ -1461,10 +1461,9 @@ export const bandService = {
         currentIndex++;
         const percent = Math.round((currentIndex / total) * 100);
 
-        // Check if band already exists locally by cloudId or by name
+        // Check if band already exists locally by cloudId
         let local = (localBands || []).find(b => 
-          (b.cloudId && Number(b.cloudId) === Number(cb.id)) ||
-          (b.name && cb.name && b.name.trim().toLowerCase() === cb.name.trim().toLowerCase())
+          b.cloudId && Number(b.cloudId) === Number(cb.id)
         );
 
         let localBandId = local ? local.id : null;
