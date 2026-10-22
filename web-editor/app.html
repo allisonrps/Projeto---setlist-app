@@ -8429,13 +8429,20 @@
       </div>
 
       <!-- Abas internas: Detalhes do Evento vs Gerenciar Playlist -->
-      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px;">
-        <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')" title="Detalhes do Evento">
-          <ion-icon name="information-circle-outline"></ion-icon> <span class="tab-name-label">Detalhes do Evento</span>
-        </button>
-        <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')" title="Playlist">
-          <ion-icon name="musical-notes-outline"></ion-icon> <span class="tab-name-label">Playlist (<span id="mEventSongsCount">0</span>)</span>
-        </button>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')" title="Detalhes do Evento">
+            <ion-icon name="information-circle-outline"></ion-icon> <span class="tab-name-label">Detalhes do Evento</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')" title="Playlist">
+            <ion-icon name="musical-notes-outline"></ion-icon> <span class="tab-name-label">Playlist (<span id="mEventSongsCount">0</span>)</span>
+          </button>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro Word (.doc)" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+            <ion-icon name="document-text-outline" style="font-size: 1rem;"></ion-icon> <span>Exportar .DOC</span>
+          </button>
+        </div>
       </div>
 
       <!-- ABA 1: DETALHES DO EVENTO -->
@@ -8497,6 +8504,9 @@
               </button>
               <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; font-weight: 700;">
                 <ion-icon name="document-text-outline"></ion-icon> + Anotação
+              </button>
+              <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro em Word (.doc)" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 700;">
+                <ion-icon name="document-text-outline"></ion-icon> .DOC
               </button>
               <button type="button" class="btn btn-sm btn-outline" onclick="openSetlistEditorPage(editingEventIndex)" title="Abrir na página de eventos" style="font-weight: 700;">
                 <ion-icon name="expand-outline"></ion-icon> Página Própria
@@ -15515,6 +15525,234 @@
     }
 
     // ==============================================================
+    // EXPORTAR ROTEIRO DO EVENTO EM WORD (.DOC) - MESMO PADRÃO DO APP ANDROID
+    // ==============================================================
+    function exportCurrentBandEventDoc() {
+      try {
+        const setlistsArr = currentBandSyncData?.setlists || [];
+        const baseEv = (editingEventIndex !== null && editingEventIndex >= 0 && editingEventIndex < setlistsArr.length)
+          ? setlistsArr[editingEventIndex]
+          : {};
+
+        // Usa os valores atuais do formulário do modal (se estiver aberto), senão os dados salvos do evento
+        const modalEl = document.getElementById('editEventPlaylistModal');
+        const modalOpen = modalEl && modalEl.classList.contains('active');
+        const readField = (id, fallback) => {
+          const el = document.getElementById(id);
+          if (modalOpen && el && typeof el.value === 'string') return el.value.trim();
+          return fallback || '';
+        };
+
+        const ev = {
+          name: readField('mEventName', baseEv.name),
+          date: readField('mEventDate', baseEv.date),
+          local: readField('mEventLocal', baseEv.local),
+          notes: readField('mEventNotes', baseEv.notes),
+        };
+
+        const songsList = Array.isArray(editingEventPlaylist) ? editingEventPlaylist : [];
+        if (songsList.length === 0) {
+          showToast('Adicione músicas à playlist antes de exportar o .doc.', 'error');
+          return;
+        }
+
+        const esc = (v) => escapeHtml(String(v ?? ''));
+        const isPauseItem = (s) => s && (String(s.id) === '-1' || s.type === 'pause');
+        const isNoteItem = (s) => s && (String(s.id) === '-2' || s.type === 'note');
+
+        const parseDuration = (durStr) => {
+          if (!durStr) return 0;
+          const clean = String(durStr).toLowerCase().replace(/min/g, '').trim();
+          if (clean.includes(':')) {
+            const parts = clean.split(':').map(p => parseInt(p, 10) || 0);
+            if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            if (parts.length === 2) return parts[0] * 60 + parts[1];
+            return 0;
+          }
+          const num = parseInt(clean, 10);
+          return isNaN(num) ? 0 : num * 60;
+        };
+
+        // Duração total (músicas + pausas), igual ao app mobile
+        let totalSeconds = 0;
+        let hasDuration = false;
+        songsList.forEach(song => {
+          if (!song || isNoteItem(song)) return;
+          const d = isPauseItem(song) ? (song.customDuration || song.duration) : song.duration;
+          if (d && String(d).trim() && String(d).trim() !== '--:--') {
+            totalSeconds += parseDuration(d);
+            hasDuration = true;
+          }
+        });
+
+        let totalDur = '';
+        if (hasDuration) {
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+          totalDur = hours > 0
+            ? `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+            : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Numeração contígua pulando pausas e anotações
+        let songCounter = 0;
+        const processedSongs = songsList.map(song => {
+          let numStr = '';
+          if (song && !isPauseItem(song) && !isNoteItem(song)) {
+            songCounter++;
+            numStr = String(songCounter).padStart(2, '0');
+          }
+          return { song, numStr };
+        });
+
+        // Divide em duas colunas
+        const half = Math.ceil(processedSongs.length / 2);
+        const col1Songs = processedSongs.slice(0, half);
+        const col2Songs = processedSongs.slice(half);
+
+        const renderSongHtml = (song, numStr) => {
+          if (!song) return '';
+          const sName = String(song.name || song.title || '').trim();
+          const sBand = String(song.originalBand || song.band || '').trim();
+          const sNotes = String(song.customNotes || '').trim();
+
+          if (isPauseItem(song)) {
+            const sDur = String(song.customDuration || song.duration || '').trim();
+            const pauseLabel = (sName && sName !== 'Pausa / Intervalo') ? sName : 'PAUSA / INTERVALO';
+            let html = `<div style="font-size: 9pt; font-weight: bold; color: #b91c1c; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fef2f2; border-left: 2pt solid #ef4444;">⏸️ ${esc(pauseLabel)}${sDur ? ` (${esc(sDur)})` : ''}</div>`;
+            if (sNotes) {
+              html += `<div style="font-size: 7.5pt; color: #dc2626; font-style: italic; margin-left: 10pt; margin-top: 1pt; margin-bottom: 3pt;">Obs: ${esc(sNotes)}</div>`;
+            }
+            return html;
+          }
+          if (isNoteItem(song)) {
+            const defaultNoteNames = ['Anotação / Recado de Palco', 'Anotação / Fala com o público'];
+            const noteText = sNotes || (defaultNoteNames.includes(sName) ? '' : sName) || 'ANOTAÇÃO';
+            return `<div style="font-size: 9pt; font-weight: bold; color: #b45309; margin-bottom: 3.5pt; padding: 2pt 4pt; background-color: #fffbeb; border-left: 2pt solid #f59e0b;">📢 ${esc(noteText)}</div>`;
+          }
+
+          let html = `<div style="font-size: 9.5pt; line-height: 1.35; margin-bottom: 3.5pt;"><strong>${numStr}. ${esc(sName.toUpperCase())}</strong>`;
+          if (sBand) {
+            html += ` <span style="font-size: 7.5pt; font-weight: normal; color: #555555;">(${esc(sBand)})</span>`;
+          }
+          html += `</div>`;
+          if (sNotes) {
+            html += `<div style="font-size: 7.5pt; color: #666666; font-style: italic; margin-left: 14pt; margin-top: 1pt; margin-bottom: 3pt;">Obs: ${esc(sNotes)}</div>`;
+          }
+          return html;
+        };
+
+        const col1Html = col1Songs.map(item => renderSongHtml(item.song, item.numStr)).join('\n');
+        const col2Html = col2Songs.map(item => renderSongHtml(item.song, item.numStr)).join('\n');
+        const totalSongsCount = processedSongs.filter(p => p.numStr).length;
+
+        const bandName = currentBandData?.name || '';
+        const bandLogo = currentBandData?.imageUri || currentBandData?.logo || '';
+
+        const docContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<meta name="Originator" content="Microsoft Word 15">
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: 21.0cm 29.7cm;
+    margin: 1.2cm 1.2cm 1.2cm 1.2cm;
+    mso-page-orientation: portrait;
+  }
+  body {
+    font-family: Calibri, Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #000000;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  table {
+    border-collapse: collapse;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+  }
+</style>
+</head>
+<body>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 14pt; border: none;">
+    <tr>
+      ${bandLogo ? `
+      <td style="width: 60px; vertical-align: middle; padding-right: 12px;">
+        <img src="${bandLogo}" width="52" height="52" style="border-radius: 50%; object-fit: cover; border: 1.5pt solid #000000; display: block;" />
+      </td>` : ''}
+      <td style="vertical-align: middle;">
+        <div style="font-size: 15pt; font-weight: 800; color: #000000; text-transform: uppercase; margin: 0 0 2pt 0; letter-spacing: 0.5px;">
+          ${esc(String(ev.name || 'SETLIST').toUpperCase())}
+        </div>
+        <div style="font-size: 9pt; color: #4b5563; font-weight: 500; margin: 0;">
+          ${ev.date ? `🗓️ ${esc(ev.date)} &nbsp;|&nbsp; ` : ''}
+          ${ev.local ? `📍 ${esc(ev.local)} &nbsp;|&nbsp; ` : ''}
+          🎤 ${totalSongsCount} ${totalSongsCount === 1 ? 'Música' : 'Músicas'} &nbsp;|&nbsp;
+          ⏱️ ${totalDur || '00:00'}
+          ${ev.notes ? ` &nbsp;|&nbsp; 📝 ${esc(ev.notes)}` : ''}
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <table style="width: 100%; border-collapse: collapse; border: 1.5pt solid #000000;">
+    <tr>
+      <td style="width: 50%; vertical-align: top; padding: 6pt 10pt; border-right: 1.5pt solid #000000;">
+        ${col1Html}
+      </td>
+      <td style="width: 50%; vertical-align: top; padding: 6pt 10pt;">
+        ${col2Html}
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+        // Nome de arquivo ASCII seguro (mesmo padrão do app)
+        const sanitizeFileName = (str) => {
+          if (!str) return '';
+          return String(str)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9_-]/g, '_')
+            .replace(/_+/g, '_')
+            .trim();
+        };
+        const safeBand = sanitizeFileName(bandName) || 'banda';
+        const safeEvent = sanitizeFileName(ev.name) || 'setlist';
+        const safeDate = sanitizeFileName(ev.date) || 'data';
+        const fileName = `${safeBand}_${safeEvent}_${safeDate}.doc`;
+
+        const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast(`Arquivo "${fileName}" baixado com sucesso!`, 'success');
+      } catch (err) {
+        console.error('Erro ao exportar arquivo .doc:', err);
+        showToast('Não foi possível gerar o arquivo .doc.', 'error');
+      }
+    }
+
+    // ==============================================================
     // DRAG AND DROP SUAVE NO EDITOR DE PLAYLIST
     // ==============================================================
     let draggedPlaylistSongIndex = null;
@@ -15826,6 +16064,9 @@
               </button>
               <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; font-weight: 700;">
                 <ion-icon name="document-text-outline"></ion-icon> <span>+ Anotação</span>
+              </button>
+              <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro em Word (.doc)" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 700;">
+                <ion-icon name="document-text-outline"></ion-icon> <span>Exportar .DOC</span>
               </button>
             </div>
           </div>
