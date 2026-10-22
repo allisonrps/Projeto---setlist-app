@@ -313,6 +313,7 @@ export const api = {
     await AsyncStorage.removeItem("user_gear");
     await AsyncStorage.removeItem("user_profile_completed");
     await AsyncStorage.removeItem("profileImage");
+    await AsyncStorage.removeItem("my_cloud_bands_cache");
     // Clean up legacy plaintext credentials if they exist
     await AsyncStorage.removeItem("saved_login_credentials");
   },
@@ -777,13 +778,25 @@ export const api = {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache'
         }
-      }, 8000);
+      }, 25000);
       if (response.ok) {
-        return await response.json();
+        const res = await response.json();
+        const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+        try {
+          await AsyncStorage.setItem('my_cloud_bands_cache', JSON.stringify(list));
+        } catch (cacheSaveErr) {}
+        return list;
       }
     } catch (err) {
       console.log('Error fetching my cloud bands:', err);
     }
+    try {
+      const cached = await AsyncStorage.getItem('my_cloud_bands_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (cacheReadErr) {}
     return [];
   },
 
@@ -833,7 +846,7 @@ export const api = {
     const response = await fetchWithTimeout(`${API_URL}/Bands/${id}/pull`, {
       method: "GET",
       headers
-    });
+    }, 25000);
     if (!response.ok) {
       let errMsg = 'Erro ao carregar dados da banda da nuvem.';
       try {

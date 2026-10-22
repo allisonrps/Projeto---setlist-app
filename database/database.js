@@ -1222,6 +1222,11 @@ export const createTables = async () => {
         startDate TEXT,
         endDate TEXT,
         status TEXT DEFAULT 'active',
+        cycles TEXT DEFAULT '[]',
+        username TEXT,
+        inviteMessage TEXT,
+        replyMessage TEXT,
+        isLeader INTEGER DEFAULT 0,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (bandId) REFERENCES my_bands(id) ON DELETE CASCADE
       );
@@ -1307,6 +1312,9 @@ export const createTables = async () => {
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE band_members ADD COLUMN status TEXT DEFAULT 'active';");
+    } catch (e) {}
+    try {
+      await db.execAsync("ALTER TABLE band_members ADD COLUMN cycles TEXT DEFAULT '[]';");
     } catch (e) {}
     try {
       await db.execAsync("ALTER TABLE band_members ADD COLUMN username TEXT;");

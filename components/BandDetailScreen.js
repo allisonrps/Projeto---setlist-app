@@ -4540,7 +4540,7 @@ export default function BandDetailScreen({
                 }
 
                 let lastFinMonthHeader = '';
-                return combinedItems.map(item => {
+                return combinedItems.map((item, index) => {
                   const monthInfo = getMonthInfo(item.date, language);
                   const header = monthInfo.name;
                   const showHeader = header !== lastFinMonthHeader;

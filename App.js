@@ -977,9 +977,11 @@ function MainApp() {
       try {
         const token = await secureToken.get('jwt_token');
         if (token) {
-          // Check if JWT is expired by decoding the payload
+          // Check if JWT is expired by decoding the payload (supporting Base64URL)
           try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
+            let b64 = (token.split('.')[1] || '').replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4 !== 0) b64 += '=';
+            const payload = JSON.parse(atob(b64));
             if (payload.exp && payload.exp * 1000 > Date.now()) {
               setIsLoggedIn(true);
               // Auto-sync cloud bands in background if logged in
@@ -1044,7 +1046,8 @@ function MainApp() {
       try {
         await songService.cleanDuplicateSongs();
       } catch (cleanErr) {}
-      const isOnline = forceOnline !== null ? forceOnline : isLoggedIn;
+      const hasValidToken = await api.isLoggedIn();
+      const isOnline = forceOnline !== null ? forceOnline : (isLoggedIn || hasValidToken);
       let rawBands = await bandService.getAll();
 
       let allSongs = [];
@@ -1056,8 +1059,17 @@ function MainApp() {
         try {
           const cloudBands = await api.getMyCloudBands();
           if (Array.isArray(cloudBands)) {
+            const cbMap = {};
             for (const cb of cloudBands) {
-              const localMatch = (rawBands || []).find(b => b.cloudId && String(b.cloudId) === String(cb.id));
+              if (cb && cb.id) cbMap[cb.id] = cb;
+            }
+            setCloudBandsMap(cbMap);
+
+            for (const cb of cloudBands) {
+              const localMatch = (rawBands || []).find(b =>
+                (b.cloudId && String(b.cloudId) === String(cb.id)) ||
+                (b.name && cb.name && b.name.trim().toLowerCase() === cb.name.trim().toLowerCase())
+              );
               if (localMatch) {
                 await bandService.updateCloudInfo(localMatch.id, cb.id, cb.version || 1, cb.updatedAt || new Date().toISOString(), cb.isNetworkVisible);
                 if (cb.syncDataJson) {
@@ -1068,6 +1080,10 @@ function MainApp() {
                 localMatch.cloudId = cb.id;
                 localMatch.isLeader = cb.isLeader;
                 localMatch.membersCount = cb.membersCount || localMatch.membersCount;
+                localMatch.city = cb.city || localMatch.city;
+                localMatch.state = cb.state || localMatch.state;
+                localMatch.country = cb.country || localMatch.country;
+                localMatch.genres = cb.genresJson || cb.genre || localMatch.genres;
                 const cloudImg = cb.imageUri || (cb.syncDataJson ? (() => { try { return JSON.parse(cb.syncDataJson)?.band?.imageUri; } catch(e){ return null; } })() : null);
                 if (cloudImg && !localMatch.imageUri) {
                   localMatch.imageUri = cloudImg;
@@ -1077,9 +1093,10 @@ function MainApp() {
                 }
               } else {
                 try {
+                  const cloudImg = cb.imageUri || (cb.syncDataJson ? (() => { try { return JSON.parse(cb.syncDataJson)?.band?.imageUri; } catch(e){ return null; } })() : null);
                   const createdId = await bandService.insert(
                     cb.name || 'Minha Banda',
-                    cb.imageUri || null,
+                    cloudImg || null,
                     '',
                     '',
                     cb.bandType || 'cover',
@@ -1103,11 +1120,20 @@ function MainApp() {
                     cb.id,
                     cb.version || 1,
                     cb.updatedAt || new Date().toISOString(),
-                    cb.syncDataJson || null
+                    cb.isNetworkVisible ? 1 : 0
                   );
+                  if (cb.syncDataJson) {
+                    await bandService.updateBandSyncDataJson(createdId, cb.syncDataJson);
+                  }
                   rawBands.push({
                     id: createdId,
                     name: cb.name,
+                    imageUri: cloudImg || null,
+                    city: cb.city || '',
+                    state: cb.state || '',
+                    country: cb.country || 'Brasil',
+                    bandType: cb.bandType || 'cover',
+                    genres: cb.genresJson || cb.genre || '[]',
                     cloudId: cb.id,
                     cloudVersion: cb.version || 1,
                     syncDataJson: cb.syncDataJson || null,
@@ -1119,6 +1145,14 @@ function MainApp() {
                 }
               }
             }
+            // Re-leitura garantida do SQLite após inserções/atualizações
+            try {
+              const refreshedBands = await bandService.getAll();
+              if (Array.isArray(refreshedBands) && refreshedBands.length > 0) {
+                rawBands = refreshedBands;
+              }
+            } catch (reReadErr) {}
+
             // Auto-sync em segundo plano de qualquer banda online que ainda não tenha dados locais completos
             const bandsNeedingPull = (rawBands || []).filter(b => b && b.cloudId && (!b.syncDataJson || b.cloudVersion === 0));
             if (bandsNeedingPull.length > 0) {
@@ -1126,7 +1160,7 @@ function MainApp() {
                 for (const b of bandsNeedingPull) {
                   setSyncingBandsMap(prev => ({ ...prev, [String(b.id)]: true }));
                   try {
-                    await bandService.pullBandFromCloud(b.id);
+                    await bandService.pullBandFromCloud(b.id, cbMap[b.cloudId]);
                   } catch (e) {
                     console.log('Auto-pull band err:', e);
                   } finally {
@@ -1211,7 +1245,12 @@ function MainApp() {
 
       // Todas as bandas salvas no banco local SQLite devem sempre ser visíveis (tanto online quanto offline no palco)
       const visibleRawBands = rawBands || [];
-      const rawSetlists = await setlistService.getAll();
+      let rawSetlists = [];
+      try {
+        rawSetlists = await setlistService.getAll();
+      } catch (slGetAllErr) {
+        console.log('Error in setlistService.getAll:', slGetAllErr);
+      }
 
       // Enriquecer bandas com estatísticas resumidas (repertório, integrantes, finanças)
       const allBands = await Promise.all(
@@ -1220,14 +1259,32 @@ function MainApp() {
             const bSongs = await bandService.getBandSongs(b.id);
             const bMembers = await bandService.getBandMembers(b.id);
             const bFinances = await bandService.getBandFinances(b.id);
+            let snap = null;
+            if (b.syncDataJson) {
+              try {
+                snap = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+              } catch (e) {}
+            }
+            const effSongs = (bSongs && bSongs.length > 0) ? bSongs : (Array.isArray(snap?.songs) ? snap.songs : []);
+            const effMembers = (bMembers && bMembers.length > 0) ? bMembers : (Array.isArray(snap?.members) ? snap.members : []);
+            const effFinances = (bFinances && bFinances.length > 0) ? bFinances : (Array.isArray(snap?.finances) ? snap.finances : []);
+            const activeMembersCount = (effMembers || []).filter(m => {
+              const st = String(m.status || '').toLowerCase();
+              return st === 'active' || st === 'accepted' || (!st && st !== 'inactive' && st !== 'pending' && st !== 'rejected');
+            }).length;
             return {
               ...b,
-              songsCount: bSongs ? bSongs.length : 0,
-              membersCount: (bMembers || []).filter(m => (m.status === 'active' || m.status === 'accepted' || (!m.status && m.status !== 'inactive' && m.status !== 'pending' && m.status !== 'rejected')) && m.status !== 'pending' && m.status !== 'rejected' && m.status !== 'inactive').length,
-              styles: Array.from(new Set((bSongs || []).flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean)))).slice(0, 3),
-              finances: bFinances || [],
-              songsList: bSongs || [],
-              members: bMembers || []
+              imageUri: b.imageUri || snap?.band?.imageUri || null,
+              city: b.city || snap?.band?.city || '',
+              state: b.state || snap?.band?.state || '',
+              country: b.country || snap?.band?.country || 'Brasil',
+              genres: (b.genres && b.genres !== '[]') ? b.genres : (snap?.band?.genres || b.genres || '[]'),
+              songsCount: effSongs ? effSongs.length : 0,
+              membersCount: activeMembersCount || b.membersCount || 0,
+              styles: Array.from(new Set((effSongs || []).flatMap(s => (s.style || '').split(',').map(tag => tag.trim()).filter(Boolean)))).slice(0, 3),
+              finances: effFinances || [],
+              songsList: effSongs || [],
+              members: effMembers || []
             };
           } catch (e) {
             return b;
@@ -1237,9 +1294,13 @@ function MainApp() {
 
       // Mapear cada setlist para carregar suas músicas associadas na ordem correta
       const fullSetlists = await Promise.all(
-        rawSetlists.map(async (sl) => {
-          const slSongs = await setlistService.getSongsForSetlist(sl.id);
-          return { ...sl, songs: slSongs };
+        (rawSetlists || []).map(async (sl) => {
+          try {
+            const slSongs = await setlistService.getSongsForSetlist(sl.id);
+            return { ...sl, songs: slSongs };
+          } catch (slSongErr) {
+            return { ...sl, songs: [] };
+          }
         })
       );
 
@@ -1335,19 +1396,6 @@ function MainApp() {
         }
       }
       await loadReceivedInvites();
-      try {
-        const token = await secureToken.get('jwt_token');
-        if (token) {
-          const cbList = await api.getMyCloudBands();
-          if (Array.isArray(cbList)) {
-            const map = {};
-            for (const cb of cbList) {
-              if (cb && cb.id) map[cb.id] = cb;
-            }
-            setCloudBandsMap(map);
-          }
-        }
-      } catch (cbErr) {}
     } catch (error) {
       console.error('Erro ao recarregar dados:', error);
     }
@@ -1498,7 +1546,7 @@ function MainApp() {
           });
         }
       });
-      await reloadAllData();
+      await reloadAllData(true);
       if (syncRes && syncRes.count > 0) {
         Alert.alert(t('syncedTitle') || 'Sincronizado', `${syncRes.count} ${t('bands') || 'bandas'} sincronizadas com a nuvem!`);
       }
@@ -3494,6 +3542,7 @@ function MainApp() {
           marginTop: -(Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50),
         }}>
           <ProfileScreen 
+            bands={bands}
             onLogout={async () => {
               await api.logout();
               try {
@@ -6267,7 +6316,7 @@ function MainApp() {
                     {t('aboutHeader')}
                   </Text>
                   <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
-                    BandLink • v1.3.8
+                    BandLink • v1.3.9
                   </Text>
                 </View>
               </View>
@@ -6287,7 +6336,7 @@ function MainApp() {
                   </Pressable>
                   <Text style={[styles.aboutAppTitle, { color: colors.primary, marginTop: 8 }]}>BANDLINK</Text>
                   <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, marginTop: 4, marginBottom: 8 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.8 (Build 17)</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>{t('versionText')} 1.3.9 (Build 18)</Text>
                   </View>
                   
                   <Pressable 

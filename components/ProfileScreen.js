@@ -292,7 +292,7 @@ const COUNTRIES = [
   'Uruguai', 'Chile', 'México', 'Colômbia', 'Outro'
 ];
 
-export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onOpenSetlist }) {
+export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onOpenSetlist, bands = [] }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
   const getInterestLevelLabel = (opt) => {
@@ -819,7 +819,39 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
       try {
         allLocalBands = (await bandService.getAll()) || [];
         // Apenas bandas sincronizadas na nuvem aparecem no perfil online (bandas offline ficam privadas no aparelho)
-        const localBands = allLocalBands.filter(b => b && b.cloudId);
+        let localBands = allLocalBands.filter(b => b && b.cloudId);
+        if ((!localBands || localBands.length === 0) && Array.isArray(bands) && bands.length > 0) {
+          localBands = bands.filter(b => b && b.cloudId);
+        }
+        if (!localBands || localBands.length === 0) {
+          try {
+            const cloudBands = await api.getMyCloudBands();
+            if (Array.isArray(cloudBands) && cloudBands.length > 0) {
+              localBands = cloudBands.map(cb => {
+                let snapBand = {};
+                if (cb.syncDataJson) {
+                  try {
+                    const parsedSnap = typeof cb.syncDataJson === 'string' ? JSON.parse(cb.syncDataJson) : cb.syncDataJson;
+                    snapBand = parsedSnap?.band || {};
+                  } catch (e) {}
+                }
+                return {
+                  id: cb.id,
+                  cloudId: cb.id,
+                  name: cb.name,
+                  imageUri: cb.imageUri || snapBand.imageUri || null,
+                  startDate: cb.startDate || snapBand.startDate || '',
+                  city: cb.city || snapBand.city || '',
+                  state: cb.state || snapBand.state || '',
+                  country: cb.country || snapBand.country || 'Brasil',
+                  genres: cb.genre || snapBand.genres || '[]',
+                  syncDataJson: cb.syncDataJson || null,
+                  myRole: cb.myRole || ''
+                };
+              });
+            }
+          } catch (cloudBandsErr) {}
+        }
         if (localBands && localBands.length > 0) {
           const loadedProjects = await Promise.all(localBands.map(async b => {
             let role = 'Músico';
@@ -882,6 +914,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
             const resolvedImg = b.imageUri || bSnapImg || null;
             return {
               id: b.id,
+              cloudId: b.cloudId || null,
               name: b.name,
               imageUri: resolvedImg,
               logo: resolvedImg,
@@ -1456,6 +1489,54 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
   };
 
   useEffect(() => { loadUser(); }, []);
+
+  useEffect(() => {
+    if (!Array.isArray(bands) || bands.length === 0) return;
+    const syncedBands = bands.filter(b => b && b.cloudId);
+    if (syncedBands.length === 0) return;
+    setUser(prev => {
+      if (!prev) return prev;
+      const defaultRole = prev.skills?.[0]?.instrument || 'Músico';
+      const mappedProjects = syncedBands.map(b => {
+        let sinceYear = '2023';
+        if (b.startDate) {
+          if (String(b.startDate).includes('/')) {
+            sinceYear = String(b.startDate).split('/').pop().trim();
+          } else if (String(b.startDate).includes('-')) {
+            sinceYear = String(b.startDate).split('-')[0].trim();
+          } else {
+            const match = String(b.startDate).match(/\b(19\d{2}|20\d{2})\b/);
+            sinceYear = match ? match[0] : String(b.startDate).substring(0, 4);
+          }
+        }
+        let bSnapImg = null;
+        if (b.syncDataJson) {
+          try {
+            const s = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+            bSnapImg = s?.band?.imageUri || null;
+          } catch (e) {}
+        }
+        const resolvedImg = b.imageUri || bSnapImg || null;
+        const existingProj = (prev.projects || []).find(p => String(p.id) === String(b.id) || (p.name && b.name && p.name.toLowerCase() === b.name.toLowerCase()));
+        return {
+          id: b.id,
+          cloudId: b.cloudId || null,
+          name: b.name,
+          imageUri: resolvedImg || existingProj?.imageUri || null,
+          logo: resolvedImg || existingProj?.logo || null,
+          role: existingProj?.role || defaultRole,
+          memberType: existingProj?.memberType || 'Proprietário',
+          since: sinceYear,
+          needsSync: false,
+          city: b.city || existingProj?.city || '',
+          state: b.state || existingProj?.state || '',
+          country: b.country || existingProj?.country || '',
+          genres: b.genres || existingProj?.genres || '[]'
+        };
+      });
+      return { ...prev, projects: mappedProjects };
+    });
+  }, [bands]);
 
   const handleLogout = async () => { await api.logout(); onLogout(); };
 
