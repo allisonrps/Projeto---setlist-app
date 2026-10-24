@@ -14,6 +14,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../hooks/useLanguage';
 
@@ -107,8 +108,41 @@ export default function PerformanceMode({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fontSize, setFontSize] = useState(14); // Menor fonte por padrão
   const [activeView, setActiveView] = useState('lyrics');
+  const [stageDefaultView, setStageDefaultView] = useState('lyrics');
   const [showLinks, setShowLinks] = useState(false);
   const [showSongList, setShowSongList] = useState(false);
+
+  // Carregar visualização padrão do modo palco persistida
+  useEffect(() => {
+    const loadDefaultView = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('stage_mode_default_view');
+        if (saved && (saved === 'lyrics' || saved === 'chords' || saved === 'tabs')) {
+          setStageDefaultView(saved);
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar visualização padrão do modo palco:', e);
+      }
+    };
+    loadDefaultView();
+  }, []);
+
+  const handleSelectStageDefaultView = async (viewType) => {
+    setStageDefaultView(viewType);
+    try {
+      await AsyncStorage.setItem('stage_mode_default_view', viewType);
+    } catch (e) {
+      console.warn('Erro ao salvar visualização padrão do modo palco:', e);
+    }
+    if (currentSong && currentSong.id !== -1 && currentSong.id !== -2) {
+      const hasTarget = (viewType === 'lyrics' && currentSong.lyrics?.trim()) ||
+                        (viewType === 'chords' && currentSong.chords?.trim()) ||
+                        (viewType === 'tabs' && currentSong.tabs?.trim());
+      if (hasTarget) {
+        setActiveView(viewType);
+      }
+    }
+  };
 
   const songs = setlist?.songs || [];
   
@@ -208,7 +242,7 @@ export default function PerformanceMode({
     };
   }, [visible, showSongList, currentScrollSpeed, currentSong]);
 
-  // Efeito para resetar a posição de rolagem e carregar a velocidade padrão
+  // Efeito para resetar a posição de rolagem e carregar a velocidade e visualização padrão
   useEffect(() => {
     if (visible && currentSong) {
       scrollY.current = 0;
@@ -221,9 +255,30 @@ export default function PerformanceMode({
         setCurrentScrollSpeed(currentSong.scrollSpeed || 'none');
       }
       setShowLinks(false);
-      setActiveView(currentSong.defaultView || 'lyrics');
+
+      // Aplica a visualização padrão do modo palco (com fallback inteligente conforme disponibilidade)
+      const targetPreference = stageDefaultView || currentSong.defaultView || 'lyrics';
+      const hasLyrics = !!currentSong.lyrics?.trim();
+      const hasChords = !!currentSong.chords?.trim();
+      const hasTabs = !!currentSong.tabs?.trim();
+
+      if (targetPreference === 'chords' && hasChords) {
+        setActiveView('chords');
+      } else if (targetPreference === 'lyrics' && hasLyrics) {
+        setActiveView('lyrics');
+      } else if (targetPreference === 'tabs' && hasTabs) {
+        setActiveView('tabs');
+      } else if (hasChords) {
+        setActiveView('chords');
+      } else if (hasLyrics) {
+        setActiveView('lyrics');
+      } else if (hasTabs) {
+        setActiveView('tabs');
+      } else {
+        setActiveView(targetPreference);
+      }
     }
-  }, [visible, activeIndex, currentSong]);
+  }, [visible, activeIndex, currentSong, stageDefaultView]);
 
   useEffect(() => {
     if (!visible) {
@@ -456,22 +511,62 @@ export default function PerformanceMode({
               <Ionicons name="pencil-outline" size={16} color={colors.text} />
             </Pressable>
           )}
-          <MarqueeText 
-            text={showSongList 
-              ? `${t('rehearsalReport')}` 
-              : (currentSong.id === -1 
+          {showSongList ? (
+            <View style={styles.fullSetlistHeaderBar}>
+              <View style={styles.fullSetlistTitleContainer}>
+                <Ionicons name="list" size={17} color={colors.primary} />
+                <Text style={[styles.marqueeHeaderText, { color: colors.primary, fontSize: 16 }]}>
+                  FULL SETLIST
+                </Text>
+              </View>
+              <View style={styles.stageDefaultOptionsRow}>
+                <Text style={[styles.stageDefaultLabel, { color: colors.textMuted }]}>
+                  {t('defaultLabel') || 'PADRÃO'}:
+                </Text>
+                {[
+                  { key: 'lyrics', label: 'L', color: '#3b82f6', title: t('lyricsTab') || 'Letra' },
+                  { key: 'chords', label: 'C', color: '#10b981', title: t('chordsTab') || 'Cifra' },
+                  { key: 'tabs', label: 'T', color: '#8b5cf6', title: t('tabsTab') || 'Tab' },
+                ].map((opt) => {
+                  const isSelected = stageDefaultView === opt.key;
+                  return (
+                    <Pressable
+                      key={opt.key}
+                      onPress={() => handleSelectStageDefaultView(opt.key)}
+                      style={({ pressed }) => [
+                        styles.stageDefaultCircleBtn,
+                        {
+                          backgroundColor: opt.color,
+                          borderColor: isSelected ? '#ffffff' : (isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.15)'),
+                          opacity: isSelected ? 1 : (pressed ? 0.65 : 0.4),
+                          transform: [{ scale: isSelected ? 1.08 : (pressed ? 0.95 : 1) }],
+                        },
+                        isSelected && styles.stageDefaultCircleSelected,
+                      ]}
+                      hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                    >
+                      <Text style={styles.stageDefaultCircleText}>
+                        {opt.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : (
+            <MarqueeText 
+              text={currentSong.id === -1 
                 ? `⏸ ${t('pauseTitle').toUpperCase()}` 
                 : (currentSong.id === -2 
                   ? `📝 ${currentSong.customNotes || (t('noteTitle') || 'NOTE / ANNOTATION')}` 
-                  : `${currentSong.name}${currentSong.originalBand ? ` (${currentSong.originalBand})` : ''}`))} 
-            style={[styles.marqueeHeaderText, { 
-              color: showSongList 
-                ? colors.primary 
-                : (currentSong.id === -1 
+                  : `${currentSong.name}${currentSong.originalBand ? ` (${currentSong.originalBand})` : ''}`)} 
+              style={[styles.marqueeHeaderText, { 
+                color: currentSong.id === -1 
                   ? colors.secondary 
-                  : (currentSong.id === -2 ? colors.warning : colors.primary)) 
-            }]}
-          />
+                  : (currentSong.id === -2 ? colors.warning : colors.primary)
+              }]}
+            />
+          )}
         </View>
 
         {/* 2.5 Barra de Avaliação Rápida do Modo Ensaio */}
@@ -643,13 +738,13 @@ export default function PerformanceMode({
                       </View>
                     ) : (
                       <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Text 
                             style={{
                               fontSize: 13.5,
                               fontWeight: '800',
                               color: colors.text,
-                              flexShrink: 1,
+                              flex: 1,
                             }}
                             numberOfLines={1}
                           >
@@ -660,6 +755,11 @@ export default function PerformanceMode({
                               </Text>
                             ) : null}
                           </Text>
+                          <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center', marginLeft: 8 }}>
+                            <View style={[styles.contentDotMini, { backgroundColor: (song.lyrics && song.lyrics.trim()) ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)') }]} />
+                            <View style={[styles.contentDotMini, { backgroundColor: (song.chords && song.chords.trim()) ? '#10b981' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)') }]} />
+                            <View style={[styles.contentDotMini, { backgroundColor: (song.tabs && song.tabs.trim()) ? '#8b5cf6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)') }]} />
+                          </View>
                         </View>
                         {song.rehearsalNotes ? (
                           <Text style={{
@@ -1148,5 +1248,53 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.3,
+  },
+  fullSetlistHeaderBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+  },
+  fullSetlistTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stageDefaultOptionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stageDefaultLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  stageDefaultCircleBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+  },
+  stageDefaultCircleSelected: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  stageDefaultCircleText: {
+    color: '#ffffff',
+    fontSize: 11.5,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  contentDotMini: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });
