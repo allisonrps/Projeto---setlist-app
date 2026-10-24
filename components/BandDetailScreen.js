@@ -2882,26 +2882,6 @@ export default function BandDetailScreen({
                 {/* MENU EXPANDIDO DE OPÇÕES DA BANDA (Delete, Nuvem, Página Pública, Editar) */}
                 {showBandOptionsMenu ? (
                   <View style={styles.headerActionPillRow}>
-                    {/* Botão Sincronização / Visibilidade na Rede */}
-                    <Pressable
-                      style={[
-                        styles.headerActionPillBtn,
-                        isNetworkVisible && { backgroundColor: 'rgba(16, 185, 129, 0.35)' },
-                        syncStatusInfo.hasRemoteUpdates && { borderColor: '#f59e0b', borderWidth: 1.5 }
-                      ]}
-                      onPress={() => {
-                        setShowBandOptionsMenu(false);
-                        setShowSyncModal(true);
-                      }}
-                      accessibilityLabel="Sincronização em Nuvem"
-                    >
-                      <Ionicons
-                        name={isNetworkVisible ? 'cloud-done' : (syncStatusInfo.hasRemoteUpdates ? 'cloud-download-outline' : 'cloud-outline')}
-                        size={17}
-                        color={isNetworkVisible ? '#10b981' : (syncStatusInfo.hasRemoteUpdates ? '#f59e0b' : '#ffffff')}
-                      />
-                    </Pressable>
-
                     {/* Botão Publicar Banda Online (Exibido quando a banda for Offline) */}
                     {!band?.cloudId && (
                       <Pressable
