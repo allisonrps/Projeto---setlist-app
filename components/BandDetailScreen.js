@@ -1198,6 +1198,17 @@ export default function BandDetailScreen({
 
           if (apiSetlists.length === 0 && localBandSetlists.length > 0) {
             apiSetlists.push(...localBandSetlists);
+          } else if (localBandSetlists.length > 0) {
+            // Mescla setlists locais que ainda não estejam no apiSetlists (UI otimista para cópias e criações recentes)
+            for (const lsl of localBandSetlists) {
+              const existsInApi = apiSetlists.some(asl =>
+                (asl.id && String(asl.id) === String(lsl.id)) ||
+                (asl.name && lsl.name && asl.name.trim().toLowerCase() === lsl.name.trim().toLowerCase() && String(asl.date || '').trim() === String(lsl.date || '').trim())
+              );
+              if (!existsInApi) {
+                apiSetlists.push(lsl);
+              }
+            }
           }
 
           const allKnownBandSongs = [...(apiSongs || []), ...(allGeneralSongs || [])];
@@ -4937,6 +4948,24 @@ export default function BandDetailScreen({
                           ) : null}
                         </View>
                       </View>
+
+                      {onCopy && (
+                        <Pressable
+                          hitSlop={8}
+                          onPress={(e) => {
+                            if (e && e.stopPropagation) e.stopPropagation();
+                            onCopy(setlist.id || setlist);
+                          }}
+                          style={{
+                            padding: 8,
+                            marginLeft: 4,
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Ionicons name="copy-outline" size={18} color={colors.textMuted} />
+                        </Pressable>
+                      )}
                     </Pressable>
                   );
                 };

@@ -285,22 +285,46 @@ export const setlistService = {
 
   async duplicate(setlistId, lang = 'pt') {
     try {
-      const rawSetlist = await db.getAllAsync('SELECT * FROM setlists WHERE id = ? LIMIT 1;', [setlistId]);
-      if (!rawSetlist || rawSetlist.length === 0) {
+      let sl = null;
+      let rawId = null;
+      if (typeof setlistId === 'object' && setlistId !== null) {
+        sl = setlistId;
+        rawId = sl.id;
+      } else {
+        rawId = setlistId;
+        const rawSetlist = await db.getAllAsync('SELECT * FROM setlists WHERE id = ? LIMIT 1;', [rawId]);
+        if (rawSetlist && rawSetlist.length > 0) {
+          sl = rawSetlist[0];
+        }
+      }
+      if (!sl) {
         throw new Error('Setlist original não encontrado');
       }
-      const sl = rawSetlist[0];
 
       const prefix = lang === 'en' ? 'Copy' : lang === 'es' ? 'Copia' : 'Cópia';
       const copyName = sl.name ? `${prefix} - ${sl.name}` : `${prefix} Setlist`;
       const result = await db.runAsync(
         'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);',
-        [copyName, sl.type, sl.myBandId, sl.date, sl.time || '', sl.local, sl.cachê, sl.notes]
+        [copyName, sl.type || 'show', sl.myBandId || null, sl.date || '', sl.time || '', sl.local || '', sl.cachê || sl.cache || '', sl.notes || '']
       );
       const newSetlistId = result.lastInsertRowId;
 
-      const slSongs = await db.getAllAsync('SELECT songId, order_num, customNotes, customDuration, rehearsalStatus, rehearsalNotes FROM setlist_songs WHERE setlistId = ? ORDER BY order_num ASC;', [setlistId]);
-      for (const song of slSongs) {
+      let slSongs = [];
+      if (rawId && (!isNaN(Number(rawId)) && Number(rawId) > 0)) {
+        slSongs = await db.getAllAsync('SELECT songId, order_num, customNotes, customDuration, rehearsalStatus, rehearsalNotes FROM setlist_songs WHERE setlistId = ? ORDER BY order_num ASC;', [rawId]);
+      }
+      if ((!slSongs || slSongs.length === 0) && Array.isArray(sl.songs)) {
+        slSongs = sl.songs.map((s, idx) => ({
+          songId: s.id !== undefined && s.id !== null ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : -1),
+          order_num: s.order_num !== undefined ? s.order_num : idx + 1,
+          customNotes: s.customNotes || '',
+          customDuration: s.customDuration || '',
+          rehearsalStatus: s.rehearsalStatus || 'none',
+          rehearsalNotes: s.rehearsalNotes || ''
+        }));
+      }
+
+      for (const song of (slSongs || [])) {
         await db.runAsync(
           'INSERT INTO setlist_songs (setlistId, songId, order_num, customNotes, customDuration, rehearsalStatus, rehearsalNotes) VALUES (?, ?, ?, ?, ?, ?, ?);',
           [newSetlistId, song.songId, song.order_num, song.customNotes || '', song.customDuration || '', song.rehearsalStatus || 'none', song.rehearsalNotes || '']

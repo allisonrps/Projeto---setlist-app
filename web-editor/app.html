@@ -12282,13 +12282,35 @@
             const fullData = await res.json();
             band = { ...(band || {}), ...fullData };
             const cloudSync = fullData.syncDataJson || fullData.SyncDataJson;
-            if (cloudSync) {
+            const localSavedRaw = localStorage.getItem(`bandlink_band_${bandId}_sync`);
+            const localSavedAt = parseInt(localStorage.getItem(`bandlink_band_${bandId}_savedAt`) || '0', 10);
+            const parsedLocal = localSavedRaw ? parseJsonSafe(localSavedRaw) : null;
+
+            let shouldPreferLocal = false;
+            if (parsedLocal && cloudSync) {
+              const parsedCloud = parseJsonSafe(cloudSync);
+              const cloudTime = parsedCloud?.updatedAt ? new Date(parsedCloud.updatedAt).getTime() : 0;
+              const localTime = parsedLocal?.updatedAt ? new Date(parsedLocal.updatedAt).getTime() : localSavedAt;
+              if (localTime > cloudTime + 2000) {
+                shouldPreferLocal = true;
+                currentBandSyncData = parsedLocal;
+                band.syncDataJson = localSavedRaw;
+                console.log(`[BandSync] Preservando edições locais mais recentes (${new Date(localTime).toISOString()} > ${new Date(cloudTime).toISOString()}). Reenviando à nuvem...`);
+                setTimeout(() => { persistCurrentBandSync(false, false); }, 600);
+              }
+            }
+
+            if (!shouldPreferLocal && cloudSync) {
               const parsedCloud = parseJsonSafe(cloudSync);
               if (parsedCloud) {
                 currentBandSyncData = parsedCloud;
                 band.syncDataJson = cloudSync;
                 localStorage.setItem(`bandlink_band_${bandId}_sync`, cloudSync);
+                localStorage.setItem(`bandlink_band_${bandId}_savedAt`, Date.now().toString());
               }
+            } else if (!currentBandSyncData && parsedLocal) {
+              currentBandSyncData = parsedLocal;
+              band.syncDataJson = localSavedRaw;
             }
             if (Array.isArray(fullData.members) && fullData.members.length > 0) {
               if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
@@ -13067,8 +13089,8 @@
       return currentBandSyncData.members;
     }
 
-    async function persistCurrentBandSync(skipApi = false) {
-      if (!currentBandData) return;
+    async function persistCurrentBandSync(skipApi = false, showFeedback = false) {
+      if (!currentBandData) return false;
       if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
 
       currentBandSyncData.membersInitialized = true;
@@ -13093,39 +13115,60 @@
         localStorage.setItem(`bandlink_band_${bandId}_savedAt`, Date.now().toString());
       }
 
-      // Sincroniza em background com o backend cloud
-      if (!skipApi && bandId && typeof API_URL !== 'undefined') {
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (token) {
-          try {
-            fetch(`${API_URL}/Bands/${bandId}/sync`, {
-              method: 'POST',
-              headers: getAuthHeaders(),
-              body: JSON.stringify({
-                name: currentBandData.name,
-                genre: currentBandData.genre || '',
-                description: currentBandData.description || '',
-                imageUri: currentBandData.imageUri || '',
-                city: currentBandData.city || '',
-                state: currentBandData.state || '',
-                country: currentBandData.country || '',
-                syncDataJson: serialized
-              })
-            }).then(res => {
-              if (res.ok) console.log(`Banda ${bandId} sincronizada com a nuvem.`);
-              else console.warn(`Sincronização da banda ${bandId} retornou status:`, res.status);
-            }).catch(e => {
-              console.warn(`Erro de rede ao sincronizar banda ${bandId}:`, e);
-            });
-          } catch (e) {
-            console.warn('Erro ao disparar sync da banda:', e);
+      if (skipApi || !bandId || typeof API_URL === 'undefined') {
+        return true;
+      }
+
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        return true;
+      }
+
+      if (showFeedback) {
+        showToast('Salvando alterações na nuvem...', 'info', 5000);
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/Bands/${bandId}/sync`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            name: currentBandData.name,
+            genre: currentBandData.genre || '',
+            description: currentBandData.description || '',
+            imageUri: currentBandData.imageUri || '',
+            city: currentBandData.city || '',
+            state: currentBandData.state || '',
+            country: currentBandData.country || '',
+            syncDataJson: serialized
+          })
+        });
+
+        if (res.ok) {
+          console.log(`[BandSync] Banda ${bandId} sincronizada com sucesso na nuvem.`);
+          localStorage.setItem(`bandlink_band_${bandId}_savedAt`, Date.now().toString());
+          if (showFeedback) {
+            showToast('Alterações salvas na nuvem com sucesso!', 'success');
           }
+          return true;
+        } else {
+          console.warn(`[BandSync] Sincronização da banda ${bandId} retornou status: ${res.status}`);
+          if (showFeedback) {
+            showToast(`Salvo localmente. Atenção: a nuvem retornou status ${res.status}.`, 'warning');
+          }
+          return false;
         }
+      } catch (e) {
+        console.warn(`[BandSync] Erro de rede ao sincronizar banda ${bandId}:`, e);
+        if (showFeedback) {
+          showToast('Salvo localmente (offline). Será sincronizado ao reconectar.', 'warning');
+        }
+        return false;
       }
     }
 
-    function persistBandMembers() {
-      persistCurrentBandSync();
+    async function persistBandMembers() {
+      return await persistCurrentBandSync(false, true);
     }
 
     function renderBandMembersTab(band, syncData) {
@@ -15147,8 +15190,11 @@
               </div>
 
               <!-- Lado direito: Cachê e Ação (Desktop) -->
-              <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 14px;">
-                ${cacheNum ? `<span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
+              <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 8px;">
+                ${cacheNum ? `<span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: #4ade80; margin-right: 6px;">$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
+                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); duplicateBandSetlist('${escapeHtml(evIdentifier)}')" title="Duplicar Playlist e Evento">
+                  <ion-icon name="copy-outline"></ion-icon> <span>Duplicar</span>
+                </button>
                 <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openSetlistEditorPage('${escapeHtml(evIdentifier)}')">
                   <ion-icon name="create-outline"></ion-icon> <span>Editar Playlist</span>
                 </button>
@@ -15371,20 +15417,45 @@
       }
     }
 
+    function getActiveEventPlaylistElements() {
+      const isDedicated = activeSetlistEditingEventId !== null && !!document.getElementById('pageEventPlaylistItemsList');
+      if (isDedicated) {
+        return {
+          isDedicated: true,
+          listContainer: document.getElementById('pageEventPlaylistItemsList'),
+          picker: document.getElementById('pageEventAddSongPicker'),
+          filterInput: document.getElementById('pageEventSongCatalogFilter'),
+          select: document.getElementById('pageEventSongCatalogSelect'),
+          songsCount: document.getElementById('pageEventSongsCount'),
+          totalDuration: document.getElementById('pageEventTotalDuration')
+        };
+      }
+      return {
+        isDedicated: false,
+        listContainer: document.getElementById('mEventPlaylistItemsList'),
+        picker: document.getElementById('mEventAddSongPicker'),
+        filterInput: document.getElementById('mEventSongCatalogFilter'),
+        select: document.getElementById('mEventSongCatalogSelect'),
+        songsCount: document.getElementById('mEventSongsCount'),
+        totalDuration: document.getElementById('mEventTotalDuration')
+      };
+    }
+
     function toggleAddSongToPlaylistPicker(force) {
-      const picker = document.getElementById('mEventAddSongPicker');
+      const els = getActiveEventPlaylistElements();
+      const picker = els.picker;
       if (!picker) return;
       const shouldShow = typeof force === 'boolean' ? force : (picker.style.display === 'none');
       picker.style.display = shouldShow ? 'block' : 'none';
       if (shouldShow) {
-        const filterInput = document.getElementById('mEventSongCatalogFilter');
-        if (filterInput) filterInput.value = '';
+        if (els.filterInput) els.filterInput.value = '';
         populateEventSongCatalogSelect();
       }
     }
 
     function populateEventSongCatalogSelect(filterQuery = '') {
-      const select = document.getElementById('mEventSongCatalogSelect');
+      const els = getActiveEventPlaylistElements();
+      const select = els.select;
       if (!select) return;
       let catalog = Array.isArray(currentBandSyncData?.songs) ? [...currentBandSyncData.songs] : [];
       if (catalog.length === 0) {
@@ -15437,7 +15508,8 @@
     }
 
     function addSelectedSongToCurrentPlaylist() {
-      const select = document.getElementById('mEventSongCatalogSelect');
+      const els = getActiveEventPlaylistElements();
+      const select = els.select;
       if (!select || !select.value) return;
       const songId = select.value;
       const catalog = currentBandSyncData?.songs || [];
@@ -16054,7 +16126,7 @@
               </div>
             </div>
 
-            <!-- ACTION BAR: + MÚSICA, + PAUSA, + ANOTAÇÃO -->
+            <!-- ACTION BAR: + MÚSICA, + PAUSA, + ANOTAÇÃO, DUPLICAR, EXPORTAR DOC -->
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker()" style="font-weight: 700;">
                 <ion-icon name="add-circle-outline"></ion-icon> <span>+ Música</span>
@@ -16065,6 +16137,9 @@
               <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; font-weight: 700;">
                 <ion-icon name="document-text-outline"></ion-icon> <span>+ Anotação</span>
               </button>
+              <button type="button" class="btn btn-sm" onclick="duplicateCurrentEditingSetlist()" title="Duplicar esta Playlist" style="background: rgba(139, 92, 246, 0.18); border: 1px solid rgba(139, 92, 246, 0.45); color: #c4b5fd; font-weight: 700;">
+                <ion-icon name="copy-outline"></ion-icon> <span>Duplicar Playlist</span>
+              </button>
               <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro em Word (.doc)" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 700;">
                 <ion-icon name="document-text-outline"></ion-icon> <span>Exportar .DOC</span>
               </button>
@@ -16072,14 +16147,14 @@
           </div>
 
           <!-- EXTENDED SONG CATALOG SEARCH & PICKER -->
-          <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+          <div id="pageEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-              <input type="text" id="mEventSongCatalogFilter" class="form-input" placeholder="🔍 Type to search song or band in repertoire..." data-i18n-placeholder="setlistSearchSongPlaceholder" oninput="populateEventSongCatalogSelect(this.value)" style="width: 100%; padding: 10px 14px; font-size: 0.92rem;">
+              <input type="text" id="pageEventSongCatalogFilter" class="form-input" placeholder="🔍 Type to search song or band in repertoire..." data-i18n-placeholder="setlistSearchSongPlaceholder" oninput="populateEventSongCatalogSelect(this.value)" style="width: 100%; padding: 10px 14px; font-size: 0.92rem;">
               <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)" title="Fechar seletor" style="padding: 0 16px;">Fechar</button>
             </div>
 
             <div style="display: flex; gap: 10px;">
-              <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.9rem; padding: 10px 12px;"></select>
+              <select id="pageEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.9rem; padding: 10px 12px;"></select>
               <button type="button" class="btn btn-primary" onclick="addSelectedSongToCurrentPlaylist()" style="padding: 0 22px; font-weight: 700;">
                 <ion-icon name="add-circle-outline"></ion-icon> Adicionar
               </button>
@@ -16087,7 +16162,7 @@
           </div>
 
           <!-- ITEMS LIST (DRAG AND DROP) -->
-          <div id="mEventPlaylistItemsList" style="min-height: 250px;">
+          <div id="pageEventPlaylistItemsList" style="min-height: 250px;">
             <!-- Músicas, Pausas e Anotações com Drag & Drop suave -->
           </div>
 
@@ -16112,7 +16187,8 @@
     }
 
     function renderCurrentEventPlaylistSongs() {
-      const listContainer = document.getElementById('mEventPlaylistItemsList');
+      const els = getActiveEventPlaylistElements();
+      const listContainer = els.listContainer;
       updatePlaylistDurationDisplay();
 
       if (!listContainer) return;
@@ -16259,7 +16335,49 @@
       initPlaylistTouchDrag();
     }
 
-    function handleSaveEventPlaylistModal(e) {
+    async function duplicateBandSetlist(eventIdentifier) {
+      if (!currentBandSyncData) currentBandSyncData = { members: [], setlists: [], songs: [], finances: [] };
+      if (!Array.isArray(currentBandSyncData.setlists)) currentBandSyncData.setlists = [];
+
+      let sl = null;
+      let targetIdx = -1;
+      if (typeof eventIdentifier === 'number' || (!isNaN(eventIdentifier) && currentBandSyncData.setlists[eventIdentifier])) {
+        targetIdx = parseInt(eventIdentifier, 10);
+        sl = currentBandSyncData.setlists[targetIdx];
+      } else {
+        targetIdx = currentBandSyncData.setlists.findIndex(s => String(s.id) === String(eventIdentifier));
+        if (targetIdx >= 0) sl = currentBandSyncData.setlists[targetIdx];
+      }
+
+      if (!sl) {
+        showToast('Setlist não encontrado para duplicar.', 'error');
+        return;
+      }
+
+      const copySl = JSON.parse(JSON.stringify(sl));
+      copySl.id = `ev_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      copySl.name = `Cópia - ${sl.name || 'Setlist'}`;
+      copySl.createdAt = new Date().toISOString();
+      copySl.updatedAt = new Date().toISOString();
+
+      currentBandSyncData.setlists.splice(targetIdx + 1, 0, copySl);
+
+      showToast(`Duplicando "${sl.name}"...`, 'info');
+      await persistCurrentBandSync(false, true);
+
+      renderBandAgendaTab(currentBandData, currentBandSyncData);
+      renderBandFinancesTab(currentBandData, currentBandSyncData);
+      renderProjectsMainView();
+      showToast(`Playlist duplicada como "${copySl.name}"!`, 'success');
+    }
+
+    async function duplicateCurrentEditingSetlist() {
+      const identifier = (editingEventIndex !== null && editingEventIndex >= 0) ? editingEventIndex : activeSetlistEditingEventId;
+      if (identifier === null || identifier === undefined) return;
+      await duplicateBandSetlist(identifier);
+    }
+
+    async function handleSaveEventPlaylistModal(e) {
       e.preventDefault();
       if (!currentBandSyncData) currentBandSyncData = { setlists: [], songs: [] };
       if (!currentBandSyncData.setlists) currentBandSyncData.setlists = [];
@@ -16300,7 +16418,7 @@
         currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
       }
 
-      persistCurrentBandSync();
+      await persistCurrentBandSync(false, true);
 
       closeModal('editEventPlaylistModal');
       showToast('Informações do evento e playlist salvas!', 'success');
@@ -16314,7 +16432,7 @@
       renderProjectsMainView();
     }
 
-    function handleDeleteCurrentEvent() {
+    async function handleDeleteCurrentEvent() {
       if (editingEventIndex === null || editingEventIndex < 0) return;
       if (!confirm('Deseja realmente excluir este evento da agenda?')) return;
 
@@ -16323,7 +16441,7 @@
         if (currentBandData) {
           currentBandData.syncDataJson = JSON.stringify(currentBandSyncData);
         }
-        persistCurrentBandSync();
+        await persistCurrentBandSync(false, true);
       }
 
       if (activeSetlistEditingEventId !== null) {

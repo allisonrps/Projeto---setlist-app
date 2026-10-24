@@ -2227,15 +2227,33 @@ function MainApp() {
     );
   };
 
-  const handleDuplicateSetlist = async (id) => {
+  const handleDuplicateSetlist = async (idOrSetlist) => {
     try {
-      await setlistService.duplicate(id, language);
+      const newId = await setlistService.duplicate(idOrSetlist, language);
+      const targetBandId = (typeof idOrSetlist === 'object' && idOrSetlist !== null)
+        ? (idOrSetlist.myBandId || (activeBandDetail ? activeBandDetail.id : null))
+        : null;
+      const allSets = await setlistService.getAll();
+      const targetSet = (allSets || []).find(s => s.id === newId);
+      const finalBandId = targetBandId || (targetSet ? targetSet.myBandId : null);
+
+      if (finalBandId) {
+        const bandObj = (bands || []).find(b => b.id === finalBandId);
+        if (bandObj && bandObj.cloudId) {
+          try {
+            await bandService.syncBandToCloud(bandObj.id);
+          } catch (syncErr) {
+            console.log('Erro ao sincronizar banda com a nuvem após duplicar setlist:', syncErr);
+          }
+        }
+      }
       await reloadAllData();
       Alert.alert(
         t('success') || 'Sucesso',
         t('setlistCopiedMsg') || 'Setlist copiado com sucesso!'
       );
     } catch (error) {
+      console.error('Erro ao duplicar setlist:', error);
       Alert.alert(
         t('attention') || 'Atenção',
         t('setlistCopyError') || 'Não foi possível duplicar o setlist.'
@@ -6840,6 +6858,7 @@ function MainApp() {
         }}
         onStartPerformance={handleStartPerformance}
         onExportDoc={handleExportDoc}
+        onCopy={handleDuplicateSetlist}
         onShareSetlist={handleShareSetlist}
         onToggleFavoriteSetlist={handleToggleFavoriteSetlist}
         onToggleFavoriteSong={handleToggleFavoriteSong}
