@@ -8534,10 +8534,15 @@
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
-          <button type="button" class="btn btn-danger btn-sm" id="btnDeleteEventFromModal" onclick="handleDeleteCurrentEvent()">
-            <ion-icon name="trash-outline"></ion-icon> Excluir Evento
-          </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-danger btn-sm" id="btnDeleteEventFromModal" onclick="handleDeleteCurrentEvent()">
+              <ion-icon name="trash-outline"></ion-icon> Excluir Evento
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnDuplicateEventFromModal" onclick="duplicateCurrentEditingSetlist()" title="Duplicar esta playlist e evento" style="border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd;">
+              <ion-icon name="copy-outline"></ion-icon> Duplicar
+            </button>
+          </div>
           <div style="display: flex; gap: 10px;">
             <button type="button" class="btn btn-outline" onclick="closeModal('editEventPlaylistModal')">Cancelar</button>
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -15190,11 +15195,8 @@
               </div>
 
               <!-- Lado direito: Cachê e Ação (Desktop) -->
-              <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 8px;">
-                ${cacheNum ? `<span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: #4ade80; margin-right: 6px;">$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
-                <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); duplicateBandSetlist('${escapeHtml(evIdentifier)}')" title="Duplicar Playlist e Evento">
-                  <ion-icon name="copy-outline"></ion-icon> <span>Duplicar</span>
-                </button>
+              <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 14px;">
+                ${cacheNum ? `<span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
                 <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openSetlistEditorPage('${escapeHtml(evIdentifier)}')">
                   <ion-icon name="create-outline"></ion-icon> <span>Editar Playlist</span>
                 </button>
@@ -15298,6 +15300,7 @@
         const titleEl = document.getElementById('mEventModalTitle');
         const badgeEl = document.getElementById('mEventHeaderBadge');
         const deleteBtn = document.getElementById('btnDeleteEventFromModal');
+        const dupBtn = document.getElementById('btnDuplicateEventFromModal');
         const tabPlaylistBtn = document.getElementById('mEventSubTabPlaylist');
 
         if (tabPlaylistBtn) {
@@ -15311,6 +15314,7 @@
             badgeEl.className = 'badge badge-cyan';
           }
           if (deleteBtn) deleteBtn.style.display = 'none';
+          if (dupBtn) dupBtn.style.display = 'none';
 
           const nameEl = document.getElementById('mEventName'); if (nameEl) nameEl.value = '';
           const typeEl = document.getElementById('mEventType'); if (typeEl) typeEl.value = 'show';
@@ -15332,6 +15336,7 @@
             badgeEl.className = isRehearsal ? 'badge badge-amber' : 'badge badge-rose';
           }
           if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+          if (dupBtn) dupBtn.style.display = 'inline-flex';
 
           const nameEl = document.getElementById('mEventName'); if (nameEl) nameEl.value = ev.name || '';
           const typeEl = document.getElementById('mEventType'); if (typeEl) typeEl.value = isRehearsal ? 'rehearsal' : 'show';

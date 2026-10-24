@@ -1200,6 +1200,7 @@ export default function BandDetailScreen({
             apiSetlists.push(...localBandSetlists);
           } else if (localBandSetlists.length > 0) {
             // Mescla setlists locais que ainda não estejam no apiSetlists (UI otimista para cópias e criações recentes)
+            let hasUnsyncedLocalSetlists = false;
             for (const lsl of localBandSetlists) {
               const existsInApi = apiSetlists.some(asl =>
                 (asl.id && String(asl.id) === String(lsl.id)) ||
@@ -1207,7 +1208,13 @@ export default function BandDetailScreen({
               );
               if (!existsInApi) {
                 apiSetlists.push(lsl);
+                hasUnsyncedLocalSetlists = true;
               }
+            }
+            if (hasUnsyncedLocalSetlists && band?.id && band?.cloudId) {
+              bandService.syncBandToCloud(band.id).catch(err => {
+                console.log('[BandSync] Auto-push de eventos locais pendentes para a nuvem:', err.message);
+              });
             }
           }
 
@@ -4949,23 +4956,6 @@ export default function BandDetailScreen({
                         </View>
                       </View>
 
-                      {onCopy && (
-                        <Pressable
-                          hitSlop={8}
-                          onPress={(e) => {
-                            if (e && e.stopPropagation) e.stopPropagation();
-                            onCopy(setlist.id || setlist);
-                          }}
-                          style={{
-                            padding: 8,
-                            marginLeft: 4,
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Ionicons name="copy-outline" size={18} color={colors.textMuted} />
-                        </Pressable>
-                      )}
                     </Pressable>
                   );
                 };

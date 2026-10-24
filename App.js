@@ -2128,7 +2128,8 @@ function MainApp() {
     try {
       const setlistId = setlistData?.id || editingSetlist?.id;
       const cleanCache = setlistData?.cachê || setlistData?.cache || setlistData?.cacheê || '';
-      const targetBandId = setlistData?.myBandId || editingSetlist?.myBandId || editingSetlistFromBandDetail?.id || activeBandDetail?.id;
+      const existingSetlist = (setlists || []).find(s => s.id === setlistId);
+      const targetBandId = setlistData?.myBandId || existingSetlist?.myBandId || editingSetlist?.myBandId || editingSetlistFromBandDetail?.id || activeBandDetail?.id;
       if (setlistId) {
         await setlistService.update(
           setlistId,
