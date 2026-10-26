@@ -3949,6 +3949,145 @@
       }
     }
 
+        /* BAND POSTS / LEMBRETES FIXOS NA HOME DA BANDA */
+    .band-posts-section {
+      margin-bottom: 24px;
+    }
+    .band-post-card {
+      background: rgba(18, 24, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .band-post-card:hover {
+      border-color: rgba(56, 189, 248, 0.25);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+    .band-post-card.pinned {
+      border-left: 4px solid var(--cyan);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(18, 24, 38, 0.95) 100%);
+      border-color: rgba(56, 189, 248, 0.32);
+    }
+    .band-post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+    .band-post-author-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .band-post-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 2px solid rgba(56, 189, 248, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .band-post-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .band-post-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .band-post-author-name {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .band-post-date {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 1px;
+    }
+    .band-post-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .band-post-action-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.15s ease;
+    }
+    .band-post-action-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+    .band-post-action-btn.delete:hover {
+      background: rgba(244, 63, 94, 0.15);
+      color: #f43f5e;
+      border-color: #f43f5e;
+    }
+    .band-post-pinned-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .band-post-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+      line-height: 1.35;
+    }
+    .band-post-body {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     .band-page-content {
       background: #161b2c;
       padding: 32px 40px 60px 40px;
@@ -6856,9 +6995,9 @@
 
         <!-- 5 TABS STRIP (COM ÍCONES IGUAL PERFIL) -->
         <div class="band-page-tabs-strip">
-          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Histórico e Linha do Tempo">
-            <ion-icon name="time-outline" class="tab-icon"></ion-icon>
-            <span class="tab-name-label" data-i18n="bandChangesTab">Timeline</span>
+          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Home e Lembretes da Banda">
+            <ion-icon name="home-outline" class="tab-icon"></ion-icon>
+            <span class="tab-name-label" data-i18n="bandHomeTab">Home</span>
           </button>
           <button class="band-tab-btn" id="bTabBtn-M" onclick="switchBandPageTab('M')" title="Integrantes e Membros">
             <ion-icon name="people-outline" class="tab-icon"></ion-icon>
@@ -9059,6 +9198,81 @@
           <button type="button" class="btn btn-primary" onclick="confirmAddSongsToBand()" id="btnConfirmAddSongsToBand" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">Adicionar</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO / EDITAR LEMBRETE DA BANDA -->
+  <div class="modal-overlay" id="bandPostModal">
+    <div class="modal-card" style="max-width: 580px; width: 95%; max-height: 90vh; overflow-y: auto; box-sizing: border-box;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <ion-icon name="pin-outline" style="color: var(--cyan); font-size: 1.3rem;"></ion-icon>
+          <span id="bandPostModalTitle">Novo Lembrete da Banda</span>
+        </h3>
+        <button type="button" class="modal-close" onclick="closeModal('bandPostModal')">&times;</button>
+      </div>
+
+      <form id="bandPostForm" onsubmit="handleSaveBandPost(event)" style="width: 100%; box-sizing: border-box;">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+            Título do Lembrete *
+          </label>
+          <input 
+            type="text" 
+            id="postTitleInput" 
+            class="form-input" 
+            placeholder="Ex: Ensaio de quinta-feira, repertório do próximo show..." 
+            required 
+            maxlength="150"
+            style="width: 100%; box-sizing: border-box;"
+          >
+        </div>
+
+        <div class="form-group" style="margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 0.86rem; font-weight: 700; color: #cbd5e1;">
+              Conteúdo do Lembrete / Aviso *
+            </label>
+            <span id="postCharCounter" style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">
+              <span id="postCharCount">0</span> / 800
+            </span>
+          </div>
+          <textarea 
+            id="postContentInput" 
+            class="form-input" 
+            rows="6" 
+            placeholder="Escreva aqui as informações, escala de horários, detalhes ou avisos para os integrantes..." 
+            required 
+            maxlength="800"
+            oninput="updatePostContentCounter()"
+            style="width: 100%; box-sizing: border-box; resize: vertical; min-height: 120px; line-height: 1.5;"
+          ></textarea>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px; margin-bottom: 22px;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); padding: 10px 14px; border-radius: 10px; user-select: none;">
+            <input type="checkbox" id="postIsPinnedInput" style="accent-color: var(--cyan); width: 17px; height: 17px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                <span>📌 Fixar este lembrete no topo</span>
+              </div>
+              <div style="font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">
+                Lembretes fixados aparecem em destaque no topo da página Home.
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostModal')">
+            Cancelar
+          </button>
+          <button type="submit" id="btnSaveBandPost" class="btn btn-cyan btn-sm" style="display: flex; align-items: center; gap: 6px;">
+            <ion-icon name="send-outline"></ion-icon>
+            <span id="btnSaveBandPostText">Publicar Lembrete</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -12466,7 +12680,7 @@
       if (u === 'R' || u === 'REPERTOIRE' || u === 'REPERTORIO') return switchBandPageTab('R');
       if (u === 'M' || u === 'MEMBERS' || u === 'MEMBROS') return switchBandPageTab('M');
       if (u === 'F' || u === 'FINANCES' || u === 'FINANCAS') return switchBandPageTab('F');
-      if (u === 'L' || u === 'TIMELINE' || u === 'HISTORICO') return switchBandPageTab('L');
+      if (u === 'L' || u === 'HOME' || u === 'TIMELINE' || u === 'HISTORICO') return switchBandPageTab('L');
       switchBandPageTab(tabKey);
     }
 
@@ -12826,6 +13040,277 @@
       return 0;
     }
 
+    
+    // ==============================================================
+    // BAND POSTS / LEMBRETES FIXOS DA HOME DA BANDA
+    // ==============================================================
+    let currentBandPosts = [];
+    let currentEditingPostId = null;
+
+    async function loadBandPosts(bandId) {
+      const container = document.getElementById('bandPostsContainer');
+      if (!bandId) return;
+
+      try {
+        const res = await fetch(`${API_URL}/bands/${bandId}/posts`, {
+          headers: getAuthHeaders()
+        });
+
+        if (!res.ok) {
+          if (container) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem;">
+                Não foi possível carregar os lembretes da banda no momento.
+              </div>
+            `;
+          }
+          return;
+        }
+
+        currentBandPosts = await res.json();
+        renderBandPostsList();
+      } catch (e) {
+        console.warn('Erro ao buscar posts da banda:', e);
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem;">
+              Erro de conexão ao carregar lembretes.
+            </div>
+          `;
+        }
+      }
+    }
+
+    function renderBandPostsList() {
+      const container = document.getElementById('bandPostsContainer');
+      if (!container) return;
+
+      if (!currentBandPosts || currentBandPosts.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 36px 20px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
+            <ion-icon name="clipboard-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 6px;"></ion-icon>
+            <p style="color: #cbd5e1; font-weight: 700; margin: 0 0 4px 0; font-size: 0.95rem;">Nenhum lembrete publicado ainda</p>
+            <p style="color: #64748b; font-size: 0.82rem; margin: 0;">Use o botão <strong>+ Novo Lembrete</strong> acima para compartilhar recados, escalas ou avisos importantes com a banda.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      currentBandPosts.forEach(post => {
+        const isPinned = !!post.isPinned;
+        const authorInitials = (post.authorName || 'B').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        const dateFormatted = formatPostDateTime(post.createdAt);
+        const updatedLabel = post.updatedAt ? ` • <span style="font-style: italic; opacity: 0.8;">editado</span>` : '';
+
+        const authorPic = post.authorPictureUrl ? normalizeImageUri(post.authorPictureUrl) : null;
+
+        html += `
+          <div class="band-post-card ${isPinned ? 'pinned' : ''}" id="bandPostCard-${post.id}">
+            <div class="band-post-header">
+              <div class="band-post-author-box">
+                <div class="band-post-avatar">
+                  ${authorPic 
+                    ? `<img src="${authorPic}" alt="${escapeHtml(post.authorName)}">` 
+                    : `<span>${authorInitials}</span>`}
+                </div>
+                <div class="band-post-meta">
+                  <div class="band-post-author-name">
+                    <span>${escapeHtml(post.authorName)}</span>
+                    ${post.authorUsername ? `<span style="font-size: 0.74rem; font-weight: 500; color: #94a3b8;">@${escapeHtml(post.authorUsername)}</span>` : ''}
+                  </div>
+                  <div class="band-post-date">
+                    <ion-icon name="time-outline" style="font-size: 0.76rem;"></ion-icon>
+                    <span>${dateFormatted}${updatedLabel}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="band-post-actions">
+                ${post.canEdit ? `
+                  <button type="button" class="band-post-action-btn" onclick="openEditBandPostModal(${post.id})" title="Editar lembrete">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </button>
+                ` : ''}
+                ${post.canDelete ? `
+                  <button type="button" class="band-post-action-btn delete" onclick="confirmDeleteBandPost(${post.id})" title="Excluir lembrete">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            ${isPinned ? `
+              <div>
+                <span class="band-post-pinned-badge">
+                  <ion-icon name="pin"></ion-icon>
+                  <span>Fixo no Topo</span>
+                </span>
+              </div>
+            ` : ''}
+
+            <h3 class="band-post-title">${escapeHtml(post.title)}</h3>
+            <div class="band-post-body">${escapeHtml(post.content)}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function formatPostDateTime(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} às ${hours}:${mins}`;
+    }
+
+    function openCreateBandPostModal() {
+      if (!currentUser) {
+        if (typeof openAuthModal === 'function') openAuthModal();
+        else alert('Por favor, faça login para publicar lembretes na banda.');
+        return;
+      }
+      currentEditingPostId = null;
+      document.getElementById('bandPostModalTitle').innerText = 'Novo Lembrete da Banda';
+      document.getElementById('btnSaveBandPostText').innerText = 'Publicar Lembrete';
+      document.getElementById('postTitleInput').value = '';
+      document.getElementById('postContentInput').value = '';
+      document.getElementById('postIsPinnedInput').checked = false;
+      updatePostContentCounter();
+      openModal('bandPostModal');
+      setTimeout(() => document.getElementById('postTitleInput')?.focus(), 150);
+    }
+
+    function openEditBandPostModal(postId) {
+      const post = currentBandPosts.find(p => p.id === postId);
+      if (!post) return;
+      currentEditingPostId = postId;
+      document.getElementById('bandPostModalTitle').innerText = 'Editar Lembrete';
+      document.getElementById('btnSaveBandPostText').innerText = 'Salvar Alterações';
+      document.getElementById('postTitleInput').value = post.title || '';
+      document.getElementById('postContentInput').value = post.content || '';
+      document.getElementById('postIsPinnedInput').checked = !!post.isPinned;
+      updatePostContentCounter();
+      openModal('bandPostModal');
+      setTimeout(() => document.getElementById('postTitleInput')?.focus(), 150);
+    }
+
+    function updatePostContentCounter() {
+      const el = document.getElementById('postContentInput');
+      const countEl = document.getElementById('postCharCount');
+      const counterContainer = document.getElementById('postCharCounter');
+      if (!el || !countEl) return;
+      const len = el.value.length;
+      countEl.innerText = len;
+      if (len > 800) {
+        if (counterContainer) counterContainer.style.color = '#f43f5e';
+      } else if (len >= 700) {
+        if (counterContainer) counterContainer.style.color = '#fbbf24';
+      } else {
+        if (counterContainer) counterContainer.style.color = '#94a3b8';
+      }
+    }
+
+    async function handleSaveBandPost(event) {
+      if (event) event.preventDefault();
+      if (!currentBandData) return;
+
+      const titleInput = document.getElementById('postTitleInput');
+      const contentInput = document.getElementById('postContentInput');
+      const isPinnedInput = document.getElementById('postIsPinnedInput');
+      const btn = document.getElementById('btnSaveBandPost');
+
+      const title = (titleInput?.value || '').trim();
+      const content = (contentInput?.value || '').trim();
+      const isPinned = !!isPinnedInput?.checked;
+
+      if (!title) {
+        showToast('O título do lembrete é obrigatório.', 'warning');
+        if (titleInput) titleInput.focus();
+        return;
+      }
+
+      if (!content) {
+        showToast('O conteúdo do lembrete é obrigatório.', 'warning');
+        if (contentInput) contentInput.focus();
+        return;
+      }
+
+      if (content.length > 800) {
+        showToast('O conteúdo do lembrete não pode ultrapassar 800 caracteres.', 'warning');
+        return;
+      }
+
+      const prevBtnHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<ion-icon name="sync-outline" class="spin"></ion-icon> Salvando...`;
+      }
+
+      try {
+        const url = currentEditingPostId
+          ? `${API_URL}/bands/${currentBandData.id}/posts/${currentEditingPostId}`
+          : `${API_URL}/bands/${currentBandData.id}/posts`;
+        const method = currentEditingPostId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            title,
+            content,
+            isPinned
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Erro ao salvar o lembrete.');
+        }
+
+        closeModal('bandPostModal');
+        showToast(currentEditingPostId ? 'Lembrete atualizado com sucesso!' : 'Lembrete publicado na Home!', 'success');
+        await loadBandPosts(currentBandData.id);
+      } catch (err) {
+        console.error('Erro ao salvar post:', err);
+        showToast(err.message || 'Erro ao salvar lembrete.', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = prevBtnHtml;
+        }
+      }
+    }
+
+    async function confirmDeleteBandPost(postId) {
+      if (!currentBandData) return;
+      if (!confirm('Deseja realmente excluir este lembrete da Home da banda?')) return;
+
+      try {
+        const res = await fetch(`${API_URL}/bands/${currentBandData.id}/posts/${postId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Erro ao excluir lembrete.');
+        }
+
+        showToast('Lembrete excluído com sucesso.', 'info');
+        await loadBandPosts(currentBandData.id);
+      } catch (err) {
+        console.error('Erro ao deletar post:', err);
+        showToast(err.message || 'Erro ao excluir lembrete.', 'error');
+      }
+    }
+
     function renderBandTimelineTab(band, syncData) {
       const sub = document.getElementById('bSubview-L');
       if (!sub) return;
@@ -12833,13 +13318,38 @@
       const logs = syncData?.activityLogs || [];
       const candidateInterests = getBandCandidateInterests(band.id, band.name);
 
-      let html = `
-        <div style="margin-bottom: 16px;">
-          <h2 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 2px; display: flex; align-items: center; gap: 8px;">
-            <ion-icon name="time" style="color: var(--cyan);"></ion-icon>
-            <span>Alterações</span>
-          </h2>
-          <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">Histórico recente de atividades e alterações da banda.</p>
+            let html = `
+        <!-- CABEÇALHO DA HOME / LEMBRETES -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 14px; flex-wrap: wrap;">
+          <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="home" style="color: var(--cyan);"></ion-icon>
+              <span>Home da Banda</span>
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin: 3px 0 0 0;">Quadro de avisos, lembretes fixos e atividades dos integrantes.</p>
+          </div>
+          <div>
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openCreateBandPostModal()" title="Novo Lembrete" style="display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-weight: 700; border-radius: 9px;">
+              <ion-icon name="add-circle-outline" style="font-size: 1.15rem;"></ion-icon>
+              <span>Novo Lembrete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CONTAINER DOS LEMBRETES FIXOS / POSTAGENS DA BANDA -->
+        <div id="bandPostsContainer" class="band-posts-section">
+          <div style="text-align: center; padding: 24px; color: #94a3b8; font-size: 0.85rem;">
+            <ion-icon name="sync-outline" class="spin" style="font-size: 1.4rem; vertical-align: middle; margin-right: 6px;"></ion-icon>
+            Carregando lembretes da banda...
+          </div>
+        </div>
+
+        <!-- DIVISOR E ATIVIDADES RECENTES -->
+        <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+            <ion-icon name="time-outline" style="color: var(--cyan);"></ion-icon>
+            <span>Atividades Recentes & Histórico</span>
+          </h3>
         </div>
       `;
 
