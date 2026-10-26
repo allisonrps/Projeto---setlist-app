@@ -12484,6 +12484,7 @@
       currentActiveBandId = bandId;
       currentBandSyncData = null;
       currentBandData = null;
+      currentBandPosts = [];
       let band = (myBands || []).find(b => b.id === bandId);
 
       // Sempre busca dados frescos da nuvem se online para obter o repertório consolidado e favoritos da banda
@@ -13049,7 +13050,18 @@
 
     async function loadBandPosts(bandId) {
       const container = document.getElementById('bandPostsContainer');
-      if (!bandId) return;
+      if (!bandId) {
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 36px 20px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
+              <ion-icon name="clipboard-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 6px;"></ion-icon>
+              <p style="color: #cbd5e1; font-weight: 700; margin: 0 0 4px 0; font-size: 0.95rem;">Lembretes disponíveis apenas online</p>
+              <p style="color: #64748b; font-size: 0.82rem; margin: 0;">Conecte ou sincronize a banda com a nuvem para publicar e visualizar lembretes.</p>
+            </div>
+          `;
+        }
+        return;
+      }
 
       try {
         const res = await fetch(`${API_URL}/bands/${bandId}/posts`, {
@@ -13067,7 +13079,8 @@
           return;
         }
 
-        currentBandPosts = await res.json();
+        const data = await res.json();
+        currentBandPosts = Array.isArray(data) ? data : [];
         renderBandPostsList();
       } catch (e) {
         console.warn('Erro ao buscar posts da banda:', e);
@@ -13099,7 +13112,7 @@
       let html = '';
       currentBandPosts.forEach(post => {
         const isPinned = !!post.isPinned;
-        const authorInitials = (post.authorName || 'B').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        const authorInitials = (post.authorName || 'B').split(/\s+/).slice(0, 2).map(w => w ? w[0] : '').join('').toUpperCase() || 'B';
         const dateFormatted = formatPostDateTime(post.createdAt);
         const updatedLabel = post.updatedAt ? ` • <span style="font-style: italic; opacity: 0.8;">editado</span>` : '';
 
@@ -13484,6 +13497,14 @@
           </div>
         `;
         sub.innerHTML = html;
+        if (band && band.id) {
+          if (Array.isArray(currentBandPosts) && currentBandPosts.length > 0 && currentBandPosts[0].bandId === band.id) {
+            renderBandPostsList();
+          }
+          loadBandPosts(band.id);
+        } else {
+          loadBandPosts(null);
+        }
         return;
       }
 
@@ -13580,6 +13601,14 @@
       });
 
       sub.innerHTML = html;
+      if (band && band.id) {
+        if (Array.isArray(currentBandPosts) && currentBandPosts.length > 0 && currentBandPosts[0].bandId === band.id) {
+          renderBandPostsList();
+        }
+        loadBandPosts(band.id);
+      } else {
+        loadBandPosts(null);
+      }
     }
 
     // ==============================================================
