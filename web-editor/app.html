@@ -9249,18 +9249,19 @@
           ></textarea>
         </div>
 
-        <div class="form-group" style="margin-top: 14px; margin-bottom: 22px;">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); padding: 10px 14px; border-radius: 10px; user-select: none;">
-            <input type="checkbox" id="postIsPinnedInput" style="accent-color: var(--cyan); width: 17px; height: 17px; cursor: pointer;">
-            <div>
-              <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
-                <span>📌 Fixar este lembrete no topo</span>
-              </div>
-              <div style="font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">
-                Lembretes fixados aparecem em destaque no topo da página Home.
-              </div>
-            </div>
-          </label>
+        <div class="form-group" style="margin-top: 12px; margin-bottom: 20px;">
+          <button 
+            type="button" 
+            id="btnToggleModalPin" 
+            class="btn-favorite-star" 
+            onclick="toggleModalPostPin()"
+            style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 9px; font-size: 0.88rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;"
+            title="Fixar lembrete no topo"
+          >
+            <ion-icon name="star-outline" id="modalPinStarIcon" style="font-size: 1.25rem;"></ion-icon>
+            <span id="modalPinStarLabel" style="color: #cbd5e1;">Fixar</span>
+          </button>
+          <input type="hidden" id="postIsPinnedInput" value="false">
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
@@ -9273,6 +9274,46 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  
+  <!-- MODAL DE VISUALIZAÇÃO DO LEMBRETE COMPLETO -->
+  <div class="modal-overlay" id="bandPostViewModal">
+    <div class="modal-card" style="max-width: 580px; width: 95%; max-height: 90vh; overflow-y: auto; box-sizing: border-box;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+          <button type="button" id="viewPostStarBtn" class="btn-favorite-star" style="font-size: 1.35rem; padding: 4px;" title="Fixar / Desafixar">
+            <ion-icon name="star-outline"></ion-icon>
+          </button>
+          <h3 class="modal-title" id="viewPostTitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; font-size: 1.15rem; color: #fff;">
+            Lembrete
+          </h3>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('bandPostViewModal')">&times;</button>
+      </div>
+
+      <div style="padding: 18px 20px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div id="viewPostAvatar" class="band-post-avatar" style="width: 38px; height: 38px;"></div>
+          <div style="min-width: 0;">
+            <div style="font-weight: 700; color: #fff; font-size: 0.92rem;" id="viewPostAuthor"></div>
+            <div style="font-size: 0.76rem; color: #94a3b8; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+              <ion-icon name="time-outline"></ion-icon>
+              <span id="viewPostDate"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="viewPostContent" style="font-size: 0.96rem; color: #e2e8f0; line-height: 1.65; white-space: pre-wrap; word-break: break-word; min-height: 80px;"></div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <div id="viewPostActions" style="display: flex; gap: 8px;"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostViewModal')">
+          Fechar
+        </button>
+      </div>
     </div>
   </div>
 
@@ -13115,31 +13156,43 @@
         const authorInitials = (post.authorName || 'B').split(/\s+/).slice(0, 2).map(w => w ? w[0] : '').join('').toUpperCase() || 'B';
         const dateFormatted = formatPostDateTime(post.createdAt);
         const updatedLabel = post.updatedAt ? ` • <span style="font-style: italic; opacity: 0.8;">editado</span>` : '';
-
         const authorPic = post.authorPictureUrl ? normalizeImageUri(post.authorPictureUrl) : null;
 
         html += `
-          <div class="band-post-card ${isPinned ? 'pinned' : ''}" id="bandPostCard-${post.id}">
-            <div class="band-post-header">
-              <div class="band-post-author-box">
-                <div class="band-post-avatar">
-                  ${authorPic 
-                    ? `<img src="${authorPic}" alt="${escapeHtml(post.authorName)}">` 
-                    : `<span>${authorInitials}</span>`}
+          <div class="band-post-card ${isPinned ? 'pinned' : ''}" id="bandPostCard-${post.id}" onclick="openViewBandPostModal(${post.id})" style="cursor: pointer; padding: 12px 16px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              
+              <!-- ESTRELINHA (FIXAR / FAVORITAR) -->
+              <button 
+                type="button" 
+                class="btn-favorite-star ${isPinned ? 'active' : ''}" 
+                onclick="event.stopPropagation(); togglePinBandPost(${post.id})" 
+                title="${isPinned ? 'Desafixar lembrete' : 'Fixar lembrete'}"
+                style="flex-shrink: 0; font-size: 1.35rem; padding: 4px;"
+              >
+                <ion-icon name="${isPinned ? 'star' : 'star-outline'}"></ion-icon>
+              </button>
+
+              <!-- TÍTULO E DATA/HORA -->
+              <div style="flex: 1; min-width: 0;">
+                <div class="band-post-title" style="margin: 0; font-size: 0.98rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(post.title)}">
+                  ${escapeHtml(post.title)}
                 </div>
-                <div class="band-post-meta">
-                  <div class="band-post-author-name">
-                    <span>${escapeHtml(post.authorName)}</span>
-                    ${post.authorUsername ? `<span style="font-size: 0.74rem; font-weight: 500; color: #94a3b8;">@${escapeHtml(post.authorUsername)}</span>` : ''}
-                  </div>
-                  <div class="band-post-date">
-                    <ion-icon name="time-outline" style="font-size: 0.76rem;"></ion-icon>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 0.75rem; color: #94a3b8; flex-wrap: wrap;">
+                  <span style="display: inline-flex; align-items: center; gap: 4px;">
+                    <ion-icon name="time-outline" style="font-size: 0.78rem;"></ion-icon>
                     <span>${dateFormatted}${updatedLabel}</span>
-                  </div>
+                  </span>
+                  <span style="opacity: 0.4;">•</span>
+                  <span style="display: inline-flex; align-items: center; gap: 4px; color: #cbd5e1;">
+                    <ion-icon name="person-outline" style="font-size: 0.78rem;"></ion-icon>
+                    <span>${escapeHtml(post.authorName)}</span>
+                  </span>
                 </div>
               </div>
 
-              <div class="band-post-actions">
+              <!-- AÇÕES (EDITAR / EXCLUIR) -->
+              <div class="band-post-actions" onclick="event.stopPropagation()" style="display: flex; align-items: center; gap: 6px;">
                 ${post.canEdit ? `
                   <button type="button" class="band-post-action-btn" onclick="openEditBandPostModal(${post.id})" title="Editar lembrete">
                     <ion-icon name="create-outline"></ion-icon>
@@ -13151,24 +13204,158 @@
                   </button>
                 ` : ''}
               </div>
+
             </div>
-
-            ${isPinned ? `
-              <div>
-                <span class="band-post-pinned-badge">
-                  <ion-icon name="pin"></ion-icon>
-                  <span>Fixo no Topo</span>
-                </span>
-              </div>
-            ` : ''}
-
-            <h3 class="band-post-title">${escapeHtml(post.title)}</h3>
-            <div class="band-post-body">${escapeHtml(post.content)}</div>
           </div>
         `;
       });
 
       container.innerHTML = html;
+    }
+
+    function openViewBandPostModal(postId) {
+      const post = currentBandPosts.find(p => p.id === postId);
+      if (!post) return;
+
+      const titleEl = document.getElementById('viewPostTitle');
+      const authorEl = document.getElementById('viewPostAuthor');
+      const avatarEl = document.getElementById('viewPostAvatar');
+      const dateEl = document.getElementById('viewPostDate');
+      const contentEl = document.getElementById('viewPostContent');
+      const starBtn = document.getElementById('viewPostStarBtn');
+      const actionsEl = document.getElementById('viewPostActions');
+
+      if (titleEl) titleEl.innerText = post.title || 'Lembrete';
+      if (authorEl) {
+        authorEl.innerHTML = `
+          <span>${escapeHtml(post.authorName || 'Integrante')}</span>
+          ${post.authorUsername ? `<span style="font-size: 0.76rem; font-weight: 500; color: #94a3b8; margin-left: 6px;">@${escapeHtml(post.authorUsername)}</span>` : ''}
+        `;
+      }
+      if (avatarEl) {
+        const authorInitials = (post.authorName || 'B').split(/\s+/).slice(0, 2).map(w => w ? w[0] : '').join('').toUpperCase() || 'B';
+        const authorPic = post.authorPictureUrl ? normalizeImageUri(post.authorPictureUrl) : null;
+        avatarEl.innerHTML = authorPic
+          ? `<img src="${authorPic}" alt="${escapeHtml(post.authorName || 'Avatar')}">`
+          : `<span>${authorInitials}</span>`;
+      }
+      if (dateEl) {
+        const updatedLabel = post.updatedAt ? ` • <span style="font-style: italic; opacity: 0.8;">editado</span>` : '';
+        dateEl.innerHTML = `${formatPostDateTime(post.createdAt)}${updatedLabel}`;
+      }
+      if (contentEl) {
+        contentEl.innerText = post.content || '';
+      }
+
+      if (starBtn) {
+        starBtn.className = post.isPinned ? 'btn-favorite-star active' : 'btn-favorite-star';
+        starBtn.innerHTML = `<ion-icon name="${post.isPinned ? 'star' : 'star-outline'}"></ion-icon>`;
+        starBtn.title = post.isPinned ? 'Desafixar lembrete' : 'Fixar lembrete';
+        starBtn.onclick = async () => {
+          await togglePinBandPost(post.id);
+          const updated = currentBandPosts.find(p => p.id === post.id);
+          const isPin = updated ? !!updated.isPinned : false;
+          starBtn.className = isPin ? 'btn-favorite-star active' : 'btn-favorite-star';
+          starBtn.innerHTML = `<ion-icon name="${isPin ? 'star' : 'star-outline'}"></ion-icon>`;
+          starBtn.title = isPin ? 'Desafixar lembrete' : 'Fixar lembrete';
+        };
+      }
+
+      if (actionsEl) {
+        let actHtml = '';
+        if (post.canEdit) {
+          actHtml += `
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostViewModal'); openEditBandPostModal(${post.id})" style="display: flex; align-items: center; gap: 5px;">
+              <ion-icon name="create-outline"></ion-icon>
+              <span>Editar</span>
+            </button>
+          `;
+        }
+        if (post.canDelete) {
+          actHtml += `
+            <button type="button" class="btn btn-danger btn-sm" onclick="closeModal('bandPostViewModal'); confirmDeleteBandPost(${post.id})" style="display: flex; align-items: center; gap: 5px;">
+              <ion-icon name="trash-outline"></ion-icon>
+              <span>Excluir</span>
+            </button>
+          `;
+        }
+        actionsEl.innerHTML = actHtml;
+      }
+
+      openModal('bandPostViewModal');
+    }
+
+    async function togglePinBandPost(postId) {
+      if (!currentBandData) return;
+      const post = currentBandPosts.find(p => p.id === postId);
+      if (!post) return;
+
+      const newPinned = !post.isPinned;
+      post.isPinned = newPinned;
+      currentBandPosts.sort((a, b) => {
+        if (!!a.isPinned !== !!b.isPinned) return a.isPinned ? -1 : 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      renderBandPostsList();
+
+      try {
+        const res = await fetch(`${API_URL}/bands/${currentBandData.id}/posts/${postId}/pin`, {
+          method: 'PATCH',
+          headers: getAuthHeaders()
+        });
+
+        if (!res.ok) {
+          const putRes = await fetch(`${API_URL}/bands/${currentBandData.id}/posts/${postId}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+              title: post.title,
+              content: post.content,
+              isPinned: newPinned
+            })
+          });
+          if (!putRes.ok) {
+            throw new Error('Falha ao alterar fixação.');
+          }
+        }
+        showToast(newPinned ? 'Lembrete fixado no topo ⭐' : 'Lembrete desafixado.', 'info');
+      } catch (err) {
+        console.error('Erro ao alternar fixação:', err);
+        post.isPinned = !newPinned;
+        currentBandPosts.sort((a, b) => {
+          if (!!a.isPinned !== !!b.isPinned) return a.isPinned ? -1 : 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        renderBandPostsList();
+        showToast('Não foi possível fixar/desafixar o lembrete.', 'error');
+      }
+    }
+
+    function updateModalPinButton(isPinned) {
+      const btn = document.getElementById('btnToggleModalPin');
+      const icon = document.getElementById('modalPinStarIcon');
+      const label = document.getElementById('modalPinStarLabel');
+      const hiddenInput = document.getElementById('postIsPinnedInput');
+      if (!btn || !icon || !label || !hiddenInput) return;
+
+      hiddenInput.value = isPinned ? 'true' : 'false';
+      if (isPinned) {
+        btn.classList.add('active');
+        icon.setAttribute('name', 'star');
+        label.innerText = 'Fixado';
+        label.style.color = '#fbbf24';
+      } else {
+        btn.classList.remove('active');
+        icon.setAttribute('name', 'star-outline');
+        label.innerText = 'Fixar';
+        label.style.color = '#cbd5e1';
+      }
+    }
+
+    function toggleModalPostPin() {
+      const hiddenInput = document.getElementById('postIsPinnedInput');
+      const currentState = hiddenInput?.value === 'true';
+      updateModalPinButton(!currentState);
     }
 
     function formatPostDateTime(dateStr) {
@@ -13194,7 +13381,7 @@
       document.getElementById('btnSaveBandPostText').innerText = 'Publicar Lembrete';
       document.getElementById('postTitleInput').value = '';
       document.getElementById('postContentInput').value = '';
-      document.getElementById('postIsPinnedInput').checked = false;
+      updateModalPinButton(false);
       updatePostContentCounter();
       openModal('bandPostModal');
       setTimeout(() => document.getElementById('postTitleInput')?.focus(), 150);
@@ -13208,7 +13395,7 @@
       document.getElementById('btnSaveBandPostText').innerText = 'Salvar Alterações';
       document.getElementById('postTitleInput').value = post.title || '';
       document.getElementById('postContentInput').value = post.content || '';
-      document.getElementById('postIsPinnedInput').checked = !!post.isPinned;
+      updateModalPinButton(!!post.isPinned);
       updatePostContentCounter();
       openModal('bandPostModal');
       setTimeout(() => document.getElementById('postTitleInput')?.focus(), 150);
@@ -13241,7 +13428,7 @@
 
       const title = (titleInput?.value || '').trim();
       const content = (contentInput?.value || '').trim();
-      const isPinned = !!isPinnedInput?.checked;
+      const isPinned = isPinnedInput?.value === 'true' || !!isPinnedInput?.checked;
 
       if (!title) {
         showToast('O título do lembrete é obrigatório.', 'warning');
