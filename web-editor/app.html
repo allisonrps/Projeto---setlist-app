@@ -1204,6 +1204,186 @@
       color: #fff;
       margin-bottom: 6px;
     }
+    
+    /* SONGBOOK DASHBOARD & ESTATÍSTICAS */
+    .sb-dashboard-card {
+      background: #121826;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      padding: 26px 30px;
+      gap: 22px;
+      overflow-y: auto;
+      min-height: 700px;
+      box-sizing: border-box;
+    }
+    .sb-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1100px) {
+      .sb-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 600px) {
+      .sb-kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .sb-dashboard-card {
+        padding: 16px 14px;
+      }
+    }
+    .sb-kpi-card {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s ease;
+    }
+    .sb-kpi-card:hover {
+      background: rgba(255, 255, 255, 0.045);
+      border-color: rgba(56, 189, 248, 0.25);
+      transform: translateY(-2px);
+    }
+    .sb-kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      flex-shrink: 0;
+    }
+    .sb-kpi-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+    }
+    .sb-kpi-label {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      font-weight: 700;
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .sb-dash-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .sb-dash-grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+    .sb-dash-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sb-dash-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .sb-dash-section-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+    .sb-stat-bar-item {
+      margin-bottom: 14px;
+    }
+    .sb-stat-bar-item:last-child {
+      margin-bottom: 0;
+    }
+    .sb-stat-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.86rem;
+      margin-bottom: 6px;
+    }
+    .sb-stat-bar-track {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      height: 9px;
+      overflow: hidden;
+      position: relative;
+    }
+    .sb-stat-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sb-recent-song-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .sb-recent-song-row:hover {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.25);
+      transform: translateX(3px);
+    }
+    .sb-data-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      letter-spacing: 0.2px;
+    }
+    .sb-data-badge.filled-cifra {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .sb-data-badge.filled-letra {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .sb-data-badge.filled-tab {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .sb-data-badge.empty {
+      background: rgba(255, 255, 255, 0.03);
+      color: #64748b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      opacity: 0.6;
+    }
+
     .sb-empty-card p {
       color: #94a3b8;
       font-size: 0.9rem;
@@ -6666,6 +6846,9 @@
                   <span class="sb-badge-count" id="sbSongsCount">0</span>
                 </div>
                 <div style="display: flex; gap: 6px;">
+                  <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas do Songbook" id="btnSbDashboardNav" style="color: var(--cyan);">
+                    <ion-icon name="stats-chart-outline"></ion-icon>
+                  </button>
                   <button class="btn-icon-square" onclick="openAddSongModal()" title="New Song" data-i18n-title="songbookNewSongBtn">
                     <ion-icon name="add-outline"></ion-icon>
                   </button>
@@ -6677,6 +6860,9 @@
               
               <!-- Header Recolhido (Barra Menor) -->
               <div class="sb-sidebar-header-collapsed">
+                <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas" style="color: var(--cyan);">
+                  <ion-icon name="stats-chart-outline"></ion-icon>
+                </button>
                 <button class="btn-icon-square" onclick="toggleSongbookSidebar()" title="Expandir lista de músicas">
                   <ion-icon name="chevron-forward-outline"></ion-icon>
                 </button>
@@ -6748,10 +6934,19 @@
             </div>
 
             <!-- Card Principal do Editor -->
+            <!-- Dashboard Inicial de Estatísticas do Songbook -->
+            <div id="sbDashboardWrapper" class="sb-dashboard-card" style="display: none;">
+              <!-- Gerado dinamicamente via renderSongbookDashboard() -->
+            </div>
+
             <div id="sbEditorWrapper" class="sb-editor-card">
               
               <!-- Barra de Navegação e Opções Mobile (Alinhados em Linha no Topo) -->
               <div class="sb-mobile-nav-bar" id="sbMobileNavBar">
+                <button type="button" class="sb-mobile-back-btn" onclick="showSongbookDashboard()" title="Estatísticas">
+                  <ion-icon name="stats-chart-outline"></ion-icon>
+                  <span>Estatísticas</span>
+                </button>
                 <button type="button" class="sb-mobile-back-btn" onclick="returnToSongbookList()" title="Voltar para a Lista de Músicas">
                   <ion-icon name="arrow-back-outline"></ion-icon>
                   <span>Músicas</span>
@@ -6797,6 +6992,10 @@
                 </div>
 
                 <div class="sb-song-header-actions">
+                  <button class="btn btn-outline btn-sm" onclick="showSongbookDashboard()" title="Voltar para Estatísticas & Visão Geral" style="display: flex; align-items: center; gap: 6px;">
+                    <ion-icon name="stats-chart-outline" style="color: var(--cyan);"></ion-icon>
+                    <span>Estatísticas</span>
+                  </button>
                   <!-- OPÇÕES PARA EDITAR DETALHES DA MÚSICA -->
                   <button class="btn btn-outline btn-sm" id="btnToggleSongDetails" onclick="toggleSongDetailsDrawer()" title="Editar dados da música (Título, Artista, Tom, BPM...)">
                     <ion-icon name="create-outline"></ion-icon>
@@ -10244,6 +10443,7 @@
         if (ws && (!selectedSong || window.innerWidth <= 900)) {
           ws.classList.remove('mobile-detail-open');
         }
+        selectedSong = null; // Abre o dashboard de estatísticas por padrão na página inicial!
         renderSongbookSplitView();
       }
       if (viewId === 'projects') {
@@ -19959,12 +20159,393 @@
       }
     }
 
+    
+    // ==============================================================
+    // SONGBOOK DASHBOARD & ESTATÍSTICAS DO REPERTÓRIO
+    // ==============================================================
+    function showSongbookDashboard() {
+      selectedSong = null;
+      document.querySelectorAll('.sb-song-item').forEach(el => el.classList.remove('active'));
+      const editorWrapper = document.getElementById('sbEditorWrapper');
+      const dbWrapper = document.getElementById('sbDashboardWrapper');
+      const ws = document.getElementById('sbWorkspaceContainer');
+
+      if (editorWrapper) editorWrapper.style.display = 'none';
+      if (dbWrapper) {
+        dbWrapper.style.display = 'flex';
+        renderSongbookDashboard();
+      }
+      if (ws && window.innerWidth <= 900) {
+        ws.classList.add('mobile-detail-open');
+      }
+    }
+
+    function parseSongDurationInSeconds(durStr) {
+      if (!durStr) return 0;
+      const s = String(durStr).trim();
+      if (!s) return 0;
+      if (s.includes(':')) {
+        const parts = s.split(':').map(p => parseInt(p, 10) || 0);
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      }
+      const num = parseInt(s, 10);
+      return !isNaN(num) ? num : 0;
+    }
+
+    function formatTotalDuration(totalSec) {
+      if (!totalSec || totalSec <= 0) return '0 min';
+      const hours = Math.floor(totalSec / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      }
+      return `${minutes} min`;
+    }
+
+    function renderSongbookDashboard() {
+      const container = document.getElementById('sbDashboardWrapper');
+      if (!container) return;
+
+      const totalSongs = mySongs.length;
+      if (totalSongs === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+            <ion-icon name="musical-notes-outline" style="font-size: 2.5rem; margin-bottom: 8px;"></ion-icon>
+            <p>Nenhuma música cadastrada no repertório.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // 1. KPIs
+      const uniqueArtists = new Set(mySongs.map(s => (s.originalBand || '').trim().toLowerCase()).filter(Boolean)).size;
+      const favoritesCount = mySongs.filter(s => !!s.isFavorite).length;
+      const favoritesPct = Math.round((favoritesCount / totalSongs) * 100);
+      const totalDurationSec = mySongs.reduce((sum, s) => sum + parseSongDurationInSeconds(s.duration), 0);
+      const formattedTotalDuration = formatTotalDuration(totalDurationSec);
+
+      // 2. Completion rate (Letras, Cifras, Tablaturas, Completas)
+      const chordsCount = mySongs.filter(s => (s.chords || '').trim().length > 0).length;
+      const chordsPct = Math.round((chordsCount / totalSongs) * 100);
+
+      const lyricsCount = mySongs.filter(s => (s.lyrics || '').trim().length > 0).length;
+      const lyricsPct = Math.round((lyricsCount / totalSongs) * 100);
+
+      const tabsCount = mySongs.filter(s => (s.tabs || '').trim().length > 0).length;
+      const tabsPct = Math.round((tabsCount / totalSongs) * 100);
+
+      const completeCount = mySongs.filter(s => (s.chords || '').trim().length > 0 && (s.lyrics || '').trim().length > 0).length;
+      const completePct = Math.round((completeCount / totalSongs) * 100);
+
+      const withDurationCount = mySongs.filter(s => (s.duration || '').trim().length > 0).length;
+      const withDurationPct = Math.round((withDurationCount / totalSongs) * 100);
+
+      // 3. Top Estilos baseados nas tags
+      const tagCounts = {};
+      mySongs.forEach(s => {
+        if (s.style && s.style.trim()) {
+          s.style.split(',').forEach(t => {
+            const clean = t.trim();
+            if (clean) tagCounts[clean] = (tagCounts[clean] || 0) + 1;
+          });
+        }
+      });
+      const sortedTags = Object.keys(tagCounts)
+        .sort((a, b) => tagCounts[b] - tagCounts[a])
+        .slice(0, 6)
+        .map(tag => ({
+          name: tag,
+          count: tagCounts[tag],
+          pct: Math.round((tagCounts[tag] / totalSongs) * 100)
+        }));
+
+      // Palette for tags
+      const tagColors = ['#38bdf8', '#34d399', '#a855f7', '#fbbf24', '#f43f5e', '#60a5fa'];
+
+      // 4. Últimas 10 músicas adicionadas
+      const recentSongs = [...mySongs].sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          if (!isNaN(diff) && diff !== 0) return diff;
+        }
+        const idA = parseInt(a.id, 10) || 0;
+        const idB = parseInt(b.id, 10) || 0;
+        return idB - idA;
+      }).slice(0, 10);
+
+      let html = `
+        <!-- HEADER DA VISÃO GERAL -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
+          <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+              <ion-icon name="stats-chart" style="color: var(--cyan);"></ion-icon>
+              <span>Visão Geral do Repertório</span>
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.84rem; margin: 4px 0 0 0;">
+              Métricas do acervo, taxa de preenchimento de cifras/letras e últimas novidades cadastradas.
+            </p>
+          </div>
+          <div>
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openAddSongModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 700; padding: 7px 14px; border-radius: 9px;">
+              <ion-icon name="add-circle-outline" style="font-size: 1.15rem;"></ion-icon>
+              <span>Nova Música</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="sb-kpi-grid">
+          <div class="sb-kpi-card">
+            <div class="sb-kpi-icon" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">
+              <ion-icon name="musical-notes"></ion-icon>
+            </div>
+            <div>
+              <div class="sb-kpi-value">${totalSongs}</div>
+              <div class="sb-kpi-label">Músicas no Acervo</div>
+            </div>
+          </div>
+
+          <div class="sb-kpi-card">
+            <div class="sb-kpi-icon" style="background: rgba(52, 211, 153, 0.12); color: #34d399;">
+              <ion-icon name="people"></ion-icon>
+            </div>
+            <div>
+              <div class="sb-kpi-value">${uniqueArtists}</div>
+              <div class="sb-kpi-label">Artistas Únicos</div>
+            </div>
+          </div>
+
+          <div class="sb-kpi-card">
+            <div class="sb-kpi-icon" style="background: rgba(168, 85, 247, 0.12); color: #a855f7;">
+              <ion-icon name="time"></ion-icon>
+            </div>
+            <div>
+              <div class="sb-kpi-value">${formattedTotalDuration}</div>
+              <div class="sb-kpi-label">Tempo de Show</div>
+            </div>
+          </div>
+
+          <div class="sb-kpi-card">
+            <div class="sb-kpi-icon" style="background: rgba(251, 191, 36, 0.12); color: #fbbf24;">
+              <ion-icon name="star"></ion-icon>
+            </div>
+            <div>
+              <div class="sb-kpi-value">${favoritesCount} <span style="font-size: 0.85rem; font-weight: 600; opacity: 0.8;">(${favoritesPct}%)</span></div>
+              <div class="sb-kpi-label">Favoritas ⭐</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRUPO 2 COLUNAS: PREENCHIMENTO & TOP ESTILOS -->
+        <div class="sb-dash-grid-2">
+          
+          <!-- COLUNA 1: TAXA DE DADOS COMPLETOS -->
+          <div class="sb-dash-section">
+            <div class="sb-dash-section-header">
+              <h3 class="sb-dash-section-title">
+                <ion-icon name="shield-checkmark-outline" style="color: #34d399;"></ion-icon>
+                <span>Status de Preenchimento</span>
+              </h3>
+              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">${totalSongs} músicas</span>
+            </div>
+
+            <!-- CIFRAS -->
+            <div class="sb-stat-bar-item">
+              <div class="sb-stat-bar-header">
+                <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                  <ion-icon name="musical-note" style="color: #38bdf8;"></ion-icon>
+                  <span>Cifras</span>
+                </span>
+                <span style="font-weight: 800; color: #38bdf8;">
+                  ${chordsPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${chordsCount}/${totalSongs})</span>
+                </span>
+              </div>
+              <div class="sb-stat-bar-track">
+                <div class="sb-stat-bar-fill" style="width: ${chordsPct}%; background: linear-gradient(90deg, #38bdf8, #0284c7);"></div>
+              </div>
+            </div>
+
+            <!-- LETRAS -->
+            <div class="sb-stat-bar-item">
+              <div class="sb-stat-bar-header">
+                <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                  <ion-icon name="document-text" style="color: #34d399;"></ion-icon>
+                  <span>Letras</span>
+                </span>
+                <span style="font-weight: 800; color: #34d399;">
+                  ${lyricsPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${lyricsCount}/${totalSongs})</span>
+                </span>
+              </div>
+              <div class="sb-stat-bar-track">
+                <div class="sb-stat-bar-fill" style="width: ${lyricsPct}%; background: linear-gradient(90deg, #34d399, #059669);"></div>
+              </div>
+            </div>
+
+            <!-- TABLATURAS -->
+            <div class="sb-stat-bar-item">
+              <div class="sb-stat-bar-header">
+                <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                  <ion-icon name="barcode-outline" style="color: #c084fc;"></ion-icon>
+                  <span>Tablaturas</span>
+                </span>
+                <span style="font-weight: 800; color: #c084fc;">
+                  ${tabsPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${tabsCount}/${totalSongs})</span>
+                </span>
+              </div>
+              <div class="sb-stat-bar-track">
+                <div class="sb-stat-bar-fill" style="width: ${tabsPct}%; background: linear-gradient(90deg, #c084fc, #9333ea);"></div>
+              </div>
+            </div>
+
+            <!-- COMPLETAS (CIFRA + LETRA) -->
+            <div class="sb-stat-bar-item">
+              <div class="sb-stat-bar-header">
+                <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                  <ion-icon name="checkmark-done-circle" style="color: #fbbf24;"></ion-icon>
+                  <span>Completas (Cifra + Letra)</span>
+                </span>
+                <span style="font-weight: 800; color: #fbbf24;">
+                  ${completePct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${completeCount}/${totalSongs})</span>
+                </span>
+              </div>
+              <div class="sb-stat-bar-track">
+                <div class="sb-stat-bar-fill" style="width: ${completePct}%; background: linear-gradient(90deg, #fbbf24, #d97706);"></div>
+              </div>
+            </div>
+
+            <!-- DURAÇÃO DEFINIDA -->
+            <div class="sb-stat-bar-item">
+              <div class="sb-stat-bar-header">
+                <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                  <ion-icon name="timer-outline" style="color: #94a3b8;"></ion-icon>
+                  <span>Duração Cadastrada</span>
+                </span>
+                <span style="font-weight: 800; color: #cbd5e1;">
+                  ${withDurationPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${withDurationCount}/${totalSongs})</span>
+                </span>
+              </div>
+              <div class="sb-stat-bar-track">
+                <div class="sb-stat-bar-fill" style="width: ${withDurationPct}%; background: linear-gradient(90deg, #94a3b8, #64748b);"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COLUNA 2: TOP ESTILOS (%) BASEADOS NAS TAGS -->
+          <div class="sb-dash-section">
+            <div class="sb-dash-section-header">
+              <h3 class="sb-dash-section-title">
+                <ion-icon name="pricetags-outline" style="color: var(--cyan);"></ion-icon>
+                <span>Top Estilos & Gêneros (%)</span>
+              </h3>
+              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">Baseado nas tags</span>
+            </div>
+
+            ${sortedTags.length === 0 ? `
+              <div style="text-align: center; padding: 36px 14px; color: #94a3b8; font-size: 0.85rem;">
+                <ion-icon name="pricetag-outline" style="font-size: 2rem; opacity: 0.4; margin-bottom: 6px;"></ion-icon>
+                <p style="margin: 0 0 4px 0; font-weight: 700; color: #cbd5e1;">Nenhuma tag de estilo definida</p>
+                <p style="margin: 0; font-size: 0.78rem;">Edite as músicas e insira estilos (ex: Rock, Pop, Reggae) para visualizar a distribuição percentual.</p>
+              </div>
+            ` : sortedTags.map((tag, idx) => {
+              const color = tagColors[idx % tagColors.length];
+              return `
+                <div class="sb-stat-bar-item">
+                  <div class="sb-stat-bar-header">
+                    <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: ${color};"></span>
+                      <span>${escapeHtml(tag.name)}</span>
+                    </span>
+                    <span style="font-weight: 800; color: ${color};">
+                      ${tag.pct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${tag.count} ${tag.count === 1 ? 'música' : 'músicas'})</span>
+                    </span>
+                  </div>
+                  <div class="sb-stat-bar-track">
+                    <div class="sb-stat-bar-fill" style="width: ${tag.pct}%; background: ${color};"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+
+          </div>
+        </div>
+
+        <!-- SEÇÃO: ÚLTIMAS 10 MÚSICAS ADICIONADAS -->
+        <div class="sb-dash-section">
+          <div class="sb-dash-section-header">
+            <div>
+              <h3 class="sb-dash-section-title">
+                <ion-icon name="time-outline" style="color: #38bdf8;"></ion-icon>
+                <span>Últimas 10 Músicas Adicionadas</span>
+              </h3>
+              <span style="font-size: 0.75rem; color: #94a3b8;">Clique em qualquer música para abrir no editor</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            ${recentSongs.map(s => {
+              const hasChords = (s.chords || '').trim().length > 0;
+              const hasLyrics = (s.lyrics || '').trim().length > 0;
+              const hasTabs = (s.tabs || '').trim().length > 0;
+              const firstTag = s.style ? s.style.split(',')[0].trim() : '';
+
+              return `
+                <div class="sb-recent-song-row" onclick="selectSongbookItem('${s.id}')" title="Abrir '${escapeHtml(s.name)}' no editor">
+                  <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.1); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
+                      <ion-icon name="musical-note"></ion-icon>
+                    </div>
+                    <div style="min-width: 0; flex: 1;">
+                      <div style="font-weight: 700; color: #fff; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${escapeHtml(s.name)}
+                      </div>
+                      <div style="font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${escapeHtml(s.originalBand || 'Artista não definido')}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- BADGES DE STATUS -->
+                  <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap;">
+                    ${firstTag ? `
+                      <span class="sb-data-badge" style="background: rgba(255,255,255,0.06); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1);">
+                        ${escapeHtml(firstTag)}
+                      </span>
+                    ` : ''}
+                    <span class="sb-data-badge ${hasChords ? 'filled-cifra' : 'empty'}">
+                      Cifra
+                    </span>
+                    <span class="sb-data-badge ${hasLyrics ? 'filled-letra' : 'empty'}">
+                      Letra
+                    </span>
+                    <span class="sb-data-badge ${hasTabs ? 'filled-tab' : 'empty'}">
+                      Tab
+                    </span>
+                    ${s.duration ? `
+                      <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-left: 4px;">
+                        ${s.duration}
+                      </span>
+                    ` : ''}
+                    <ion-icon name="chevron-forward-outline" style="color: #64748b; font-size: 0.95rem; margin-left: 2px;"></ion-icon>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
     function renderSongbookSplitView() {
       const sidebarList = document.getElementById('sbSongList');
       const counter = document.getElementById('sbSongsCount');
       const collapsedCounter = document.getElementById('sbCollapsedCounter');
       const emptyState = document.getElementById('sbEmptyState');
       const editorWrapper = document.getElementById('sbEditorWrapper');
+      const dbWrapper = document.getElementById('sbDashboardWrapper');
 
       const count = mySongs.length;
       if (counter) counter.textContent = count;
@@ -19981,22 +20562,30 @@
         }
         if (emptyState) emptyState.style.display = 'block';
         if (editorWrapper) editorWrapper.style.display = 'none';
+        if (dbWrapper) dbWrapper.style.display = 'none';
         selectedSong = null;
         return;
       }
 
       if (emptyState) emptyState.style.display = 'none';
-      if (editorWrapper) editorWrapper.style.display = 'flex';
 
-      // If no song is selected or previously selected song was removed, select the first one
-      if (!selectedSong || !mySongs.some(s => String(s.id) === String(selectedSong.id))) {
-        selectedSong = mySongs[0];
+      // Se uma música estiver selecionada, mostra o editor; senão mostra a página inicial de estatísticas
+      if (selectedSong && mySongs.some(s => String(s.id) === String(selectedSong.id))) {
+        if (dbWrapper) dbWrapper.style.display = 'none';
+        if (editorWrapper) editorWrapper.style.display = 'flex';
+        populateSongbookEditor(selectedSong);
+      } else {
+        selectedSong = null;
+        if (editorWrapper) editorWrapper.style.display = 'none';
+        if (dbWrapper) {
+          dbWrapper.style.display = 'flex';
+          renderSongbookDashboard();
+        }
       }
 
       updateSongbookSortButtons();
       renderSongbookStylePills();
       filterSongbookList();
-      populateSongbookEditor(selectedSong);
     }
 
     function getSongInitialLetter(song) {
@@ -20166,6 +20755,12 @@
       }
 
       selectedSong = found;
+
+      // Esconde o dashboard e mostra o editor da música
+      const editorWrapper = document.getElementById('sbEditorWrapper');
+      const dbWrapper = document.getElementById('sbDashboardWrapper');
+      if (dbWrapper) dbWrapper.style.display = 'none';
+      if (editorWrapper) editorWrapper.style.display = 'flex';
       currentTransposeOffset = 0;
       updateTransposeBadge();
 
