@@ -1046,13 +1046,243 @@ export default function BandDetailScreen({
   const [isSavingPost, setIsSavingPost] = useState(false);
   const [selectedPostToView, setSelectedPostToView] = useState(null);
 
+  // ── Funções dos Lembretes da Banda (Home) ──
+  const loadBandPosts = useCallback(async () => {
+    if (!band || (!band.id && !band.cloudId)) return;
+    const bandIdentifier = band.cloudId || band.id;
+    try {
+      setIsLoadingPosts(true);
+      const isLogged = await api.isLoggedIn();
+      if (band.cloudId && isLogged) {
+        const remotePosts = await api.getBandPosts(band.cloudId);
+        if (Array.isArray(remotePosts)) {
+          setBandPosts(remotePosts);
+          try {
+            await AsyncStorage.setItem(`@band_posts_${band.cloudId}`, JSON.stringify(remotePosts));
+          } catch (e) {}
+          return;
+        }
+      }
+      // Fallback offline (AsyncStorage local)
+      const cached = await AsyncStorage.getItem(`@band_posts_${bandIdentifier}`);
+      if (cached) {
+        setBandPosts(JSON.parse(cached));
+      } else {
+        setBandPosts([]);
+      }
+    } catch (e) {
+      console.log('Error loading band posts:', e);
+    } finally {
+      setIsLoadingPosts(false);
+    }
+  }, [band]);
+
+  const sanitizePostText = (text) => {
+    if (!text) return '';
+    return text.replace(/['";\\]/g, ' ').trim();
+  };
+
+  const handleOpenCreatePost = () => {
+    setEditingPost(null);
+    setPostTitleInput('');
+    setPostContentInput('');
+    setPostIsPinnedInput(false);
+    setShowCreateEditPostModal(true);
+  };
+
+  const handleOpenEditPost = (post) => {
+    setEditingPost(post);
+    setPostTitleInput(post.title || '');
+    setPostContentInput(post.content || '');
+    setPostIsPinnedInput(Boolean(post.isPinned));
+    setShowCreateEditPostModal(true);
+  };
+
+  const handleSaveBandPost = async () => {
+    const cleanTitle = sanitizePostText(postTitleInput);
+    const cleanContent = (postContentInput || '').trim();
+
+    if (!cleanTitle) {
+      Alert.alert(t('error') || 'Erro', 'Informe o título do lembrete.');
+      return;
+    }
+    if (!cleanContent) {
+      Alert.alert(t('error') || 'Erro', 'Informe o conteúdo do lembrete.');
+      return;
+    }
+    if (cleanContent.length > 800) {
+      Alert.alert(t('error') || 'Erro', 'O lembrete pode ter no máximo 800 caracteres.');
+      return;
+    }
+
+    try {
+      setIsSavingPost(true);
+      const isLogged = await api.isLoggedIn();
+      const payload = {
+        title: cleanTitle,
+        content: cleanContent,
+        isPinned: postIsPinnedInput,
+      };
+
+      if (editingPost) {
+        if (band.cloudId && isLogged) {
+          const updated = await api.updateBandPost(band.cloudId, editingPost.id, payload);
+          if (updated && updated.id) {
+            setBandPosts(prev => prev.map(p => p.id === updated.id ? updated : p));
+            if (selectedPostToView?.id === updated.id) setSelectedPostToView(updated);
+          } else {
+            setBandPosts(prev => prev.map(p => p.id === editingPost.id ? { ...p, ...payload, updatedAt: new Date().toISOString() } : p));
+            if (selectedPostToView?.id === editingPost.id) setSelectedPostToView(prev => ({ ...prev, ...payload }));
+          }
+        } else {
+          setBandPosts(prev => {
+            const next = prev.map(p => p.id === editingPost.id ? { ...p, ...payload, updatedAt: new Date().toISOString() } : p);
+            AsyncStorage.setItem(`@band_posts_${band.cloudId || band.id}`, JSON.stringify(next)).catch(() => {});
+            return next;
+          });
+          if (selectedPostToView?.id === editingPost.id) setSelectedPostToView(prev => ({ ...prev, ...payload }));
+        }
+      } else {
+        if (band.cloudId && isLogged) {
+          const created = await api.createBandPost(band.cloudId, payload);
+          if (created && created.id) {
+            setBandPosts(prev => [created, ...prev]);
+          } else {
+            const newLocal = {
+              id: Date.now(),
+              bandId: band.cloudId,
+              title: payload.title,
+              content: payload.content,
+              isPinned: payload.isPinned,
+              createdAt: new Date().toISOString(),
+              authorName: 'Você',
+              canEdit: true,
+              canDelete: true,
+            };
+            setBandPosts(prev => [newLocal, ...prev]);
+          }
+        } else {
+          const newLocal = {
+            id: Date.now(),
+            bandId: band.id,
+            title: payload.title,
+            content: payload.content,
+            isPinned: payload.isPinned,
+            createdAt: new Date().toISOString(),
+            authorName: 'Você',
+            canEdit: true,
+            canDelete: true,
+          };
+          setBandPosts(prev => {
+            const next = [newLocal, ...prev];
+            AsyncStorage.setItem(`@band_posts_${band.cloudId || band.id}`, JSON.stringify(next)).catch(() => {});
+            return next;
+          });
+        }
+      }
+
+      setShowCreateEditPostModal(false);
+      setEditingPost(null);
+      setPostTitleInput('');
+      setPostContentInput('');
+      setPostIsPinnedInput(false);
+    } catch (e) {
+      console.log('Error saving post:', e);
+      Alert.alert(t('error') || 'Erro', 'Não foi possível salvar o lembrete.');
+    } finally {
+      setIsSavingPost(false);
+    }
+  };
+
+  const handleTogglePinPost = async (post) => {
+    try {
+      const isLogged = await api.isLoggedIn();
+      const newPinned = !post.isPinned;
+      setBandPosts(prev => prev.map(p => p.id === post.id ? { ...p, isPinned: newPinned } : p));
+      if (selectedPostToView?.id === post.id) {
+        setSelectedPostToView(prev => prev ? { ...prev, isPinned: newPinned } : null);
+      }
+      if (band.cloudId && isLogged) {
+        await api.togglePinBandPost(band.cloudId, post.id);
+      } else {
+        const next = bandPosts.map(p => p.id === post.id ? { ...p, isPinned: newPinned } : p);
+        AsyncStorage.setItem(`@band_posts_${band.cloudId || band.id}`, JSON.stringify(next)).catch(() => {});
+      }
+    } catch (e) {
+      console.log('Error toggling pin post:', e);
+    }
+  };
+
+  const handleDeleteBandPost = (post) => {
+    Alert.alert(
+      t('deleteReminder') || 'Excluir Lembrete',
+      t('confirmDeleteReminder') || 'Tem certeza que deseja excluir este lembrete?',
+      [
+        { text: t('cancel') || 'Cancelar', style: 'cancel' },
+        {
+          text: t('delete') || 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const isLogged = await api.isLoggedIn();
+              setBandPosts(prev => prev.filter(p => p.id !== post.id));
+              if (selectedPostToView?.id === post.id) {
+                setSelectedPostToView(null);
+              }
+              if (band.cloudId && isLogged) {
+                await api.deleteBandPost(band.cloudId, post.id);
+              } else {
+                const next = bandPosts.filter(p => p.id !== post.id);
+                AsyncStorage.setItem(`@band_posts_${band.cloudId || band.id}`, JSON.stringify(next)).catch(() => {});
+              }
+            } catch (e) {
+              console.log('Error deleting post:', e);
+              Alert.alert(t('error') || 'Erro', 'Não foi possível excluir o lembrete.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const sortedBandPosts = useMemo(() => {
+    return [...bandPosts].sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [bandPosts]);
+
+  const formatPostDateTime = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+
   // Load Band Data when modal opens or updates
   // REGRA MÓVEL: No modo online, APENAS consulte dados da API (nunca SQLite).
   // No modo offline, sempre o SQLite.
   const loadData = useCallback(async () => {
     if (!band || !band.id) return;
 
-    if (band.cloudId) {
+    let logged = false;
+    try {
+      logged = await api.isLoggedIn();
+    } catch (e) {
+      logged = false;
+    }
+    setIsUserLoggedIn(logged);
+
+    if (band.cloudId && logged) {
       // ==========================================
       // MODO ONLINE: APENAS DADOS DA API (NUNCA SQLITE)
       // ==========================================
@@ -1414,13 +1644,14 @@ export default function BandDetailScreen({
   useEffect(() => {
     if (visible && band && band.id) {
       loadData();
+      loadBandPosts();
     }
-  }, [visible, band?.id, band?.cloudId, loadData]);
+  }, [visible, band?.id, band?.cloudId, loadData, loadBandPosts]);
 
   // Filter setlists belonging to this band sorted by date
   // MODO ONLINE: APENAS consulta os setlists da API (onlineSetlists) - NUNCA SQLite
   // MODO OFFLINE: consulta os setlists do SQLite (allSetlists)
-  const bandSetlists = (band?.cloudId
+  const bandSetlists = ((band?.cloudId && isUserLoggedIn)
     ? (onlineSetlists || [])
     : (allSetlists || []).filter(s => {
         if (!s || !band) return false;
