@@ -84,8 +84,8 @@ const I18N_STRINGS = {
     step1: '1. Estilo',
     step2: '2. Shows',
     step3: '3. Prévia',
-    nextToShows: 'Avançar para Shows →',
-    viewPreview: 'Ver Pré-visualização →',
+    nextToShows: 'Avançar para Shows',
+    viewPreview: 'Ver Pré-visualização',
     back: 'Voltar',
     quickBgTheme: 'Tema de Fundo Rápido',
     gallerySaved: 'Foto Salva',
@@ -119,8 +119,8 @@ const I18N_STRINGS = {
     step1: '1. Style',
     step2: '2. Shows',
     step3: '3. Preview',
-    nextToShows: 'Continue to Shows →',
-    viewPreview: 'View Preview →',
+    nextToShows: 'Continue to Shows',
+    viewPreview: 'View Preview',
     back: 'Back',
     quickBgTheme: 'Quick Background Theme',
     gallerySaved: 'Saved Photo',
@@ -154,8 +154,8 @@ const I18N_STRINGS = {
     step1: '1. Estilo',
     step2: '2. Shows',
     step3: '3. Vista Previa',
-    nextToShows: 'Continuar a Shows →',
-    viewPreview: 'Ver Vista Previa →',
+    nextToShows: 'Continuar a Shows',
+    viewPreview: 'Ver Vista Previa',
     back: 'Volver',
     quickBgTheme: 'Tema de Fondo Rápido',
     gallerySaved: 'Foto Guardada',
@@ -242,87 +242,43 @@ const getDefaultEventTitle = (lang) => {
  * Modal de compartilhamento de agenda para Bandas e Músicos (Flyer Band Link).
  */
 
-const isFutureEventDate = (dateStr) => {
-  if (!dateStr) return false;
-  const clean = String(dateStr).trim();
-  
-  // Format: DD/MM/YYYY or DD/MM/YY
-  const dmyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
-  const matchDmy = clean.match(dmyRegex);
-  if (matchDmy) {
-    const day = parseInt(matchDmy[1], 10);
-    const month = parseInt(matchDmy[2], 10) - 1;
-    let year = parseInt(matchDmy[3], 10);
-    if (year < 100) year += 2000;
-    const parsedDate = new Date(year, month, day, 23, 59, 59);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return parsedDate >= today;
-  }
-
-  // Format: YYYY-MM-DD
-  const ymdRegex = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/;
-  const matchYmd = clean.match(ymdRegex);
-  if (matchYmd) {
-    const year = parseInt(matchYmd[1], 10);
-    const month = parseInt(matchYmd[2], 10) - 1;
-    const day = parseInt(matchYmd[3], 10);
-    const parsedDate = new Date(year, month, day, 23, 59, 59);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return parsedDate >= today;
-  }
-
-  const dt = new Date(clean);
-  if (!isNaN(dt.getTime())) {
-    dt.setHours(23, 59, 59);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return dt >= today;
-  }
-  return true;
-};
-
 const getEventTimestamp = (event) => {
   if (!event) return 0;
-  if (event._ts) return Number(event._ts);
-  if (event.timestamp) return Number(event.timestamp);
+  if (typeof event._ts === 'number' && !isNaN(event._ts)) return event._ts;
+  if (typeof event.timestamp === 'number' && !isNaN(event.timestamp)) return event.timestamp;
   const clean = String(event.date || '').trim();
-  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-  if (dmy) {
-    let y = parseInt(dmy[3], 10);
-    if (y < 100) y += 2000;
-    return new Date(y, parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10)).getTime();
-  }
-  const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-  if (ymd) {
-    return new Date(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10)).getTime();
-  }
-  const dt = new Date(clean);
-  return isNaN(dt.getTime()) ? 0 : dt.getTime();
-};
-
-const getEventMonthKey = (event, lang = 'pt') => {
-  const clean = String(event.date || '').trim();
-  const monthsPT = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-  const monthsEN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const monthsES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  const months = lang === 'en' ? monthsEN : (lang === 'es' ? monthsES : monthsPT);
-
+  
+  // Format: DD/MM/YYYY or DD/MM/YY
   const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
   if (dmy) {
     let y = parseInt(dmy[3], 10);
     if (y < 100) y += 2000;
     const m = parseInt(dmy[2], 10) - 1;
-    return `${months[m] || 'Mês'} ${y}`;
+    const d = parseInt(dmy[1], 10);
+    return new Date(y, m, d).getTime();
   }
+  
+  // Format: YYYY-MM-DD
   const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
   if (ymd) {
     const y = parseInt(ymd[1], 10);
     const m = parseInt(ymd[2], 10) - 1;
-    return `${months[m] || 'Mês'} ${y}`;
+    const d = parseInt(ymd[3], 10);
+    return new Date(y, m, d).getTime();
   }
-  return 'Shows Anteriores';
+
+  const dt = new Date(clean);
+  if (!isNaN(dt.getTime())) return dt.getTime();
+  return 0;
+};
+
+const isFutureEvent = (event) => {
+  if (!event) return false;
+  const ts = getEventTimestamp(event);
+  if (ts <= 0) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return ts >= today.getTime();
 };
 
 export default function ShareAgendaModal({
@@ -352,27 +308,16 @@ export default function ShareAgendaModal({
   const activeLang = ['pt', 'en', 'es'].includes(language) ? language : 'pt';
   const str = (key) => I18N_STRINGS[activeLang]?.[key] || I18N_STRINGS['pt'][key] || key;
   const upcomingEvents = useMemo(() => {
-    const list = (events || []).filter(e => isFutureEventDate(e.date));
-    return list.sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
+    return (events || [])
+      .filter(e => isFutureEvent(e))
+      .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b)); // Mais próximos de hoje no topo
   }, [events]);
 
   const pastEvents = useMemo(() => {
-    const list = (events || []).filter(e => !isFutureEventDate(e.date));
-    return list.sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a));
+    return (events || [])
+      .filter(e => !isFutureEvent(e))
+      .sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a)); // Antigos mais recentes primeiro
   }, [events]);
-
-  const displayedUpcoming = upcomingEvents.length > 0 ? upcomingEvents : (events || []);
-  const displayedPast = upcomingEvents.length > 0 ? pastEvents : [];
-
-  const pastEventsByMonth = useMemo(() => {
-    const groups = {};
-    for (const ev of displayedPast) {
-      const monthKey = getEventMonthKey(ev, activeLang);
-      if (!groups[monthKey]) groups[monthKey] = [];
-      groups[monthKey].push(ev);
-    }
-    return groups;
-  }, [displayedPast, activeLang]);
 
   const updateScaleFromX = (x) => {
     if (sliderTrackWidth <= 0) return;
@@ -1437,7 +1382,7 @@ export default function ShareAgendaModal({
                     </Pressable>
                   </View>
 
-                  {/* SEÇÃO 1: PRÓXIMOS SHOWS (SEMPRE ABERTOS NO TOPO) */}
+                  {/* SEÇÃO 1: PRÓXIMOS SHOWS (SEMPRE NO TOPO, DATAS MAIS PRÓXIMAS PRIMEIRO) */}
                   <View style={{ marginBottom: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <View style={{ backgroundColor: '#22c55e20', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 }}>
@@ -1446,57 +1391,65 @@ export default function ShareAgendaModal({
                         </Text>
                       </View>
                       <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                        ({displayedUpcoming.length} {displayedUpcoming.length === 1 ? str('show') : str('shows')})
+                        ({upcomingEvents.length} {upcomingEvents.length === 1 ? str('show') : str('shows')})
                       </Text>
                     </View>
 
-                    <View style={{ gap: 6 }}>
-                      {displayedUpcoming.map(event => {
-                        const isSelected = selectedIds.includes(event.id);
-                        const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
-                        return (
-                          <Pressable
-                            key={event.id}
-                            onPress={() => toggleSelectEvent(event.id)}
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              padding: 10,
-                              borderRadius: 10,
-                              backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
-                              borderWidth: 1.5,
-                              borderColor: isSelected ? colors.primary : colors.border,
-                            }}
-                          >
-                            <View style={{
-                              width: 22,
-                              height: 22,
-                              borderRadius: 6,
-                              borderWidth: 1.5,
-                              borderColor: isSelected ? colors.primary : colors.textMuted,
-                              backgroundColor: isSelected ? colors.primary : 'transparent',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              marginRight: 10,
-                            }}>
-                              {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
-                            </View>
-                            <View style={{ flex: 1 }}>
-                              <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>
-                                {displayEventName}
-                              </Text>
-                              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                                {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
-                              </Text>
-                            </View>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
+                    {upcomingEvents.length === 0 ? (
+                      <View style={{ padding: 14, borderRadius: 12, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
+                        <Text style={{ fontSize: 13, color: colors.textMuted }}>
+                          Nenhum show futuro agendado.
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={{ gap: 6 }}>
+                        {upcomingEvents.map(event => {
+                          const isSelected = selectedIds.includes(event.id);
+                          const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
+                          return (
+                            <Pressable
+                              key={event.id}
+                              onPress={() => toggleSelectEvent(event.id)}
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                padding: 10,
+                                borderRadius: 10,
+                                backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
+                                borderWidth: 1.5,
+                                borderColor: isSelected ? colors.primary : colors.border,
+                              }}
+                            >
+                              <View style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 6,
+                                borderWidth: 1.5,
+                                borderColor: isSelected ? colors.primary : colors.textMuted,
+                                backgroundColor: isSelected ? colors.primary : 'transparent',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginRight: 10,
+                              }}>
+                                {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>
+                                  {displayEventName}
+                                </Text>
+                                <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+                                  {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
+                                </Text>
+                              </View>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    )}
                   </View>
 
-                  {/* SEÇÃO 2: SHOWS ANTIGOS (RECOLHIDOS EM UMA RÉGUA MARCADA COM "ANTIGOS") */}
-                  {displayedPast.length > 0 && (
+                  {/* SEÇÃO 2: SHOWS ANTIGOS (RETRAÍDOS NA RÉGUA, COM EXPANSÃO PARA SELEÇÃO LIVRE) */}
+                  {pastEvents.length > 0 && (
                     <View style={{ marginTop: 4, marginBottom: 14 }}>
                       <Pressable
                         onPress={() => setPastEventsExpanded(prev => !prev)}
@@ -1515,7 +1468,7 @@ export default function ShareAgendaModal({
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <Ionicons name="time-outline" size={17} color={colors.textMuted} />
                           <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
-                            {str('pastShows')} ({displayedPast.length})
+                            {str('pastShows')} ({pastEvents.length})
                           </Text>
                         </View>
 
@@ -1533,7 +1486,7 @@ export default function ShareAgendaModal({
 
                       {pastEventsExpanded && (
                         <View style={{ marginTop: 10, gap: 6 }}>
-                          {displayedPast.map(event => {
+                          {pastEvents.map(event => {
                             const isSelected = selectedIds.includes(event.id);
                             const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
                             return (
@@ -1740,7 +1693,7 @@ export default function ShareAgendaModal({
             </ScrollView>
 
             {/* ════════════════════════════════════════════════════════════
-                RODAPÉ: BOTÕES DE NAVEGAÇÃO DO WIZARD
+                RODAPÉ: BOTÕES DE NAVEGAÇÃO DO WIZARD (SEM CONTADORES E UMA ÚNICA SETA)
                 ════════════════════════════════════════════════════════════ */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
               {currentStep > 1 && (
@@ -1788,9 +1741,9 @@ export default function ShareAgendaModal({
                   style={[styles.syncButton, { backgroundColor: colors.primary, flex: 1, marginTop: 0 }]}
                 >
                   <Text style={styles.syncButtonText}>
-                    {str('viewPreview')} ({selectedIds.length}) →
+                    {str('viewPreview')}
                   </Text>
-                  <Ionicons name="eye-outline" size={18} color="#fff" />
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
                 </Pressable>
               )}
 
@@ -1802,7 +1755,7 @@ export default function ShareAgendaModal({
                 >
                   <Ionicons name={isSharing ? 'hourglass-outline' : 'share-social'} size={18} color='#fff' />
                   <Text style={styles.syncButtonText}>
-                    {isSharing ? str('generatingFlyer') : `${str('generateAndShare')} (${selectedIds.length})`}
+                    {isSharing ? str('generatingFlyer') : str('generateAndShare')}
                   </Text>
                 </Pressable>
               )}
