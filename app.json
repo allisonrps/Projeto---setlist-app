@@ -2,7 +2,7 @@
   "expo": {
     "name": "BandLink",
     "slug": "allison-projects",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "orientation": "portrait",
     "scheme": "bandlink",
     "icon": "./assets/icon.png",
@@ -17,7 +17,7 @@
     },
     "android": {
       "package": "com.setlistbandmanager.com",
-      "versionCode": 19,
+      "versionCode": 20,
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png"
