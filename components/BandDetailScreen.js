@@ -3575,46 +3575,39 @@ export default function BandDetailScreen({
                   <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center' }}>
                     <Ionicons name="notifications" size={17} color={colors.primary} />
                   </View>
-                  <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
-                        {t('bandReminders') || 'Lembretes da Banda'}
-                      </Text>
-                      {sortedBandPosts.length > 0 && (
-                        <View style={{ backgroundColor: colors.primary + '20', paddingHorizontal: 7, paddingVertical: 1, borderRadius: 10 }}>
-                          <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>
-                            {sortedBandPosts.length}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                      {t('bandRemindersSub') || 'Mural de avisos e recados para os integrantes'}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+                      {t('bandReminders') || 'Lembretes da Banda'}
                     </Text>
+                    {sortedBandPosts.length > 0 && (
+                      <View style={{ backgroundColor: colors.primary + '20', paddingHorizontal: 7, paddingVertical: 1, borderRadius: 10 }}>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>
+                          {sortedBandPosts.length}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
 
                 <Pressable
                   onPress={handleOpenCreatePost}
+                  hitSlop={8}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4,
-                    backgroundColor: colors.primary,
-                    paddingHorizontal: 12,
-                    paddingVertical: 7,
+                    width: 32,
+                    height: 32,
                     borderRadius: 16,
+                    backgroundColor: colors.primary,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     elevation: 2,
                     shadowColor: colors.primary,
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.25,
                     shadowRadius: 4,
                   }}
+                  accessibilityLabel={t('newReminder') || 'Novo Lembrete'}
                 >
-                  <Ionicons name="add" size={16} color="#ffffff" />
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#ffffff' }}>
-                    {t('newReminder') || 'Novo'}
-                  </Text>
+                  <Ionicons name="add" size={20} color="#ffffff" />
                 </Pressable>
               </View>
 
@@ -6948,23 +6941,6 @@ export default function BandDetailScreen({
             {/* Cabeçalho do Lembrete */}
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12, gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center' }}>
-                    <Ionicons name="clipboard" size={12} color={colors.primary} />
-                  </View>
-                  <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.6 }}>
-                    {t('bandReminder') || 'Lembrete da Banda'}
-                  </Text>
-                  {selectedPostToView?.isPinned ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#f59e0b20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8 }}>
-                      <Ionicons name="pin" size={10} color="#f59e0b" />
-                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#f59e0b' }}>
-                        {t('pinned') || 'Fixado'}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-
                 <Text
                   style={{
                     fontSize: 18,
@@ -7123,22 +7099,6 @@ export default function BandDetailScreen({
                   </Text>
                 </Pressable>
               )}
-
-              <Pressable
-                onPress={() => setSelectedPostToView(null)}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                }}
-              >
-                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
-                  {t('close') || 'Fechar'}
-                </Text>
-              </Pressable>
             </View>
           </View>
         </KeyboardAvoidingView>
