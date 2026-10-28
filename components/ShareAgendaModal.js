@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Platform,
   ActivityIndicator,
   TextInput,
+  PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -132,6 +133,90 @@ const getDefaultEventTitle = (lang) => {
 /**
  * Modal de compartilhamento de agenda para Bandas e Músicos (Flyer Band Link).
  */
+
+const isFutureEventDate = (dateStr) => {
+  if (!dateStr) return false;
+  const clean = String(dateStr).trim();
+  
+  // Format: DD/MM/YYYY or DD/MM/YY
+  const dmyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
+  const matchDmy = clean.match(dmyRegex);
+  if (matchDmy) {
+    const day = parseInt(matchDmy[1], 10);
+    const month = parseInt(matchDmy[2], 10) - 1;
+    let year = parseInt(matchDmy[3], 10);
+    if (year < 100) year += 2000;
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return parsedDate >= today;
+  }
+
+  // Format: YYYY-MM-DD
+  const ymdRegex = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/;
+  const matchYmd = clean.match(ymdRegex);
+  if (matchYmd) {
+    const year = parseInt(matchYmd[1], 10);
+    const month = parseInt(matchYmd[2], 10) - 1;
+    const day = parseInt(matchYmd[3], 10);
+    const parsedDate = new Date(year, month, day, 23, 59, 59);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return parsedDate >= today;
+  }
+
+  const dt = new Date(clean);
+  if (!isNaN(dt.getTime())) {
+    dt.setHours(23, 59, 59);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return dt >= today;
+  }
+  return true;
+};
+
+const getEventTimestamp = (event) => {
+  if (!event) return 0;
+  if (event._ts) return Number(event._ts);
+  if (event.timestamp) return Number(event.timestamp);
+  const clean = String(event.date || '').trim();
+  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (dmy) {
+    let y = parseInt(dmy[3], 10);
+    if (y < 100) y += 2000;
+    return new Date(y, parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10)).getTime();
+  }
+  const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (ymd) {
+    return new Date(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10)).getTime();
+  }
+  const dt = new Date(clean);
+  return isNaN(dt.getTime()) ? 0 : dt.getTime();
+};
+
+const getEventMonthKey = (event, lang = 'pt') => {
+  const clean = String(event.date || '').trim();
+  const monthsPT = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const monthsEN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthsES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const months = lang === 'en' ? monthsEN : (lang === 'es' ? monthsES : monthsPT);
+
+  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (dmy) {
+    let y = parseInt(dmy[3], 10);
+    if (y < 100) y += 2000;
+    const m = parseInt(dmy[2], 10) - 1;
+    return `${months[m] || 'Mês'} ${y}`;
+  }
+  const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (ymd) {
+    const y = parseInt(ymd[1], 10);
+    const m = parseInt(ymd[2], 10) - 1;
+    return `${months[m] || 'Mês'} ${y}`;
+  }
+  return 'Shows Anteriores';
+};
+
 export default function ShareAgendaModal({
   visible,
   onClose,
@@ -152,9 +237,54 @@ export default function ShareAgendaModal({
   const [isSharing, setIsSharing] = useState(false);
   const [cardScale, setCardScale] = useState(1.0);
   const [contactText, setContactText] = useState('');
-  const [activeTabSection, setActiveTabSection] = useState('preview'); // 'preview' | 'config'
+  const [currentStep, setCurrentStep] = useState(1); // 1 = Estilo, 2 = Shows, 3 = Prévia
+  const [pastEventsExpanded, setPastEventsExpanded] = useState(false);
+  const [sliderTrackWidth, setSliderTrackWidth] = useState(220);
 
   const activeLang = ['pt', 'en', 'es'].includes(language) ? language : 'pt';
+  const upcomingEvents = useMemo(() => {
+    const list = (events || []).filter(e => isFutureEventDate(e.date));
+    return list.sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
+  }, [events]);
+
+  const pastEvents = useMemo(() => {
+    const list = (events || []).filter(e => !isFutureEventDate(e.date));
+    return list.sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a));
+  }, [events]);
+
+  const displayedUpcoming = upcomingEvents.length > 0 ? upcomingEvents : (events || []);
+  const displayedPast = upcomingEvents.length > 0 ? pastEvents : [];
+
+  const pastEventsByMonth = useMemo(() => {
+    const groups = {};
+    for (const ev of displayedPast) {
+      const monthKey = getEventMonthKey(ev, activeLang);
+      if (!groups[monthKey]) groups[monthKey] = [];
+      groups[monthKey].push(ev);
+    }
+    return groups;
+  }, [displayedPast, activeLang]);
+
+  const updateScaleFromX = (x) => {
+    if (sliderTrackWidth <= 0) return;
+    const ratio = Math.max(0, Math.min(1, x / sliderTrackWidth));
+    const rawVal = 0.7 + ratio * (1.3 - 0.7);
+    const stepped = Math.round(rawVal * 20) / 20;
+    const clamped = Math.max(0.7, Math.min(1.3, Math.round(stepped * 100) / 100));
+    setCardScale(clamped);
+  };
+
+  const sliderPanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: (evt) => updateScaleFromX(evt.nativeEvent.locationX),
+        onPanResponderMove: (evt) => updateScaleFromX(evt.nativeEvent.locationX),
+      }),
+    [sliderTrackWidth]
+  );
+
 
   // Carrega a arte personalizada salva
   useEffect(() => {
@@ -990,52 +1120,362 @@ export default function ShareAgendaModal({
               </Pressable>
             </View>
 
-            {/* Segmented Tabs: Pré-visualização vs Configurações */}
-            <View style={{ flexDirection: 'row', backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderRadius: 12, padding: 4, marginBottom: 14 }}>
-              <Pressable
-                onPress={() => setActiveTabSection('preview')}
-                style={{
-                  flex: 1,
-                  paddingVertical: 8,
-                  borderRadius: 10,
-                  backgroundColor: activeTabSection === 'preview' ? colors.primary : 'transparent',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  gap: 6,
-                }}
-              >
-                <Ionicons name="eye-outline" size={16} color={activeTabSection === 'preview' ? '#fff' : colors.textMuted} />
-                <Text style={{ fontSize: 13, fontWeight: '700', color: activeTabSection === 'preview' ? '#fff' : colors.textMuted }}>
-                  Pré-visualização
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setActiveTabSection('config')}
-                style={{
-                  flex: 1,
-                  paddingVertical: 8,
-                  borderRadius: 10,
-                  backgroundColor: activeTabSection === 'config' ? colors.primary : 'transparent',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  gap: 6,
-                }}
-              >
-                <Ionicons name="options-outline" size={16} color={activeTabSection === 'config' ? '#fff' : colors.textMuted} />
-                <Text style={{ fontSize: 13, fontWeight: '700', color: activeTabSection === 'config' ? '#fff' : colors.textMuted }}>
-                  Opções & Shows ({selectedIds.length})
-                </Text>
-              </Pressable>
+            {/* Stepper Header de 3 Etapas */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2, marginBottom: 14 }}>
+              {[
+                { step: 1, label: '1. Estilo', icon: 'color-palette-outline' },
+                { step: 2, label: `2. Shows (${selectedIds.length})`, icon: 'calendar-outline' },
+                { step: 3, label: '3. Prévia', icon: 'eye-outline' },
+              ].map((s, index) => {
+                const isActive = currentStep === s.step;
+                const isCompleted = currentStep > s.step;
+                return (
+                  <React.Fragment key={s.step}>
+                    {index > 0 && (
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 2,
+                          backgroundColor: currentStep >= s.step ? colors.primary : (isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
+                          marginHorizontal: 4,
+                        }}
+                      />
+                    )}
+                    <Pressable
+                      onPress={() => setCurrentStep(s.step)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 4,
+                        paddingVertical: 6,
+                        paddingHorizontal: 9,
+                        borderRadius: 10,
+                        backgroundColor: isActive
+                          ? colors.primary
+                          : isCompleted
+                          ? colors.primary + '20'
+                          : (isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'),
+                      }}
+                    >
+                      <Ionicons
+                        name={isCompleted ? "checkmark-circle" : s.icon}
+                        size={13}
+                        color={isActive ? '#ffffff' : (isCompleted ? colors.primary : colors.textMuted)}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: isActive ? '800' : '600',
+                          color: isActive ? '#ffffff' : (isCompleted ? colors.primary : colors.textMuted),
+                        }}
+                      >
+                        {s.label}
+                      </Text>
+                    </Pressable>
+                  </React.Fragment>
+                );
+              })}
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
-              {activeTabSection === 'preview' ? (
-                /* ── ABA 1: LIVE PREVIEW & CONTROLES RÁPIDOS ── */
+              {/* ════════════════════════════════════════════════════════════
+                  ETAPA 1: ESCOLHA DO MODELO / ESTILO
+                  ════════════════════════════════════════════════════════════ */}
+              {currentStep === 1 && (
+                <View>
+                  <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' }}>
+                    {t('artStyleBackground') || 'ESCOLHA O MODELO / ESTILO DO FLYER'}
+                  </Text>
+
+                  {/* Foto Personalizada da Galeria */}
+                  <Pressable
+                    style={[
+                      styles.layoutOption,
+                      {
+                        backgroundColor: selectedLayout === 'custom' ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'),
+                        borderColor: selectedLayout === 'custom' ? colors.primary : colors.border,
+                        marginBottom: 10,
+                      },
+                    ]}
+                    onPress={() => {
+                      if (!customBgUri) {
+                        pickCustomBgImage();
+                      } else {
+                        setSelectedLayout('custom');
+                      }
+                    }}
+                  >
+                    {customBgUri ? (
+                      <Image source={{ uri: customBgUri }} style={{ width: 36, height: 44, borderRadius: 6, marginRight: 6 }} />
+                    ) : (
+                      <Ionicons name="image-outline" size={24} color={selectedLayout === 'custom' ? colors.primary : colors.textMuted} />
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.layoutName, { color: selectedLayout === 'custom' ? colors.primary : colors.text }]}>
+                        {t('customArtTitle') || 'Arte Personalizada (Foto da Galeria)'}
+                      </Text>
+                      <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
+                        {customBgUri ? (t('customArtSaved') || 'Imagem salva da galeria') : (t('customArtPrompt') || 'Toque para escolher uma imagem')}
+                      </Text>
+                    </View>
+
+                    {customBgUri && (
+                      <Pressable onPress={pickCustomBgImage} hitSlop={8} style={{ padding: 6 }}>
+                        <Ionicons name="camera-reverse-outline" size={20} color={colors.primary} />
+                      </Pressable>
+                    )}
+
+                    {selectedLayout === 'custom' && (
+                      <Ionicons name='checkmark-circle' size={22} color={colors.primary} />
+                    )}
+                  </Pressable>
+
+                  {/* Lista dos 9 Estilos Pré-definidos */}
+                  <View style={{ gap: 8, marginBottom: 16 }}>
+                    {LAYOUT_TEMPLATES.map(item => (
+                      <Pressable
+                        key={item.id}
+                        style={[
+                          styles.layoutOption,
+                          {
+                            backgroundColor: selectedLayout === item.id ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'),
+                            borderColor: selectedLayout === item.id ? colors.primary : colors.border,
+                            marginVertical: 0,
+                          }
+                        ]}
+                        onPress={() => setSelectedLayout(item.id)}
+                      >
+                        <Ionicons name={item.icon} size={22} color={selectedLayout === item.id ? colors.primary : colors.textMuted} />
+                        <Text style={[styles.layoutName, { color: selectedLayout === item.id ? colors.primary : colors.text }]}>
+                          {getTemplateName(item.id, t)}
+                        </Text>
+                        {selectedLayout === item.id && (
+                          <Ionicons name='checkmark-circle' size={20} color={colors.primary} style={{ marginLeft: 'auto' }} />
+                        )}
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  {/* Linha de Contato / Redes Sociais */}
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 6 }}>
+                      LINHA DE CONTATO / REDES SOCIAIS (OPCIONAL)
+                    </Text>
+                    <TextInput
+                      value={contactText}
+                      onChangeText={setContactText}
+                      placeholder="Ex: Contato para Shows: (16) 99115-3733 • @minhabanda"
+                      placeholderTextColor={colors.textMuted}
+                      style={{
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: 10,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        fontSize: 13,
+                        color: colors.text,
+                      }}
+                      maxLength={80}
+                    />
+                  </View>
+                </View>
+              )}
+
+              {/* ════════════════════════════════════════════════════════════
+                  ETAPA 2: ESCOLHA DOS EVENTOS / SHOWS
+                  ════════════════════════════════════════════════════════════ */}
+              {currentStep === 2 && (
+                <View>
+                  {/* Cabeçalho de Seleção Rápida */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
+                        SHOWS SELECIONADOS:
+                      </Text>
+                      <View style={{ backgroundColor: colors.primary, paddingHorizontal: 7, paddingVertical: 1, borderRadius: 10 }}>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                          {selectedIds.length}/{Math.min(MAX_FLYER_EVENTS, events.length)}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Pressable onPress={toggleSelectAll} hitSlop={8}>
+                      <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
+                        {selectedIds.length >= Math.min(MAX_FLYER_EVENTS, events.length)
+                          ? (t('deselectAllShows') || 'Desmarcar Todos')
+                          : (t('selectAllShows') || 'Selecionar Todos')}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {/* SEÇÃO 1: PRÓXIMOS SHOWS (SEMPRE ABERTOS) */}
+                  <View style={{ marginBottom: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      <View style={{ backgroundColor: '#22c55e20', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 }}>
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#22c55e' }}>
+                          PRÓXIMOS SHOWS
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                        ({displayedUpcoming.length} {displayedUpcoming.length === 1 ? 'show' : 'shows'})
+                      </Text>
+                    </View>
+
+                    <View style={{ gap: 6 }}>
+                      {displayedUpcoming.map(event => {
+                        const isSelected = selectedIds.includes(event.id);
+                        const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
+                        return (
+                          <Pressable
+                            key={event.id}
+                            onPress={() => toggleSelectEvent(event.id)}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              padding: 10,
+                              borderRadius: 10,
+                              backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
+                              borderWidth: 1.5,
+                              borderColor: isSelected ? colors.primary : colors.border,
+                            }}
+                          >
+                            <View style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: 6,
+                              borderWidth: 1.5,
+                              borderColor: isSelected ? colors.primary : colors.textMuted,
+                              backgroundColor: isSelected ? colors.primary : 'transparent',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              marginRight: 10,
+                            }}>
+                              {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>
+                                {displayEventName}
+                              </Text>
+                              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+                                {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  {/* SEÇÃO 2: SHOWS ANTERIORES (RECOLHIDOS POR PADRÃO TIPO RÉGUA DE MESES) */}
+                  {displayedPast.length > 0 && (
+                    <View style={{ marginTop: 4, marginBottom: 14 }}>
+                      <Pressable
+                        onPress={() => setPastEventsExpanded(prev => !prev)}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9',
+                          paddingVertical: 10,
+                          paddingHorizontal: 12,
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Ionicons name="time-outline" size={17} color={colors.textMuted} />
+                          <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
+                            SHOWS ANTERIORES ({displayedPast.length})
+                          </Text>
+                        </View>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                            {pastEventsExpanded ? 'Recolher' : 'Ver anteriores'}
+                          </Text>
+                          <Ionicons
+                            name={pastEventsExpanded ? "chevron-up" : "chevron-down"}
+                            size={16}
+                            color={colors.textMuted}
+                          />
+                        </View>
+                      </Pressable>
+
+                      {pastEventsExpanded && (
+                        <View style={{ marginTop: 10, gap: 12 }}>
+                          {Object.entries(pastEventsByMonth).map(([monthTitle, monthList]) => (
+                            <View key={monthTitle}>
+                              {/* Régua Mensal */}
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                  {monthTitle}
+                                </Text>
+                                <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.6 }} />
+                                <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>
+                                  {monthList.length}
+                                </Text>
+                              </View>
+
+                              {/* Cards do Mês */}
+                              <View style={{ gap: 6 }}>
+                                {monthList.map(event => {
+                                  const isSelected = selectedIds.includes(event.id);
+                                  const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
+                                  return (
+                                    <Pressable
+                                      key={event.id}
+                                      onPress={() => toggleSelectEvent(event.id)}
+                                      style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        padding: 10,
+                                        borderRadius: 10,
+                                        backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
+                                        borderWidth: 1.5,
+                                        borderColor: isSelected ? colors.primary : colors.border,
+                                      }}
+                                    >
+                                      <View style={{
+                                        width: 22,
+                                        height: 22,
+                                        borderRadius: 6,
+                                        borderWidth: 1.5,
+                                        borderColor: isSelected ? colors.primary : colors.textMuted,
+                                        backgroundColor: isSelected ? colors.primary : 'transparent',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginRight: 10,
+                                      }}>
+                                        {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
+                                      </View>
+                                      <View style={{ flex: 1 }}>
+                                        <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>
+                                          {displayEventName}
+                                        </Text>
+                                        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+                                          {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
+                                        </Text>
+                                      </View>
+                                    </Pressable>
+                                  );
+                                })}
+                              </View>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* ════════════════════════════════════════════════════════════
+                  ETAPA 3: PRÉ-VISUALIZAÇÃO & AJUSTE DOS CARDS COM BARRA DESLIZANTE
+                  ════════════════════════════════════════════════════════════ */}
+              {currentStep === 3 && (
                 <View style={{ alignItems: 'center' }}>
-                  
                   {/* Container da Miniatura em Proporção Exata 9:16 (270x480) */}
                   <View
                     style={{
@@ -1068,7 +1508,7 @@ export default function ShareAgendaModal({
                     </View>
                   </View>
 
-                  {/* Controle de Ajuste de Tamanho dos Cards */}
+                  {/* Barra Deslizante para Regular Tamanho dos Cards */}
                   <View style={{ width: '100%', backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 12 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
@@ -1079,52 +1519,99 @@ export default function ShareAgendaModal({
                       </Text>
                     </View>
 
-                    {/* Stepper - / + e Chips Rápidos */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    {/* Linha da Barra Deslizante com Botões - e + */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                       <Pressable
-                        onPress={() => setCardScale(s => Math.max(0.65, Math.round((s - 0.05) * 100) / 100))}
-                        style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
+                        onPress={() => setCardScale(s => Math.max(0.7, Math.round((s - 0.05) * 100) / 100))}
+                        style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
+                        hitSlop={6}
                       >
-                        <Ionicons name="remove" size={20} color={colors.text} />
+                        <Ionicons name="remove" size={18} color={colors.text} />
                       </Pressable>
 
-                      <View style={{ flexDirection: 'row', gap: 6, flex: 1, justifyContent: 'center' }}>
-                        {[
-                          { label: '0.8x', val: 0.8 },
-                          { label: '1.0x', val: 1.0 },
-                          { label: '1.15x', val: 1.15 },
-                          { label: '1.3x', val: 1.3 }
-                        ].map(preset => (
-                          <Pressable
-                            key={preset.label}
-                            onPress={() => setCardScale(preset.val)}
+                      {/* Trilha Deslizante Interativa */}
+                      <View
+                        style={{ flex: 1, height: 34, justifyContent: 'center' }}
+                        onLayout={(e) => setSliderTrackWidth(e.nativeEvent.layout.width)}
+                        {...sliderPanResponder.panHandlers}
+                      >
+                        <View
+                          style={{
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#e2e8f0',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <View
                             style={{
-                              paddingVertical: 6,
-                              paddingHorizontal: 10,
-                              borderRadius: 8,
-                              backgroundColor: Math.abs(cardScale - preset.val) < 0.04 ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : '#e2e8f0'),
+                              width: `${Math.max(0, Math.min(1, (cardScale - 0.7) / (1.3 - 0.7))) * 100}%`,
+                              height: '100%',
+                              backgroundColor: colors.primary,
+                              borderRadius: 4,
                             }}
-                          >
-                            <Text style={{ fontSize: 11, fontWeight: '700', color: Math.abs(cardScale - preset.val) < 0.04 ? '#fff' : colors.text }}>
-                              {preset.label}
-                            </Text>
-                          </Pressable>
-                        ))}
+                          />
+                        </View>
+
+                        {/* Thumb Knob */}
+                        <View
+                          style={{
+                            position: 'absolute',
+                            left: Math.max(0, Math.min(sliderTrackWidth - 22, (Math.max(0, Math.min(1, (cardScale - 0.7) / (1.3 - 0.7)))) * sliderTrackWidth - 11)),
+                            width: 22,
+                            height: 22,
+                            borderRadius: 11,
+                            backgroundColor: '#ffffff',
+                            borderWidth: 3,
+                            borderColor: colors.primary,
+                            elevation: 4,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 3,
+                          }}
+                        />
                       </View>
 
                       <Pressable
-                        onPress={() => setCardScale(s => Math.min(1.35, Math.round((s + 0.05) * 100) / 100))}
-                        style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
+                        onPress={() => setCardScale(s => Math.min(1.3, Math.round((s + 0.05) * 100) / 100))}
+                        style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
+                        hitSlop={6}
                       >
-                        <Ionicons name="add" size={20} color={colors.text} />
+                        <Ionicons name="add" size={18} color={colors.text} />
                       </Pressable>
+                    </View>
+
+                    {/* Presets Rápidos */}
+                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 10, justifyContent: 'center' }}>
+                      {[
+                        { label: '0.8x Compacto', val: 0.8 },
+                        { label: '1.0x Normal', val: 1.0 },
+                        { label: '1.15x Grande', val: 1.15 },
+                        { label: '1.3x Extra', val: 1.3 }
+                      ].map(p => (
+                        <Pressable
+                          key={p.label}
+                          onPress={() => setCardScale(p.val)}
+                          style={{
+                            paddingVertical: 5,
+                            paddingHorizontal: 9,
+                            borderRadius: 7,
+                            backgroundColor: Math.abs(cardScale - p.val) < 0.04 ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : '#e2e8f0'),
+                          }}
+                        >
+                          <Text style={{ fontSize: 11, fontWeight: '700', color: Math.abs(cardScale - p.val) < 0.04 ? '#fff' : colors.text }}>
+                            {p.label}
+                          </Text>
+                        </Pressable>
+                      ))}
                     </View>
                   </View>
 
                   {/* Seletor Rápido de Tema com Ícones */}
-                  <View style={{ width: '100%', marginBottom: 10 }}>
+                  <View style={{ width: '100%', marginBottom: 6 }}>
                     <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted, marginBottom: 8, textTransform: 'uppercase' }}>
-                      Tema de Fundo
+                      Tema de Fundo Rápido
                     </Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                       <Pressable
@@ -1174,199 +1661,78 @@ export default function ShareAgendaModal({
                       ))}
                     </ScrollView>
                   </View>
-
-                </View>
-              ) : (
-                /* ── ABA 2: CONFIGURAÇÃO DE SHOWS, TEMAS E TEXTO LIVRE ── */
-                <View>
-                  {/* 1. SELEÇÃO DE SHOWS (ATÉ 6) */}
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 4 }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                      {(t('includedShows') || 'SHOWS INCLUÍDOS')} ({selectedIds.length}/{Math.min(MAX_FLYER_EVENTS, events.length)})
-                    </Text>
-                    <Pressable onPress={toggleSelectAll} hitSlop={8}>
-                      <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
-                        {selectedIds.length >= Math.min(MAX_FLYER_EVENTS, events.length)
-                          ? (t('deselectAllShows') || 'Desmarcar Todos')
-                          : (t('selectAllShows') || 'Selecionar Todos')}
-                      </Text>
-                    </Pressable>
-                  </View>
-
-                  <View style={{ gap: 6, marginBottom: 18 }}>
-                    {events.map(event => {
-                      const isSelected = selectedIds.includes(event.id);
-                      const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
-                      return (
-                        <Pressable
-                          key={event.id}
-                          onPress={() => toggleSelectEvent(event.id)}
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            padding: 10,
-                            borderRadius: 10,
-                            backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
-                            borderWidth: 1.5,
-                            borderColor: isSelected ? colors.primary : colors.border,
-                          }}
-                        >
-                          <View style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: 6,
-                            borderWidth: 1.5,
-                            borderColor: isSelected ? colors.primary : colors.textMuted,
-                            backgroundColor: isSelected ? colors.primary : 'transparent',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            marginRight: 10,
-                          }}>
-                            {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>{displayEventName}</Text>
-                            <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                              {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
-                            </Text>
-                          </View>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-
-                  {/* 2. LINHA DE CONTATO / TEXTO LIVRE */}
-                  <View style={{ marginBottom: 18 }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 6 }}>
-                      LINHA DE CONTATO / TEXTO LIVRE (OPCIONAL)
-                    </Text>
-                    <TextInput
-                      value={contactText}
-                      onChangeText={setContactText}
-                      placeholder="Ex: Contato para Shows: (16) 99115-3733 • @badbadgers"
-                      placeholderTextColor={colors.textMuted}
-                      style={{
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                        borderRadius: 10,
-                        paddingHorizontal: 12,
-                        paddingVertical: 10,
-                        fontSize: 13,
-                        color: colors.text,
-                      }}
-                      maxLength={80}
-                    />
-                  </View>
-
-                  {/* 3. AJUSTE DE TAMANHO DOS CARDS */}
-                  <View style={{ marginBottom: 18 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                        TAMANHO DOS CARDS ({Math.round(cardScale * 100)}%)
-                      </Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', gap: 8 }}>
-                      {[
-                        { label: 'Compacto', val: 0.8 },
-                        { label: 'Normal', val: 1.0 },
-                        { label: 'Grande', val: 1.15 },
-                        { label: 'Extra', val: 1.3 }
-                      ].map(preset => (
-                        <Pressable
-                          key={preset.label}
-                          onPress={() => setCardScale(preset.val)}
-                          style={{
-                            flex: 1,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                            backgroundColor: Math.abs(cardScale - preset.val) < 0.04 ? colors.primary : (isDark ? '#1e293b' : '#f1f5f9'),
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Text style={{ fontSize: 12, fontWeight: '700', color: Math.abs(cardScale - preset.val) < 0.04 ? '#fff' : colors.text }}>
-                            {preset.label}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-
-                  {/* 4. ESTILO DA ARTE COMPLETO */}
-                  <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
-                    {t('artStyleBackground') || 'ESTILO DA ARTE / FUNDO'}
-                  </Text>
-
-                  {/* Arte Personalizada */}
-                  <Pressable
-                    style={[
-                      styles.layoutOption,
-                      {
-                        backgroundColor: selectedLayout === 'custom' ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'),
-                        borderColor: selectedLayout === 'custom' ? colors.primary : colors.border,
-                        marginBottom: 8,
-                      },
-                    ]}
-                    onPress={() => {
-                      if (!customBgUri) {
-                        pickCustomBgImage();
-                      } else {
-                        setSelectedLayout('custom');
-                      }
-                    }}
-                  >
-                    {customBgUri ? (
-                      <Image source={{ uri: customBgUri }} style={{ width: 34, height: 42, borderRadius: 6, marginRight: 4 }} />
-                    ) : (
-                      <Ionicons name="image-outline" size={22} color={selectedLayout === 'custom' ? colors.primary : colors.textMuted} />
-                    )}
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.layoutName, { color: selectedLayout === 'custom' ? colors.primary : colors.text }]}>
-                        {t('customArtTitle') || 'Arte Personalizada (Foto da Galeria)'}
-                      </Text>
-                      <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-                        {customBgUri ? (t('customArtSaved') || 'Imagem salva da galeria') : (t('customArtPrompt') || 'Toque para escolher uma imagem')}
-                      </Text>
-                    </View>
-
-                    {customBgUri && (
-                      <Pressable onPress={pickCustomBgImage} hitSlop={8} style={{ padding: 6 }}>
-                        <Ionicons name="camera-reverse-outline" size={20} color={colors.primary} />
-                      </Pressable>
-                    )}
-
-                    {selectedLayout === 'custom' && (
-                      <Ionicons name='checkmark-circle' size={20} color={colors.primary} />
-                    )}
-                  </Pressable>
-
-                  {/* Templates Pré-definidos */}
-                  {LAYOUT_TEMPLATES.map(item => (
-                    <Pressable
-                      key={item.id}
-                      style={[styles.layoutOption, { backgroundColor: selectedLayout === item.id ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'), borderColor: selectedLayout === item.id ? colors.primary : colors.border }]}
-                      onPress={() => setSelectedLayout(item.id)}
-                    >
-                      <Ionicons name={item.icon} size={22} color={selectedLayout === item.id ? colors.primary : colors.textMuted} />
-                      <Text style={[styles.layoutName, { color: selectedLayout === item.id ? colors.primary : colors.text }]}>{getTemplateName(item.id, t)}</Text>
-                      {selectedLayout === item.id && <Ionicons name='checkmark-circle' size={20} color={colors.primary} style={{ marginLeft: 'auto' }} />}
-                    </Pressable>
-                  ))}
                 </View>
               )}
             </ScrollView>
 
-            {/* Botão de Ação: Compartilhar / Baixar */}
-            <Pressable
-              style={[styles.syncButton, { backgroundColor: colors.primary, marginTop: 12, opacity: isSharing ? 0.7 : 1 }]}
-              onPress={captureAndShare}
-              disabled={isSharing}
-            >
-              <Ionicons name={isSharing ? 'hourglass-outline' : 'share-social'} size={18} color='#fff' />
-              <Text style={styles.syncButtonText}>
-                {isSharing ? (t('generatingFlyer') || 'Gerando flyer...') : `${t('generateAndShare') || 'Gerar e Compartilhar'} (${selectedIds.length} shows)`}
-              </Text>
-            </Pressable>
+            {/* ════════════════════════════════════════════════════════════
+                RODAPÉ: BOTÕES DE NAVEGAÇÃO DO WIZARD (3 ETAPAS)
+                ════════════════════════════════════════════════════════════ */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
+              {currentStep > 1 && (
+                <Pressable
+                  onPress={() => setCurrentStep(s => s - 1)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    borderRadius: 12,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                  }}
+                >
+                  <Ionicons name="arrow-back" size={18} color={colors.text} />
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                    Voltar
+                  </Text>
+                </Pressable>
+              )}
+
+              {currentStep === 1 && (
+                <Pressable
+                  onPress={() => setCurrentStep(2)}
+                  style={[styles.syncButton, { backgroundColor: colors.primary, flex: 1, marginTop: 0 }]}
+                >
+                  <Text style={styles.syncButtonText}>
+                    Avançar para Shows →
+                  </Text>
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                </Pressable>
+              )}
+
+              {currentStep === 2 && (
+                <Pressable
+                  onPress={() => {
+                    if (selectedIds.length === 0) {
+                      Alert.alert(t('attention') || 'Aviso', 'Selecione pelo menos um show para o flyer.');
+                      return;
+                    }
+                    setCurrentStep(3);
+                  }}
+                  style={[styles.syncButton, { backgroundColor: colors.primary, flex: 1, marginTop: 0 }]}
+                >
+                  <Text style={styles.syncButtonText}>
+                    Ver Pré-visualização ({selectedIds.length}) →
+                  </Text>
+                  <Ionicons name="eye-outline" size={18} color="#fff" />
+                </Pressable>
+              )}
+
+              {currentStep === 3 && (
+                <Pressable
+                  style={[styles.syncButton, { backgroundColor: colors.primary, flex: 1, marginTop: 0, opacity: isSharing ? 0.7 : 1 }]}
+                  onPress={captureAndShare}
+                  disabled={isSharing}
+                >
+                  <Ionicons name={isSharing ? 'hourglass-outline' : 'share-social'} size={18} color='#fff' />
+                  <Text style={styles.syncButtonText}>
+                    {isSharing ? (t('generatingFlyer') || 'Gerando flyer...') : `${t('generateAndShare') || 'Gerar e Compartilhar'} (${selectedIds.length})`}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
