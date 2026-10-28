@@ -3701,50 +3701,23 @@ export default function BandDetailScreen({
                           </View>
                         </View>
 
-                        {/* Botões de Ação Direta no Card */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                          {/* Botão Estrelinha (Fixar / Desafixar) */}
-                          <Pressable
-                            onPress={() => handleTogglePinPost(post)}
-                            hitSlop={10}
-                            style={{
-                              padding: 6,
-                              borderRadius: 8,
-                              backgroundColor: post.isPinned ? '#f59e0b20' : 'transparent',
-                            }}
-                            accessibilityLabel={post.isPinned ? 'Desafixar lembrete' : 'Fixar lembrete'}
-                          >
-                            <Ionicons
-                              name={post.isPinned ? "star" : "star-outline"}
-                              size={19}
-                              color={post.isPinned ? "#f59e0b" : colors.textMuted}
-                            />
-                          </Pressable>
-
-                          {/* Botão Editar (se permitido) */}
-                          {(post.canEdit !== false) && (
-                            <Pressable
-                              onPress={() => handleOpenEditPost(post)}
-                              hitSlop={10}
-                              style={{ padding: 6, borderRadius: 8 }}
-                              accessibilityLabel="Editar lembrete"
-                            >
-                              <Ionicons name="pencil-outline" size={17} color={colors.textMuted} />
-                            </Pressable>
-                          )}
-
-                          {/* Botão Deletar (se permitido) */}
-                          {(post.canDelete !== false) && (
-                            <Pressable
-                              onPress={() => handleDeleteBandPost(post)}
-                              hitSlop={10}
-                              style={{ padding: 6, borderRadius: 8 }}
-                              accessibilityLabel="Excluir lembrete"
-                            >
-                              <Ionicons name="trash-outline" size={17} color="#ef4444" />
-                            </Pressable>
-                          )}
-                        </View>
+                        {/* Botão Estrelinha (Fixar / Desafixar) */}
+                        <Pressable
+                          onPress={() => handleTogglePinPost(post)}
+                          hitSlop={12}
+                          style={{
+                            padding: 6,
+                            borderRadius: 8,
+                            backgroundColor: post.isPinned ? '#f59e0b20' : 'transparent',
+                          }}
+                          accessibilityLabel={post.isPinned ? 'Desafixar lembrete' : 'Fixar lembrete'}
+                        >
+                          <Ionicons
+                            name={post.isPinned ? "star" : "star-outline"}
+                            size={20}
+                            color={post.isPinned ? "#f59e0b" : colors.textMuted}
+                          />
+                        </Pressable>
                       </View>
                     </Pressable>
                   ))}
@@ -6929,6 +6902,457 @@ export default function BandDetailScreen({
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* ── BOTTOM SHEET MODAL: VISUALIZAR CONTEÚDO DO LEMBRETE ── */}
+      <Modal
+        visible={Boolean(selectedPostToView)}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSelectedPostToView(null)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={() => setSelectedPostToView(null)}
+          />
+          <View
+            style={[
+              styles.pickerModalContainer,
+              {
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.border,
+                borderTopWidth: 1,
+                height: 'auto',
+                maxHeight: '82%',
+                paddingHorizontal: 22,
+                paddingTop: 14,
+                paddingBottom: Platform.OS === 'ios' ? 34 : 22,
+              },
+            ]}
+          >
+            {/* Drag Handle */}
+            <View
+              style={{
+                width: 44,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                alignSelf: 'center',
+                marginBottom: 16,
+              }}
+            />
+
+            {/* Cabeçalho do Lembrete */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12, gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center' }}>
+                    <Ionicons name="clipboard" size={12} color={colors.primary} />
+                  </View>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                    {t('bandReminder') || 'Lembrete da Banda'}
+                  </Text>
+                  {selectedPostToView?.isPinned ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#f59e0b20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8 }}>
+                      <Ionicons name="pin" size={10} color="#f59e0b" />
+                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#f59e0b' }}>
+                        {t('pinned') || 'Fixado'}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: '900',
+                    color: colors.text,
+                    lineHeight: 24,
+                  }}
+                  selectable
+                >
+                  {selectedPostToView?.title}
+                </Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                {/* Estrelinha (Fixar / Desafixar) */}
+                <Pressable
+                  onPress={() => selectedPostToView && handleTogglePinPost(selectedPostToView)}
+                  hitSlop={10}
+                  style={{
+                    padding: 8,
+                    borderRadius: 20,
+                    backgroundColor: selectedPostToView?.isPinned ? '#f59e0b20' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
+                  }}
+                  accessibilityLabel={selectedPostToView?.isPinned ? 'Desafixar lembrete' : 'Fixar lembrete'}
+                >
+                  <Ionicons
+                    name={selectedPostToView?.isPinned ? "star" : "star-outline"}
+                    size={20}
+                    color={selectedPostToView?.isPinned ? "#f59e0b" : colors.textMuted}
+                  />
+                </Pressable>
+
+                {/* Botão Fechar Modal */}
+                <Pressable
+                  onPress={() => setSelectedPostToView(null)}
+                  hitSlop={10}
+                  style={{
+                    padding: 8,
+                    borderRadius: 20,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+                  }}
+                  accessibilityLabel="Fechar"
+                >
+                  <Ionicons name="close" size={20} color={colors.text} />
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Metadados: Data, Hora e Autor */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingVertical: 7,
+                paddingHorizontal: 12,
+                borderRadius: 10,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                marginBottom: 14,
+              }}
+            >
+              <Ionicons name="time-outline" size={13} color={colors.textMuted} />
+              <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '600' }}>
+                {selectedPostToView?.createdAt ? formatPostDateTime(selectedPostToView.createdAt) : ''}
+              </Text>
+              {selectedPostToView?.authorName ? (
+                <>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>•</Text>
+                  <Ionicons name="person-circle-outline" size={14} color={colors.textMuted} />
+                  <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '600' }}>
+                    {selectedPostToView.authorName}
+                  </Text>
+                </>
+              ) : null}
+            </View>
+
+            {/* Conteúdo Completo do Lembrete com Scroll */}
+            <ScrollView
+              showsVerticalScrollIndicator={true}
+              style={{ maxHeight: 260, marginBottom: 16 }}
+              contentContainerStyle={{ paddingRight: 4, paddingBottom: 6 }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  color: colors.text,
+                  lineHeight: 22,
+                  letterSpacing: 0.2,
+                }}
+                selectable
+              >
+                {selectedPostToView?.content}
+              </Text>
+            </ScrollView>
+
+            {/* Botões de Ação: Editar e Excluir */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                paddingTop: 14,
+                borderTopWidth: 1,
+                borderTopColor: colors.border,
+              }}
+            >
+              {selectedPostToView?.canDelete !== false && (
+                <Pressable
+                  onPress={() => {
+                    const postToDelete = selectedPostToView;
+                    setSelectedPostToView(null);
+                    handleDeleteBandPost(postToDelete);
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: '#ef444440',
+                    backgroundColor: '#ef444415',
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={17} color="#ef4444" />
+                  <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 13 }}>
+                    {t('delete') || 'Excluir'}
+                  </Text>
+                </Pressable>
+              )}
+
+              {selectedPostToView?.canEdit !== false && (
+                <Pressable
+                  onPress={() => {
+                    const postToEdit = selectedPostToView;
+                    setSelectedPostToView(null);
+                    handleOpenEditPost(postToEdit);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    borderRadius: 12,
+                    backgroundColor: colors.primary,
+                  }}
+                >
+                  <Ionicons name="pencil-outline" size={17} color="#ffffff" />
+                  <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13 }}>
+                    {t('edit') || 'Editar'}
+                  </Text>
+                </Pressable>
+              )}
+
+              <Pressable
+                onPress={() => setSelectedPostToView(null)}
+                style={{
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                }}
+              >
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
+                  {t('close') || 'Fechar'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── MODAL: CRIAR / EDITAR LEMBRETE DA BANDA ── */}
+      <Modal
+        visible={showCreateEditPostModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => {
+          if (!isSavingPost) setShowCreateEditPostModal(false);
+        }}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={() => {
+              if (!isSavingPost) setShowCreateEditPostModal(false);
+            }}
+          />
+          <View
+            style={[
+              styles.pickerModalContainer,
+              {
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.border,
+                borderTopWidth: 1,
+                height: 'auto',
+                maxHeight: '88%',
+                paddingHorizontal: 22,
+                paddingTop: 14,
+                paddingBottom: Platform.OS === 'ios' ? 34 : 22,
+              },
+            ]}
+          >
+            {/* Drag Handle */}
+            <View
+              style={{
+                width: 44,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                alignSelf: 'center',
+                marginBottom: 16,
+              }}
+            />
+
+            {/* Cabeçalho */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name={editingPost ? "pencil" : "add"} size={18} color={colors.primary} />
+                </View>
+                <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
+                  {editingPost ? (t('editReminder') || 'Editar Lembrete') : (t('newReminder') || 'Novo Lembrete')}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => setShowCreateEditPostModal(false)}
+                disabled={isSavingPost}
+                style={{ padding: 6 }}
+              >
+                <Ionicons name="close" size={22} color={colors.text} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Campo Título */}
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 6, textTransform: 'uppercase' }}>
+                {t('title') || 'Título'}
+              </Text>
+              <TextInput
+                value={postTitleInput}
+                onChangeText={setPostTitleInput}
+                placeholder={t('reminderTitlePlaceholder') || 'Ex: Ensaio de Sexta, Escala do Show...'}
+                placeholderTextColor={colors.textMuted}
+                maxLength={100}
+                style={{
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  fontSize: 14,
+                  fontWeight: '600',
+                  color: colors.text,
+                  marginBottom: 14,
+                }}
+              />
+
+              {/* Campo Conteúdo */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase' }}>
+                  {t('content') || 'Conteúdo do Lembrete'}
+                </Text>
+                <Text style={{ fontSize: 11, color: postContentInput.length > 750 ? '#ef4444' : colors.textMuted }}>
+                  {postContentInput.length}/800
+                </Text>
+              </View>
+              <TextInput
+                value={postContentInput}
+                onChangeText={setPostContentInput}
+                placeholder={t('reminderContentPlaceholder') || 'Escreva aqui o aviso, detalhes, horários ou informações para a banda...'}
+                placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={6}
+                maxLength={800}
+                style={{
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  fontSize: 14,
+                  color: colors.text,
+                  minHeight: 120,
+                  textAlignVertical: 'top',
+                  marginBottom: 16,
+                }}
+              />
+
+              {/* Fixar Lembrete Toggle */}
+              <Pressable
+                onPress={() => setPostIsPinnedInput(!postIsPinnedInput)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  backgroundColor: postIsPinnedInput ? '#f59e0b18' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
+                  borderWidth: 1,
+                  borderColor: postIsPinnedInput ? '#f59e0b60' : colors.border,
+                  borderRadius: 12,
+                  marginBottom: 20,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Ionicons name={postIsPinnedInput ? "star" : "star-outline"} size={20} color={postIsPinnedInput ? "#f59e0b" : colors.textMuted} />
+                  <View>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: postIsPinnedInput ? '#f59e0b' : colors.text }}>
+                      {t('pinToTop') || 'Fixar no Topo'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                      {t('pinToTopDesc') || 'Mantém este aviso sempre em destaque no topo do mural'}
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons
+                  name={postIsPinnedInput ? "checkbox" : "square-outline"}
+                  size={20}
+                  color={postIsPinnedInput ? colors.primary : colors.textMuted}
+                />
+              </Pressable>
+
+              {/* Botões Salvar / Cancelar */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Pressable
+                  onPress={() => setShowCreateEditPostModal(false)}
+                  disabled={isSavingPost}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>
+                    {t('cancel') || 'Cancelar'}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={handleSaveBandPost}
+                  disabled={isSavingPost}
+                  style={{
+                    flex: 1.5,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    backgroundColor: colors.primary,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    gap: 6,
+                    opacity: isSavingPost ? 0.7 : 1,
+                  }}
+                >
+                  {isSavingPost ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark" size={18} color="#ffffff" />
+                      <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 14 }}>
+                        {editingPost ? (t('save') || 'Salvar') : (t('publish') || 'Publicar')}
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
 
     </Modal>
   );
