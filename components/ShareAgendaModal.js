@@ -319,24 +319,32 @@ export default function ShareAgendaModal({
       .sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a)); // Antigos mais recentes primeiro
   }, [events]);
 
-  const updateScaleFromX = (x) => {
-    if (sliderTrackWidth <= 0) return;
-    const ratio = Math.max(0, Math.min(1, x / sliderTrackWidth));
-    const rawVal = 0.7 + ratio * (1.3 - 0.7);
-    const stepped = Math.round(rawVal * 20) / 20;
-    const clamped = Math.max(0.7, Math.min(1.3, Math.round(stepped * 100) / 100));
-    setCardScale(clamped);
-  };
+  const startScaleRef = useRef(1.0);
 
   const sliderPanResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (evt) => updateScaleFromX(evt.nativeEvent.locationX),
-        onPanResponderMove: (evt) => updateScaleFromX(evt.nativeEvent.locationX),
+        onPanResponderGrant: (evt) => {
+          startScaleRef.current = cardScale;
+          if (evt.nativeEvent && typeof evt.nativeEvent.locationX === 'number') {
+            const width = Math.max(1, sliderTrackWidth || 220);
+            const ratio = Math.max(0, Math.min(1, evt.nativeEvent.locationX / width));
+            const newScale = Math.max(0.7, Math.min(1.3, Math.round((0.7 + ratio * 0.6) * 100) / 100));
+            startScaleRef.current = newScale;
+            setCardScale(newScale);
+          }
+        },
+        onPanResponderMove: (evt, gestureState) => {
+          const width = Math.max(1, sliderTrackWidth || 220);
+          const deltaRatio = gestureState.dx / width;
+          const deltaScale = deltaRatio * 0.6; // 0.7 a 1.3 = amplitude de 0.6
+          const newScale = Math.max(0.7, Math.min(1.3, Math.round((startScaleRef.current + deltaScale) * 100) / 100));
+          setCardScale(newScale);
+        },
       }),
-    [sliderTrackWidth]
+    [sliderTrackWidth, cardScale]
   );
 
 
@@ -347,17 +355,33 @@ export default function ShareAgendaModal({
       .catch(() => {});
   }, []);
 
-  // Ao abrir, pré-seleciona os eventos respeitando o limite máximo de 6
+    // Ao abrir, pré-seleciona apenas os shows futuros mais próximos (até 6)
   useEffect(() => {
     if (visible) {
       const allIds = (events || []).map(e => e.id);
-      const initial = Array.isArray(initialSelectedIds) && initialSelectedIds.length > 0
-        ? initialSelectedIds.filter(id => allIds.includes(id))
-        : allIds;
-      const limited = (initial.length > 0 ? initial : allIds).slice(0, MAX_FLYER_EVENTS);
-      setSelectedIds(limited);
+      let toSelect = [];
+
+      if (Array.isArray(initialSelectedIds) && initialSelectedIds.length > 0) {
+        toSelect = initialSelectedIds.filter(id => allIds.includes(id));
+      } else {
+        // Pré-seleciona SOMENTE os shows futuros mais próximos (até 6)
+        const futureList = (events || [])
+          .filter(e => isFutureEvent(e))
+          .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
+
+        if (futureList.length > 0) {
+          toSelect = futureList.map(e => e.id);
+        } else {
+          // Se não houver shows futuros, seleciona os primeiros disponíveis
+          toSelect = allIds;
+        }
+      }
+
+      setSelectedIds(toSelect.slice(0, MAX_FLYER_EVENTS));
+      setCurrentStep(1);
+      setPastEventsExpanded(false);
     }
-  }, [visible]);
+  }, [visible, events]);
 
   const getBgImage = (id) => {
     if (id === 'custom') {
@@ -378,29 +402,34 @@ export default function ShareAgendaModal({
     }
   };
 
-  const toggleSelectEvent = (id) => {
-    if (selectedIds.includes(id)) {
-      if (selectedIds.length === 1) {
-        Alert.alert(t('attention') || 'Aviso', t('selectAtLeastOneShow') || 'Selecione ao menos um show para a arte.');
+    const toggleSelectEvent = (id) => {
+    const allIds = new Set((events || []).map(e => e.id));
+    const validCurrentIds = selectedIds.filter(selId => allIds.has(selId));
+
+    if (validCurrentIds.includes(id)) {
+      if (validCurrentIds.length === 1) {
+        Alert.alert(t('attention') || 'Aviso', str('selectAtLeastOneShow'));
         return;
       }
-      setSelectedIds(selectedIds.filter(i => i !== id));
+      setSelectedIds(validCurrentIds.filter(i => i !== id));
     } else {
-      if (selectedIds.length >= MAX_FLYER_EVENTS) {
+      if (validCurrentIds.length >= MAX_FLYER_EVENTS) {
         Alert.alert(
           t('attention') || 'Aviso',
-          t('maxSixEventsFlyer') || `Você pode selecionar no máximo ${MAX_FLYER_EVENTS} eventos para o flyer.`
+          str('maxSixShows') || `Você pode selecionar no máximo ${MAX_FLYER_EVENTS} eventos para o flyer.`
         );
         return;
       }
-      setSelectedIds([...selectedIds, id]);
+      setSelectedIds([...validCurrentIds, id]);
     }
   };
 
   const toggleSelectAll = () => {
     const allIds = (events || []).map(e => e.id);
+    const validCurrentIds = selectedIds.filter(selId => allIds.includes(selId));
     const maxSelectable = Math.min(MAX_FLYER_EVENTS, allIds.length);
-    if (selectedIds.length >= maxSelectable) {
+
+    if (validCurrentIds.length >= maxSelectable) {
       setSelectedIds(allIds.slice(0, 1));
     } else {
       setSelectedIds(allIds.slice(0, MAX_FLYER_EVENTS));
