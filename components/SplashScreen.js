@@ -12,67 +12,56 @@ import {
 } from 'react-native';
 import { useLanguage } from '../hooks/useLanguage';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function SplashScreen({ isReady, onFinish }) {
   const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const logoScale = useRef(new Animated.Value(0.85)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
-  const textTranslateY = useRef(new Animated.Value(15)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const spinAnim = useRef(new Animated.Value(0)).current;
 
-  // Equalizer bar height animations
-  const bar1Height = useRef(new Animated.Value(8)).current;
-  const bar2Height = useRef(new Animated.Value(16)).current;
-  const bar3Height = useRef(new Animated.Value(24)).current;
-  const bar4Height = useRef(new Animated.Value(12)).current;
-  const bar5Height = useRef(new Animated.Value(20)).current;
-
+  const [progressPercent, setProgressPercent] = useState(0);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const percentRef = useRef(0);
+  percentRef.current = progressPercent;
 
   useEffect(() => {
-    // Initial entrance animation
+    // 1. Entrada suave do Logo
     Animated.parallel([
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 600,
+        duration: 500,
         useNativeDriver: true,
       }),
       Animated.spring(logoScale, {
         toValue: 1,
         friction: 6,
-        tension: 40,
+        tension: 45,
         useNativeDriver: true,
       }),
-      Animated.timing(textOpacity, {
+      Animated.timing(contentOpacity, {
         toValue: 1,
-        duration: 700,
-        delay: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(textTranslateY, {
-        toValue: 0,
         duration: 600,
-        delay: 250,
-        easing: Easing.out(Easing.back(1.5)),
+        delay: 200,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Continuous pulse for outer ring
+    // 2. Pulso suave da aura
     const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.08,
-          duration: 1200,
+          toValue: 1.06,
+          duration: 1400,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1.0,
-          duration: 1200,
+          duration: 1400,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -80,132 +69,168 @@ export default function SplashScreen({ isReady, onFinish }) {
     );
     pulseLoop.start();
 
-    // Equalizer bars bouncing loop
-    const animateBar = (animVal, minH, maxH, dur) => {
-      return Animated.loop(
-        Animated.sequence([
-          Animated.timing(animVal, {
-            toValue: maxH,
-            duration: dur,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: false,
-          }),
-          Animated.timing(animVal, {
-            toValue: minH,
-            duration: dur,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: false,
-          }),
-        ])
-      );
-    };
+    // 3. Efeito moderno: Glow contínuo orbitando / andando em volta do logo (360°)
+    const spinLoop = Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    spinLoop.start();
 
-    const b1 = animateBar(bar1Height, 6, 26, 450);
-    const b2 = animateBar(bar2Height, 10, 32, 380);
-    const b3 = animateBar(bar3Height, 8, 36, 520);
-    const b4 = animateBar(bar4Height, 6, 28, 410);
-    const b5 = animateBar(bar5Height, 12, 30, 480);
-
-    b1.start();
-    b2.start();
-    b3.start();
-    b4.start();
-    b5.start();
+    // 4. Progresso percentual suave inicial (de 0% até ~88% enquanto o banco inicializa)
+    const progressTimer = setInterval(() => {
+      setProgressPercent((prev) => {
+        if (prev < 30) return prev + Math.floor(Math.random() * 8 + 4);
+        if (prev < 65) return prev + Math.floor(Math.random() * 5 + 3);
+        if (prev < 88) return prev + Math.floor(Math.random() * 3 + 1);
+        return prev;
+      });
+    }, 120);
 
     return () => {
       pulseLoop.stop();
-      b1.stop();
-      b2.stop();
-      b3.stop();
-      b4.stop();
-      b5.stop();
+      spinLoop.stop();
+      clearInterval(progressTimer);
     };
   }, []);
 
-  // Handle smooth exit when database is ready
+  // 5. Quando o banco de dados e serviços estiverem prontos (isReady = true)
   useEffect(() => {
     if (isReady && !isFadingOut) {
-      setIsFadingOut(true);
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start(() => {
-        if (onFinish) onFinish();
-      });
+      // Acelera suavemente de onde estiver até 100%
+      const finishTimer = setInterval(() => {
+        setProgressPercent((prev) => {
+          if (prev >= 100) {
+            clearInterval(finishTimer);
+            return 100;
+          }
+          return Math.min(100, prev + 8);
+        });
+      }, 40);
+
+      const checkFinishTimer = setInterval(() => {
+        if (percentRef.current >= 100 && !isFadingOut) {
+          clearInterval(checkFinishTimer);
+          setIsFadingOut(true);
+          setTimeout(() => {
+            Animated.timing(fadeAnim, {
+              toValue: 0,
+              duration: 450,
+              easing: Easing.out(Easing.quad),
+              useNativeDriver: true,
+            }).start(() => {
+              if (onFinish) onFinish();
+            });
+          }, 200);
+        }
+      }, 50);
+
+      return () => {
+        clearInterval(finishTimer);
+        clearInterval(checkFinishTimer);
+      };
     }
   }, [isReady, isFadingOut, fadeAnim, onFinish]);
 
+  const spinInterpolate = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <Modal visible={true} transparent={true} animationType="none">
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <StatusBar barStyle="light-content" backgroundColor="#09090b" />
-      
-      {/* Background Decorative Rings */}
-      <View style={styles.bgGlowRingLarge} />
-      <View style={styles.bgGlowRingMedium} />
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        <StatusBar barStyle="light-content" backgroundColor="#09090b" />
 
-      {/* Main Logo Box with Pulse Ring */}
-      <View style={styles.logoCenterWrapper}>
-        <Animated.View
-          style={[
-            styles.pulseRing,
-            {
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.logoContainer,
-            {
-              opacity: logoOpacity,
-              transform: [{ scale: logoScale }],
-            },
-          ]}
-        >
-          <Image
-            source={require('../assets/logo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
+        {/* Círculos decorativos de profundidade no fundo */}
+        <View style={styles.bgGlowRingLarge} />
+        <View style={styles.bgGlowRingMedium} />
+
+        {/* ── LOGO 100% MAIOR COM GLOW ANDANDO EM VOLTA ── */}
+        <View style={styles.logoCenterWrapper}>
+          {/* Anel de Pulso de Fundo */}
+          <Animated.View
+            style={[
+              styles.pulseRing,
+              {
+                transform: [{ scale: pulseAnim }],
+              },
+            ]}
           />
+
+          {/* GLOW ANDANDO EM VOLTA DO LOGO (ORBIT LIGHT BEAM) */}
+          <Animated.View
+            style={[
+              styles.orbitRingWrapper,
+              {
+                transform: [{ rotate: spinInterpolate }],
+              },
+            ]}
+          >
+            {/* Feixe de Luz Principal (Cometa Neon) */}
+            <View style={styles.glowCometHead} />
+            <View style={styles.glowCometTrail1} />
+            <View style={styles.glowCometTrail2} />
+          </Animated.View>
+
+          {/* Container do Logo (100% maior: 240x240) */}
+          <Animated.View
+            style={[
+              styles.logoContainer,
+              {
+                opacity: logoOpacity,
+                transform: [{ scale: logoScale }],
+              },
+            ]}
+          >
+            <Image
+              source={require('../assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </Animated.View>
         </View>
 
-      {/* App Name and Tagline */}
-      <Animated.View
-        style={[
-          styles.textContainer,
-          {
-            opacity: textOpacity,
-            transform: [{ translateY: textTranslateY }],
-          },
-        ]}
-      >
-        <Text style={styles.brandTitleText}>
-          BAND<Text style={styles.brandTitleHighlight}>LINK</Text>
-        </Text>
-        <Text style={styles.taglineText}>{t('splashTagline') || 'Repertório, Palco & Rede Musical'}</Text>
+        {/* ── MOSTRADOR DE PORCENTAGEM E BARRA DE CARREGAMENTO ABAIXO ── */}
+        <Animated.View style={[styles.progressSection, { opacity: contentOpacity }]}>
+          {/* Número Percentual Grande e Limpo */}
+          <Text style={styles.percentText}>
+            {Math.min(100, Math.round(progressPercent))}%
+          </Text>
 
-        {/* Dynamic Animated Equalizer Indicator */}
-        <View style={styles.equalizerRow}>
-          <Animated.View style={[styles.eqBar, { height: bar1Height }]} />
-          <Animated.View style={[styles.eqBar, { height: bar2Height, backgroundColor: '#38bdf8' }]} />
-          <Animated.View style={[styles.eqBar, { height: bar3Height, backgroundColor: '#8b5cf6' }]} />
-          <Animated.View style={[styles.eqBar, { height: bar4Height, backgroundColor: '#38bdf8' }]} />
-          <Animated.View style={[styles.eqBar, { height: bar5Height }]} />
+          {/* Barra de Progresso Elegante com Glow */}
+          <View style={styles.progressBarTrack}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${Math.min(100, Math.max(0, progressPercent))}%` },
+              ]}
+            />
+          </View>
+
+          {/* Status Subtitle */}
+          <Text style={styles.statusSubtitle}>
+            {progressPercent < 45
+              ? (t('loadingDb') || 'Iniciando banco de dados...')
+              : progressPercent < 85
+              ? (t('loadingServices') || 'Carregando ambiente e repertório...')
+              : progressPercent < 100
+              ? (t('loadingFinishing') || 'Quase pronto...')
+              : (t('loadingReady') || 'Tudo pronto!')}
+          </Text>
+        </Animated.View>
+
+        {/* Rodapé Elegante com Versão */}
+        <View style={styles.footerContainer}>
+          <View style={styles.proBadge}>
+            <Text style={styles.proBadgeText}>{t('proEdition') || 'PRO'}</Text>
+          </View>
+          <Text style={styles.versionText}>v1.4.0 • BandLink</Text>
         </View>
       </Animated.View>
-
-      {/* Footer Version Info */}
-      <View style={styles.footerContainer}>
-        <View style={styles.proBadge}>
-          <Text style={styles.proBadgeText}>{t('proEdition') || 'PRO'}</Text>
-        </View>
-        <Text style={styles.versionText}>v1.4.0 • BandLink</Text>
-      </View>
-    </Animated.View>
     </Modal>
   );
 }
@@ -223,12 +248,12 @@ const styles = StyleSheet.create({
   },
   bgGlowRingLarge: {
     position: 'absolute',
-    width: width * 1.3,
-    height: width * 1.3,
-    borderRadius: (width * 1.3) / 2,
-    backgroundColor: '#38bdf806',
+    width: width * 1.35,
+    height: width * 1.35,
+    borderRadius: (width * 1.35) / 2,
+    backgroundColor: '#38bdf805',
     borderWidth: 1,
-    borderColor: '#38bdf812',
+    borderColor: '#38bdf810',
   },
   bgGlowRingMedium: {
     position: 'absolute',
@@ -237,75 +262,125 @@ const styles = StyleSheet.create({
     borderRadius: (width * 0.95) / 2,
     backgroundColor: '#818cf808',
     borderWidth: 1,
-    borderColor: '#818cf818',
+    borderColor: '#818cf815',
   },
   logoCenterWrapper: {
+    width: 280,
+    height: 280,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 36,
+    position: 'relative',
   },
   pulseRing: {
     position: 'absolute',
-    width: 146,
-    height: 146,
-    borderRadius: 73,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
     borderWidth: 2,
-    borderColor: '#38bdf840',
-    backgroundColor: '#38bdf80d',
+    borderColor: '#38bdf830',
+    backgroundColor: '#38bdf808',
+  },
+  orbitRingWrapper: {
+    position: 'absolute',
+    width: 264,
+    height: 264,
+    borderRadius: 132,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  glowCometHead: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#38bdf8',
+    marginTop: -12,
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 18,
+    elevation: 16,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  glowCometTrail1: {
+    position: 'absolute',
+    top: -8,
+    width: 44,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#38bdf840',
+    shadowColor: '#38bdf8',
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+  },
+  glowCometTrail2: {
+    position: 'absolute',
+    top: -5,
+    width: 70,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#818cf825',
   },
   logoContainer: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
     backgroundColor: '#18181b',
-    borderWidth: 2,
-    borderColor: '#38bdf8',
+    borderWidth: 2.5,
+    borderColor: '#38bdf850',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#38bdf8',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 16,
   },
   logoImage: {
-    width: 84,
-    height: 84,
+    width: 170,
+    height: 170,
   },
-  textContainer: {
+  progressSection: {
+    width: '100%',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  brandTitleText: {
-    fontSize: 22,
+  percentText: {
+    fontSize: 26,
     fontWeight: '900',
-    color: '#ffffff',
-    letterSpacing: 2,
-    textAlign: 'center',
-  },
-  brandTitleHighlight: {
     color: '#38bdf8',
+    letterSpacing: 1,
+    marginBottom: 12,
+    textShadowColor: 'rgba(56, 189, 248, 0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
-  taglineText: {
-    fontSize: 13,
-    color: '#a1a1aa',
-    marginTop: 6,
-    marginBottom: 20,
+  progressBarTrack: {
+    width: 230,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: '#38bdf8',
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+  },
+  statusSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94a3b8',
     letterSpacing: 0.5,
     textAlign: 'center',
-    fontWeight: '400',
-  },
-  equalizerRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    height: 40,
-    gap: 6,
-    marginTop: 6,
-  },
-  eqBar: {
-    width: 4,
-    borderRadius: 2,
-    backgroundColor: '#60a5fa',
   },
   footerContainer: {
     position: 'absolute',

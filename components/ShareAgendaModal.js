@@ -242,6 +242,23 @@ const getDefaultEventTitle = (lang) => {
  * Modal de compartilhamento de agenda para Bandas e Músicos (Flyer Band Link).
  */
 
+const renderEventSubtitle = (event, displayEventName) => {
+  const rawDate = String(event.date || '').trim();
+  const rawTime = String(event.time || '').trim();
+  const rawLocal = String(event.local || '').trim();
+
+  let text = rawDate;
+  if (rawTime && !text.includes(rawTime)) {
+    text = text ? `${text} • ${rawTime}` : rawTime;
+  }
+
+  if (rawLocal && rawLocal !== (displayEventName || '').trim() && !text.includes(rawLocal)) {
+    text = text ? `${text} • ${rawLocal}` : rawLocal;
+  }
+
+  return text;
+};
+
 const getEventTimestamp = (event) => {
   if (!event) return 0;
   if (typeof event._ts === 'number' && !isNaN(event._ts)) return event._ts;
@@ -319,32 +336,40 @@ export default function ShareAgendaModal({
       .sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a)); // Antigos mais recentes primeiro
   }, [events]);
 
-  const startScaleRef = useRef(1.0);
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false);
+  const trackPageXRef = useRef(0);
+  const trackWidthRef = useRef(240);
+  const trackViewRef = useRef(null);
+
+  const updateScaleFromPageX = (pageX) => {
+    const width = Math.max(10, trackWidthRef.current || 240);
+    const offsetX = pageX - trackPageXRef.current;
+    const ratio = Math.max(0, Math.min(1, offsetX / width));
+    const newScale = Math.max(0.7, Math.min(1.3, Math.round((0.7 + ratio * 0.6) * 100) / 100));
+    setCardScale(newScale);
+  };
 
   const sliderPanResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: (evt) => {
-          startScaleRef.current = cardScale;
-          if (evt.nativeEvent && typeof evt.nativeEvent.locationX === 'number') {
-            const width = Math.max(1, sliderTrackWidth || 220);
-            const ratio = Math.max(0, Math.min(1, evt.nativeEvent.locationX / width));
-            const newScale = Math.max(0.7, Math.min(1.3, Math.round((0.7 + ratio * 0.6) * 100) / 100));
-            startScaleRef.current = newScale;
-            setCardScale(newScale);
-          }
+          setIsDraggingSlider(true);
+          updateScaleFromPageX(evt.nativeEvent.pageX);
         },
-        onPanResponderMove: (evt, gestureState) => {
-          const width = Math.max(1, sliderTrackWidth || 220);
-          const deltaRatio = gestureState.dx / width;
-          const deltaScale = deltaRatio * 0.6; // 0.7 a 1.3 = amplitude de 0.6
-          const newScale = Math.max(0.7, Math.min(1.3, Math.round((startScaleRef.current + deltaScale) * 100) / 100));
-          setCardScale(newScale);
+        onPanResponderMove: (evt) => {
+          updateScaleFromPageX(evt.nativeEvent.pageX);
+        },
+        onPanResponderRelease: () => {
+          setIsDraggingSlider(false);
+        },
+        onPanResponderTerminate: () => {
+          setIsDraggingSlider(false);
         },
       }),
-    [sliderTrackWidth, cardScale]
+    []
   );
 
 
@@ -1279,7 +1304,7 @@ export default function ShareAgendaModal({
               })}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
+            <ScrollView scrollEnabled={!isDraggingSlider} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
               {/* ════════════════════════════════════════════════════════════
                   ETAPA 1: ESCOLHA DO MODELO / ESTILO
                   ════════════════════════════════════════════════════════════ */}
@@ -1467,7 +1492,7 @@ export default function ShareAgendaModal({
                                   {displayEventName}
                                 </Text>
                                 <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                                  {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
+                                  {renderEventSubtitle(event, displayEventName)}
                                 </Text>
                               </View>
                             </Pressable>
@@ -1587,8 +1612,19 @@ export default function ShareAgendaModal({
 
                     {/* Barra Deslizante Pura (Trilha + Thumb interativo) */}
                     <View
-                      style={{ height: 36, justifyContent: 'center', paddingHorizontal: 11 }}
-                      onLayout={(e) => setSliderTrackWidth(e.nativeEvent.layout.width - 22)}
+                      ref={trackViewRef}
+                      style={{ height: 42, justifyContent: 'center', paddingHorizontal: 12 }}
+                      onLayout={() => {
+                        setTimeout(() => {
+                          trackViewRef.current?.measure((x, y, width, height, pageX) => {
+                            if (width > 0) {
+                              trackPageXRef.current = pageX + 12;
+                              trackWidthRef.current = width - 24;
+                              setSliderTrackWidth(width - 24);
+                            }
+                          });
+                        }, 50);
+                      }}
                       {...sliderPanResponder.panHandlers}
                     >
                       {/* Trilha de fundo */}
