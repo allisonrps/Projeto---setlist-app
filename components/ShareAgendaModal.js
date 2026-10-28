@@ -66,6 +66,114 @@ const getTemplateName = (id, t) => {
   }
 };
 
+const I18N_STRINGS = {
+  pt: {
+    upcomingShows: 'PRÓXIMOS SHOWS',
+    pastShows: 'SHOWS ANTIGOS',
+    show: 'show',
+    shows: 'shows',
+    selectedShows: 'SHOWS SELECIONADOS:',
+    deselectAll: 'Desmarcar Todos',
+    selectAll: 'Selecionar Todos',
+    seePastShows: 'Ver antigos',
+    hidePastShows: 'Recolher',
+    cardSize: 'TAMANHO DOS CARDS',
+    compact: 'Compacto',
+    normal: 'Normal',
+    large: 'Grande',
+    step1: '1. Estilo',
+    step2: '2. Shows',
+    step3: '3. Prévia',
+    nextToShows: 'Avançar para Shows →',
+    viewPreview: 'Ver Pré-visualização →',
+    back: 'Voltar',
+    quickBgTheme: 'Tema de Fundo Rápido',
+    gallerySaved: 'Foto Salva',
+    galleryPhoto: 'Foto Galeria',
+    contactLineTitle: 'LINHA DE CONTATO / REDES SOCIAIS (OPCIONAL)',
+    contactLinePlaceholder: 'Ex: Contato para Shows: (16) 99115-3733 • @minhabanda',
+    artStyleTitle: 'ESCOLHA O MODELO / ESTILO DO FLYER',
+    customArtTitle: 'Arte Personalizada (Foto da Galeria)',
+    customArtSaved: 'Imagem salva da galeria',
+    customArtPrompt: 'Toque para escolher uma imagem',
+    generateAndShare: 'Gerar e Compartilhar',
+    generatingFlyer: 'Gerando arte em alta definição...',
+    pleaseWait: 'Aguarde um momento',
+    selectAtLeastOneShow: 'Selecione ao menos um show para o flyer.',
+    maxSixShows: 'Você pode selecionar no máximo 6 eventos para o flyer.',
+  },
+  en: {
+    upcomingShows: 'UPCOMING SHOWS',
+    pastShows: 'PAST SHOWS',
+    show: 'show',
+    shows: 'shows',
+    selectedShows: 'SELECTED SHOWS:',
+    deselectAll: 'Deselect All',
+    selectAll: 'Select All',
+    seePastShows: 'View past',
+    hidePastShows: 'Collapse',
+    cardSize: 'CARD SIZE',
+    compact: 'Compact',
+    normal: 'Normal',
+    large: 'Large',
+    step1: '1. Style',
+    step2: '2. Shows',
+    step3: '3. Preview',
+    nextToShows: 'Continue to Shows →',
+    viewPreview: 'View Preview →',
+    back: 'Back',
+    quickBgTheme: 'Quick Background Theme',
+    gallerySaved: 'Saved Photo',
+    galleryPhoto: 'Gallery Photo',
+    contactLineTitle: 'CONTACT INFO / SOCIAL MEDIA (OPTIONAL)',
+    contactLinePlaceholder: 'E.g.: Booking: +1 (555) 123-4567 • @myband',
+    artStyleTitle: 'CHOOSE FLYER TEMPLATE / STYLE',
+    customArtTitle: 'Custom Art (Gallery Photo)',
+    customArtSaved: 'Saved image from gallery',
+    customArtPrompt: 'Tap to pick an image',
+    generateAndShare: 'Generate & Share',
+    generatingFlyer: 'Generating high-definition artwork...',
+    pleaseWait: 'Please wait a moment',
+    selectAtLeastOneShow: 'Select at least one show for the flyer.',
+    maxSixShows: 'You can select up to 6 events for the flyer.',
+  },
+  es: {
+    upcomingShows: 'PRÓXIMOS SHOWS',
+    pastShows: 'SHOWS ANTIGUOS',
+    show: 'concierto',
+    shows: 'conciertos',
+    selectedShows: 'SHOWS SELECCIONADOS:',
+    deselectAll: 'Deseleccionar Todos',
+    selectAll: 'Seleccionar Todos',
+    seePastShows: 'Ver antiguos',
+    hidePastShows: 'Plegar',
+    cardSize: 'TAMAÑO DE LAS TARJETAS',
+    compact: 'Compacto',
+    normal: 'Normal',
+    large: 'Grande',
+    step1: '1. Estilo',
+    step2: '2. Shows',
+    step3: '3. Vista Previa',
+    nextToShows: 'Continuar a Shows →',
+    viewPreview: 'Ver Vista Previa →',
+    back: 'Volver',
+    quickBgTheme: 'Tema de Fondo Rápido',
+    gallerySaved: 'Foto Guardada',
+    galleryPhoto: 'Foto Galería',
+    contactLineTitle: 'LÍNEA DE CONTACTO / REDES SOCIALES (OPCIONAL)',
+    contactLinePlaceholder: 'Ej: Contrataciones: (16) 99115-3733 • @mibanda',
+    artStyleTitle: 'ELIJA EL MODELO / ESTILO DEL FLYER',
+    customArtTitle: 'Arte Personalizado (Foto de Galería)',
+    customArtSaved: 'Imagen guardada de la galería',
+    customArtPrompt: 'Toque para elegir una imagen',
+    generateAndShare: 'Generar y Compartir',
+    generatingFlyer: 'Generando arte en alta definición...',
+    pleaseWait: 'Espere un momento',
+    selectAtLeastOneShow: 'Seleccione al menos un show para el flyer.',
+    maxSixShows: 'Puede seleccionar hasta 6 eventos para el flyer.',
+  }
+};
+
 const WEEKDAYS_MAP = {
   pt: ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'],
   en: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
@@ -242,6 +350,7 @@ export default function ShareAgendaModal({
   const [sliderTrackWidth, setSliderTrackWidth] = useState(220);
 
   const activeLang = ['pt', 'en', 'es'].includes(language) ? language : 'pt';
+  const str = (key) => I18N_STRINGS[activeLang]?.[key] || I18N_STRINGS['pt'][key] || key;
   const upcomingEvents = useMemo(() => {
     const list = (events || []).filter(e => isFutureEventDate(e.date));
     return list.sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
@@ -565,8 +674,7 @@ export default function ShareAgendaModal({
   const eventCount = selectedEvents.length;
   const count = Math.max(1, Math.min(6, eventCount || 1));
 
-  // Tabela de dimensões por quantidade para preencher o espaço vertical do flyer 1080x1920
-  const flyerDim = {
+  const baseFlyerDim = {
     1: {
       cardHeight: 340,
       cardPaddingV: 44,
@@ -748,6 +856,26 @@ export default function ShareAgendaModal({
       footerScanFontSize: 14,
     },
   }[count];
+
+  const flyerDim = {
+    ...baseFlyerDim,
+    cardHeight: Math.round(baseFlyerDim.cardHeight * cardScale),
+    cardPaddingV: Math.round(baseFlyerDim.cardPaddingV * cardScale),
+    cardPaddingH: Math.round(baseFlyerDim.cardPaddingH * cardScale),
+    cardBorderRadius: Math.round(baseFlyerDim.cardBorderRadius * Math.min(1.2, cardScale)),
+    dateBadgeMinWidth: Math.round(baseFlyerDim.dateBadgeMinWidth * cardScale),
+    dateBadgePadV: Math.round(baseFlyerDim.dateBadgePadV * cardScale),
+    dateBadgeMarginRight: Math.round(baseFlyerDim.dateBadgeMarginRight * cardScale),
+    dateBadgeWeekDayFontSize: Math.round(baseFlyerDim.dateBadgeWeekDayFontSize * cardScale),
+    dateBadgeDayFontSize: Math.round(baseFlyerDim.dateBadgeDayFontSize * cardScale),
+    dateBadgeDayLineHeight: Math.round(baseFlyerDim.dateBadgeDayLineHeight * cardScale),
+    dateBadgeMonthFontSize: Math.round(baseFlyerDim.dateBadgeMonthFontSize * cardScale),
+    eventTitleFontSize: Math.round(baseFlyerDim.eventTitleFontSize * cardScale),
+    eventTitleLineHeight: Math.round(baseFlyerDim.eventTitleLineHeight * cardScale),
+    eventTitleMarginBottom: Math.round(baseFlyerDim.eventTitleMarginBottom * cardScale),
+    eventInfoFontSize: Math.round(baseFlyerDim.eventInfoFontSize * cardScale),
+    eventInfoIconSize: Math.round(baseFlyerDim.eventInfoIconSize * cardScale),
+  };
 
 
   const renderFlyerArt = () => (
@@ -1073,7 +1201,7 @@ export default function ShareAgendaModal({
             width: 1080,
             height: 1920,
             zIndex: -999,
-            opacity: isSharing ? 1 : 0.001,
+            opacity: 1,
           }}
           pointerEvents="none"
           collapsable={false}
@@ -1123,9 +1251,9 @@ export default function ShareAgendaModal({
             {/* Stepper Header de 3 Etapas */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2, marginBottom: 14 }}>
               {[
-                { step: 1, label: '1. Estilo', icon: 'color-palette-outline' },
-                { step: 2, label: `2. Shows (${selectedIds.length})`, icon: 'calendar-outline' },
-                { step: 3, label: '3. Prévia', icon: 'eye-outline' },
+                { step: 1, label: str('step1'), icon: 'color-palette-outline' },
+                { step: 2, label: `${str('step2')} (${selectedIds.length})`, icon: 'calendar-outline' },
+                { step: 3, label: str('step3'), icon: 'eye-outline' },
               ].map((s, index) => {
                 const isActive = currentStep === s.step;
                 const isCompleted = currentStep > s.step;
@@ -1184,7 +1312,7 @@ export default function ShareAgendaModal({
               {currentStep === 1 && (
                 <View>
                   <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' }}>
-                    {t('artStyleBackground') || 'ESCOLHA O MODELO / ESTILO DO FLYER'}
+                    {str('artStyleTitle')}
                   </Text>
 
                   {/* Foto Personalizada da Galeria */}
@@ -1212,10 +1340,10 @@ export default function ShareAgendaModal({
                     )}
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.layoutName, { color: selectedLayout === 'custom' ? colors.primary : colors.text }]}>
-                        {t('customArtTitle') || 'Arte Personalizada (Foto da Galeria)'}
+                        {str('customArtTitle')}
                       </Text>
                       <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-                        {customBgUri ? (t('customArtSaved') || 'Imagem salva da galeria') : (t('customArtPrompt') || 'Toque para escolher uma imagem')}
+                        {customBgUri ? str('customArtSaved') : str('customArtPrompt')}
                       </Text>
                     </View>
 
@@ -1259,12 +1387,12 @@ export default function ShareAgendaModal({
                   {/* Linha de Contato / Redes Sociais */}
                   <View style={{ marginBottom: 10 }}>
                     <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 6 }}>
-                      LINHA DE CONTATO / REDES SOCIAIS (OPCIONAL)
+                      {str('contactLineTitle')}
                     </Text>
                     <TextInput
                       value={contactText}
                       onChangeText={setContactText}
-                      placeholder="Ex: Contato para Shows: (16) 99115-3733 • @minhabanda"
+                      placeholder={str('contactLinePlaceholder')}
                       placeholderTextColor={colors.textMuted}
                       style={{
                         backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
@@ -1283,7 +1411,7 @@ export default function ShareAgendaModal({
               )}
 
               {/* ════════════════════════════════════════════════════════════
-                  ETAPA 2: ESCOLHA DOS EVENTOS / SHOWS
+                  ETAPA 2: ESCOLHA DOS EVENTOS (PRÓXIMOS NO TOPO, ANTIGOS RECOLHIDOS)
                   ════════════════════════════════════════════════════════════ */}
               {currentStep === 2 && (
                 <View>
@@ -1291,7 +1419,7 @@ export default function ShareAgendaModal({
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
-                        SHOWS SELECIONADOS:
+                        {str('selectedShows')}
                       </Text>
                       <View style={{ backgroundColor: colors.primary, paddingHorizontal: 7, paddingVertical: 1, borderRadius: 10 }}>
                         <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
@@ -1303,22 +1431,22 @@ export default function ShareAgendaModal({
                     <Pressable onPress={toggleSelectAll} hitSlop={8}>
                       <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
                         {selectedIds.length >= Math.min(MAX_FLYER_EVENTS, events.length)
-                          ? (t('deselectAllShows') || 'Desmarcar Todos')
-                          : (t('selectAllShows') || 'Selecionar Todos')}
+                          ? str('deselectAll')
+                          : str('selectAll')}
                       </Text>
                     </Pressable>
                   </View>
 
-                  {/* SEÇÃO 1: PRÓXIMOS SHOWS (SEMPRE ABERTOS) */}
+                  {/* SEÇÃO 1: PRÓXIMOS SHOWS (SEMPRE ABERTOS NO TOPO) */}
                   <View style={{ marginBottom: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <View style={{ backgroundColor: '#22c55e20', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 }}>
                         <Text style={{ fontSize: 10, fontWeight: '800', color: '#22c55e' }}>
-                          PRÓXIMOS SHOWS
+                          {str('upcomingShows')}
                         </Text>
                       </View>
                       <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                        ({displayedUpcoming.length} {displayedUpcoming.length === 1 ? 'show' : 'shows'})
+                        ({displayedUpcoming.length} {displayedUpcoming.length === 1 ? str('show') : str('shows')})
                       </Text>
                     </View>
 
@@ -1367,7 +1495,7 @@ export default function ShareAgendaModal({
                     </View>
                   </View>
 
-                  {/* SEÇÃO 2: SHOWS ANTERIORES (RECOLHIDOS POR PADRÃO TIPO RÉGUA DE MESES) */}
+                  {/* SEÇÃO 2: SHOWS ANTIGOS (RECOLHIDOS EM UMA RÉGUA MARCADA COM "ANTIGOS") */}
                   {displayedPast.length > 0 && (
                     <View style={{ marginTop: 4, marginBottom: 14 }}>
                       <Pressable
@@ -1387,13 +1515,13 @@ export default function ShareAgendaModal({
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <Ionicons name="time-outline" size={17} color={colors.textMuted} />
                           <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
-                            SHOWS ANTERIORES ({displayedPast.length})
+                            {str('pastShows')} ({displayedPast.length})
                           </Text>
                         </View>
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                           <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                            {pastEventsExpanded ? 'Recolher' : 'Ver anteriores'}
+                            {pastEventsExpanded ? str('hidePastShows') : str('seePastShows')}
                           </Text>
                           <Ionicons
                             name={pastEventsExpanded ? "chevron-up" : "chevron-down"}
@@ -1404,66 +1532,48 @@ export default function ShareAgendaModal({
                       </Pressable>
 
                       {pastEventsExpanded && (
-                        <View style={{ marginTop: 10, gap: 12 }}>
-                          {Object.entries(pastEventsByMonth).map(([monthTitle, monthList]) => (
-                            <View key={monthTitle}>
-                              {/* Régua Mensal */}
-                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                  {monthTitle}
-                                </Text>
-                                <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.6 }} />
-                                <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>
-                                  {monthList.length}
-                                </Text>
-                              </View>
-
-                              {/* Cards do Mês */}
-                              <View style={{ gap: 6 }}>
-                                {monthList.map(event => {
-                                  const isSelected = selectedIds.includes(event.id);
-                                  const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
-                                  return (
-                                    <Pressable
-                                      key={event.id}
-                                      onPress={() => toggleSelectEvent(event.id)}
-                                      style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        padding: 10,
-                                        borderRadius: 10,
-                                        backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
-                                        borderWidth: 1.5,
-                                        borderColor: isSelected ? colors.primary : colors.border,
-                                      }}
-                                    >
-                                      <View style={{
-                                        width: 22,
-                                        height: 22,
-                                        borderRadius: 6,
-                                        borderWidth: 1.5,
-                                        borderColor: isSelected ? colors.primary : colors.textMuted,
-                                        backgroundColor: isSelected ? colors.primary : 'transparent',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        marginRight: 10,
-                                      }}>
-                                        {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
-                                      </View>
-                                      <View style={{ flex: 1 }}>
-                                        <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>
-                                          {displayEventName}
-                                        </Text>
-                                        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                                          {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
-                                        </Text>
-                                      </View>
-                                    </Pressable>
-                                  );
-                                })}
-                              </View>
-                            </View>
-                          ))}
+                        <View style={{ marginTop: 10, gap: 6 }}>
+                          {displayedPast.map(event => {
+                            const isSelected = selectedIds.includes(event.id);
+                            const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
+                            return (
+                              <Pressable
+                                key={event.id}
+                                onPress={() => toggleSelectEvent(event.id)}
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  padding: 10,
+                                  borderRadius: 10,
+                                  backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
+                                  borderWidth: 1.5,
+                                  borderColor: isSelected ? colors.primary : colors.border,
+                                }}
+                              >
+                                <View style={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: 6,
+                                  borderWidth: 1.5,
+                                  borderColor: isSelected ? colors.primary : colors.textMuted,
+                                  backgroundColor: isSelected ? colors.primary : 'transparent',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  marginRight: 10,
+                                }}>
+                                  {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                  <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>
+                                    {displayEventName}
+                                  </Text>
+                                  <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+                                    {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
+                                  </Text>
+                                </View>
+                              </Pressable>
+                            );
+                          })}
                         </View>
                       )}
                     </View>
@@ -1472,11 +1582,75 @@ export default function ShareAgendaModal({
               )}
 
               {/* ════════════════════════════════════════════════════════════
-                  ETAPA 3: PRÉ-VISUALIZAÇÃO & AJUSTE DOS CARDS COM BARRA DESLIZANTE
+                  ETAPA 3: PRÉ-VISUALIZAÇÃO (SLIDER DE TAMANHO NO TOPO)
                   ════════════════════════════════════════════════════════════ */}
               {currentStep === 3 && (
                 <View style={{ alignItems: 'center' }}>
-                  {/* Container da Miniatura em Proporção Exata 9:16 (270x480) */}
+                  
+                  {/* ── 1. BARRA DESLIZANTE DE TAMANHO NO TOPO (SÓ O SLIDER, SEM BOTÕES) ── */}
+                  <View style={{ width: '100%', backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#f8fafc', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 14 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Ionicons name="resize-outline" size={16} color={colors.primary} />
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
+                          {str('cardSize')}
+                        </Text>
+                      </View>
+                      <View style={{ backgroundColor: colors.primary + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary }}>
+                          {Math.round(cardScale * 100)}% ({cardScale <= 0.85 ? str('compact') : cardScale >= 1.15 ? str('large') : str('normal')})
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Barra Deslizante Pura (Trilha + Thumb interativo) */}
+                    <View
+                      style={{ height: 36, justifyContent: 'center', paddingHorizontal: 11 }}
+                      onLayout={(e) => setSliderTrackWidth(e.nativeEvent.layout.width - 22)}
+                      {...sliderPanResponder.panHandlers}
+                    >
+                      {/* Trilha de fundo */}
+                      <View
+                        style={{
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#e2e8f0',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {/* Barra preenchida */}
+                        <View
+                          style={{
+                            width: `${Math.max(0, Math.min(1, (cardScale - 0.7) / (1.3 - 0.7))) * 100}%`,
+                            height: '100%',
+                            backgroundColor: colors.primary,
+                            borderRadius: 5,
+                          }}
+                        />
+                      </View>
+
+                      {/* Botão deslizante (Thumb) */}
+                      <View
+                        style={{
+                          position: 'absolute',
+                          left: Math.max(0, Math.min(sliderTrackWidth, (Math.max(0, Math.min(1, (cardScale - 0.7) / (1.3 - 0.7)))) * sliderTrackWidth)),
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          backgroundColor: '#ffffff',
+                          borderWidth: 3.5,
+                          borderColor: colors.primary,
+                          elevation: 5,
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.35,
+                          shadowRadius: 4,
+                        }}
+                      />
+                    </View>
+                  </View>
+
+                  {/* ── 2. MINIATURA EM PROPORÇÃO EXATA 9:16 (270x480) COM ATUALIZAÇÃO EM TEMPO REAL ── */}
                   <View
                     style={{
                       width: 270,
@@ -1508,110 +1682,10 @@ export default function ShareAgendaModal({
                     </View>
                   </View>
 
-                  {/* Barra Deslizante para Regular Tamanho dos Cards */}
-                  <View style={{ width: '100%', backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 12 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
-                        TAMANHO DOS CARDS
-                      </Text>
-                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary }}>
-                        {Math.round(cardScale * 100)}% ({cardScale <= 0.85 ? 'Compacto' : cardScale >= 1.15 ? 'Grande' : 'Normal'})
-                      </Text>
-                    </View>
-
-                    {/* Linha da Barra Deslizante com Botões - e + */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <Pressable
-                        onPress={() => setCardScale(s => Math.max(0.7, Math.round((s - 0.05) * 100) / 100))}
-                        style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
-                        hitSlop={6}
-                      >
-                        <Ionicons name="remove" size={18} color={colors.text} />
-                      </Pressable>
-
-                      {/* Trilha Deslizante Interativa */}
-                      <View
-                        style={{ flex: 1, height: 34, justifyContent: 'center' }}
-                        onLayout={(e) => setSliderTrackWidth(e.nativeEvent.layout.width)}
-                        {...sliderPanResponder.panHandlers}
-                      >
-                        <View
-                          style={{
-                            height: 8,
-                            borderRadius: 4,
-                            backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#e2e8f0',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <View
-                            style={{
-                              width: `${Math.max(0, Math.min(1, (cardScale - 0.7) / (1.3 - 0.7))) * 100}%`,
-                              height: '100%',
-                              backgroundColor: colors.primary,
-                              borderRadius: 4,
-                            }}
-                          />
-                        </View>
-
-                        {/* Thumb Knob */}
-                        <View
-                          style={{
-                            position: 'absolute',
-                            left: Math.max(0, Math.min(sliderTrackWidth - 22, (Math.max(0, Math.min(1, (cardScale - 0.7) / (1.3 - 0.7)))) * sliderTrackWidth - 11)),
-                            width: 22,
-                            height: 22,
-                            borderRadius: 11,
-                            backgroundColor: '#ffffff',
-                            borderWidth: 3,
-                            borderColor: colors.primary,
-                            elevation: 4,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 3,
-                          }}
-                        />
-                      </View>
-
-                      <Pressable
-                        onPress={() => setCardScale(s => Math.min(1.3, Math.round((s + 0.05) * 100) / 100))}
-                        style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
-                        hitSlop={6}
-                      >
-                        <Ionicons name="add" size={18} color={colors.text} />
-                      </Pressable>
-                    </View>
-
-                    {/* Presets Rápidos */}
-                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 10, justifyContent: 'center' }}>
-                      {[
-                        { label: '0.8x Compacto', val: 0.8 },
-                        { label: '1.0x Normal', val: 1.0 },
-                        { label: '1.15x Grande', val: 1.15 },
-                        { label: '1.3x Extra', val: 1.3 }
-                      ].map(p => (
-                        <Pressable
-                          key={p.label}
-                          onPress={() => setCardScale(p.val)}
-                          style={{
-                            paddingVertical: 5,
-                            paddingHorizontal: 9,
-                            borderRadius: 7,
-                            backgroundColor: Math.abs(cardScale - p.val) < 0.04 ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : '#e2e8f0'),
-                          }}
-                        >
-                          <Text style={{ fontSize: 11, fontWeight: '700', color: Math.abs(cardScale - p.val) < 0.04 ? '#fff' : colors.text }}>
-                            {p.label}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-
-                  {/* Seletor Rápido de Tema com Ícones */}
+                  {/* ── 3. SELETOR RÁPIDO DE TEMA ── */}
                   <View style={{ width: '100%', marginBottom: 6 }}>
                     <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted, marginBottom: 8, textTransform: 'uppercase' }}>
-                      Tema de Fundo Rápido
+                      {str('quickBgTheme')}
                     </Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                       <Pressable
@@ -1633,7 +1707,7 @@ export default function ShareAgendaModal({
                       >
                         <Ionicons name="image-outline" size={16} color={selectedLayout === 'custom' ? colors.primary : colors.textMuted} />
                         <Text style={{ fontSize: 12, fontWeight: '700', color: selectedLayout === 'custom' ? colors.primary : colors.text }}>
-                          {customBgUri ? 'Foto Salva' : 'Foto Galeria'}
+                          {customBgUri ? str('gallerySaved') : str('galleryPhoto')}
                         </Text>
                       </Pressable>
 
@@ -1666,7 +1740,7 @@ export default function ShareAgendaModal({
             </ScrollView>
 
             {/* ════════════════════════════════════════════════════════════
-                RODAPÉ: BOTÕES DE NAVEGAÇÃO DO WIZARD (3 ETAPAS)
+                RODAPÉ: BOTÕES DE NAVEGAÇÃO DO WIZARD
                 ════════════════════════════════════════════════════════════ */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
               {currentStep > 1 && (
@@ -1685,7 +1759,7 @@ export default function ShareAgendaModal({
                 >
                   <Ionicons name="arrow-back" size={18} color={colors.text} />
                   <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
-                    Voltar
+                    {str('back')}
                   </Text>
                 </Pressable>
               )}
@@ -1696,7 +1770,7 @@ export default function ShareAgendaModal({
                   style={[styles.syncButton, { backgroundColor: colors.primary, flex: 1, marginTop: 0 }]}
                 >
                   <Text style={styles.syncButtonText}>
-                    Avançar para Shows →
+                    {str('nextToShows')}
                   </Text>
                   <Ionicons name="arrow-forward" size={18} color="#fff" />
                 </Pressable>
@@ -1706,7 +1780,7 @@ export default function ShareAgendaModal({
                 <Pressable
                   onPress={() => {
                     if (selectedIds.length === 0) {
-                      Alert.alert(t('attention') || 'Aviso', 'Selecione pelo menos um show para o flyer.');
+                      Alert.alert(t('attention') || 'Aviso', str('selectAtLeastOneShow'));
                       return;
                     }
                     setCurrentStep(3);
@@ -1714,7 +1788,7 @@ export default function ShareAgendaModal({
                   style={[styles.syncButton, { backgroundColor: colors.primary, flex: 1, marginTop: 0 }]}
                 >
                   <Text style={styles.syncButtonText}>
-                    Ver Pré-visualização ({selectedIds.length}) →
+                    {str('viewPreview')} ({selectedIds.length}) →
                   </Text>
                   <Ionicons name="eye-outline" size={18} color="#fff" />
                 </Pressable>
@@ -1728,7 +1802,7 @@ export default function ShareAgendaModal({
                 >
                   <Ionicons name={isSharing ? 'hourglass-outline' : 'share-social'} size={18} color='#fff' />
                   <Text style={styles.syncButtonText}>
-                    {isSharing ? (t('generatingFlyer') || 'Gerando flyer...') : `${t('generateAndShare') || 'Gerar e Compartilhar'} (${selectedIds.length})`}
+                    {isSharing ? str('generatingFlyer') : `${str('generateAndShare')} (${selectedIds.length})`}
                   </Text>
                 </Pressable>
               )}
