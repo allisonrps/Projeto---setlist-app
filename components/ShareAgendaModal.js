@@ -97,7 +97,7 @@ const I18N_STRINGS = {
     customArtSaved: 'Imagem salva da galeria',
     customArtPrompt: 'Toque para escolher uma imagem',
     generateAndShare: 'Gerar e Compartilhar',
-    generatingFlyer: 'Gerando arte em alta definição...',
+    generatingFlyer: 'Gerando...',
     pleaseWait: 'Aguarde um momento',
     selectAtLeastOneShow: 'Selecione ao menos um show para o flyer.',
     maxSixShows: 'Você pode selecionar no máximo 6 eventos para o flyer.',
@@ -132,7 +132,7 @@ const I18N_STRINGS = {
     customArtSaved: 'Saved image from gallery',
     customArtPrompt: 'Tap to pick an image',
     generateAndShare: 'Generate & Share',
-    generatingFlyer: 'Generating high-definition artwork...',
+    generatingFlyer: 'Generating...',
     pleaseWait: 'Please wait a moment',
     selectAtLeastOneShow: 'Select at least one show for the flyer.',
     maxSixShows: 'You can select up to 6 events for the flyer.',
@@ -167,7 +167,7 @@ const I18N_STRINGS = {
     customArtSaved: 'Imagen guardada de la galería',
     customArtPrompt: 'Toque para elegir una imagen',
     generateAndShare: 'Generar y Compartir',
-    generatingFlyer: 'Generando arte en alta definición...',
+    generatingFlyer: 'Generando...',
     pleaseWait: 'Espere un momento',
     selectAtLeastOneShow: 'Seleccione al menos un show para el flyer.',
     maxSixShows: 'Puede seleccionar hasta 6 eventos para el flyer.',
@@ -1224,7 +1224,7 @@ export default function ShareAgendaModal({
           <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.88)', justifyContent: 'center', alignItems: 'center', zIndex: 99999 }]}>
             <ActivityIndicator size="large" color={colors.primary || '#eab308'} />
             <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold', marginTop: 16, textAlign: 'center' }}>
-              {t('generatingFlyer') || 'Gerando arte em alta definição...'}
+              {str('generatingFlyer')}
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 6 }}>
               {t('pleaseWait') || 'Aguarde um momento'}

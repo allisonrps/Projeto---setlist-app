@@ -161,7 +161,7 @@ export default function SplashScreen({ isReady, onFinish }) {
             ]}
           />
 
-          {/* GLOW ANDANDO EM VOLTA DO LOGO (ORBIT LIGHT BEAM) */}
+          {/* GLOW DESFOCADO COM RASTRO DEGRADÊ ESFUMAÇADO ORBITANDO O LOGO */}
           <Animated.View
             style={[
               styles.orbitRingWrapper,
@@ -170,10 +170,32 @@ export default function SplashScreen({ isReady, onFinish }) {
               },
             ]}
           >
-            {/* Feixe de Luz Principal (Cometa Neon) */}
-            <View style={styles.glowCometHead} />
-            <View style={styles.glowCometTrail1} />
-            <View style={styles.glowCometTrail2} />
+            {/* Rastro Degradê Esfumaçado (seguindo a curvatura do círculo) */}
+            <View style={[styles.orbitSegment, { transform: [{ rotate: '-62deg' }] }]}>
+              <View style={[styles.smokePuff, styles.smokeTail6]} />
+            </View>
+            <View style={[styles.orbitSegment, { transform: [{ rotate: '-49deg' }] }]}>
+              <View style={[styles.smokePuff, styles.smokeTail5]} />
+            </View>
+            <View style={[styles.orbitSegment, { transform: [{ rotate: '-37deg' }] }]}>
+              <View style={[styles.smokePuff, styles.smokeTail4]} />
+            </View>
+            <View style={[styles.orbitSegment, { transform: [{ rotate: '-26deg' }] }]}>
+              <View style={[styles.smokePuff, styles.smokeTail3]} />
+            </View>
+            <View style={[styles.orbitSegment, { transform: [{ rotate: '-16deg' }] }]}>
+              <View style={[styles.smokePuff, styles.smokeTail2]} />
+            </View>
+            <View style={[styles.orbitSegment, { transform: [{ rotate: '-8deg' }] }]}>
+              <View style={[styles.smokePuff, styles.smokeTail1]} />
+            </View>
+
+            {/* Cabeça do Glow Desfocado (Aura difusa sem borda rígida) */}
+            <View style={styles.orbitSegment}>
+              <View style={styles.glowAuraOuter} />
+              <View style={styles.glowAuraMid} />
+              <View style={styles.glowAuraCore} />
+            </View>
           </Animated.View>
 
           {/* Container do Logo (100% maior: 240x240) */}
@@ -194,22 +216,12 @@ export default function SplashScreen({ isReady, onFinish }) {
           </Animated.View>
         </View>
 
-        {/* ── MOSTRADOR DE PORCENTAGEM E BARRA DE CARREGAMENTO ABAIXO ── */}
+        {/* ── MOSTRADOR DE PORCENTAGEM ABAIXO ── */}
         <Animated.View style={[styles.progressSection, { opacity: contentOpacity }]}>
           {/* Número Percentual Grande e Limpo */}
           <Text style={styles.percentText}>
             {Math.min(100, Math.round(progressPercent))}%
           </Text>
-
-          {/* Barra de Progresso Elegante com Glow */}
-          <View style={styles.progressBarTrack}>
-            <View
-              style={[
-                styles.progressBarFill,
-                { width: `${Math.min(100, Math.max(0, progressPercent))}%` },
-              ]}
-            />
-          </View>
 
           {/* Status Subtitle */}
           <Text style={styles.statusSubtitle}>
@@ -283,44 +295,117 @@ const styles = StyleSheet.create({
   },
   orbitRingWrapper: {
     position: 'absolute',
-    width: 264,
-    height: 264,
-    borderRadius: 132,
-    justifyContent: 'flex-start',
+    width: 242,
+    height: 242,
+    borderRadius: 121,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  glowCometHead: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#38bdf8',
-    marginTop: -12,
+  orbitSegment: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 242,
+    height: 242,
+    alignItems: 'center',
+  },
+  /* Cabeça do Glow Desfocado (Camadas de luz suave sem bordas duras) */
+  glowAuraOuter: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginTop: -30,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
     shadowColor: '#38bdf8',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 18,
-    elevation: 16,
-    borderWidth: 2,
-    borderColor: '#ffffff',
+    shadowOpacity: 0.85,
+    shadowRadius: 26,
+    elevation: 10,
   },
-  glowCometTrail1: {
+  glowAuraMid: {
     position: 'absolute',
-    top: -8,
-    width: 44,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#38bdf840',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginTop: -19,
+    backgroundColor: 'rgba(56, 189, 248, 0.38)',
     shadowColor: '#38bdf8',
-    shadowOpacity: 0.8,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.95,
+    shadowRadius: 18,
+    elevation: 8,
+  },
+  glowAuraCore: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginTop: -10,
+    backgroundColor: 'rgba(224, 242, 254, 0.65)',
+    shadowColor: '#bae6fd',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  /* Rastro Degradê Esfumaçado */
+  smokePuff: {
+    position: 'absolute',
+  },
+  smokeTail1: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    marginTop: -17,
+    backgroundColor: 'rgba(56, 189, 248, 0.28)',
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+  },
+  smokeTail2: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginTop: -15,
+    backgroundColor: 'rgba(56, 189, 248, 0.20)',
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
     shadowRadius: 12,
   },
-  glowCometTrail2: {
-    position: 'absolute',
-    top: -5,
-    width: 70,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#818cf825',
+  smokeTail3: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    marginTop: -13,
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
+  smokeTail4: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    marginTop: -11,
+    backgroundColor: 'rgba(99, 102, 241, 0.10)',
+  },
+  smokeTail5: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    marginTop: -9,
+    backgroundColor: 'rgba(129, 140, 248, 0.06)',
+  },
+  smokeTail6: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginTop: -7,
+    backgroundColor: 'rgba(129, 140, 248, 0.03)',
   },
   logoContainer: {
     width: 240,
@@ -347,33 +432,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   percentText: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '900',
     color: '#38bdf8',
     letterSpacing: 1,
-    marginBottom: 12,
+    marginBottom: 8,
     textShadowColor: 'rgba(56, 189, 248, 0.6)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
-  },
-  progressBarTrack: {
-    width: 230,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: '#38bdf8',
-    shadowColor: '#38bdf8',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
   },
   statusSubtitle: {
     fontSize: 12,
