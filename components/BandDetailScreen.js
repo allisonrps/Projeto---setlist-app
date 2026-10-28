@@ -1034,6 +1034,18 @@ export default function BandDetailScreen({
   const [memberSplits, setMemberSplits] = useState({});
   const [substitutes, setSubstitutes] = useState([]);
 
+  // Estados dos Lembretes da Banda (Home) & Modo Offline
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [bandPosts, setBandPosts] = useState([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [showCreateEditPostModal, setShowCreateEditPostModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [postTitleInput, setPostTitleInput] = useState('');
+  const [postContentInput, setPostContentInput] = useState('');
+  const [postIsPinnedInput, setPostIsPinnedInput] = useState(false);
+  const [isSavingPost, setIsSavingPost] = useState(false);
+  const [selectedPostToView, setSelectedPostToView] = useState(null);
+
   // Load Band Data when modal opens or updates
   // REGRA MÓVEL: No modo online, APENAS consulte dados da API (nunca SQLite).
   // No modo offline, sempre o SQLite.
@@ -3324,6 +3336,190 @@ export default function BandDetailScreen({
                 </Pressable>
               </View>
             ) : null}
+
+            {/* MURAL DE LEMBRETES DA BANDA */}
+            <View style={{ marginBottom: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center' }}>
+                    <Ionicons name="notifications" size={17} color={colors.primary} />
+                  </View>
+                  <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+                        {t('bandReminders') || 'Lembretes da Banda'}
+                      </Text>
+                      {sortedBandPosts.length > 0 && (
+                        <View style={{ backgroundColor: colors.primary + '20', paddingHorizontal: 7, paddingVertical: 1, borderRadius: 10 }}>
+                          <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>
+                            {sortedBandPosts.length}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                      {t('bandRemindersSub') || 'Mural de avisos e recados para os integrantes'}
+                    </Text>
+                  </View>
+                </View>
+
+                <Pressable
+                  onPress={handleOpenCreatePost}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    backgroundColor: colors.primary,
+                    paddingHorizontal: 12,
+                    paddingVertical: 7,
+                    borderRadius: 16,
+                    elevation: 2,
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                  }}
+                >
+                  <Ionicons name="add" size={16} color="#ffffff" />
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#ffffff' }}>
+                    {t('newReminder') || 'Novo'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {isLoadingPosts ? (
+                <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : sortedBandPosts.length === 0 ? (
+                <Pressable
+                  onPress={handleOpenCreatePost}
+                  style={{
+                    backgroundColor: colors.cardBackground,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderStyle: 'dashed',
+                    borderRadius: 14,
+                    padding: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Ionicons name="chatbox-ellipses-outline" size={28} color={colors.textMuted} style={{ marginBottom: 6, opacity: 0.7 }} />
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
+                    {t('noRemindersYet') || 'Nenhum lembrete postado'}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 2 }}>
+                    {t('tapToCreateReminder') || 'Toque aqui ou em "+ Novo" para adicionar um aviso'}
+                  </Text>
+                </Pressable>
+              ) : (
+                <View style={{ gap: 8 }}>
+                  {sortedBandPosts.map(post => (
+                    <Pressable
+                      key={`post_${post.id}`}
+                      onPress={() => setSelectedPostToView(post)}
+                      style={({ pressed }) => [{
+                        backgroundColor: post.isPinned
+                          ? (isDark ? '#2a2415' : '#fffbeb')
+                          : colors.cardBackground,
+                        borderWidth: 1.5,
+                        borderColor: post.isPinned
+                          ? '#f59e0b'
+                          : colors.border,
+                        borderRadius: 14,
+                        padding: 12,
+                        opacity: pressed ? 0.9 : 1,
+                        elevation: post.isPinned ? 2 : 1,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: 0.08,
+                        shadowRadius: 3,
+                      }]}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                        {/* Conteúdo / Título */}
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              fontWeight: '800',
+                              color: colors.text,
+                              lineHeight: 18,
+                            }}
+                            numberOfLines={2}
+                          >
+                            {post.title}
+                          </Text>
+
+                          {/* Data, Hora e Autor */}
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5 }}>
+                            <Ionicons name="time-outline" size={12} color={colors.textMuted} />
+                            <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '600' }}>
+                              {formatPostDateTime(post.createdAt)}
+                            </Text>
+                            {post.authorName ? (
+                              <>
+                                <Text style={{ fontSize: 11, color: colors.textMuted }}>•</Text>
+                                <Ionicons name="person-circle-outline" size={13} color={colors.textMuted} />
+                                <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '600' }} numberOfLines={1}>
+                                  {post.authorName}
+                                </Text>
+                              </>
+                            ) : null}
+                          </View>
+                        </View>
+
+                        {/* Botões de Ação Direta no Card */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          {/* Botão Estrelinha (Fixar / Desafixar) */}
+                          <Pressable
+                            onPress={() => handleTogglePinPost(post)}
+                            hitSlop={10}
+                            style={{
+                              padding: 6,
+                              borderRadius: 8,
+                              backgroundColor: post.isPinned ? '#f59e0b20' : 'transparent',
+                            }}
+                            accessibilityLabel={post.isPinned ? 'Desafixar lembrete' : 'Fixar lembrete'}
+                          >
+                            <Ionicons
+                              name={post.isPinned ? "star" : "star-outline"}
+                              size={19}
+                              color={post.isPinned ? "#f59e0b" : colors.textMuted}
+                            />
+                          </Pressable>
+
+                          {/* Botão Editar (se permitido) */}
+                          {(post.canEdit !== false) && (
+                            <Pressable
+                              onPress={() => handleOpenEditPost(post)}
+                              hitSlop={10}
+                              style={{ padding: 6, borderRadius: 8 }}
+                              accessibilityLabel="Editar lembrete"
+                            >
+                              <Ionicons name="pencil-outline" size={17} color={colors.textMuted} />
+                            </Pressable>
+                          )}
+
+                          {/* Botão Deletar (se permitido) */}
+                          {(post.canDelete !== false) && (
+                            <Pressable
+                              onPress={() => handleDeleteBandPost(post)}
+                              hitSlop={10}
+                              style={{ padding: 6, borderRadius: 8 }}
+                              accessibilityLabel="Excluir lembrete"
+                            >
+                              <Ionicons name="trash-outline" size={17} color="#ef4444" />
+                            </Pressable>
+                          )}
+                        </View>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
 
             {/* Cabeçalho da Linha do Tempo / Histórico */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>

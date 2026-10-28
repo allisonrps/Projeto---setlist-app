@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -149,6 +150,9 @@ export default function ShareAgendaModal({
   const [selectedIds, setSelectedIds] = useState([]);
   const [customBgUri, setCustomBgUri] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [cardScale, setCardScale] = useState(1.0);
+  const [contactText, setContactText] = useState('');
+  const [activeTabSection, setActiveTabSection] = useState('preview'); // 'preview' | 'config'
 
   const activeLang = ['pt', 'en', 'es'].includes(language) ? language : 'pt';
 
@@ -615,34 +619,9 @@ export default function ShareAgendaModal({
     },
   }[count];
 
-  return (
-    <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-        {/* ── HIGH-RES FLYER VIEWSHOT (MANTIDO MONTADO E PREVIAMENTE MEDIDO EM 1080x1920) ── */}
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: 1080,
-            height: 1920,
-            zIndex: -999,
-            opacity: isSharing ? 1 : 0.001,
-          }}
-          pointerEvents="none"
-          collapsable={false}
-        >
-          <ViewShot
-            ref={viewShotRef}
-            collapsable={false}
-            options={{
-              format: 'jpg',
-              quality: 0.95,
-              result: 'tmpfile',
-            }}
-            style={{ width: 1080, height: 1920 }}
-          >
-            <ImageBackground
+
+  const renderFlyerArt = () => (
+    <ImageBackground
               source={getBgImage(selectedLayout)}
               style={{ width: 1080, height: 1920 }}
               collapsable={false}
@@ -869,6 +848,37 @@ export default function ShareAgendaModal({
                   })}
                 </View>
 
+                {/* LINHA DE CONTATO / TEXTO LIVRE PERSONALIZADO */}
+                {contactText ? (
+                  <View
+                    collapsable={false}
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.65)',
+                      paddingVertical: 12,
+                      paddingHorizontal: 24,
+                      borderRadius: 16,
+                      borderWidth: 1.5,
+                      borderColor: 'rgba(255,255,255,0.25)',
+                      marginBottom: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 28,
+                        fontWeight: '800',
+                        color: '#ffffff',
+                        textAlign: 'center',
+                        letterSpacing: 0.5,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {contactText}
+                    </Text>
+                  </View>
+                ) : null}
+
                 {/* BOTTOM BANNER: BAND LINK, RESUMO DO APP TRADUZIDO & QR CODE PLAY STORE */}
                 <View
                   collapsable={false}
@@ -919,6 +929,36 @@ export default function ShareAgendaModal({
                 </View>
               </View>
             </ImageBackground>
+  );
+
+  return (
+    <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+        {/* ── HIGH-RES FLYER VIEWSHOT (MANTIDO MONTADO E PREVIAMENTE MEDIDO EM 1080x1920) ── */}
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 1080,
+            height: 1920,
+            zIndex: -999,
+            opacity: isSharing ? 1 : 0.001,
+          }}
+          pointerEvents="none"
+          collapsable={false}
+        >
+          <ViewShot
+            ref={viewShotRef}
+            collapsable={false}
+            options={{
+              format: 'jpg',
+              quality: 0.95,
+              result: 'tmpfile',
+            }}
+            style={{ width: 1080, height: 1920 }}
+          >
+            {renderFlyerArt()}
           </ViewShot>
         </View>
 
@@ -936,141 +976,395 @@ export default function ShareAgendaModal({
         ) : null}
 
         <Pressable style={styles.modalBackdrop} onPress={onClose} />
-          <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '90%' }]}>
+          <View style={[styles.bottomSheetContent, { backgroundColor: colors.cardBackground, borderColor: colors.border, maxHeight: '92%' }]}>
             <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]} />
+            
+            {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('shareAgenda') || 'Compartilhar Agenda'}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="share-social" size={22} color={colors.primary} />
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{t('shareAgenda') || 'Compartilhar Agenda'}</Text>
+              </View>
               <Pressable onPress={onClose} hitSlop={10}>
                 <Ionicons name='close' size={24} color={colors.text} />
               </Pressable>
             </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {/* 1. SELEÇÃO DE SHOWS (ATÉ 6) */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 4 }}>
-                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                  {(t('includedShows') || 'SHOWS INCLUÍDOS')} ({selectedIds.length}/{Math.min(MAX_FLYER_EVENTS, events.length)})
-                </Text>
-                <Pressable onPress={toggleSelectAll} hitSlop={8}>
-                  <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
-                    {selectedIds.length >= Math.min(MAX_FLYER_EVENTS, events.length)
-                      ? (t('deselectAllShows') || 'Desmarcar Todos')
-                      : (t('selectAllShows') || 'Selecionar Todos')}
-                  </Text>
-                </Pressable>
-              </View>
 
-              <View style={{ gap: 6, marginBottom: 18 }}>
-                {events.map(event => {
-                  const isSelected = selectedIds.includes(event.id);
-                  const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
-                  return (
-                    <Pressable
-                      key={event.id}
-                      onPress={() => toggleSelectEvent(event.id)}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        padding: 10,
-                        borderRadius: 10,
-                        backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
-                        borderWidth: 1.5,
-                        borderColor: isSelected ? colors.primary : colors.border,
-                      }}
-                    >
-                      <View style={{
-                        width: 22,
-                        height: 22,
-                        borderRadius: 6,
-                        borderWidth: 1.5,
-                        borderColor: isSelected ? colors.primary : colors.textMuted,
-                        backgroundColor: isSelected ? colors.primary : 'transparent',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: 10,
-                      }}>
-                        {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>{displayEventName}</Text>
-                        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                          {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              {/* 2. ESTILO DA ARTE */}
-              <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
-                {t('artStyleBackground') || 'ESTILO DA ARTE / FUNDO'}
-              </Text>
-
-              {/* Arte Personalizada */}
+            {/* Segmented Tabs: Pré-visualização vs Configurações */}
+            <View style={{ flexDirection: 'row', backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderRadius: 12, padding: 4, marginBottom: 14 }}>
               <Pressable
-                style={[
-                  styles.layoutOption,
-                  {
-                    backgroundColor: selectedLayout === 'custom' ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'),
-                    borderColor: selectedLayout === 'custom' ? colors.primary : colors.border,
-                    marginBottom: 8,
-                  },
-                ]}
-                onPress={() => {
-                  if (!customBgUri) {
-                    pickCustomBgImage();
-                  } else {
-                    setSelectedLayout('custom');
-                  }
+                onPress={() => setActiveTabSection('preview')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 8,
+                  borderRadius: 10,
+                  backgroundColor: activeTabSection === 'preview' ? colors.primary : 'transparent',
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 6,
                 }}
               >
-                {customBgUri ? (
-                  <Image source={{ uri: customBgUri }} style={{ width: 34, height: 42, borderRadius: 6, marginRight: 4 }} />
-                ) : (
-                  <Ionicons name="image-outline" size={22} color={selectedLayout === 'custom' ? colors.primary : colors.textMuted} />
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.layoutName, { color: selectedLayout === 'custom' ? colors.primary : colors.text }]}>
-                    {t('customArtTitle') || 'Arte Personalizada (Foto da Galeria)'}
-                  </Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-                    {customBgUri ? (t('customArtSaved') || 'Imagem salva da galeria') : (t('customArtPrompt') || 'Toque para escolher uma imagem')}
-                  </Text>
-                </View>
-
-                {customBgUri && (
-                  <Pressable onPress={pickCustomBgImage} hitSlop={8} style={{ padding: 6 }}>
-                    <Ionicons name="camera-reverse-outline" size={20} color={colors.primary} />
-                  </Pressable>
-                )}
-
-                {selectedLayout === 'custom' && (
-                  <Ionicons name='checkmark-circle' size={20} color={colors.primary} />
-                )}
+                <Ionicons name="eye-outline" size={16} color={activeTabSection === 'preview' ? '#fff' : colors.textMuted} />
+                <Text style={{ fontSize: 13, fontWeight: '700', color: activeTabSection === 'preview' ? '#fff' : colors.textMuted }}>
+                  Pré-visualização
+                </Text>
               </Pressable>
 
-              {/* Templates Pré-definidos */}
-              {LAYOUT_TEMPLATES.map(item => (
-                <Pressable
-                  key={item.id}
-                  style={[styles.layoutOption, { backgroundColor: selectedLayout === item.id ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'), borderColor: selectedLayout === item.id ? colors.primary : colors.border }]}
-                  onPress={() => setSelectedLayout(item.id)}
-                >
-                  <Ionicons name={item.icon} size={22} color={selectedLayout === item.id ? colors.primary : colors.textMuted} />
-                  <Text style={[styles.layoutName, { color: selectedLayout === item.id ? colors.primary : colors.text }]}>{getTemplateName(item.id, t)}</Text>
-                  {selectedLayout === item.id && <Ionicons name='checkmark-circle' size={20} color={colors.primary} style={{ marginLeft: 'auto' }} />}
-                </Pressable>
-              ))}
+              <Pressable
+                onPress={() => setActiveTabSection('config')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 8,
+                  borderRadius: 10,
+                  backgroundColor: activeTabSection === 'config' ? colors.primary : 'transparent',
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <Ionicons name="options-outline" size={16} color={activeTabSection === 'config' ? '#fff' : colors.textMuted} />
+                <Text style={{ fontSize: 13, fontWeight: '700', color: activeTabSection === 'config' ? '#fff' : colors.textMuted }}>
+                  Opções & Shows ({selectedIds.length})
+                </Text>
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
+              {activeTabSection === 'preview' ? (
+                /* ── ABA 1: LIVE PREVIEW & CONTROLES RÁPIDOS ── */
+                <View style={{ alignItems: 'center' }}>
+                  
+                  {/* Container da Miniatura em Proporção Exata 9:16 (270x480) */}
+                  <View
+                    style={{
+                      width: 270,
+                      height: 480,
+                      borderRadius: 16,
+                      overflow: 'hidden',
+                      backgroundColor: '#000000',
+                      borderWidth: 2,
+                      borderColor: colors.primary,
+                      elevation: 6,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.35,
+                      shadowRadius: 10,
+                      marginBottom: 14,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 1080,
+                        height: 1920,
+                        transform: [{ scale: 0.25 }],
+                        transformOrigin: 'top left',
+                      }}
+                      pointerEvents="none"
+                      collapsable={false}
+                    >
+                      {renderFlyerArt()}
+                    </View>
+                  </View>
+
+                  {/* Controle de Ajuste de Tamanho dos Cards */}
+                  <View style={{ width: '100%', backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text }}>
+                        TAMANHO DOS CARDS
+                      </Text>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary }}>
+                        {Math.round(cardScale * 100)}% ({cardScale <= 0.85 ? 'Compacto' : cardScale >= 1.15 ? 'Grande' : 'Normal'})
+                      </Text>
+                    </View>
+
+                    {/* Stepper - / + e Chips Rápidos */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <Pressable
+                        onPress={() => setCardScale(s => Math.max(0.65, Math.round((s - 0.05) * 100) / 100))}
+                        style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
+                      >
+                        <Ionicons name="remove" size={20} color={colors.text} />
+                      </Pressable>
+
+                      <View style={{ flexDirection: 'row', gap: 6, flex: 1, justifyContent: 'center' }}>
+                        {[
+                          { label: '0.8x', val: 0.8 },
+                          { label: '1.0x', val: 1.0 },
+                          { label: '1.15x', val: 1.15 },
+                          { label: '1.3x', val: 1.3 }
+                        ].map(preset => (
+                          <Pressable
+                            key={preset.label}
+                            onPress={() => setCardScale(preset.val)}
+                            style={{
+                              paddingVertical: 6,
+                              paddingHorizontal: 10,
+                              borderRadius: 8,
+                              backgroundColor: Math.abs(cardScale - preset.val) < 0.04 ? colors.primary : (isDark ? 'rgba(255,255,255,0.06)' : '#e2e8f0'),
+                            }}
+                          >
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: Math.abs(cardScale - preset.val) < 0.04 ? '#fff' : colors.text }}>
+                              {preset.label}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+
+                      <Pressable
+                        onPress={() => setCardScale(s => Math.min(1.35, Math.round((s + 0.05) * 100) / 100))}
+                        style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0', justifyContent: 'center', alignItems: 'center' }}
+                      >
+                        <Ionicons name="add" size={20} color={colors.text} />
+                      </Pressable>
+                    </View>
+                  </View>
+
+                  {/* Seletor Rápido de Tema com Ícones */}
+                  <View style={{ width: '100%', marginBottom: 10 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textMuted, marginBottom: 8, textTransform: 'uppercase' }}>
+                      Tema de Fundo
+                    </Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                      <Pressable
+                        onPress={() => {
+                          if (!customBgUri) pickCustomBgImage();
+                          else setSelectedLayout('custom');
+                        }}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingVertical: 7,
+                          paddingHorizontal: 12,
+                          borderRadius: 9,
+                          backgroundColor: selectedLayout === 'custom' ? colors.primary + '25' : (isDark ? '#1e293b' : '#f1f5f9'),
+                          borderWidth: 1.5,
+                          borderColor: selectedLayout === 'custom' ? colors.primary : colors.border,
+                          gap: 6,
+                        }}
+                      >
+                        <Ionicons name="image-outline" size={16} color={selectedLayout === 'custom' ? colors.primary : colors.textMuted} />
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: selectedLayout === 'custom' ? colors.primary : colors.text }}>
+                          {customBgUri ? 'Foto Salva' : 'Foto Galeria'}
+                        </Text>
+                      </Pressable>
+
+                      {LAYOUT_TEMPLATES.map(item => (
+                        <Pressable
+                          key={item.id}
+                          onPress={() => setSelectedLayout(item.id)}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 7,
+                            paddingHorizontal: 12,
+                            borderRadius: 9,
+                            backgroundColor: selectedLayout === item.id ? colors.primary + '25' : (isDark ? '#1e293b' : '#f1f5f9'),
+                            borderWidth: 1.5,
+                            borderColor: selectedLayout === item.id ? colors.primary : colors.border,
+                            gap: 6,
+                          }}
+                        >
+                          <Ionicons name={item.icon} size={16} color={selectedLayout === item.id ? colors.primary : colors.textMuted} />
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: selectedLayout === item.id ? colors.primary : colors.text }}>
+                            {getTemplateName(item.id, t)}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  </View>
+
+                </View>
+              ) : (
+                /* ── ABA 2: CONFIGURAÇÃO DE SHOWS, TEMAS E TEXTO LIVRE ── */
+                <View>
+                  {/* 1. SELEÇÃO DE SHOWS (ATÉ 6) */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 4 }}>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
+                      {(t('includedShows') || 'SHOWS INCLUÍDOS')} ({selectedIds.length}/{Math.min(MAX_FLYER_EVENTS, events.length)})
+                    </Text>
+                    <Pressable onPress={toggleSelectAll} hitSlop={8}>
+                      <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
+                        {selectedIds.length >= Math.min(MAX_FLYER_EVENTS, events.length)
+                          ? (t('deselectAllShows') || 'Desmarcar Todos')
+                          : (t('selectAllShows') || 'Selecionar Todos')}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={{ gap: 6, marginBottom: 18 }}>
+                    {events.map(event => {
+                      const isSelected = selectedIds.includes(event.id);
+                      const displayEventName = (event.name || event.local || event.band || getDefaultEventTitle(activeLang)).trim();
+                      return (
+                        <Pressable
+                          key={event.id}
+                          onPress={() => toggleSelectEvent(event.id)}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            padding: 10,
+                            borderRadius: 10,
+                            backgroundColor: isSelected ? colors.primary + '18' : (isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'),
+                            borderWidth: 1.5,
+                            borderColor: isSelected ? colors.primary : colors.border,
+                          }}
+                        >
+                          <View style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: 6,
+                            borderWidth: 1.5,
+                            borderColor: isSelected ? colors.primary : colors.textMuted,
+                            backgroundColor: isSelected ? colors.primary : 'transparent',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginRight: 10,
+                          }}>
+                            {isSelected && <Ionicons name="checkmark" size={15} color="#fff" />}
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>{displayEventName}</Text>
+                            <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+                              {event.date}{event.time ? ` • ${event.time}` : ''}{event.local && event.local !== displayEventName ? ` • ${event.local}` : ''}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
+                  {/* 2. LINHA DE CONTATO / TEXTO LIVRE */}
+                  <View style={{ marginBottom: 18 }}>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 6 }}>
+                      LINHA DE CONTATO / TEXTO LIVRE (OPCIONAL)
+                    </Text>
+                    <TextInput
+                      value={contactText}
+                      onChangeText={setContactText}
+                      placeholder="Ex: Contato para Shows: (16) 99115-3733 • @badbadgers"
+                      placeholderTextColor={colors.textMuted}
+                      style={{
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: 10,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        fontSize: 13,
+                        color: colors.text,
+                      }}
+                      maxLength={80}
+                    />
+                  </View>
+
+                  {/* 3. AJUSTE DE TAMANHO DOS CARDS */}
+                  <View style={{ marginBottom: 18 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
+                        TAMANHO DOS CARDS ({Math.round(cardScale * 100)}%)
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      {[
+                        { label: 'Compacto', val: 0.8 },
+                        { label: 'Normal', val: 1.0 },
+                        { label: 'Grande', val: 1.15 },
+                        { label: 'Extra', val: 1.3 }
+                      ].map(preset => (
+                        <Pressable
+                          key={preset.label}
+                          onPress={() => setCardScale(preset.val)}
+                          style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            backgroundColor: Math.abs(cardScale - preset.val) < 0.04 ? colors.primary : (isDark ? '#1e293b' : '#f1f5f9'),
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: Math.abs(cardScale - preset.val) < 0.04 ? '#fff' : colors.text }}>
+                            {preset.label}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+
+                  {/* 4. ESTILO DA ARTE COMPLETO */}
+                  <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 8 }}>
+                    {t('artStyleBackground') || 'ESTILO DA ARTE / FUNDO'}
+                  </Text>
+
+                  {/* Arte Personalizada */}
+                  <Pressable
+                    style={[
+                      styles.layoutOption,
+                      {
+                        backgroundColor: selectedLayout === 'custom' ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'),
+                        borderColor: selectedLayout === 'custom' ? colors.primary : colors.border,
+                        marginBottom: 8,
+                      },
+                    ]}
+                    onPress={() => {
+                      if (!customBgUri) {
+                        pickCustomBgImage();
+                      } else {
+                        setSelectedLayout('custom');
+                      }
+                    }}
+                  >
+                    {customBgUri ? (
+                      <Image source={{ uri: customBgUri }} style={{ width: 34, height: 42, borderRadius: 6, marginRight: 4 }} />
+                    ) : (
+                      <Ionicons name="image-outline" size={22} color={selectedLayout === 'custom' ? colors.primary : colors.textMuted} />
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.layoutName, { color: selectedLayout === 'custom' ? colors.primary : colors.text }]}>
+                        {t('customArtTitle') || 'Arte Personalizada (Foto da Galeria)'}
+                      </Text>
+                      <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
+                        {customBgUri ? (t('customArtSaved') || 'Imagem salva da galeria') : (t('customArtPrompt') || 'Toque para escolher uma imagem')}
+                      </Text>
+                    </View>
+
+                    {customBgUri && (
+                      <Pressable onPress={pickCustomBgImage} hitSlop={8} style={{ padding: 6 }}>
+                        <Ionicons name="camera-reverse-outline" size={20} color={colors.primary} />
+                      </Pressable>
+                    )}
+
+                    {selectedLayout === 'custom' && (
+                      <Ionicons name='checkmark-circle' size={20} color={colors.primary} />
+                    )}
+                  </Pressable>
+
+                  {/* Templates Pré-definidos */}
+                  {LAYOUT_TEMPLATES.map(item => (
+                    <Pressable
+                      key={item.id}
+                      style={[styles.layoutOption, { backgroundColor: selectedLayout === item.id ? colors.primary + '22' : (isDark ? '#1e293b' : '#f3f4f6'), borderColor: selectedLayout === item.id ? colors.primary : colors.border }]}
+                      onPress={() => setSelectedLayout(item.id)}
+                    >
+                      <Ionicons name={item.icon} size={22} color={selectedLayout === item.id ? colors.primary : colors.textMuted} />
+                      <Text style={[styles.layoutName, { color: selectedLayout === item.id ? colors.primary : colors.text }]}>{getTemplateName(item.id, t)}</Text>
+                      {selectedLayout === item.id && <Ionicons name='checkmark-circle' size={20} color={colors.primary} style={{ marginLeft: 'auto' }} />}
+                    </Pressable>
+                  ))}
+                </View>
+              )}
             </ScrollView>
 
+            {/* Botão de Ação: Compartilhar / Baixar */}
             <Pressable
-              style={[styles.syncButton, { backgroundColor: colors.primary, marginTop: 14, opacity: isSharing ? 0.7 : 1 }]}
+              style={[styles.syncButton, { backgroundColor: colors.primary, marginTop: 12, opacity: isSharing ? 0.7 : 1 }]}
               onPress={captureAndShare}
               disabled={isSharing}
             >
-              <Ionicons name={isSharing ? 'hourglass-outline' : 'share-outline'} size={18} color='#fff' />
+              <Ionicons name={isSharing ? 'hourglass-outline' : 'share-social'} size={18} color='#fff' />
               <Text style={styles.syncButtonText}>
-                {isSharing ? (t('generatingFlyer') || 'Gerando flyer...') : `${t('generateAndShare') || 'Gerar e Compartilhar'} (${selectedIds.length})`}
+                {isSharing ? (t('generatingFlyer') || 'Gerando flyer...') : `${t('generateAndShare') || 'Gerar e Compartilhar'} (${selectedIds.length} shows)`}
               </Text>
             </Pressable>
           </View>

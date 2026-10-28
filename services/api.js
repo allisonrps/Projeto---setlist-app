@@ -1,3 +1,17 @@
+
+const decodeBase64Safe = (input) => {
+  try {
+    if (typeof atob === 'function') return atob(input);
+  } catch (e) {}
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  let str = String(input || '').replace(/=+$/, '');
+  let output = '';
+  for (let bc = 0, bs = 0, buffer, i = 0; (buffer = str.charAt(i++)); ~buffer && ((bs = bc % 4 ? bs * 64 + buffer : buffer), bc++ % 4) ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6)))) : 0) {
+    buffer = chars.indexOf(buffer);
+  }
+  return output;
+};
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
@@ -387,7 +401,18 @@ export const api = {
   isLoggedIn: async () => {
     try {
       const token = await secureToken.get("jwt_token");
-      return !!token;
+      if (!token || typeof token !== 'string') return false;
+      const parts = token.split('.');
+      if (parts.length < 2) return false;
+      let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4 !== 0) b64 += '=';
+      const decoded = decodeBase64Safe(b64);
+      if (!decoded) return false;
+      const payload = JSON.parse(decoded);
+      if (payload && payload.exp && payload.exp * 1000 <= Date.now()) {
+        return false;
+      }
+      return true;
     } catch {
       return false;
     }
@@ -1038,5 +1063,73 @@ export const api = {
     });
     if (!response.ok) throw new Error('Erro ao excluir evento da agenda.');
     return response.json();
-  }
+  },
+
+  // ── Band Posts / Mural de Lembretes da Home da Banda ──
+  getBandPosts: async (bandId) => {
+    try {
+      if (!bandId) return [];
+      const headers = await getHeaders();
+      const response = await fetchWithTimeout(`${API_URL}/bands/${bandId}/posts`, { headers });
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (e) {
+      console.log('Error in api.getBandPosts:', e);
+      return [];
+    }
+  },
+
+  createBandPost: async (bandId, postData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/bands/${bandId}/posts`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(postData)
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Erro ao publicar lembrete.');
+    }
+    return response.json();
+  },
+
+  updateBandPost: async (bandId, postId, postData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/bands/${bandId}/posts/${postId}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(postData)
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Erro ao atualizar lembrete.');
+    }
+    return response.json();
+  },
+
+  togglePinBandPost: async (bandId, postId) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/bands/${bandId}/posts/${postId}/pin`, {
+      method: "PATCH",
+      headers
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Erro ao alterar fixação do lembrete.');
+    }
+    return response.json();
+  },
+
+  deleteBandPost: async (bandId, postId) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/bands/${bandId}/posts/${postId}`, {
+      method: "DELETE",
+      headers
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Erro ao excluir lembrete.');
+    }
+    return response.json();
+  },
 };

@@ -973,68 +973,81 @@ function MainApp() {
       console.log('Inicializando banco de dados...');
       await createTables();
       console.log('Banco de dados inicializado com sucesso.');
-      await reloadAllData();
+
+      let userIsAuthenticated = false;
       try {
         const token = await secureToken.get('jwt_token');
         if (token) {
-          // Check if JWT is expired by decoding the payload (supporting Base64URL)
           try {
             let b64 = (token.split('.')[1] || '').replace(/-/g, '+').replace(/_/g, '/');
             while (b64.length % 4 !== 0) b64 += '=';
             const payload = JSON.parse(atob(b64));
             if (payload.exp && payload.exp * 1000 > Date.now()) {
+              userIsAuthenticated = true;
               setIsLoggedIn(true);
-              // Auto-sync cloud bands in background if logged in
-              setIsCloudSyncing(true);
-              setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
-              bandService.syncAllUserBandsFromCloud(false, (progressInfo) => {
-                if (typeof progressInfo === 'object') {
-                  const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
-                  setSyncProgress({ current, total, percent, bandName: bandName || '' });
-                  setSyncingBandsMap(prev => {
-                    const next = { ...prev };
-                    if (isSyncing) next[String(bandId)] = true;
-                    else delete next[String(bandId)];
-                    return next;
-                  });
-                }
-              }).then(() => {
-                reloadAllData(true);
-              }).catch(e => {
-                console.log('Error auto-syncing bands on startup:', e);
-                reloadAllData(true);
-              }).finally(() => {
-                setIsCloudSyncing(false);
-                setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
-              });
-              try {
-                const isComp = await AsyncStorage.getItem('user_profile_completed');
-                if (isComp !== 'true') {
-                  const cached = await AsyncStorage.getItem('user_profile_cache');
-                  if (cached) {
-                    const parsed = JSON.parse(cached);
-                    if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
-                      await AsyncStorage.setItem('user_profile_completed', 'true');
-                    } else {
-                      setSocialView('profile');
-                    }
-                  } else {
-                    setSocialView('profile');
-                  }
-                }
-              } catch (e) {}
             } else {
-              // Token expired, clean up
               await secureToken.remove('jwt_token');
               await AsyncStorage.removeItem('user_info');
+              setIsLoggedIn(false);
             }
           } catch (decodeErr) {
-            // Invalid token format, clean up
             await secureToken.remove('jwt_token');
             await AsyncStorage.removeItem('user_info');
+            setIsLoggedIn(false);
           }
+        } else {
+          setIsLoggedIn(false);
         }
-      } catch (authErr) {}
+      } catch (authErr) {
+        setIsLoggedIn(false);
+      }
+
+      // Se deslogado, recarrega estritamente conteúdo offline (SQLite) sem upar ou buscar nada na nuvem
+      await reloadAllData(userIsAuthenticated);
+
+      // Auto-sync de bandas apenas se expressamente autenticado
+      if (userIsAuthenticated) {
+        setIsCloudSyncing(true);
+        setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
+        bandService.syncAllUserBandsFromCloud(false, (progressInfo) => {
+          if (typeof progressInfo === 'object') {
+            const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
+            setSyncProgress({ current, total, percent, bandName: bandName || '' });
+            setSyncingBandsMap(prev => {
+              const next = { ...prev };
+              if (isSyncing) next[String(bandId)] = true;
+              else delete next[String(bandId)];
+              return next;
+            });
+          }
+        }).then(() => {
+          reloadAllData(true);
+        }).catch(e => {
+          console.log('Error auto-syncing bands on startup:', e);
+          reloadAllData(true);
+        }).finally(() => {
+          setIsCloudSyncing(false);
+          setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
+        });
+
+        try {
+          const isComp = await AsyncStorage.getItem('user_profile_completed');
+          if (isComp !== 'true') {
+            const cached = await AsyncStorage.getItem('user_profile_cache');
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+                await AsyncStorage.setItem('user_profile_completed', 'true');
+              } else {
+                setSocialView('profile');
+              }
+            } else {
+              setSocialView('profile');
+            }
+          }
+        } catch (e) {}
+      }
+
       setTimeout(() => setDbReady(true), 2500); // Forar ver a splash por pelo menos 2.5s
     } catch (error) {
       console.error('Erro na inicialização do aplicativo:', error);
@@ -1047,7 +1060,7 @@ function MainApp() {
         await songService.cleanDuplicateSongs();
       } catch (cleanErr) {}
       const hasValidToken = await api.isLoggedIn();
-      const isOnline = forceOnline !== null ? forceOnline : (isLoggedIn || hasValidToken);
+      const isOnline = forceOnline !== null ? (forceOnline && hasValidToken) : (isLoggedIn && hasValidToken);
       let rawBands = await bandService.getAll();
 
       let allSongs = [];
@@ -1395,7 +1408,13 @@ function MainApp() {
           }
         }
       }
-      await loadReceivedInvites();
+      if (isOnline) {
+        await loadReceivedInvites();
+      } else {
+        setReceivedInvites([]);
+        setOnlineEvents([]);
+        setCloudBandsMap({});
+      }
     } catch (error) {
       console.error('Erro ao recarregar dados:', error);
     }
