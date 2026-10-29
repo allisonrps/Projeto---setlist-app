@@ -1048,17 +1048,20 @@ function MainApp() {
         } catch (e) {}
       }
 
-      setTimeout(() => setDbReady(true), 2500); // Forar ver a splash por pelo menos 2.5s
+      // Inicialização concluída: libera a splash de forma suave e rápida
+      setTimeout(() => setDbReady(true), 350);
     } catch (error) {
       console.error('Erro na inicialização do aplicativo:', error);
+      setDbReady(true);
     }
   };
 
   const reloadAllData = async (forceOnline = null) => {
     try {
-      try {
-        await songService.cleanDuplicateSongs();
-      } catch (cleanErr) {}
+      // Limpeza de duplicadas em background sem bloquear o carregamento principal da tela
+      setTimeout(() => {
+        songService.cleanDuplicateSongs().catch(() => {});
+      }, 1500);
       const hasValidToken = await api.isLoggedIn();
       const isOnline = forceOnline !== null ? (forceOnline && hasValidToken) : (isLoggedIn && hasValidToken);
       let rawBands = await bandService.getAll();
