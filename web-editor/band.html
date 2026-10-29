@@ -298,7 +298,7 @@
       }
 
       // Songs (Repertoire)
-      const songs = (snapshot && snapshot.songs) ? snapshot.songs : [];
+      const songs = (Array.isArray(band.publicSongs) && band.publicSongs.length > 0) ? band.publicSongs : ((snapshot && snapshot.songs) ? snapshot.songs : []);
       document.getElementById('songsCount').textContent = `${songs.length} músicas`;
       const songsList = document.getElementById('songsList');
       songsList.innerHTML = '';
