@@ -7168,7 +7168,7 @@
         <!-- BAND HERO HEADER (FIGMA PRINT 1) -->
         <div class="band-page-hero">
           <div class="band-page-hero-inner">
-            <div class="band-page-hero-avatar" id="bHeroAvatar" onclick="openEditBandProfileModal()" style="cursor: pointer;" title="Alterar foto da banda">
+            <div class="band-page-hero-avatar" id="bHeroAvatar" onclick="openEditBandProfileModal()" style="cursor: pointer;" title="Alterar foto da banda" data-i18n-title="changeBandPhotoTitle">
               <!-- Band Logo or fallback initials -->
             </div>
             <div class="band-page-hero-info">
@@ -7197,23 +7197,23 @@
 
         <!-- 5 TABS STRIP (COM ÍCONES IGUAL PERFIL) -->
         <div class="band-page-tabs-strip">
-          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Home e Lembretes da Banda">
+          <button class="band-tab-btn" id="bTabBtn-L" onclick="switchBandPageTab('L')" title="Home e Lembretes da Banda" data-i18n-title="bandHomeTabTooltip">
             <ion-icon name="home-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label" data-i18n="bandHomeTab">Home</span>
           </button>
-          <button class="band-tab-btn" id="bTabBtn-M" onclick="switchBandPageTab('M')" title="Integrantes e Membros">
+          <button class="band-tab-btn" id="bTabBtn-M" onclick="switchBandPageTab('M')" title="Integrantes e Membros" data-i18n-title="bandMembersTabTooltip">
             <ion-icon name="people-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label" data-i18n="bandMembersTab">Members</span>
           </button>
-          <button class="band-tab-btn" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Repertório da Banda">
+          <button class="band-tab-btn" id="bTabBtn-R" onclick="switchBandPageTab('R')" title="Repertório da Banda" data-i18n-title="bandRepertoireTabTooltip">
             <ion-icon name="musical-notes-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label" data-i18n="bandRepertoireTab">Repertoire</span>
           </button>
-          <button class="band-tab-btn" id="bTabBtn-F" onclick="switchBandPageTab('F')" title="Finanças e Lançamentos">
+          <button class="band-tab-btn" id="bTabBtn-F" onclick="switchBandPageTab('F')" title="Finanças e Lançamentos" data-i18n-title="bandFinancesTabTooltip">
             <ion-icon name="wallet-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label" data-i18n="bandFinancesTab">Finances</span>
           </button>
-          <button class="band-tab-btn active" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda">
+          <button class="band-tab-btn active" id="bTabBtn-A" onclick="switchBandPageTab('A')" title="Agenda" data-i18n-title="bandAgendaTabTooltip">
             <ion-icon name="calendar-outline" class="tab-icon"></ion-icon>
             <span class="tab-name-label" data-i18n="bandAgendaTab">Schedule</span>
           </button>
@@ -8101,7 +8101,7 @@
       <div class="modal-header" style="margin-bottom: 14px;">
         <h3 class="modal-title">
           <ion-icon name="musical-notes" style="color: #34d399; font-size: 1.3rem;"></ion-icon>
-          <span>Adicionar Música ao Songbook</span>
+          <span data-i18n="addSongModalTitle">Adicionar Música ao Songbook</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addSongModal')">&times;</button>
       </div>
@@ -8110,37 +8110,37 @@
       <div style="display: flex; gap: 8px; margin-bottom: 18px; background: rgba(0,0,0,0.25); padding: 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
         <button type="button" id="tabBtnAddSingle" class="btn-tab-modal active" onclick="switchAddSongTab('single')" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
           <ion-icon name="flash-outline"></ion-icon>
-          <span>Criação Rápida</span>
+          <span data-i18n="quickCreationTab">Criação Rápida</span>
         </button>
         <button type="button" id="tabBtnAddBatch" class="btn-tab-modal" onclick="switchAddSongTab('batch')" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
           <ion-icon name="clipboard-outline"></ion-icon>
-          <span>Colar Lista em Lote</span>
+          <span data-i18n="pasteBatchListTab">Colar Lista em Lote</span>
         </button>
       </div>
 
       <!-- PAINEL 1: CRIAÇÃO RÁPIDA INDIVIDUAL -->
       <div id="panelAddSingle">
-        <p style="font-size: 0.84rem; color: #94a3b8; margin-top: -6px; margin-bottom: 16px; line-height: 1.4;">
+        <p style="font-size: 0.84rem; color: #94a3b8; margin-top: -6px; margin-bottom: 16px; line-height: 1.4;" data-i18n="quickCreationSubtitle">
           Criação simples e rápida — informe o nome e a banda. Depois você pode editar cifras, letras e detalhes diretamente no Songbook.
         </p>
 
         <form onsubmit="handleSaveNewSong(event)">
           <div style="display: flex; flex-direction: column; gap: 14px;">
             <div class="form-group" style="margin-bottom: 0;">
-              <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">Nome da Música *</label>
+              <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="songTitleLabel">Nome da Música *</label>
               <input type="text" id="newSongName" class="form-input" placeholder="e.g. Its My Life" data-i18n-placeholder="songTitlePlaceholder" required maxlength="150" autofocus>
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
-              <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">Banda / Artista *</label>
+              <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="songArtistLabel">Banda / Artista *</label>
               <input type="text" id="newSongArtist" class="form-input" placeholder="e.g. Bon Jovi" data-i18n-placeholder="songArtistPlaceholder" required maxlength="150">
             </div>
 
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 6px;">
-              <button type="button" class="btn btn-outline" onclick="closeModal('addSongModal')">Cancelar</button>
-              <button type="submit" class="btn btn-primary" id="btnSubmitSingleSong" style="display: flex; align-items: center; gap: 6px; font-weight: 800; padding: 10px 20px;" title="Adicionar Música no Songbook">
+              <button type="button" class="btn btn-outline" onclick="closeModal('addSongModal')" data-i18n="cancel">Cancelar</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitSingleSong" style="display: flex; align-items: center; gap: 6px; font-weight: 800; padding: 10px 20px;" title="Adicionar Música no Songbook" data-i18n-title="addSongModalTitle">
                 <ion-icon name="add-circle" style="font-size: 1.25rem;"></ion-icon>
-                <span>Adicionar Música (+)</span>
+                <span data-i18n="addSongPlusBtn">Adicionar Música (+)</span>
               </button>
             </div>
           </div>
@@ -8149,38 +8149,38 @@
         <div style="margin-top: 20px; padding: 12px 14px; background: rgba(56, 189, 248, 0.05); border: 1px dashed rgba(56, 189, 248, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; font-size: 0.82rem;">
             <ion-icon name="list-outline" style="font-size: 1.2rem; color: var(--cyan);"></ion-icon>
-            <span>Quer cadastrar uma lista inteira de uma vez?</span>
+            <span data-i18n="batchRegisterPrompt">Quer cadastrar uma lista inteira de uma vez?</span>
           </div>
           <button type="button" class="btn btn-outline btn-sm" onclick="switchAddSongTab('batch')" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.4); font-weight: 700; display: flex; align-items: center; gap: 6px;">
             <ion-icon name="clipboard-outline"></ion-icon>
-            <span>Colar Lista de Músicas</span>
+            <span data-i18n="pasteSongListBtn">Colar Lista de Músicas</span>
           </button>
         </div>
       </div>
 
       <!-- PAINEL 2: COLAR LISTA EM LOTE -->
       <div id="panelAddBatch" style="display: none;">
-        <p style="font-size: 0.84rem; color: #94a3b8; margin-top: -6px; margin-bottom: 14px; line-height: 1.4;">
+        <p style="font-size: 0.84rem; color: #94a3b8; margin-top: -6px; margin-bottom: 14px; line-height: 1.4;" data-i18n="batchPasteSubtitle">
           Cole sua lista de músicas (uma por linha). O sistema irá identificar as faixas e criá-las automaticamente no Songbook.
         </p>
 
         <!-- Seleção de Formato com Checkbox / Radio -->
         <div style="margin-bottom: 14px;">
           <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-            Formato da Lista:
+            <span data-i18n="batchListFormatLabel">Formato da Lista:</span>
           </label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <label id="lblFormatBandSong" class="format-choice-card active" onclick="setBatchFormat('band_song')">
               <input type="radio" name="batchFormatChoice" id="fmtBandSong" value="band_song" checked style="accent-color: #38bdf8; cursor: pointer;">
               <div style="display: flex; flex-direction: column;">
-                <span style="font-weight: 800; color: #fff; font-size: 0.88rem;">Banda — Música</span>
+                <span style="font-weight: 800; color: #fff; font-size: 0.88rem;" data-i18n="formatBandSong">Banda — Música</span>
                 <span style="font-size: 0.74rem; color: #94a3b8;">Ex: Bon Jovi - Its My Life</span>
               </div>
             </label>
             <label id="lblFormatSongBand" class="format-choice-card" onclick="setBatchFormat('song_band')">
               <input type="radio" name="batchFormatChoice" id="fmtSongBand" value="song_band" style="accent-color: #34d399; cursor: pointer;">
               <div style="display: flex; flex-direction: column;">
-                <span style="font-weight: 800; color: #fff; font-size: 0.88rem;">Música — Banda</span>
+                <span style="font-weight: 800; color: #fff; font-size: 0.88rem;" data-i18n="formatSongBand">Música — Banda</span>
                 <span style="font-size: 0.74rem; color: #94a3b8;">Ex: Its My Life - Bon Jovi</span>
               </div>
             </label>
@@ -8190,8 +8190,8 @@
         <!-- Área de Texto para Colar Lista -->
         <div class="form-group" style="margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1;">Cole sua lista abaixo:</label>
-            <span id="batchCountBadge" style="font-size: 0.75rem; font-weight: 800; color: #34d399; background: rgba(16,185,129,0.12); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16,185,129,0.3);">0 músicas detectadas</span>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1;" data-i18n="pasteListBelowLabel">Cole sua lista abaixo:</label>
+            <span id="batchCountBadge" style="font-size: 0.75rem; font-weight: 800; color: #34d399; background: rgba(16,185,129,0.12); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16,185,129,0.3);" data-i18n="zeroSongsDetected">0 músicas detectadas</span>
           </div>
           <textarea id="batchSongInput" class="form-input" style="min-height: 160px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; resize: vertical;" placeholder="Bon Jovi - Its My Life&#10;System of a Down - BYOB&#10;Pink Floyd - Wish you are here&#10;The Cure - Forest" oninput="updateBatchPreview()"></textarea>
         </div>
@@ -8199,7 +8199,7 @@
         <!-- Pré-visualização Dinâmica -->
         <div id="batchPreviewContainer" style="display: none; margin-bottom: 14px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px;">
           <div style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
-            Pré-visualização do Reconhecimento:
+            <span data-i18n="recognitionPreviewTitle">Pré-visualização do Reconhecimento:</span>
           </div>
           <div id="batchPreviewList" style="display: flex; flex-direction: column; gap: 4px; max-height: 110px; overflow-y: auto;"></div>
         </div>
@@ -8207,11 +8207,11 @@
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
           <button type="button" class="btn btn-outline" onclick="switchAddSongTab('single')">
             <ion-icon name="arrow-back-outline"></ion-icon>
-            <span>Voltar</span>
+            <span data-i18n="back">Voltar</span>
           </button>
           <button type="button" class="btn btn-primary" id="btnSubmitBatchSongs" onclick="handleSaveBatchSongs()" style="display: flex; align-items: center; gap: 6px; font-weight: 800; padding: 10px 20px;">
             <ion-icon name="add-circle" style="font-size: 1.25rem;"></ion-icon>
-            <span>Criar Músicas da Lista (+)</span>
+            <span data-i18n="createSongsFromListBtn">Criar Músicas da Lista (+)</span>
           </button>
         </div>
       </div>
@@ -8273,46 +8273,46 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="calendar-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Novo Evento na Agenda</span>
+          <span data-i18n="newEventModalTitle">Novo Evento na Agenda</span>
         </h3>
         <button class="modal-close" onclick="closeModal('addEventModal')">&times;</button>
       </div>
       <form onsubmit="handleSaveEvent(event)">
         <div class="form-group">
-          <label>Título do Evento *</label>
+          <label data-i18n="eventTitleLabel">Título do Evento *</label>
           <input type="text" id="eventTitle" class="form-input" placeholder="e.g. Gig at Rock Pub" data-i18n-placeholder="eventTitlePlaceholder" required maxlength="200">
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
-            <label>Data *</label>
+            <label data-i18n="eventDateLabel">Data *</label>
             <input type="date" id="eventDate" class="form-input" required>
           </div>
           <div class="form-group">
-            <label>Horário</label>
+            <label data-i18n="eventTimeLabel">Horário</label>
             <input type="time" id="eventTime" class="form-input">
           </div>
         </div>
         <div class="form-group">
-          <label>Local / Casa de Show</label>
+          <label data-i18n="eventVenueLabel">Local / Casa de Show</label>
           <input type="text" id="eventLocal" class="form-input" placeholder="e.g. Audio Club, Downtown" data-i18n-placeholder="eventVenuePlaceholder" maxlength="200">
         </div>
         <div class="form-group">
-          <label>Vincular a uma Banda (Opcional)</label>
+          <label data-i18n="eventBandSelectLabel">Vincular a uma Banda (Opcional)</label>
           <select id="eventBandSelect" class="form-input">
-            <option value="">Apresentação Solo / Sem Banda</option>
+            <option value="" data-i18n="eventSoloOption">Apresentação Solo / Sem Banda</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Cachê Estimado (Opcional)</label>
-          <input type="text" id="eventCache" class="form-input" placeholder="Ex: R$ 1.500,00" maxlength="30">
+          <label data-i18n="eventCacheLabel">Cachê Estimado (Opcional)</label>
+          <input type="text" id="eventCache" class="form-input" placeholder="Ex: R$ 1.500,00" data-i18n-placeholder="eventCachePlaceholder" maxlength="30">
         </div>
         <div class="form-group">
-          <label>Observações</label>
-          <textarea id="eventNotes" class="form-input" placeholder="Repertório escolhido, passagem de som..."></textarea>
+          <label data-i18n="eventNotesLabel">Observações</label>
+          <textarea id="eventNotes" class="form-input" placeholder="Repertório escolhido, passagem de som..." data-i18n-placeholder="eventNotesPlaceholder"></textarea>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('addEventModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Evento</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addEventModal')" data-i18n="cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" data-i18n="saveEventBtn">Salvar Evento</button>
         </div>
       </form>
     </div>
@@ -8764,7 +8764,7 @@
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 12px;">
           <div id="mEventHeaderBadge" class="badge badge-emerald" style="font-size: 0.8rem; font-weight: 800; padding: 4px 10px;">SHOW</div>
-          <h3 class="modal-title" id="mEventModalTitle">Editar Evento & Playlist</h3>
+          <h3 class="modal-title" id="mEventModalTitle" data-i18n="editEventPlaylistModalTitle">Editar Evento & Playlist</h3>
         </div>
         <button class="modal-close" onclick="closeModal('editEventPlaylistModal')">&times;</button>
       </div>
@@ -8772,16 +8772,16 @@
       <!-- Abas internas: Detalhes do Evento vs Gerenciar Playlist -->
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 16px; flex-wrap: wrap;">
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')" title="Detalhes do Evento">
-            <ion-icon name="information-circle-outline"></ion-icon> <span class="tab-name-label">Detalhes do Evento</span>
+          <button type="button" class="btn btn-sm btn-outline active" id="mEventSubTabDetails" onclick="switchEventModalTab('details')" title="Detalhes do Evento" data-i18n-title="eventDetailsTab">
+            <ion-icon name="information-circle-outline"></ion-icon> <span class="tab-name-label" data-i18n="eventDetailsTab">Detalhes do Evento</span>
           </button>
-          <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')" title="Playlist">
-            <ion-icon name="musical-notes-outline"></ion-icon> <span class="tab-name-label">Playlist (<span id="mEventSongsCount">0</span>)</span>
+          <button type="button" class="btn btn-sm btn-outline" id="mEventSubTabPlaylist" onclick="switchEventModalTab('playlist')" title="Playlist" data-i18n-title="eventPlaylistTab">
+            <ion-icon name="musical-notes-outline"></ion-icon> <span class="tab-name-label"><span data-i18n="eventPlaylistTab">Playlist</span> (<span id="mEventSongsCount">0</span>)</span>
           </button>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro Word (.doc)" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
-            <ion-icon name="document-text-outline" style="font-size: 1rem;"></ion-icon> <span>Exportar .DOC</span>
+          <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro Word (.doc)" data-i18n-title="exportDocTitle" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+            <ion-icon name="document-text-outline" style="font-size: 1rem;"></ion-icon> <span data-i18n="exportDocBtn">Exportar .DOC</span>
           </button>
         </div>
       </div>
@@ -8790,16 +8790,16 @@
       <form id="mEventForm" onsubmit="handleSaveEventPlaylistModal(event)">
         <div id="mEventDetailsView">
           <div class="form-group">
-            <label>Nome do Evento / Show / Ensaio *</label>
-            <input type="text" id="mEventName" class="form-input" placeholder="Ex: Barteco 07/11" required maxlength="200">
+            <label data-i18n="eventNameLabel">Nome do Evento / Show / Ensaio *</label>
+            <input type="text" id="mEventName" class="form-input" placeholder="Ex: Barteco 07/11" data-i18n-placeholder="eventNamePlaceholder" required maxlength="200">
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
             <div class="form-group">
               <label data-i18n="eventTypeLabel">Event Type</label>
               <select id="mEventType" class="form-input" onchange="updateEventModalTypeBadge()">
-                <option value="show">Show / Apresentação</option>
-                <option value="rehearsal">Ensaio</option>
+                <option value="show" data-i18n="eventTypeShowOption">Show / Apresentação</option>
+                <option value="rehearsal" data-i18n="eventTypeRehearsalOption">Ensaio</option>
               </select>
             </div>
             <div class="form-group">
@@ -8825,7 +8825,7 @@
 
           <div class="form-group">
             <label>Observações & Anotações</label>
-            <textarea id="mEventNotes" class="form-input" rows="3" placeholder="Informações de som, horário de passagem, contato da casa..." maxlength="500"></textarea>
+            <textarea id="mEventNotes" class="form-input" rows="3" placeholder="Informações de som, horário de passagem, contato da casa..." data-i18n-placeholder="eventNotesDetailedPlaceholder" maxlength="500"></textarea>
           </div>
         </div>
 
@@ -8833,24 +8833,24 @@
         <div id="mEventPlaylistView" style="display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
             <div>
-              <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Músicas neste Setlist:</span>
+              <span style="font-size: 0.88rem; font-weight: 700; color: #fff;" data-i18n="songsInThisSetlistLabel">Músicas neste Setlist:</span>
               <span style="font-size: 0.8rem; color: #94a3b8; margin-left: 8px;" id="mEventTotalDuration">Duração Total: --:--</span>
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <button type="button" class="btn btn-sm btn-cyan" onclick="toggleAddSongToPlaylistPicker()" style="font-weight: 700;">
-                <ion-icon name="add-circle-outline"></ion-icon> + Música
+                <ion-icon name="add-circle-outline"></ion-icon> <span data-i18n="addSongShort">+ Música</span>
               </button>
               <button type="button" class="btn btn-sm" onclick="handleAddPauseToPlaylist()" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-weight: 700;">
-                <ion-icon name="pause-circle-outline"></ion-icon> + Pausa
+                <ion-icon name="pause-circle-outline"></ion-icon> <span data-i18n="addPauseShort">+ Pausa</span>
               </button>
               <button type="button" class="btn btn-sm" onclick="handleAddNoteToPlaylist()" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; font-weight: 700;">
-                <ion-icon name="document-text-outline"></ion-icon> + Anotação
+                <ion-icon name="document-text-outline"></ion-icon> <span data-i18n="addNoteShort">+ Anotação</span>
               </button>
               <button type="button" class="btn btn-sm" onclick="exportCurrentBandEventDoc()" title="Exportar Roteiro em Word (.doc)" style="background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 700;">
                 <ion-icon name="document-text-outline"></ion-icon> .DOC
               </button>
-              <button type="button" class="btn btn-sm btn-outline" onclick="openSetlistEditorPage(editingEventIndex)" title="Abrir na página de eventos" style="font-weight: 700;">
-                <ion-icon name="expand-outline"></ion-icon> Página Própria
+              <button type="button" class="btn btn-sm btn-outline" onclick="openSetlistEditorPage(editingEventIndex)" title="Abrir na página de eventos" data-i18n-title="dedicatedPageTooltip" style="font-weight: 700;">
+                <ion-icon name="expand-outline"></ion-icon> <span data-i18n="dedicatedPageBtn">Página Própria</span>
               </button>
             </div>
           </div>
@@ -8878,15 +8878,15 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; gap: 8px;">
             <button type="button" class="btn btn-danger btn-sm" id="btnDeleteEventFromModal" onclick="handleDeleteCurrentEvent()">
-              <ion-icon name="trash-outline"></ion-icon> Excluir Evento
+              <ion-icon name="trash-outline"></ion-icon> <span data-i18n="deleteEventBtn">Excluir Evento</span>
             </button>
-            <button type="button" class="btn btn-outline btn-sm" id="btnDuplicateEventFromModal" onclick="duplicateCurrentEditingSetlist()" title="Duplicar esta playlist e evento" style="border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd;">
-              <ion-icon name="copy-outline"></ion-icon> Duplicar
+            <button type="button" class="btn btn-outline btn-sm" id="btnDuplicateEventFromModal" onclick="duplicateCurrentEditingSetlist()" title="Duplicar esta playlist e evento" data-i18n-title="duplicateSetlistTooltip" style="border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd;">
+              <ion-icon name="copy-outline"></ion-icon> <span data-i18n="copy">Duplicar</span>
             </button>
           </div>
           <div style="display: flex; gap: 10px;">
-            <button type="button" class="btn btn-outline" onclick="closeModal('editEventPlaylistModal')">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal('editEventPlaylistModal')" data-i18n="cancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary" data-i18n="saveChangesBtn">Salvar Alterações</button>
           </div>
         </div>
       </form>
@@ -8900,8 +8900,8 @@
         <div style="display: flex; align-items: center; gap: 10px;">
           <ion-icon name="share-social-outline" style="font-size: 1.5rem; color: var(--cyan);"></ion-icon>
           <div>
-            <h3 class="modal-title" style="margin: 0;">Compartilhar Agenda de Shows (Flyer Oficial)</h3>
-            <span style="font-size: 0.78rem; color: #94a3b8;">Gerador oficial de arte para redes sociais e WhatsApp com os mesmos temas e fundos do app mobile</span>
+            <h3 class="modal-title" style="margin: 0;" data-i18n="shareAgendaModalTitle">Compartilhar Agenda de Shows (Flyer Oficial)</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;" data-i18n="shareAgendaModalSubtitle">Gerador oficial de arte para redes sociais e WhatsApp com os mesmos temas e fundos do app mobile</span>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('shareAgendaModal')">&times;</button>
@@ -8912,41 +8912,41 @@
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <!-- 1. Escolha de Arte de Fundo (9 Layouts do Mobile) -->
           <div>
-            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: block;">1. Estilo / Arte de Fundo</label>
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: block;" data-i18n="flyerStep1Title">1. Estilo / Arte de Fundo</label>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;" id="flyerThemeSelector">
               <button type="button" class="btn btn-sm btn-outline active flyer-theme-btn" data-theme="1" onclick="setFlyerTheme(1)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="skull-outline"></ion-icon> Rock & Metal
+                <ion-icon name="skull-outline"></ion-icon> <span data-i18n="flyerThemeRock">Rock & Metal</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="2" onclick="setFlyerTheme(2)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="leaf-outline"></ion-icon> Acústico Folk
+                <ion-icon name="leaf-outline"></ion-icon> <span data-i18n="flyerThemeFolk">Acústico Folk</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="3" onclick="setFlyerTheme(3)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="flash-outline"></ion-icon> Synthwave
+                <ion-icon name="flash-outline"></ion-icon> <span data-i18n="flyerThemeSynth">Synthwave</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="4" onclick="setFlyerTheme(4)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="musical-notes-outline"></ion-icon> Jazz & Blues
+                <ion-icon name="musical-notes-outline"></ion-icon> <span data-i18n="flyerThemeJazz">Jazz & Blues</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="5" onclick="setFlyerTheme(5)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="headset-outline"></ion-icon> Eletrônica EDM
+                <ion-icon name="headset-outline"></ion-icon> <span data-i18n="flyerThemeEdm">Eletrônica EDM</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="6" onclick="setFlyerTheme(6)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="sunny-outline"></ion-icon> Reggae Roots
+                <ion-icon name="sunny-outline"></ion-icon> <span data-i18n="flyerThemeReggae">Reggae Roots</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="7" onclick="setFlyerTheme(7)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="flame-outline"></ion-icon> Gospel
+                <ion-icon name="flame-outline"></ion-icon> <span data-i18n="flyerThemeGospel">Gospel</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="8" onclick="setFlyerTheme(8)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="disc-outline"></ion-icon> Notas
+                <ion-icon name="disc-outline"></ion-icon> <span data-i18n="flyerThemeNotes">Notas</span>
               </button>
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="9" onclick="setFlyerTheme(9)" style="font-size: 0.75rem; padding: 6px 8px; justify-content: flex-start;">
-                <ion-icon name="sparkles-outline"></ion-icon> Clássico
+                <ion-icon name="sparkles-outline"></ion-icon> <span data-i18n="flyerThemeClassic">Clássico</span>
               </button>
             </div>
             <div style="margin-top: 8px;">
               <input type="file" id="flyerCustomBgInput" accept="image/*" style="display: none;" onchange="handleFlyerCustomBgUpload(event)">
               <button type="button" class="btn btn-sm btn-outline flyer-theme-btn" data-theme="custom" onclick="triggerFlyerCustomBgUpload()" id="flyerCustomBgBtn" style="width: 100%; font-size: 0.78rem; padding: 7px 10px; display: flex; align-items: center; justify-content: center; gap: 8px; border-style: dashed; border-color: var(--cyan); color: var(--cyan);">
                 <ion-icon name="image-outline" style="font-size: 1.1rem;"></ion-icon>
-                <span id="flyerCustomBgLabel">Escolher Foto da Galeria (Fundo Personalizado)</span>
+                <span id="flyerCustomBgLabel" data-i18n="flyerCustomBgLabel">Escolher Foto da Galeria (Fundo Personalizado)</span>
               </button>
             </div>
           </div>
@@ -8958,11 +8958,11 @@
               <span id="cardScaleLabel" style="font-size: 0.78rem; font-weight: 800; color: var(--cyan);">100% (Normal)</span>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 8px;" onclick="changeFlyerCardScale(-0.1)" title="Diminuir tamanho dos cards">
+              <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 8px;" onclick="changeFlyerCardScale(-0.1)" title="Diminuir tamanho dos cards" data-i18n-title="decreaseCardSizeTooltip">
                 <ion-icon name="remove-outline"></ion-icon>
               </button>
               <input type="range" id="flyerCardScaleRange" min="0.45" max="1.3" step="0.05" value="1.0" oninput="setFlyerCardScale(this.value)" style="flex: 1; accent-color: var(--cyan); cursor: pointer;">
-              <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 8px;" onclick="changeFlyerCardScale(0.1)" title="Aumentar tamanho dos cards">
+              <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 8px;" onclick="changeFlyerCardScale(0.1)" title="Aumentar tamanho dos cards" data-i18n-title="increaseCardSizeTooltip">
                 <ion-icon name="add-outline"></ion-icon>
               </button>
             </div>
@@ -8971,8 +8971,8 @@
           <!-- 3. Seleção de Shows para Incluir na Arte (Max 10) -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0;">3. Selecionar Shows na Arte (<span id="flyerSelectedCount">0</span>/10)</label>
-              <button type="button" class="btn btn-sm" style="font-size: 0.75rem; color: var(--cyan); background: transparent; padding: 2px 6px;" onclick="selectAllUpcomingForFlyer()">Selecionar Próximos</button>
+              <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin: 0;"><span data-i18n="flyerSelectShowsLabel">3. Selecionar Shows na Arte</span> (<span id="flyerSelectedCount">0</span>/10)</label>
+              <button type="button" class="btn btn-sm" style="font-size: 0.75rem; color: var(--cyan); background: transparent; padding: 2px 6px;" onclick="selectAllUpcomingForFlyer()" data-i18n="selectUpcomingBtn">Selecionar Próximos</button>
             </div>
             <div id="flyerEventsList" style="max-height: 180px; overflow-y: auto; background: #131a28; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
               <!-- Checkboxes de shows -->
@@ -8981,20 +8981,20 @@
 
           <!-- 4. Contato da Banda / Texto Livre (Última linha antes do rodapé) -->
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 0.85rem; font-weight: 700; color: #fff;">4. Linha de Contato / Texto Livre para a Banda</label>
-            <input type="text" id="flyerContactInput" class="form-input" placeholder="Ex: Contato para Shows: (16) 99115-3733 • @badbadgersoficial" oninput="updateFlyerPreview()">
-            <span style="font-size: 0.74rem; color: #94a3b8; margin-top: 4px; display: block;">Esta linha personalizada é exibida com destaque logo acima da chamada do BandLink.</span>
+            <label style="font-size: 0.85rem; font-weight: 700; color: #fff;" data-i18n="flyerStep4Title">4. Linha de Contato / Texto Livre para a Banda</label>
+            <input type="text" id="flyerContactInput" class="form-input" placeholder="Ex: Contato para Shows: (16) 99115-3733 • @badbadgersoficial" data-i18n-placeholder="flyerContactPlaceholder" oninput="updateFlyerPreview()">
+            <span style="font-size: 0.74rem; color: #94a3b8; margin-top: 4px; display: block;" data-i18n="flyerContactNote">Esta linha personalizada é exibida com destaque logo acima da chamada do BandLink.</span>
           </div>
 
           <!-- Botões de Ação -->
           <div style="display: flex; gap: 10px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
             <button type="button" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="downloadFlyerImage()">
               <ion-icon name="download-outline" style="font-size: 1.15rem;"></ion-icon>
-              <span>Baixar Arte (PNG 1080x1920)</span>
+              <span data-i18n="flyerDownloadBtn">Baixar Arte (PNG 1080x1920)</span>
             </button>
-            <button type="button" class="btn btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="copyFlyerText()" title="Copiar texto formatado para WhatsApp">
+            <button type="button" class="btn btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="copyFlyerText()" title="Copiar texto formatado para WhatsApp" data-i18n-title="flyerCopyTextTooltip">
               <ion-icon name="copy-outline"></ion-icon>
-              <span>Copiar Texto</span>
+              <span data-i18n="copyTextBtn">Copiar Texto</span>
             </button>
           </div>
         </div>
@@ -9008,7 +9008,7 @@
                 <span id="flyerBandAvatarInitials" style="font-size: 1.3rem; font-weight: 900; color: #fff;">BB</span>
               </div>
               <div class="flyer-header-text">
-                <div class="flyer-main-title">AGENDA</div>
+                <div class="flyer-main-title" data-i18n="flyerAgendaHeader">AGENDA</div>
                 <div class="flyer-sub-title" id="flyerHeaderSubtitle">PRÓXIMOS SHOWS • BAD BADGERS</div>
               </div>
             </div>
@@ -9031,7 +9031,7 @@
                 <img src="assets/bandlink_logo_black_full.jpg" alt="BandLink" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" onerror="this.src='assets/logo.png'">
               </div>
               <div class="flyer-footer-center">
-                <div class="flyer-footer-brand">
+                <div class="flyer-footer-brand" data-i18n="flyerFooterBrandText">
                   Gerencie sua banda, playlists, cifras. Crie seu perfil e divulgue novos projetos para encontrar novos músicos.
                 </div>
                 <div class="flyer-footer-link">
@@ -9040,7 +9040,7 @@
               </div>
               <div class="flyer-qr-box" title="Acesse o app e site www.bandlink.pro">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://www.bandlink.pro" alt="QR" style="width: 38px; height: 38px; display: block;" onerror="this.style.display='none'">
-                <span style="font-size: 0.44rem; font-weight: 900; color: #000; margin-top: 1px; line-height: 1;">ESCANEAR</span>
+                <span style="font-size: 0.44rem; font-weight: 900; color: #000; margin-top: 1px; line-height: 1;" data-i18n="flyerScanQrText">ESCANEAR</span>
               </div>
             </div>
           </div>
@@ -9058,7 +9058,7 @@
             <ion-icon name="pie-chart-outline" style="font-size: 1.25rem;"></ion-icon>
           </div>
           <div style="min-width: 0;">
-            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cacheSplitModalTitle">Divisão de Cachê</h3>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cacheSplitModalTitle" data-i18n="cacheSplitModalTitle">Divisão de Cachê</h3>
             <span style="font-size: 0.78rem; color: #94a3b8; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cacheSplitModalSubtitle">Show • Data • Local</span>
           </div>
         </div>
@@ -9069,19 +9069,19 @@
         <!-- Header Financeiro do Show -->
         <div style="background: #141c2c; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Cachê Total Bruto</span>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;" data-i18n="totalGrossCache">Cachê Total Bruto</span>
             <div style="font-size: 1.55rem; font-weight: 900; color: #4ade80;" id="cacheSplitTotalGrossDisplay">$ 0,00</div>
           </div>
           <div style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
             <div>
               <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 4px;">Status</span>
               <select id="cacheSplitStatusSelect" class="form-input" style="padding: 4px 10px; font-size: 0.82rem; height: 34px;">
-                <option value="paid">Recebido</option>
-                <option value="pending">Pendente</option>
+                <option value="paid" data-i18n="statusPaid">Recebido</option>
+                <option value="pending" data-i18n="statusPending">Pendente</option>
               </select>
             </div>
             <button type="button" class="btn btn-sm btn-cyan" onclick="splitCacheEquallyAmongMembers()" style="height: 34px; font-size: 0.8rem; padding: 0 12px; white-space: nowrap;">
-              <ion-icon name="git-branch-outline"></ion-icon> <span>Dividir Igualmente</span>
+              <ion-icon name="git-branch-outline"></ion-icon> <span data-i18n="splitEquallyBtn">Dividir Igualmente</span>
             </button>
           </div>
         </div>
@@ -9093,7 +9093,7 @@
               <ion-icon name="wallet-outline" style="font-size: 1.25rem;"></ion-icon>
             </div>
             <div>
-              <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">Caixa da Banda</div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: #fff;" data-i18n="bandCashFund">Caixa da Banda</div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
@@ -9106,7 +9106,7 @@
         <div>
           <h4 style="font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
             <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
-            <span>Cota dos Integrantes</span>
+            <span data-i18n="membersQuotaTitle">Cota dos Integrantes</span>
           </h4>
           <div id="cacheSplitMembersList" style="display: flex; flex-direction: column; gap: 8px;">
             <!-- Linhas de membros -->
@@ -9118,10 +9118,10 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
             <h4 style="font-size: 0.92rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
               <ion-icon name="person-add" style="color: #fbbf24;"></ion-icon>
-              <span>Substitutos e Convidados</span>
+              <span data-i18n="substitutesGuestsTitle">Substitutos e Convidados</span>
             </h4>
             <button type="button" class="btn btn-sm btn-outline" onclick="addSubstituteToCacheSplit()" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px;">
-              <ion-icon name="add-outline"></ion-icon> <span>Adicionar</span>
+              <ion-icon name="add-outline"></ion-icon> <span data-i18n="add">Adicionar</span>
             </button>
           </div>
           <div id="cacheSplitSubstitutesList" style="display: flex; flex-direction: column; gap: 8px;">
@@ -9132,27 +9132,27 @@
         <!-- Resumo Contábil da Divisão -->
         <div style="background: #101624; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: center;">
           <div>
-            <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Total do Show</span>
+            <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;" data-i18n="showTotalLabel">Total do Show</span>
             <div style="font-size: 1.1rem; font-weight: 800; color: #fff;" id="cacheSplitSummaryGross">$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase; font-weight: 700; display: block;">Caixa da Banda</span>
+            <span style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase; font-weight: 700; display: block;" data-i18n="bandCashLabel">Caixa da Banda</span>
             <div style="font-size: 1.1rem; font-weight: 800; color: #38bdf8;" id="cacheSplitSummaryFund">$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.7rem; color: #4ade80; text-transform: uppercase; font-weight: 700; display: block;">Total Músicos</span>
+            <span style="font-size: 0.7rem; color: #4ade80; text-transform: uppercase; font-weight: 700; display: block;" data-i18n="musiciansTotalLabel">Total Músicos</span>
             <div style="font-size: 1.1rem; font-weight: 800; color: #4ade80;" id="cacheSplitTotalDistributed">$ 0,00</div>
           </div>
           <div>
-            <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Saldo Restante</span>
+            <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;" data-i18n="remainingBalanceLabel">Saldo Restante</span>
             <div style="font-size: 1.1rem; font-weight: 800; color: #94a3b8;" id="cacheSplitBandFund">$ 0,00</div>
           </div>
         </div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap;">
-        <button type="button" class="btn btn-outline" onclick="closeModal('cacheSplitModal')">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="saveCacheSplitModal()">Salvar Divisão de Cachê</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('cacheSplitModal')" data-i18n="cancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveCacheSplitModal()" data-i18n="saveCacheSplitBtn">Salvar Divisão de Cachê</button>
       </div>
     </div>
   </div>
@@ -9264,8 +9264,8 @@
             <ion-icon name="wallet-outline" style="font-size: 1.3rem;"></ion-icon>
           </div>
           <div>
-            <h3 class="modal-title" style="margin: 0;">Ajustar Caixa da Banda</h3>
-            <span style="font-size: 0.78rem; color: #94a3b8;">Fundo de reserva disponível</span>
+            <h3 class="modal-title" style="margin: 0;" data-i18n="adjustBandCashModalTitle">Ajustar Caixa da Banda</h3>
+            <span style="font-size: 0.78rem; color: #94a3b8;" data-i18n="availableReserveFund">Fundo de reserva disponível</span>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('editBandCashModal')">&times;</button>
@@ -9273,19 +9273,19 @@
 
       <form onsubmit="handleSaveBandCash(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
         <div class="form-group">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #fbbf24; margin-bottom: 4px; display: block;">Saldo do Caixa da Banda (R$) *</label>
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fbbf24; margin-bottom: 4px; display: block;" data-i18n="bandCashBalanceLabel">Saldo do Caixa da Banda (R$) *</label>
           <input type="number" step="0.01" min="0" id="bandCashAmountInput" class="form-input" placeholder="0.00" required style="font-size: 1.4rem; font-weight: 900; color: #fbbf24; text-align: right; padding: 10px 14px;">
-          <span style="font-size: 0.76rem; color: #94a3b8; margin-top: 4px; display: block;">Ao salvar, este valor se tornará o saldo oficial do fundo de reserva da banda.</span>
+          <span style="font-size: 0.76rem; color: #94a3b8; margin-top: 4px; display: block;" data-i18n="bandCashSaveNote">Ao salvar, este valor se tornará o saldo oficial do fundo de reserva da banda.</span>
         </div>
 
         <div class="form-group">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block;">Motivo do Ajuste (Opcional)</label>
-          <input type="text" id="bandCashNotesInput" class="form-input" placeholder="Ex: Aporte inicial, conferência de saldo, retirada..." maxlength="200">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block;" data-i18n="adjustmentReasonLabel">Motivo do Ajuste (Opcional)</label>
+          <input type="text" id="bandCashNotesInput" class="form-input" placeholder="Ex: Aporte inicial, conferência de saldo, retirada..." data-i18n-placeholder="adjustmentReasonPlaceholder" maxlength="200">
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-          <button type="button" class="btn btn-outline" onclick="closeModal('editBandCashModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary" style="background: #fbbf24; color: #000; border-color: #fbbf24; font-weight: 700;">Salvar Saldo</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('editBandCashModal')" data-i18n="cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="background: #fbbf24; color: #000; border-color: #fbbf24; font-weight: 700;" data-i18n="saveBalanceBtn">Salvar Saldo</button>
         </div>
       </form>
     </div>
@@ -13385,8 +13385,8 @@
         container.innerHTML = `
           <div style="text-align: center; padding: 36px 20px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
             <ion-icon name="clipboard-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 6px;"></ion-icon>
-            <p style="color: #cbd5e1; font-weight: 700; margin: 0 0 4px 0; font-size: 0.95rem;">Nenhum lembrete publicado ainda</p>
-            <p style="color: #64748b; font-size: 0.82rem; margin: 0;">Use o botão <strong>+ Novo Lembrete</strong> acima para compartilhar recados, escalas ou avisos importantes com a banda.</p>
+            <p style="color: #cbd5e1; font-weight: 700; margin: 0 0 4px 0; font-size: 0.95rem;">${(typeof t === 'function') ? t('noPostsPublishedYet', 'Nenhum lembrete publicado ainda') : 'Nenhum lembrete publicado ainda'}</p>
+            <p style="color: #64748b; font-size: 0.82rem; margin: 0;">${(typeof t === 'function') ? t('noPostsSubtitle', 'Use o botão Novo Lembrete acima para compartilhar recados, escalas ou avisos importantes com a banda.') : 'Use o botão Novo Lembrete acima para compartilhar recados, escalas ou avisos importantes com a banda.'}</p>
           </div>
         `;
         return;
@@ -13766,14 +13766,14 @@
           <div>
             <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="home" style="color: var(--cyan);"></ion-icon>
-              <span>Home da Banda</span>
+              <span>${(typeof t === 'function') ? t('bandHomeSectionTitle', 'Home da Banda') : 'Home da Banda'}</span>
             </h2>
-            <p style="color: #94a3b8; font-size: 0.82rem; margin: 3px 0 0 0;">Quadro de avisos, lembretes fixos e atividades dos integrantes.</p>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin: 3px 0 0 0;">${(typeof t === 'function') ? t('bandHomeSubtitle', 'Quadro de avisos, lembretes fixados e novidades da banda') : 'Quadro de avisos, lembretes fixados e novidades da banda'}</p>
           </div>
           <div>
             <button type="button" class="btn btn-cyan btn-sm" onclick="openCreateBandPostModal()" title="Novo Lembrete" style="display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-weight: 700; border-radius: 9px;">
               <ion-icon name="add-circle-outline" style="font-size: 1.15rem;"></ion-icon>
-              <span>Novo Lembrete</span>
+              <span>${(typeof t === 'function') ? t('newPostBtn', 'Novo Lembrete') : 'Novo Lembrete'}</span>
             </button>
           </div>
         </div>
@@ -13790,7 +13790,7 @@
         <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08);">
           <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
             <ion-icon name="time-outline" style="color: var(--cyan);"></ion-icon>
-            <span>Atividades Recentes & Histórico</span>
+            <span>${(typeof t === 'function') ? t('recentActivitiesTitle', 'Atividades Recentes & Histórico') : 'Atividades Recentes & Histórico'}</span>
           </h3>
         </div>
       `;
@@ -14155,14 +14155,14 @@
           <div>
             <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="people" style="color: var(--cyan);"></ion-icon>
-              <span>Membros</span>
+              <span>${(typeof t === 'function') ? t('bandMembersTab', 'Membros') : 'Membros'}</span>
               <span class="band-members-count-circle">${members.length}</span>
             </h2>
           </div>
           <div>
             <button type="button" class="btn btn-cyan btn-sm band-add-member-btn" onclick="openEditBandMemberModal(-1)" title="Adicionar Integrante">
               <ion-icon name="add"></ion-icon>
-              <span class="band-add-member-label">Adicionar Integrante</span>
+              <span class="band-add-member-label">${(typeof t === 'function') ? t('addMemberBtn', 'Adicionar Integrante') : 'Adicionar Integrante'}</span>
             </button>
           </div>
         </div>
@@ -14174,8 +14174,8 @@
         html += `
           <div style="text-align: center; padding: 40px; background: #1a2233; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8;">
             <ion-icon name="people-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <p style="margin: 0 0 12px 0;">Nenhum integrante cadastrado nesta banda ainda.</p>
-            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditBandMemberModal(-1)">Cadastrar Primeiro Integrante</button>
+            <p style="margin: 0 0 12px 0;">${(typeof t === 'function') ? t('noMembersRegistered', 'Nenhum integrante cadastrado nesta banda ainda.') : 'Nenhum integrante cadastrado nesta banda ainda.'}</p>
+            <button type="button" class="btn btn-cyan btn-sm" onclick="openEditBandMemberModal(-1)">${(typeof t === 'function') ? t('registerFirstMemberBtn', 'Cadastrar Primeiro Integrante') : 'Cadastrar Primeiro Integrante'}</button>
           </div>
         `;
       } else {
@@ -14218,7 +14218,7 @@
                 <!-- Linha 1: Nome de Exibição -->
                 <div class="band-member-row-name">
                   <span class="band-member-name">${escapeHtml(mem.name || 'Membro')}</span>
-                  ${mem.isLeader ? '<span class="badge badge-violet" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 800;">LÍDER</span>' : ''}
+                  ${mem.isLeader ? '<span class="badge badge-violet" style="font-size: 0.65rem; padding: 2px 7px; font-weight: 800;">' + ((typeof t === 'function') ? t('leaderBadge', 'LÍDER') : 'LÍDER') + '</span>' : ''}
                 </div>
 
                 <!-- Linha 2: Username -->
@@ -14700,7 +14700,7 @@
           <div style="display: flex; align-items: center; gap: 10px;">
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
               <ion-icon name="musical-notes" style="color: var(--cyan);"></ion-icon>
-              <span>Repertório</span>
+              <span>${(typeof t === 'function') ? t('bandRepertoireTab', 'Repertório') : 'Repertório'}</span>
             </h2>
             <span class="badge badge-cyan" style="font-size: 0.82rem; padding: 2px 9px; font-weight: 800; border-radius: 9999px;">${songs.length}</span>
           </div>
@@ -14713,7 +14713,7 @@
         <div style="background: #1e2638; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
           <div style="flex: 1; display: flex; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; height: 42px;">
             <ion-icon name="search-outline" style="font-size: 1.15rem; color: #94a3b8; margin-right: 8px;"></ion-icon>
-            <input type="text" placeholder="Buscar no repertório por música ou artista..." value="${escapeHtml(bandRepertoireSearch)}" oninput="handleBandRepertoireSearch(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none;">
+            <input type="text" placeholder="${(typeof t === 'function') ? t('searchRepertoirePlaceholder', 'Buscar no repertório por música ou artista...') : 'Buscar no repertório por música ou artista...'}" value="${escapeHtml(bandRepertoireSearch)}" oninput="handleBandRepertoireSearch(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none;">
             ${bandRepertoireSearch ? `<button type="button" onclick="handleBandRepertoireSearch('')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer;"><ion-icon name="close-circle" style="font-size: 1.1rem;"></ion-icon></button>` : ''}
           </div>
 
@@ -14762,7 +14762,7 @@
         html += `
           <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
             <ion-icon name="disc-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhuma música no repertório desta banda</h4>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${(typeof t === 'function') ? t('noSongsInRepertoireYet', 'Nenhuma música no repertório desta banda') : 'Nenhuma música no repertório desta banda'}</h4>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione músicas do seu Songbook / Coleção Geral ao repertório oficial da banda.</p>
             <button type="button" class="btn btn-primary" onclick="openAddSongsToBandModal(${band.id})" style="border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; margin: 0 auto;">
               <ion-icon name="add-circle" style="font-size: 1.15rem;"></ion-icon>
@@ -15126,16 +15126,19 @@
     }
 
     const MONTH_NAMES_BR = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const MONTH_KEYS = ['monthJan', 'monthFeb', 'monthMar', 'monthApr', 'monthMay', 'monthJun', 'monthJul', 'monthAug', 'monthSep', 'monthOct', 'monthNov', 'monthDec'];
     const WEEKDAYS_PT = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const WEEKDAYS_SHORT_KEYS = ['weekdaySunShort', 'weekdayMonShort', 'weekdayTueShort', 'weekdayWedShort', 'weekdayThuShort', 'weekdayFriShort', 'weekdaySatShort'];
     const WEEKDAYS_FULL_PT = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const WEEKDAYS_FULL_KEYS = ['weekdaySunFull', 'weekdayMonFull', 'weekdayTueFull', 'weekdayWedFull', 'weekdayThuFull', 'weekdayFriFull', 'weekdaySatFull'];
 
     function getEventDateDetails(d) {
       const dt = parseDateForSort(d);
       const day = String(dt.getDate()).padStart(2, '0');
       const monthIdx = dt.getMonth();
-      const weekDay = WEEKDAYS_PT[dt.getDay()] || 'SÁB';
-      const weekDayFull = WEEKDAYS_FULL_PT[dt.getDay()] || 'Sábado';
-      const monthName = MONTH_NAMES_BR[monthIdx] || 'Mês';
+      const weekDay = (typeof t === 'function') ? t(WEEKDAYS_SHORT_KEYS[dt.getDay()], WEEKDAYS_PT[dt.getDay()] || 'SÁB') : (WEEKDAYS_PT[dt.getDay()] || 'SÁB');
+      const weekDayFull = (typeof t === 'function') ? t(WEEKDAYS_FULL_KEYS[dt.getDay()], WEEKDAYS_FULL_PT[dt.getDay()] || 'Sábado') : (WEEKDAYS_FULL_PT[dt.getDay()] || 'Sábado');
+      const monthName = (typeof t === 'function') ? t(MONTH_KEYS[monthIdx], MONTH_NAMES_BR[monthIdx] || 'Mês') : (MONTH_NAMES_BR[monthIdx] || 'Mês');
       const monthShort = monthName.substring(0, 3).toUpperCase();
       return { day, month: monthShort, monthFull: monthName, weekDay, weekDayFull, dateObj: dt };
     }
@@ -15144,11 +15147,12 @@
       const dt = parseDateForSort(d);
       const mIdx = dt.getMonth();
       const yr = dt.getFullYear();
+      const monthName = (typeof t === 'function') ? t(MONTH_KEYS[mIdx], MONTH_NAMES_BR[mIdx] || 'Mês') : (MONTH_NAMES_BR[mIdx] || 'Mês');
       return {
         key: `${yr}-${String(mIdx + 1).padStart(2, '0')}`,
-        monthName: MONTH_NAMES_BR[mIdx] || 'Mês',
+        monthName: monthName,
         year: yr,
-        title: `${MONTH_NAMES_BR[mIdx] || 'Mês'}`,
+        title: monthName,
         dateObj: dt
       };
     }
@@ -15309,17 +15313,17 @@
           <div>
             <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="wallet" style="color: var(--cyan);"></ion-icon>
-              <span>Finanças</span>
+              <span>${(typeof t === 'function') ? t('financesTitle', 'Finanças') : 'Finanças'}</span>
             </h2>
           </div>
           <div class="finances-header-actions" style="display: flex; align-items: center; gap: 8px;">
             <button type="button" class="btn btn-outline btn-sm finances-btn-cash" onclick="openEditBandCashModal()" style="font-size: 0.82rem; padding: 5px 12px; border-color: rgba(251,191,36,0.4); color: #fbbf24; display: inline-flex; align-items: center; gap: 6px;">
               <ion-icon name="wallet-outline"></ion-icon>
-              <span>Caixa</span>
+              <span>${(typeof t === 'function') ? t('bandCashBtn', 'Caixa') : 'Caixa'}</span>
             </button>
             <button type="button" class="btn btn-primary btn-sm finances-btn-add" onclick="openAddFinanceEntryModal()" title="Novo Lançamento" style="font-size: 0.82rem; padding: 5px 14px; display: inline-flex; align-items: center; gap: 6px;">
               <ion-icon name="add"></ion-icon>
-              <span class="finances-btn-add-text">Novo Lançamento</span>
+              <span class="finances-btn-add-text">${(typeof t === 'function') ? t('newFinanceEntryBtn', 'Novo Lançamento') : 'Novo Lançamento'}</span>
             </button>
           </div>
         </div>
@@ -15336,7 +15340,7 @@
                 ${generateYearOptions(selectedBandFinancesYear)}
               </select>
             </div>
-            <div class="agenda-circle-label">Ano</div>
+            <div class="agenda-circle-label">${(typeof t === 'function') ? t('agendaYearLabel', 'Ano') : 'Ano'}</div>
           </div>
 
           <!-- Círculo 2: Receita Total -->
@@ -15349,7 +15353,7 @@
                 <ion-icon name="trending-up-outline"></ion-icon>
               </div>
             </div>
-            <div class="agenda-circle-label">Receita</div>
+            <div class="agenda-circle-label">${(typeof t === 'function') ? t('revenueLabel', 'Receita') : 'Receita'}</div>
           </div>
 
           <!-- Círculo 3: Caixa da Banda (Reserva) com clique para ajuste -->
@@ -15362,7 +15366,7 @@
                 <ion-icon name="wallet-outline"></ion-icon>
               </div>
             </div>
-            <div class="agenda-circle-label">Caixa</div>
+            <div class="agenda-circle-label">${(typeof t === 'function') ? t('cashLabel', 'Caixa') : 'Caixa'}</div>
           </div>
 
           <!-- Círculo 4: Despesas da Banda -->
@@ -15375,7 +15379,7 @@
                 <ion-icon name="trending-down-outline"></ion-icon>
               </div>
             </div>
-            <div class="agenda-circle-label">Despesas</div>
+            <div class="agenda-circle-label">${(typeof t === 'function') ? t('expensesLabel', 'Despesas') : 'Despesas'}</div>
           </div>
         </div>
 
@@ -15389,9 +15393,9 @@
         html += `
           <div style="text-align: center; padding: 40px; background: #1a2233; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; color: #94a3b8;">
             <ion-icon name="wallet-outline" style="font-size: 2.2rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <p style="margin: 0 0 10px 0;">Nenhum lançamento financeiro em ${selectedBandFinancesYear}.</p>
+            <p style="margin: 0 0 10px 0;">${(typeof t === 'function') ? t('noFinancialEntriesInYear', 'Nenhum lançamento financeiro em') : 'Nenhum lançamento financeiro em'} ${selectedBandFinancesYear}.</p>
             <button type="button" class="btn btn-primary btn-sm" onclick="openAddFinanceEntryModal()">
-              <ion-icon name="add-circle-outline"></ion-icon> Adicionar Lançamento
+              <ion-icon name="add-circle-outline"></ion-icon> ${(typeof t === 'function') ? t('addFinanceEntryBtn', 'Adicionar Lançamento') : 'Adicionar Lançamento'}
             </button>
           </div>
         `;
@@ -16046,9 +16050,9 @@
               <ion-icon name="share-social-outline"></ion-icon>
               <span data-i18n="agendaShareBtn">Compartilhar Agenda</span>
             </button>
-            <button type="button" class="btn btn-cyan btn-sm agenda-action-btn-add" onclick="openEditEventPlaylistModal(-1, 'details')" title="Novo Evento">
+            <button type="button" class="btn btn-cyan btn-sm agenda-action-btn-add" onclick="openEditEventPlaylistModal(-1, 'details')" title="Novo Evento" data-i18n-title="agendaNewEventBtn">
               <ion-icon name="add"></ion-icon>
-              <span>Novo Evento</span>
+              <span data-i18n="agendaNewEventBtn">Novo Evento</span>
             </button>
           </div>
         </div>
@@ -16065,7 +16069,7 @@
                 ${generateYearOptions(selectedAgendaYear)}
               </select>
             </div>
-            <div class="agenda-circle-label">Ano</div>
+            <div class="agenda-circle-label">${(typeof t === 'function') ? t('agendaYearLabel', 'Ano') : 'Ano'}</div>
           </div>
 
           <!-- Círculo 2: Total de Eventos -->
@@ -16078,7 +16082,7 @@
                 <ion-icon name="list-outline"></ion-icon>
               </div>
             </div>
-            <div class="agenda-circle-label">${yearEvents.length === 1 ? 'Evento' : 'Eventos'}</div>
+            <div class="agenda-circle-label">${yearEvents.length === 1 ? ((typeof t === 'function') ? t('eventSingular', 'Evento') : 'Evento') : ((typeof t === 'function') ? t('agendaEventsLabel', 'Eventos') : 'Eventos')}</div>
           </div>
 
           <!-- Círculo 3: Shows com ícone de calendário sobreposto à esquerda -->
@@ -16117,7 +16121,7 @@
           <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed rgba(255,255,255,0.1);">
             <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
             <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado em ${selectedAgendaYear}</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione novos shows ou ensaios para montar o cronograma.</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">${(typeof t === 'function') ? t('addEventsCronogramSubtitle', 'Adicione novos shows ou ensaios para montar o cronograma.') : 'Adicione novos shows ou ensaios para montar o cronograma.'}</p>
             <button type="button" class="btn btn-primary btn-sm" onclick="openEditEventPlaylistModal(-1, 'details')">Adicionar Evento</button>
           </div>
         `;
@@ -16133,7 +16137,7 @@
           const songsCount = (sl.songs || []).length;
 
           return `
-            <div class="agenda-event-card" onclick="openEditEventPlaylistModal('${escapeHtml(evIdentifier)}', 'details')" title="Clique para editar evento e playlist">
+            <div class="agenda-event-card" onclick="openEditEventPlaylistModal('${escapeHtml(evIdentifier)}', 'details')" title="${(typeof t === 'function') ? t('clickToEditEventAndPlaylist', 'Clique para editar evento e playlist') : 'Clique para editar evento e playlist'}">
               <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0;">
                 <!-- Badge Quadrado Dia/Mês -->
                 <div class="agenda-date-badge-box">
@@ -16276,9 +16280,9 @@
         }
 
         if (isNew) {
-          if (titleEl) titleEl.textContent = 'Novo Evento / Show';
+          if (titleEl) titleEl.textContent = (typeof t === 'function') ? t('newEventOrShowTitle', 'Novo Evento / Show') : 'Novo Evento / Show';
           if (badgeEl) {
-            badgeEl.textContent = 'NOVO';
+            badgeEl.textContent = (typeof t === 'function') ? t('badgeNew', 'NOVO') : 'NOVO';
             badgeEl.className = 'badge badge-cyan';
           }
           if (deleteBtn) deleteBtn.style.display = 'none';
@@ -16298,9 +16302,9 @@
           const ev = setlists[idx] || {};
           const isRehearsal = ev.type === 'rehearsal' || (ev.name || '').toLowerCase().includes('ensaio');
 
-          if (titleEl) titleEl.textContent = fromDedicatedEditor ? `Editar Informações: ${ev.name || 'Playlist'}` : `Editar: ${ev.name || 'Evento'}`;
+          if (titleEl) titleEl.textContent = fromDedicatedEditor ? `${(typeof t === 'function') ? t('editInfoPrefix', 'Editar Informações:') : 'Editar Informações:'} ${ev.name || 'Playlist'}` : `${(typeof t === 'function') ? t('editPrefix', 'Editar:') : 'Editar:'} ${ev.name || 'Evento'}`;
           if (badgeEl) {
-            badgeEl.textContent = isRehearsal ? 'ENSAIO' : 'SHOW';
+            badgeEl.textContent = isRehearsal ? ((typeof t === 'function') ? t('badgeRehearsal', 'ENSAIO') : 'ENSAIO') : ((typeof t === 'function') ? t('badgeShow', 'SHOW') : 'SHOW');
             badgeEl.className = isRehearsal ? 'badge badge-amber' : 'badge badge-rose';
           }
           if (deleteBtn) deleteBtn.style.display = 'inline-flex';
@@ -16364,10 +16368,10 @@
       const badgeEl = document.getElementById('mEventHeaderBadge');
       if (badgeEl) {
         if (type === 'rehearsal') {
-          badgeEl.textContent = 'ENSAIO';
+          badgeEl.textContent = (typeof t === 'function') ? t('badgeRehearsal', 'ENSAIO') : 'ENSAIO';
           badgeEl.className = 'badge badge-amber';
         } else {
-          badgeEl.textContent = 'SHOW';
+          badgeEl.textContent = (typeof t === 'function') ? t('badgeShow', 'SHOW') : 'SHOW';
           badgeEl.className = 'badge badge-rose';
         }
       }
@@ -19401,7 +19405,7 @@
     function updateBandOptionsInEventModal() {
       const select = document.getElementById('eventBandSelect');
       if (!select) return;
-      select.innerHTML = '<option value="">Apresentação Solo / Sem Banda</option>';
+      select.innerHTML = '<option value="" data-i18n="eventSoloOption">' + ((typeof t === 'function') ? t('eventSoloOption', 'Apresentação Solo / Sem Banda') : 'Apresentação Solo / Sem Banda') + '</option>';
       myBands.forEach(b => {
         select.innerHTML += `<option value="${b.name}">${b.name}</option>`;
       });
@@ -21395,7 +21399,7 @@
 
       const items = parseBatchSongLines(textarea.value, currentBatchFormat);
       if (badge) {
-        badge.textContent = `${items.length} ${items.length === 1 ? 'música detectada' : 'músicas detectadas'}`;
+        badge.textContent = `${items.length} ${items.length === 1 ? ((typeof t === 'function') ? t('songDetectedSingular', 'música detectada') : 'música detectada') : ((typeof t === 'function') ? t('songsDetectedPlural', 'músicas detectadas') : 'músicas detectadas')}`;
       }
 
       if (!previewBox || !previewList) return;
