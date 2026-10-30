@@ -355,6 +355,19 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
         }
         if (asset.base64) {
           setImageUri(`data:image/jpeg;base64,${asset.base64}`);
+        } else if (Platform.OS !== 'web' && FileSystem && asset.uri) {
+          try {
+            const b64 = await FileSystem.readAsStringAsync(asset.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            if (b64) {
+              setImageUri(`data:image/jpeg;base64,${b64}`);
+            } else {
+              setImageUri(persistentUri);
+            }
+          } catch {
+            setImageUri(persistentUri);
+          }
         } else {
           setImageUri(persistentUri);
         }

@@ -834,7 +834,8 @@ export const api = {
         name: bandData.name,
         publicSlug: bandData.publicSlug || '',
         genre: bandData.genre || '',
-        description: bandData.description || ''
+        description: bandData.description || '',
+        imageUri: bandData.imageUri || null
       })
     });
     if (!response.ok) {
@@ -847,6 +848,54 @@ export const api = {
     }
     return response.json();
   },
+
+  updateBand: async (id, bandData) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({
+        name: bandData.name,
+        publicSlug: bandData.publicSlug || '',
+        genre: bandData.genre || bandData.genresJson || '',
+        description: bandData.description || '',
+        imageUri: bandData.imageUri || null,
+        city: bandData.city || null,
+        state: bandData.state || null,
+        country: bandData.country || null,
+        bandType: bandData.bandType || null,
+        genresJson: bandData.genresJson || null,
+        linksJson: bandData.linksJson || null,
+        instagram: bandData.instagram || null,
+        youtube: bandData.youtube || null,
+        spotify: bandData.spotify || null
+      })
+    });
+    if (!response.ok) {
+      let errMsg = 'Erro ao atualizar banda no servidor.';
+      try {
+        const text = await response.text();
+        errMsg = text || errMsg;
+      } catch {}
+      throw new Error(errMsg);
+    }
+    return response.json();
+  },
+
+  uploadBandLogo: async (id, imageUri) => {
+    const headers = await getHeaders();
+    const response = await fetchWithTimeout(`${API_URL}/Bands/${id}/logo`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ imageUri })
+    });
+    if (!response.ok) {
+      throw new Error('Erro ao salvar logo na API.');
+    }
+    return response.json();
+  },
+
+  getBandLogoUrl: (id) => `${API_URL}/Bands/${id}/logo`,
 
   syncBand: async (id, syncPayload) => {
     const headers = await getHeaders();

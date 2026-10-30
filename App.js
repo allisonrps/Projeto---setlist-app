@@ -1101,11 +1101,24 @@ function MainApp() {
                 localMatch.country = cb.country || localMatch.country;
                 localMatch.genres = cb.genresJson || cb.genre || localMatch.genres;
                 const cloudImg = cb.imageUri || (cb.syncDataJson ? (() => { try { return JSON.parse(cb.syncDataJson)?.band?.imageUri; } catch(e){ return null; } })() : null);
-                if (cloudImg && !localMatch.imageUri) {
-                  localMatch.imageUri = cloudImg;
-                  try {
-                    await db.runAsync('UPDATE my_bands SET imageUri = ? WHERE id = ?;', [cloudImg, localMatch.id]);
-                  } catch (imgErr) {}
+                if (cloudImg) {
+                  let needsCloudImg = !localMatch.imageUri;
+                  if (!needsCloudImg && localMatch.imageUri.startsWith('file://')) {
+                    try {
+                      if (Platform.OS !== 'web' && FileSystem) {
+                        const check = await FileSystem.getInfoAsync(localMatch.imageUri);
+                        if (!check.exists) needsCloudImg = true;
+                      }
+                    } catch {
+                      needsCloudImg = true;
+                    }
+                  }
+                  if (needsCloudImg) {
+                    localMatch.imageUri = cloudImg;
+                    try {
+                      await db.runAsync('UPDATE my_bands SET imageUri = ? WHERE id = ?;', [cloudImg, localMatch.id]);
+                    } catch (imgErr) {}
+                  }
                 }
               } else {
                 try {
@@ -5121,7 +5134,16 @@ function MainApp() {
                         <Image
                           source={{ uri: band.imageUri }}
                           style={{ width: 54, height: 54, borderRadius: 27 }}
-                          onError={() => setFailedBandImages(prev => ({ ...prev, [band.id]: true }))}
+                          onError={() => {
+                            if (band.cloudId && api.getBandLogoUrl) {
+                              const apiLogo = api.getBandLogoUrl(band.cloudId);
+                              if (band.imageUri !== apiLogo) {
+                                band.imageUri = apiLogo;
+                                return;
+                              }
+                            }
+                            setFailedBandImages(prev => ({ ...prev, [band.id]: true }));
+                          }}
                         />
                       ) : (
                         <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary }}>

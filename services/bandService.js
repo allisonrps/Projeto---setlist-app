@@ -825,6 +825,16 @@ export const bandService = {
         } catch (e) {}
       }
 
+      // Se a imagem local não é base64 nem http (ou se a conversão do file:// falhou), NUNCA sobrescreva a nuvem com vazio!
+      if (!syncImageUri || syncImageUri.startsWith('file://') || syncImageUri.startsWith('content://')) {
+        const cloudExistingImage = existingCloudSnapshot?.band?.imageUri;
+        if (cloudExistingImage && !cloudExistingImage.startsWith('file://') && !cloudExistingImage.startsWith('content://')) {
+          syncImageUri = cloudExistingImage;
+        } else {
+          syncImageUri = null;
+        }
+      }
+
       // Gather setlists (Agenda / Shows / Ensaios) for this band
       let setlists = [];
       try {
@@ -930,7 +940,7 @@ export const bandService = {
         publicSlug: localBand.publicSlug || '',
         genre: localBand.genres || '',
         description: localBand.city ? `${localBand.city}${localBand.state ? ', ' + localBand.state : ''}` : '',
-        imageUri: syncImageUri,
+        ...(syncImageUri ? { imageUri: syncImageUri } : {}),
         city: localBand.city || '',
         state: localBand.state || '',
         country: localBand.country || '',
@@ -961,7 +971,8 @@ export const bandService = {
             name: localBand.name,
             publicSlug: localBand.publicSlug || '',
             genre: localBand.genres,
-            description: localBand.city
+            description: localBand.city,
+            imageUri: syncImageUri || null
           });
           cloudId = createRes?.bandId || createRes?.id;
         }
@@ -1038,8 +1049,20 @@ export const bandService = {
       }
 
       // 1. Update band basic metadata and save image locally
-      let incomingImage = snapshot.band?.imageUri || cloudData.imageUri;
+      let incomingImage = cloudData.imageUri || snapshot.band?.imageUri;
       let finalImageUri = localBand.imageUri;
+
+      // Se a imagem local era um arquivo que não existe mais no disco, limpa para restaurar da nuvem
+      if (finalImageUri && finalImageUri.startsWith('file://') && Platform.OS !== 'web' && FileSystem) {
+        try {
+          const info = await FileSystem.getInfoAsync(finalImageUri);
+          if (!info.exists) {
+            finalImageUri = null;
+          }
+        } catch {
+          finalImageUri = null;
+        }
+      }
 
       if (incomingImage) {
         if (incomingImage.startsWith('data:image/')) {
@@ -1066,10 +1089,16 @@ export const bandService = {
               const info = await FileSystem.getInfoAsync(incomingImage);
               if (info.exists) {
                 finalImageUri = incomingImage;
+              } else if (cloudData.id) {
+                finalImageUri = api.getBandLogoUrl(cloudData.id);
               }
-            } catch (e) {}
+            } catch (e) {
+              if (cloudData.id) finalImageUri = api.getBandLogoUrl(cloudData.id);
+            }
           }
         }
+      } else if (!finalImageUri && cloudData.id) {
+        finalImageUri = api.getBandLogoUrl(cloudData.id);
       }
 
       const bandName = snapshot.band?.name || cloudData.name || localBand.name;

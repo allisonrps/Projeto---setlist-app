@@ -10882,17 +10882,21 @@
       return fallback;
     }
 
-    function normalizeImageUri(uri) {
-      if (!uri || typeof uri !== 'string') return '';
+    function normalizeImageUri(uri, fallbackBandId = null) {
+      const apiFallback = (fallbackBandId && typeof API_URL !== 'undefined') ? `${API_URL}/Bands/${fallbackBandId}/logo` : '';
+      if (!uri || typeof uri !== 'string') return apiFallback;
       const t = uri.trim();
-      if (t.length < 5) return '';
+      if (t.length < 5) return apiFallback;
       if (t.startsWith('data:image/') || t.startsWith('http://') || t.startsWith('https://') || t.startsWith('blob:')) {
         return t;
+      }
+      if (t.startsWith('file://') || t.startsWith('content://')) {
+        return apiFallback;
       }
       if (t.startsWith('/9j/') || t.startsWith('iVBORw') || t.startsWith('R0lGOD') || t.startsWith('UklGR')) {
         return `data:image/jpeg;base64,${t}`;
       }
-      return t;
+      return apiFallback || t;
     }
 
     function inferInstrumentType(name) {
