@@ -2019,60 +2019,113 @@ function MainApp() {
     try {
       let songId;
       const targetId = songData.id || (editingSong && editingSong.id);
+      let localId = null;
 
+      // 1. SEMPRE persiste localmente no SQLite para garantir funcionamento offline e consistência nos setlists locais
+      try {
+        let existingLocal = null;
+        if (targetId && typeof targetId === 'number') {
+          existingLocal = await songService.getById(targetId);
+        }
+        if (!existingLocal && songData.name) {
+          const allLocal = await songService.getAll();
+          existingLocal = (allLocal || []).find(s => 
+            s.name.trim().toLowerCase() === songData.name.trim().toLowerCase() &&
+            (s.originalBand || '').trim().toLowerCase() === (songData.originalBand || '').trim().toLowerCase()
+          );
+        }
+
+        if (existingLocal && existingLocal.id) {
+          localId = existingLocal.id;
+          await songService.update(
+            localId,
+            songData.name,
+            songData.originalBand,
+            songData.style,
+            songData.lyrics,
+            songData.chords,
+            songData.tabs,
+            songData.defaultView || existingLocal.defaultView || 'chords',
+            songData.duration,
+            songData.scrollSpeed || existingLocal.scrollSpeed || 'none'
+          );
+        } else {
+          localId = await songService.insert(
+            songData.name,
+            songData.originalBand,
+            songData.style,
+            songData.lyrics,
+            songData.chords,
+            songData.tabs,
+            songData.defaultView || 'chords',
+            songData.duration,
+            songData.scrollSpeed || 'none'
+          );
+        }
+        if (localId && songData.links) {
+          await songService.syncLinks(localId, songData.links);
+        }
+      } catch (localErr) {
+        console.warn('Erro ao salvar música no SQLite local:', localErr);
+      }
+
+      // 2. Se logado, persiste e sincroniza na API na nuvem (PostgreSQL)
       if (isLoggedIn) {
         const cloudPayload = {
           name: songData.name,
           originalBand: songData.originalBand || '',
           duration: songData.duration ? String(songData.duration) : '',
           style: songData.style || '',
+          key: songData.key || null,
+          bpm: songData.bpm ? parseInt(songData.bpm) : null,
           lyrics: songData.lyrics || '',
           chords: songData.chords || '',
           tabs: songData.tabs || '',
           linksJson: JSON.stringify(songData.links || []),
           isFavorite: Boolean(songData.isFavorite !== undefined ? songData.isFavorite : activeSongDetail?.isFavorite)
         };
-        if (targetId) {
-          songId = targetId;
-          await api.updateSong(targetId, cloudPayload);
-        } else {
-          const created = await api.createSong(cloudPayload);
-          songId = created?.id;
+
+        const isOnlineTarget = Boolean(songData.isOnlineSong || (targetId && (onlineSongs || []).some(os => String(os.id) === String(targetId))));
+        const onlineIdToSync = isOnlineTarget ? targetId : null;
+
+        try {
+          if (api.syncSong) {
+            const synced = await api.syncSong(cloudPayload, onlineIdToSync);
+            songId = synced?.id || targetId || localId;
+          } else if (onlineIdToSync) {
+            await api.updateSong(onlineIdToSync, cloudPayload);
+            songId = onlineIdToSync;
+          } else {
+            const created = await api.createSong(cloudPayload);
+            songId = created?.id || localId;
+          }
+        } catch (apiErr) {
+          console.warn('Erro ao sincronizar via API sync/PUT, tentando criar registro:', apiErr);
+          try {
+            const created = await api.createSong(cloudPayload);
+            songId = created?.id || localId;
+          } catch (createErr) {
+            console.error('Falha crítica ao persistir música na nuvem:', createErr);
+            songId = localId || targetId;
+          }
         }
       } else {
-        if (targetId) {
-          songId = targetId;
-          await songService.update(
-            songId,
-            songData.name,
-            songData.originalBand,
-            songData.style,
-            songData.lyrics,
-            songData.chords,
-            songData.tabs,
-            songData.defaultView,
-            songData.duration,
-            songData.scrollSpeed
-          );
-        } else {
-          songId = await songService.insert(
-            songData.name,
-            songData.originalBand,
-            songData.style,
-            songData.lyrics,
-            songData.chords,
-            songData.tabs,
-            songData.defaultView,
-            songData.duration,
-            songData.scrollSpeed
-          );
-        }
-        // Sincronizar links locais
-        await songService.syncLinks(songId, songData.links);
+        songId = localId || targetId;
       }
 
-      if (editingSongFromBandDetail && editingSongFromBandDetail.id && !isLoggedIn) {
-        await bandService.addSongToBand(editingSongFromBandDetail.id, songId);
+      // 3. Se a música pertence ou está sendo editada no contexto de uma banda, sincroniza com a banda
+      const targetBand = editingSongFromBandDetail || activeBandDetail;
+      if (targetBand && targetBand.id) {
+        try {
+          if (localId) {
+            await bandService.addSongToBand(targetBand.id, localId);
+          }
+          if (targetBand.cloudId && isLoggedIn) {
+            bandService.syncBandToCloud(targetBand.id, false).catch(err => console.warn('Sync band repertoire on song save:', err));
+          }
+        } catch (bandSongErr) {
+          console.warn('Erro ao vincular música na banda:', bandSongErr);
+        }
       }
 
       if (activeSetlist) {

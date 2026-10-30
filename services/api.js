@@ -1061,6 +1061,19 @@ export const api = {
     return response.json();
   },
 
+  syncSong: async (songData, id = null) => {
+    const headers = await getHeaders();
+    let url = `${API_URL}/Songs/sync`;
+    if (id && Number(id) > 0) url += `?id=${encodeURIComponent(id)}`;
+    const response = await fetchWithTimeout(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(songData)
+    });
+    if (!response.ok) throw new Error('Erro ao sincronizar música na nuvem.');
+    return response.json();
+  },
+
   deleteSong: async (id) => {
     const headers = await getHeaders();
     const response = await fetchWithTimeout(`${API_URL}/Songs/${id}`, {

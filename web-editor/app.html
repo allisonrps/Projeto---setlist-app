@@ -6846,6 +6846,9 @@
                   <span class="sb-badge-count" id="sbSongsCount">0</span>
                 </div>
                 <div style="display: flex; gap: 6px;">
+                  <button class="btn-icon-square" onclick="refreshSongbookOnline()" title="Sincronizar com a Nuvem" id="btnSyncSongbook" style="color: #34d399;">
+                    <ion-icon name="sync-outline" id="iconSyncSongbook"></ion-icon>
+                  </button>
                   <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas do Songbook" id="btnSbDashboardNav" style="color: var(--cyan);">
                     <ion-icon name="stats-chart-outline"></ion-icon>
                   </button>
@@ -9551,6 +9554,13 @@
     const EXTRA_SKILLS_CACHE_KEY = "bandlink_user_extra_skills";
     const DISPLAY_NAME_KEY = "user_display_name";
 
+
+    window.addEventListener('focus', () => {
+      const sbView = document.getElementById('view-songbook');
+      if (sbView && sbView.classList.contains('active') && currentUser) {
+        loadOnlineSongs();
+      }
+    });
     window.addEventListener('DOMContentLoaded', async () => {
       updateLoaderPercentDisplay(20);
       startLoaderProgress(94, 30);
@@ -9656,11 +9666,38 @@
           if (Array.isArray(songs)) {
             mySongs = songs;
             localStorage.setItem(SONGS_CACHE_KEY, JSON.stringify(mySongs));
+            if (selectedSong) {
+              const freshSelected = mySongs.find(s => 
+                String(s.id) === String(selectedSong.id) ||
+                (s.name && selectedSong.name && s.name.trim().toLowerCase() === selectedSong.name.trim().toLowerCase() && (s.originalBand || '').trim().toLowerCase() === (selectedSong.originalBand || '').trim().toLowerCase())
+              );
+              if (freshSelected) {
+                selectedSong = freshSelected;
+                const editorWrapper = document.getElementById('sbEditorWrapper');
+                if (editorWrapper && editorWrapper.style.display !== 'none') {
+                  populateSongbookEditor(freshSelected);
+                }
+              }
+            }
             updateSongbookUI();
           }
         }
       } catch (e) {
         console.warn('Could not fetch songs from API, using cached:', e);
+      }
+    }
+
+    async function refreshSongbookOnline() {
+      const icon = document.getElementById('iconSyncSongbook');
+      if (icon) icon.classList.add('spin-animation');
+      showToast('Sincronizando Songbook com a nuvem...', 'info');
+      try {
+        await loadOnlineSongs();
+        showToast('Songbook atualizado com a nuvem!', 'success');
+      } catch (err) {
+        showToast('Erro ao sincronizar Songbook.', 'error');
+      } finally {
+        if (icon) icon.classList.remove('spin-animation');
       }
     }
 
@@ -10445,6 +10482,7 @@
         }
         selectedSong = null; // Abre o dashboard de estatísticas por padrão na página inicial!
         renderSongbookSplitView();
+        loadOnlineSongs();
       }
       if (viewId === 'projects') {
         renderProjectsMainView();
@@ -21014,23 +21052,26 @@
         const isNumeric = typeof songId === 'number' || (!isNaN(songId) && !String(songId).startsWith('local_'));
         
         let res;
-        if (isNumeric) {
-          res = await fetch(`${API_URL}/Songs/${songId}`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ ...payload, id: songId })
-          });
-        } else {
-          // If was local only, try POST to register on server
-          res = await fetch(`${API_URL}/Songs`, {
+        try {
+          res = await fetch(`${API_URL}/Songs/sync${isNumeric ? `?id=${songId}` : ''}`, {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ ...payload, id: isNumeric ? songId : null })
           });
           if (res.ok) {
-            const created = await res.json();
-            song.id = created.id;
+            const syncedSong = await res.json();
+            if (syncedSong && syncedSong.id) {
+              song.id = syncedSong.id;
+            }
+          } else if (isNumeric) {
+            res = await fetch(`${API_URL}/Songs/${songId}`, {
+              method: 'PUT',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({ ...payload, id: songId })
+            });
           }
+        } catch (syncErr) {
+          console.warn('API sync song error, attempting fallback:', syncErr);
         }
 
         if (res && res.ok) {
