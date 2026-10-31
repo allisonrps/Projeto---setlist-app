@@ -7026,27 +7026,27 @@
                 <div class="sb-details-grid">
                   <div>
                     <label class="form-label">Nome da Música</label>
-                    <input type="text" id="sbEditName" class="form-input" placeholder="Título da música">
+                    <input type="text" id="sbEditName" class="form-input" placeholder="Título da música" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
                     <label class="form-label">Banda / Artista Original</label>
-                    <input type="text" id="sbEditArtist" class="form-input" placeholder="Nome do artista ou banda">
+                    <input type="text" id="sbEditArtist" class="form-input" placeholder="Nome do artista ou banda" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
                     <label class="form-label">Estilo / Gênero</label>
-                    <input type="text" id="sbEditStyle" class="form-input" placeholder="Ex: Rock, Nacional, Grunge">
+                    <input type="text" id="sbEditStyle" class="form-input" placeholder="Ex: Rock, Nacional, Grunge" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
                     <label class="form-label">Tom Principal</label>
-                    <input type="text" id="sbEditKey" class="form-input" placeholder="Ex: G, Am, D">
+                    <input type="text" id="sbEditKey" class="form-input" placeholder="Ex: G, Am, D" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
                     <label class="form-label">BPM</label>
-                    <input type="number" id="sbEditBpm" class="form-input" placeholder="120">
+                    <input type="number" id="sbEditBpm" class="form-input" placeholder="120" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
                     <label class="form-label">Duração</label>
-                    <input type="text" id="sbEditDuration" class="form-input" placeholder="e.g. 4:15" data-i18n-placeholder="songDurationPlaceholder">
+                    <input type="text" id="sbEditDuration" class="form-input" placeholder="e.g. 4:15" oninput="isSongEditorDirty = true" data-i18n-placeholder="songDurationPlaceholder">
                   </div>
                 </div>
 
@@ -9543,6 +9543,8 @@
     let myExtraSkills = [];
     let myGear = [];
     let selectedSong = null;
+    let isSongEditorDirty = false;
+    let songAutosaveTimer = null;
     let currentSocialSub = 'mus';
     let agendaProfileFilterMode = 'all';
 
@@ -9555,10 +9557,59 @@
     const DISPLAY_NAME_KEY = "user_display_name";
 
 
+    function flushPendingSongEdits() {
+      if (!isSongEditorDirty || !selectedSong) return;
+      const textarea = document.getElementById('sbEditorTextarea');
+      if (textarea) {
+        if (currentSongbookMode === 'chords') selectedSong.chords = textarea.value;
+        else if (currentSongbookMode === 'lyrics') selectedSong.lyrics = textarea.value;
+        else if (currentSongbookMode === 'tabs') selectedSong.tabs = textarea.value;
+      }
+      const sIdx = mySongs.findIndex(s => String(s.id) === String(selectedSong.id));
+      if (sIdx !== -1) mySongs[sIdx] = selectedSong;
+      try {
+        localStorage.setItem(SONGS_CACHE_KEY, JSON.stringify(mySongs));
+        if (selectedSong.id) {
+          localStorage.setItem('bandlink_song_draft_' + selectedSong.id, JSON.stringify({
+            mode: currentSongbookMode,
+            content: textarea ? textarea.value : '',
+            timestamp: Date.now()
+          }));
+        }
+      } catch (_) {}
+      if (songAutosaveTimer) {
+        clearTimeout(songAutosaveTimer);
+        songAutosaveTimer = null;
+      }
+      persistSongToServer(selectedSong, null, true);
+    }
+
     window.addEventListener('focus', () => {
       const sbView = document.getElementById('view-songbook');
-      if (sbView && sbView.classList.contains('active') && currentUser) {
+      // If user is currently editing or has unsaved changes, do NOT overwrite with stale server data
+      if (sbView && sbView.classList.contains('active') && currentUser && !isSongEditorDirty) {
         loadOnlineSongs();
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      flushPendingSongEdits();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        flushPendingSongEdits();
+      } else if (document.visibilityState === 'visible') {
+        const sbView = document.getElementById('view-songbook');
+        if (sbView && sbView.classList.contains('active') && currentUser && !isSongEditorDirty) {
+          loadOnlineSongs();
+        }
+      }
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (isSongEditorDirty && selectedSong) {
+        flushPendingSongEdits();
       }
     });
     window.addEventListener('DOMContentLoaded', async () => {
@@ -9671,7 +9722,14 @@
                 String(s.id) === String(selectedSong.id) ||
                 (s.name && selectedSong.name && s.name.trim().toLowerCase() === selectedSong.name.trim().toLowerCase() && (s.originalBand || '').trim().toLowerCase() === (selectedSong.originalBand || '').trim().toLowerCase())
               );
-              if (freshSelected) {
+              const textarea = document.getElementById('sbEditorTextarea');
+              const isEditingActive = isSongEditorDirty || (textarea && (document.activeElement === textarea || textarea.value !== (freshSelected ? freshSelected[currentSongbookMode] || '' : '')));
+
+              if (isEditingActive) {
+                // Keep active local edits intact in memory and mySongs cache
+                const sIdx = mySongs.findIndex(s => String(s.id) === String(selectedSong.id));
+                if (sIdx !== -1) mySongs[sIdx] = selectedSong;
+              } else if (freshSelected) {
                 selectedSong = freshSelected;
                 const editorWrapper = document.getElementById('sbEditorWrapper');
                 if (editorWrapper && editorWrapper.style.display !== 'none') {
@@ -10476,6 +10534,9 @@
 
       if (viewId === 'profile') renderCentralProfile();
       if (viewId === 'songbook') {
+        if (isSongEditorDirty && selectedSong) {
+          flushPendingSongEdits();
+        }
         const ws = document.getElementById('sbWorkspaceContainer');
         if (ws && (!selectedSong || window.innerWidth <= 900)) {
           ws.classList.remove('mobile-detail-open');
@@ -20619,7 +20680,10 @@
       if (selectedSong && mySongs.some(s => String(s.id) === String(selectedSong.id))) {
         if (dbWrapper) dbWrapper.style.display = 'none';
         if (editorWrapper) editorWrapper.style.display = 'flex';
-        populateSongbookEditor(selectedSong);
+        const textarea = document.getElementById('sbEditorTextarea');
+        if (!isSongEditorDirty && !(textarea && document.activeElement === textarea)) {
+          populateSongbookEditor(selectedSong);
+        }
       } else {
         selectedSong = null;
         if (editorWrapper) editorWrapper.style.display = 'none';
@@ -20790,7 +20854,7 @@
       const found = mySongs.find(s => String(s.id) === String(songId));
       if (!found) return;
 
-      // Save unsaved edits of current song in local memory before switching
+      // Save unsaved edits of current song in local memory & flush before switching
       if (selectedSong && selectedSong.id !== found.id) {
         const currentTextarea = document.getElementById('sbEditorTextarea');
         if (currentTextarea) {
@@ -20798,8 +20862,12 @@
           else if (currentSongbookMode === 'lyrics') selectedSong.lyrics = currentTextarea.value;
           else if (currentSongbookMode === 'tabs') selectedSong.tabs = currentTextarea.value;
         }
+        if (isSongEditorDirty) {
+          flushPendingSongEdits();
+        }
       }
 
+      isSongEditorDirty = false;
       selectedSong = found;
 
       // Esconde o dashboard e mostra o editor da música
@@ -20829,6 +20897,23 @@
 
     function populateSongbookEditor(song) {
       if (!song) return;
+
+      // Draft recovery: check if a fresher local draft exists for this song
+      try {
+        const draftRaw = localStorage.getItem('bandlink_song_draft_' + song.id);
+        if (draftRaw) {
+          const draft = JSON.parse(draftRaw);
+          if (draft && draft.timestamp && (Date.now() - draft.timestamp < 86400000)) {
+            if (draft.mode === 'chords' && draft.content && draft.content !== song.chords) {
+              song.chords = draft.content;
+            } else if (draft.mode === 'lyrics' && draft.content && draft.content !== song.lyrics) {
+              song.lyrics = draft.content;
+            } else if (draft.mode === 'tabs' && draft.content && draft.content !== song.tabs) {
+              song.tabs = draft.content;
+            }
+          }
+        }
+      } catch (_) {}
 
       // Header info
       const titleEl = document.getElementById('sbSongTitle');
@@ -20889,12 +20974,18 @@
     function switchEditorTab(mode) {
       if (!selectedSong) return;
 
-      // Save previous tab content into memory
+      // Save previous tab content into memory & local cache
       const textarea = document.getElementById('sbEditorTextarea');
       if (textarea) {
         if (currentSongbookMode === 'chords') selectedSong.chords = textarea.value;
         else if (currentSongbookMode === 'lyrics') selectedSong.lyrics = textarea.value;
         else if (currentSongbookMode === 'tabs') selectedSong.tabs = textarea.value;
+
+        const sIdx = mySongs.findIndex(s => String(s.id) === String(selectedSong.id));
+        if (sIdx !== -1) mySongs[sIdx] = selectedSong;
+        try {
+          localStorage.setItem(SONGS_CACHE_KEY, JSON.stringify(mySongs));
+        } catch (_) {}
       }
 
       currentSongbookMode = mode;
@@ -20947,13 +21038,39 @@
       else if (currentSongbookMode === 'lyrics') selectedSong.lyrics = val;
       else if (currentSongbookMode === 'tabs') selectedSong.tabs = val;
 
+      isSongEditorDirty = true;
+
+      // Instant in-memory and local cache update
+      const sIdx = mySongs.findIndex(s => String(s.id) === String(selectedSong.id));
+      if (sIdx !== -1) mySongs[sIdx] = selectedSong;
+      try {
+        localStorage.setItem(SONGS_CACHE_KEY, JSON.stringify(mySongs));
+        if (selectedSong.id) {
+          localStorage.setItem('bandlink_song_draft_' + selectedSong.id, JSON.stringify({
+            mode: currentSongbookMode,
+            content: val,
+            timestamp: Date.now()
+          }));
+        }
+      } catch (err) {
+        console.warn('Draft write error:', err);
+      }
+
       const statusEl = document.getElementById('sbSaveStatus');
       if (statusEl) {
         statusEl.innerHTML = `
           <ion-icon name="create-outline" style="color: #f59e0b;"></ion-icon>
-          <span style="color: #f59e0b;">Alterações não salvas</span>
+          <span style="color: #f59e0b;">${t('unsavedChangesAuto', 'Alterações não salvas (salvamento automático em breve...)')}</span>
         `;
       }
+
+      // Debounce auto-save to cloud (1.8s)
+      if (songAutosaveTimer) clearTimeout(songAutosaveTimer);
+      songAutosaveTimer = setTimeout(() => {
+        if (isSongEditorDirty && selectedSong) {
+          saveCurrentSongContent(true);
+        }
+      }, 1800);
     }
 
     function toggleSongbookSidebar(force) {
@@ -20996,7 +21113,7 @@
       const duration = document.getElementById('sbEditDuration')?.value.trim();
 
       if (!name) {
-        showToast('O nome da música é obrigatório.', 'warning');
+        showToast(t('songNameRequired', 'O nome da música é obrigatório.'), 'warning');
         return;
       }
 
@@ -21007,14 +21124,15 @@
       selectedSong.bpm = bpmRaw ? parseInt(bpmRaw) : null;
       selectedSong.duration = duration;
 
+      isSongEditorDirty = false;
       populateSongbookEditor(selectedSong);
       filterSongbookList();
       toggleSongDetailsDrawer(false);
 
-      await persistSongToServer(selectedSong, 'Detalhes da música atualizados!');
+      await persistSongToServer(selectedSong, t('songDetailsUpdated', 'Detalhes da música atualizados!'));
     }
 
-    async function saveCurrentSongContent() {
+    async function saveCurrentSongContent(isSilent = false) {
       if (!selectedSong) return;
 
       const textarea = document.getElementById('sbEditorTextarea');
@@ -21024,18 +21142,35 @@
         else if (currentSongbookMode === 'tabs') selectedSong.tabs = textarea.value;
       }
 
-      await persistSongToServer(selectedSong, 'Música salva e sincronizada na nuvem!');
+      if (songAutosaveTimer) {
+        clearTimeout(songAutosaveTimer);
+        songAutosaveTimer = null;
+      }
+
+      await persistSongToServer(selectedSong, t('songSavedAndSynced', 'Música salva e sincronizada na nuvem!'), isSilent);
     }
 
-    async function persistSongToServer(song, successMessage) {
+    async function persistSongToServer(song, successMessage, isSilent = false) {
+      if (!song) return;
+
       const statusEl = document.getElementById('sbSaveStatus');
       if (statusEl) {
         statusEl.innerHTML = `
           <ion-icon name="sync-outline" style="animation: spin 1s linear infinite; color: #38bdf8;"></ion-icon>
-          <span style="color: #38bdf8;">Salvando no Supabase...</span>
+          <span style="color: #38bdf8;">${t('savingToCloud', 'Salvando na nuvem...')}</span>
         `;
       }
 
+      // Sync textarea if active
+      const textarea = document.getElementById('sbEditorTextarea');
+      if (textarea && selectedSong && selectedSong.id === song.id) {
+        if (currentSongbookMode === 'chords') song.chords = textarea.value;
+        else if (currentSongbookMode === 'lyrics') song.lyrics = textarea.value;
+        else if (currentSongbookMode === 'tabs') song.tabs = textarea.value;
+      }
+
+      const sIdx = mySongs.findIndex(s => String(s.id) === String(song.id));
+      if (sIdx !== -1) mySongs[sIdx] = song;
       saveSongsCache();
 
       const payload = {
@@ -21066,6 +21201,7 @@
             const syncedSong = await res.json();
             if (syncedSong && syncedSong.id) {
               song.id = syncedSong.id;
+              try { localStorage.removeItem('bandlink_song_draft_' + song.id); } catch (_) {}
             }
           } else if (isNumeric) {
             res = await fetch(`${API_URL}/Songs/${songId}`, {
@@ -21073,37 +21209,55 @@
               headers: getAuthHeaders(),
               body: JSON.stringify({ ...payload, id: songId })
             });
+            if (res && res.ok) {
+              try { localStorage.removeItem('bandlink_song_draft_' + song.id); } catch (_) {}
+            }
           }
         } catch (syncErr) {
           console.warn('API sync song error, attempting fallback:', syncErr);
         }
 
         if (res && res.ok) {
+          if (selectedSong && String(selectedSong.id) === String(song.id)) {
+            isSongEditorDirty = false;
+          }
           if (statusEl) {
             statusEl.innerHTML = `
               <ion-icon name="cloud-done-outline" style="color: #34d399;"></ion-icon>
-              <span>Sincronizado na nuvem (Supabase)</span>
+              <span>${isSilent ? t('autoSavedCloud', 'Salvo automaticamente na nuvem') : t('syncedToCloud', 'Sincronizado na nuvem (Supabase)')}</span>
             `;
           }
-          showToast(successMessage || 'Música salva com sucesso!', 'success');
+          if (!isSilent) {
+            showToast(successMessage || t('songSavedSuccess', 'Música salva com sucesso!'), 'success');
+          }
         } else {
+          if (selectedSong && String(selectedSong.id) === String(song.id)) {
+            isSongEditorDirty = false;
+          }
           if (statusEl) {
             statusEl.innerHTML = `
               <ion-icon name="save-outline" style="color: #34d399;"></ion-icon>
-              <span>Salvo localmente</span>
+              <span>${t('savedLocally', 'Salvo localmente')}</span>
             `;
           }
-          showToast('Salvo em cache local.', 'info');
+          if (!isSilent) {
+            showToast(t('savedLocalCache', 'Salvo em cache local.'), 'info');
+          }
         }
       } catch (err) {
         console.warn('Erro ao salvar na nuvem:', err);
+        if (selectedSong && String(selectedSong.id) === String(song.id)) {
+          isSongEditorDirty = false;
+        }
         if (statusEl) {
           statusEl.innerHTML = `
             <ion-icon name="save-outline" style="color: #34d399;"></ion-icon>
-            <span>Salvo localmente (offline)</span>
+            <span>${t('savedLocallyOffline', 'Salvo localmente (offline)')}</span>
           `;
         }
-        showToast('Salvo offline no navegador.', 'info');
+        if (!isSilent) {
+          showToast(t('savedOfflineBrowser', 'Salvo offline no navegador.'), 'info');
+        }
       }
 
       // Atualiza os pontinhos no card da lista lateral imediatamente

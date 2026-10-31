@@ -520,6 +520,20 @@ const webExtra = {
   projectsSyncOnlineBadge: { pt: 'Sincronizado na Nuvem', en: 'Synced to Cloud', es: 'Sincronizado en la Nube' },
   projectsSyncOfflineBadge: { pt: 'Salvo Localmente (Offline)', en: 'Saved Locally (Offline)', es: 'Guardado Localmente (Offline)' },
 
+  // Songbook Editor Sync & Status
+  unsavedChangesAuto: { pt: 'Alterações não salvas (salvamento automático em breve...)', en: 'Unsaved changes (auto-saving shortly...)', es: 'Cambios no guardados (guardado automático en breve...)' },
+  songNameRequired: { pt: 'O nome da música é obrigatório.', en: 'Song title is required.', es: 'El título de la canción es obligatorio.' },
+  songDetailsUpdated: { pt: 'Detalhes da música atualizados!', en: 'Song details updated!', es: '¡Detalles de la canción actualizados!' },
+  songSavedAndSynced: { pt: 'Música salva e sincronizada na nuvem!', en: 'Song saved and synced to the cloud!', es: '¡Canción guardada y sincronizada en la nube!' },
+  savingToCloud: { pt: 'Salvando na nuvem...', en: 'Saving to cloud...', es: 'Guardando en la nube...' },
+  autoSavedCloud: { pt: 'Salvo automaticamente na nuvem', en: 'Auto-saved to cloud', es: 'Guardado automáticamente en la nube' },
+  syncedToCloud: { pt: 'Sincronizado na nuvem (Supabase)', en: 'Synced to cloud (Supabase)', es: 'Sincronizado en la nube (Supabase)' },
+  savedLocally: { pt: 'Salvo localmente', en: 'Saved locally', es: 'Guardado localmente' },
+  savedLocalCache: { pt: 'Salvo em cache local.', en: 'Saved to local cache.', es: 'Guardado en caché local.' },
+  savedLocallyOffline: { pt: 'Salvo localmente (offline)', en: 'Saved locally (offline)', es: 'Guardado localmente (offline)' },
+  savedOfflineBrowser: { pt: 'Salvo offline no navegador.', en: 'Saved offline in browser.', es: 'Guardado offline en el navegador.' },
+  songSavedSuccess: { pt: 'Música salva com sucesso!', en: 'Song saved successfully!', es: '¡Canción guardada con éxito!' },
+
   // Band Profile View
   bandTabTimeline: { pt: 'Linha do Tempo', en: 'Timeline', es: 'Línea de Tiempo' },
   bandTabMembers: { pt: 'Integrantes', en: 'Members', es: 'Integrantes' },
