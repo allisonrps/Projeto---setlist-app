@@ -6846,16 +6846,16 @@
                   <span class="sb-badge-count" id="sbSongsCount">0</span>
                 </div>
                 <div style="display: flex; gap: 6px;">
-                  <button class="btn-icon-square" onclick="refreshSongbookOnline()" title="Sincronizar com a Nuvem" id="btnSyncSongbook" style="color: #34d399;">
+                  <button class="btn-icon-square" onclick="refreshSongbookOnline()" title="Sincronizar com a Nuvem" data-i18n-title="syncCloudTitle" id="btnSyncSongbook" style="color: #34d399;">
                     <ion-icon name="sync-outline" id="iconSyncSongbook"></ion-icon>
                   </button>
-                  <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas do Songbook" id="btnSbDashboardNav" style="color: var(--cyan);">
+                  <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas do Songbook" data-i18n-title="sbHeaderStatsBtn" id="btnSbDashboardNav" style="color: var(--cyan);">
                     <ion-icon name="stats-chart-outline"></ion-icon>
                   </button>
                   <button class="btn-icon-square" onclick="openAddSongModal()" title="New Song" data-i18n-title="songbookNewSongBtn">
                     <ion-icon name="add-outline"></ion-icon>
                   </button>
-                  <button class="btn-icon-square" onclick="toggleSongbookSidebar()" id="btnCollapseSidebar" title="Ocultar lista (barra menor)">
+                  <button class="btn-icon-square" onclick="toggleSongbookSidebar()" id="btnCollapseSidebar" title="Ocultar lista (barra menor)" data-i18n-title="hideListTitle">
                     <ion-icon name="chevron-back-outline"></ion-icon>
                   </button>
                 </div>
@@ -6863,19 +6863,19 @@
               
               <!-- Header Recolhido (Barra Menor) -->
               <div class="sb-sidebar-header-collapsed">
-                <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas" style="color: var(--cyan);">
+                <button class="btn-icon-square" onclick="showSongbookDashboard()" title="Visão Geral & Estatísticas" data-i18n-title="sbHeaderStatsBtn" style="color: var(--cyan);">
                   <ion-icon name="stats-chart-outline"></ion-icon>
                 </button>
-                <button class="btn-icon-square" onclick="toggleSongbookSidebar()" title="Expandir lista de músicas">
+                <button class="btn-icon-square" onclick="toggleSongbookSidebar()" title="Expandir lista de músicas" data-i18n-title="expandSongListTitle">
                   <ion-icon name="chevron-forward-outline"></ion-icon>
                 </button>
-                <button class="btn-icon-square" onclick="expandAndFocusSearch()" title="Pesquisar">
+                <button class="btn-icon-square" onclick="expandAndFocusSearch()" title="Pesquisar" data-i18n-title="search">
                   <ion-icon name="search-outline"></ion-icon>
                 </button>
                 <button class="btn-icon-square" onclick="openAddSongModal()" title="Nova Música">
                   <ion-icon name="add-outline"></ion-icon>
                 </button>
-                <div class="sb-collapsed-counter" id="sbCollapsedCounter" title="Total de Músicas">0</div>
+                <div class="sb-collapsed-counter" id="sbCollapsedCounter" title="Total de Músicas" data-i18n-title="totalSongsTooltip">0</div>
               </div>
             </div>
 
@@ -6884,14 +6884,14 @@
               <div class="sb-search-input-wrapper">
                 <ion-icon name="search-outline"></ion-icon>
                 <input type="text" id="sbSearchInput" placeholder="Buscar música ou artista..." data-i18n-placeholder="songbookSearchBandPlaceholder" oninput="filterSongbookList()">
-                <button type="button" id="sbSearchClearBtn" class="btn-clear-search" onclick="clearSongbookSearch()" style="display: none; background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 4px; font-size: 1rem; line-height: 1;" title="Limpar busca">
+                <button type="button" id="sbSearchClearBtn" class="btn-clear-search" onclick="clearSongbookSearch()" style="display: none; background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 4px; font-size: 1rem; line-height: 1;" title="Limpar busca" data-i18n-title="clearSearch">
                   <ion-icon name="close-circle"></ion-icon>
                 </button>
               </div>
 
               <!-- Barra de Ordenação A-Z / Z-A (Estilo App Mobile) + Botão Mostrar/Ocultar Tags -->
               <div class="sb-sort-row">
-                <span class="sb-filter-label">Ordenar:</span>
+                <span class="sb-filter-label" data-i18n="songbookSortBy">Ordenar:</span>
                 <button type="button" class="sb-sort-chip active" id="sbSortChip-band" onclick="toggleSongbookSort('band')" title="Ordenar por Nome da Banda / Artista" data-i18n-title="songbookSortArtist">
                   <span data-i18n="songbookSortBand">Banda</span>
                   <span class="sb-sort-dir" id="sbSortDir-band">▲ A-Z</span>
@@ -6900,7 +6900,7 @@
                   <span data-i18n="songbookSortSong">Música</span>
                   <span class="sb-sort-dir" id="sbSortDir-name">A-Z</span>
                 </button>
-                <button type="button" class="sb-sort-chip sb-icon-chip" id="btnToggleTags" onclick="toggleSongbookTags()" title="Filtrar por tags de estilo">
+                <button type="button" class="sb-sort-chip sb-icon-chip" id="btnToggleTags" onclick="toggleSongbookTags()" title="Filtrar por tags de estilo" data-i18n-title="filterByTagsTitle">
                   <ion-icon name="pricetag-outline" id="iconToggleTags"></ion-icon>
                 </button>
               </div>
@@ -7070,15 +7070,15 @@
                 <div class="sb-editor-tabs">
                   <button class="sb-editor-tab-btn" id="sbTabBtn-lyrics" onclick="switchEditorTab('lyrics')">
                     <ion-icon name="document-text-outline"></ion-icon>
-                    <span>Letras</span>
+                    <span data-i18n="songbookModeLyrics">Letras</span>
                   </button>
                   <button class="sb-editor-tab-btn active" id="sbTabBtn-chords" onclick="switchEditorTab('chords')">
                     <ion-icon name="musical-notes-outline"></ion-icon>
-                    <span>Cifras</span>
+                    <span data-i18n="songbookModeChords">Cifras</span>
                   </button>
                   <button class="sb-editor-tab-btn" id="sbTabBtn-tabs" onclick="switchEditorTab('tabs')">
                     <ion-icon name="grid-outline"></ion-icon>
-                    <span>Tablaturas</span>
+                    <span data-i18n="songbookModeTabs">Tablaturas</span>
                   </button>
                 </div>
 
@@ -7086,28 +7086,28 @@
                 <div class="sb-editor-tools">
                   <!-- Transposição (visível na aba de Cifras) -->
                   <div class="sb-tool-group" id="sbTransposeGroup">
-                    <span class="sb-tool-label">Tom:</span>
-                    <button class="sb-tool-btn" onclick="transposeCurrentSong(-1)" title="Diminuir 1 semitom">-1</button>
+                    <span class="sb-tool-label" data-i18n="songbookToneLabel">Tom:</span>
+                    <button class="sb-tool-btn" onclick="transposeCurrentSong(-1)" title="Diminuir 1 semitom" data-i18n-title="songbookToneDown">-1</button>
                     <span class="sb-transpose-val" id="sbTransposeOffset">0</span>
-                    <button class="sb-tool-btn" onclick="transposeCurrentSong(1)" title="Aumentar 1 semitom">+1</button>
-                    <button class="sb-tool-btn" onclick="resetTranspose()" title="Restaurar tom original">Orig</button>
+                    <button class="sb-tool-btn" onclick="transposeCurrentSong(1)" title="Aumentar 1 semitom" data-i18n-title="songbookToneUp">+1</button>
+                    <button class="sb-tool-btn" onclick="resetTranspose()" title="Restaurar tom original" data-i18n-title="songbookToneReset">Orig</button>
                   </div>
 
                   <!-- Tamanho da Fonte -->
                   <div class="sb-tool-group">
-                    <button class="sb-tool-btn" onclick="adjustEditorFontSize(-1)" title="Diminuir fonte">A-</button>
+                    <button class="sb-tool-btn" onclick="adjustEditorFontSize(-1)" title="Diminuir fonte" data-i18n-title="decreaseFontTitle">A-</button>
                     <span class="sb-font-val" id="sbFontSizeLabel">14</span>
-                    <button class="sb-tool-btn" onclick="adjustEditorFontSize(1)" title="Aumentar fonte">A+</button>
+                    <button class="sb-tool-btn" onclick="adjustEditorFontSize(1)" title="Aumentar fonte" data-i18n-title="increaseFontTitle">A+</button>
                   </div>
 
                   <!-- Auto Scroll -->
-                  <button class="sb-tool-btn" id="btnAutoScroll" onclick="toggleAutoScroll()" title="Rolagem automática para ensaio">
+                  <button class="sb-tool-btn" id="btnAutoScroll" onclick="toggleAutoScroll()" title="Rolagem automática para ensaio" data-i18n-title="songbookAutoScrollTitle">
                     <ion-icon name="play-outline"></ion-icon>
-                    <span id="autoScrollLabel">Rolar</span>
+                    <span id="autoScrollLabel" data-i18n="songbookAutoScroll">Rolar</span>
                   </button>
 
                   <!-- Copiar Texto -->
-                  <button class="sb-tool-btn" onclick="copyCurrentTabContent()" title="Copiar conteúdo da aba atual">
+                  <button class="sb-tool-btn" onclick="copyCurrentTabContent()" title="Copiar conteúdo da aba atual" data-i18n-title="copyCurrentTabTitle">
                     <ion-icon name="copy-outline"></ion-icon>
                   </button>
                 </div>
@@ -7303,9 +7303,9 @@
             <span class="tab-name-label" data-i18n="socialAnnouncementsTab">Announcements</span>
             <span class="badge" id="socialCountAnn" style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
           </button>
-          <button class="profile-tab-btn" id="socialSubBands" onclick="switchSocialSub('bands')" title="Bandas Públicas">
+          <button class="profile-tab-btn" id="socialSubBands" onclick="switchSocialSub('bands')" title="Bandas Públicas" data-i18n-title="networkPublicBandsTabTitle">
             <ion-icon name="musical-notes" class="tab-icon"></ion-icon>
-            <span class="tab-name-label">Bandas</span>
+            <span class="tab-name-label" data-i18n="bandsTitle">Bandas</span>
             <span class="badge" id="socialCountBands" style="background: rgba(255,255,255,0.1); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px;">0</span>
           </button>
           <button class="profile-tab-btn" id="socialSubClassifieds" onclick="switchSocialSub('classifieds')" title="Classificados & Equipamentos">
@@ -7322,14 +7322,14 @@
             <div class="social-search-bar-row">
               <div class="social-search-bar-input-wrap">
                 <ion-icon name="search-outline" class="social-search-icon"></ion-icon>
-                <input type="text" id="socialSearchInput" class="social-search-input" placeholder="Busca." oninput="triggerSocialSearch()" onkeydown="if(event.key==='Enter'){event.preventDefault(); triggerSocialSearch(true);}">
+                <input type="text" id="socialSearchInput" class="social-search-input" placeholder="Buscar músicos, bandas ou estilos..." data-i18n-placeholder="socialSearchPlaceholder" oninput="triggerSocialSearch()" onkeydown="if(event.key==='Enter'){event.preventDefault(); triggerSocialSearch(true);}">
                 <button class="social-search-clear-btn" id="socialSearchClearBtn" onclick="clearSocialSearch()" style="display: none;" title="Limpar busca">
                   <ion-icon name="close-circle"></ion-icon>
                 </button>
               </div>
-              <button class="btn btn-primary social-search-submit-btn" onclick="triggerSocialSearch(true)" title="Buscar">
+              <button class="btn btn-primary social-search-submit-btn" onclick="triggerSocialSearch(true)" title="Buscar" data-i18n-title="search">
                 <ion-icon name="search-outline"></ion-icon>
-                <span>Buscar</span>
+                <span data-i18n="search">Buscar</span>
               </button>
             </div>
 
@@ -10741,6 +10741,10 @@
       showToast('Música excluída com sucesso!', 'info');
       filterProfileSongbookList();
       if (typeof renderSongbookSplitView === 'function') renderSongbookSplitView();
+      const sbDash = document.getElementById('sbDashboardWrapper');
+      if (sbDash && sbDash.style.display !== 'none' && typeof renderSongbookDashboard === 'function') {
+        renderSongbookDashboard();
+      }
     }
 
     function renderProfileSongbookTab() {
@@ -14794,7 +14798,7 @@
         ${bandRepertoireShowTags && uniqueStyles.length > 0 ? `
           <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
             <button type="button" onclick="toggleBandRepertoireTagFilter('')" style="cursor: pointer; padding: 3px 9px; font-size: 0.70rem; font-weight: 600; border-radius: 12px; border: 1px solid ${bandRepertoireSelectedTags.length === 0 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255,255,255,0.08)'}; background: ${bandRepertoireSelectedTags.length === 0 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255,255,255,0.02)'}; color: ${bandRepertoireSelectedTags.length === 0 ? 'var(--cyan)' : '#94a3b8'}; transition: all 0.15s ease;">
-              Todas (${songs.length})
+              ${(typeof t === 'function') ? t('allCountLabel', 'Todas ({0})').replace('{0}', songs.length) : `Todas (${songs.length})`}
             </button>
             ${uniqueStyles.map(st => {
               const isSel = bandRepertoireSelectedTags.includes(st);
@@ -14815,7 +14819,7 @@
         <div style="margin-bottom: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <span style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
-              Exibindo ${filteredSongs.length} de ${songs.length} músicas (${bandRepertoireSort === 'band' ? 'Agrupado por Banda/Artista' : 'Ordem Alfabética de Músicas'})
+              ${(typeof t === 'function' ? t('showingSongsCount', 'Exibindo {0} de {1} músicas').replace('{0}', filteredSongs.length).replace('{1}', songs.length) : `Exibindo ${filteredSongs.length} de ${songs.length} músicas`)} (${bandRepertoireSort === 'band' ? (typeof t === 'function' ? t('groupedByArtist', 'Agrupado por Banda/Artista') : 'Agrupado por Banda/Artista') : (typeof t === 'function' ? t('alphabeticalOrderSongs', 'Ordem Alfabética de Músicas') : 'Ordem Alfabética de Músicas')})
             </span>
           </div>
       `;
@@ -14825,10 +14829,10 @@
           <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
             <ion-icon name="disc-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
             <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${(typeof t === 'function') ? t('noSongsInRepertoireYet', 'Nenhuma música no repertório desta banda') : 'Nenhuma música no repertório desta banda'}</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Adicione músicas do seu Songbook / Coleção Geral ao repertório oficial da banda.</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">${(typeof t === 'function') ? t('addSongsToBandHint', 'Adicione músicas do seu Songbook / Coleção Geral ao repertório oficial da banda.') : 'Adicione músicas do seu Songbook / Coleção Geral ao repertório oficial da banda.'}</p>
             <button type="button" class="btn btn-primary" onclick="openAddSongsToBandModal(${band.id})" style="border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; margin: 0 auto;">
               <ion-icon name="add-circle" style="font-size: 1.15rem;"></ion-icon>
-              <span>Adicionar Músicas do Songbook</span>
+              <span>${(typeof t === 'function') ? t('addSongsFromSongbookBtn', 'Adicionar Músicas do Songbook') : 'Adicionar Músicas do Songbook'}</span>
             </button>
           </div>
         `;
@@ -16024,23 +16028,26 @@
     function getFormattedDateBadge(d) {
       if (!d) return { day: '--', month: '---' };
       const str = String(d).trim();
-      const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+      const MONTH_SHORT_KEYS = ['monthShortJan', 'monthShortFeb', 'monthShortMar', 'monthShortApr', 'monthShortMay', 'monthShortJun', 'monthShortJul', 'monthShortAug', 'monthShortSep', 'monthShortOct', 'monthShortNov', 'monthShortDec'];
+      const monthsDefault = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+      const getMonthStr = (idx) => (typeof t === 'function' ? t(MONTH_SHORT_KEYS[idx], monthsDefault[idx]) : monthsDefault[idx]);
+
       if (str.includes('/')) {
         const parts = str.split('/');
         if (parts.length >= 2) {
           const day = parts[0].padStart(2, '0');
           const mIdx = parseInt(parts[1], 10) - 1;
-          return { day, month: months[mIdx] || '---' };
+          return { day, month: getMonthStr(mIdx) || '---' };
         }
       } else if (str.includes('-')) {
         const parts = str.split('-');
         if (parts.length === 3) {
           const day = parts[2].padStart(2, '0');
           const mIdx = parseInt(parts[1], 10) - 1;
-          return { day, month: months[mIdx] || '---' };
+          return { day, month: getMonthStr(mIdx) || '---' };
         }
       }
-      return { day: '01', month: 'JAN' };
+      return { day: '01', month: getMonthStr(0) };
     }
 
     let activeSetlistEditingEventId = null;
@@ -16108,13 +16115,13 @@
             </h2>
           </div>
           <div class="agenda-header-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline btn-sm agenda-action-btn-share" onclick="openShareAgendaModal()" title="Compartilhar Agenda" data-i18n-title="agendaShareBtn">
+            <button type="button" class="btn btn-outline btn-sm agenda-action-btn-share" onclick="openShareAgendaModal()" title="${(typeof t === 'function') ? t('agendaShareBtn', 'Compartilhar Agenda') : 'Compartilhar Agenda'}" data-i18n-title="agendaShareBtn">
               <ion-icon name="share-social-outline"></ion-icon>
-              <span data-i18n="agendaShareBtn">Compartilhar Agenda</span>
+              <span data-i18n="agendaShareBtn">${(typeof t === 'function') ? t('agendaShareBtn', 'Compartilhar Agenda') : 'Compartilhar Agenda'}</span>
             </button>
-            <button type="button" class="btn btn-cyan btn-sm agenda-action-btn-add" onclick="openEditEventPlaylistModal(-1, 'details')" title="Novo Evento" data-i18n-title="agendaNewEventBtn">
+            <button type="button" class="btn btn-cyan btn-sm agenda-action-btn-add" onclick="openEditEventPlaylistModal(-1, 'details')" title="${(typeof t === 'function') ? t('agendaNewEventBtn', 'Novo Evento') : 'Novo Evento'}" data-i18n-title="agendaNewEventBtn">
               <ion-icon name="add"></ion-icon>
-              <span data-i18n="agendaNewEventBtn">Novo Evento</span>
+              <span data-i18n="agendaNewEventBtn">${(typeof t === 'function') ? t('agendaNewEventBtn', 'Novo Evento') : 'Novo Evento'}</span>
             </button>
           </div>
         </div>
@@ -16157,7 +16164,7 @@
                 <ion-icon name="calendar-outline"></ion-icon>
               </div>
             </div>
-            <div class="agenda-circle-label">${showCount === 1 ? 'Show' : 'Shows'}</div>
+            <div class="agenda-circle-label">${showCount === 1 ? ((typeof t === 'function') ? t('agendaShowSingular', 'Show') : 'Show') : ((typeof t === 'function') ? t('agendaShowsLabel', 'Shows') : 'Shows')}</div>
           </div>
 
           <!-- Círculo 4: Ensaios com ícone de fone sobreposto à esquerda -->
@@ -16170,7 +16177,7 @@
                 <ion-icon name="headset-outline"></ion-icon>
               </div>
             </div>
-            <div class="agenda-circle-label">${rehearsalCount === 1 ? 'Ensaio' : 'Ensaios'}</div>
+            <div class="agenda-circle-label">${rehearsalCount === 1 ? ((typeof t === 'function') ? t('agendaRehearsalSingular', 'Ensaio') : 'Ensaio') : ((typeof t === 'function') ? t('agendaRehearsalsLabel', 'Ensaios') : 'Ensaios')}</div>
           </div>
         </div>
 
@@ -16182,9 +16189,9 @@
         html += `
           <div style="text-align: center; padding: 48px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed rgba(255,255,255,0.1);">
             <ion-icon name="calendar-outline" style="font-size: 2.5rem; color: #64748b; margin-bottom: 8px;"></ion-icon>
-            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">Nenhum evento agendado em ${selectedAgendaYear}</h4>
+            <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${(typeof t === 'function') ? t('noEventsScheduledInYear', 'Nenhum evento agendado em') : 'Nenhum evento agendado em'} ${selectedAgendaYear}</h4>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">${(typeof t === 'function') ? t('addEventsCronogramSubtitle', 'Adicione novos shows ou ensaios para montar o cronograma.') : 'Adicione novos shows ou ensaios para montar o cronograma.'}</p>
-            <button type="button" class="btn btn-primary btn-sm" onclick="openEditEventPlaylistModal(-1, 'details')">Adicionar Evento</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openEditEventPlaylistModal(-1, 'details')">${(typeof t === 'function') ? t('agendaAddEventBtn', 'Adicionar Evento') : 'Adicionar Evento'}</button>
           </div>
         `;
       } else {
@@ -16210,7 +16217,7 @@
                 <div style="flex: 1; min-width: 0;">
                   <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; min-width: 0;">
                     <span class="badge ${isRehearsal ? 'badge-amber' : 'badge-rose'}" style="font-size: 0.6rem; font-weight: 800; padding: 1.5px 6px; border-radius: 4px; letter-spacing: 0.2px; text-transform: uppercase; flex-shrink: 0; ${isRehearsal ? '' : 'background: rgba(239,68,68,0.18); color: #f87171; border: 1px solid rgba(239,68,68,0.3);'}">
-                      ${isRehearsal ? 'ENSAIO' : 'SHOW'}
+                      ${isRehearsal ? ((typeof t === 'function') ? t('agendaRehearsalUpper', 'ENSAIO') : 'ENSAIO') : ((typeof t === 'function') ? t('agendaShowUpper', 'SHOW') : 'SHOW')}
                     </span>
                     <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${escapeHtml(sName)}</h4>
                   </div>
@@ -16232,7 +16239,7 @@
               <div class="desktop-event-val-col" style="display: flex; align-items: center; gap: 14px;">
                 ${cacheNum ? `<span class="desktop-cache-badge" style="font-size: 0.95rem; font-weight: 800; color: #4ade80;">$ ${cacheNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
                 <button type="button" class="btn btn-sm btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="event.stopPropagation(); openSetlistEditorPage('${escapeHtml(evIdentifier)}')">
-                  <ion-icon name="create-outline"></ion-icon> <span>Editar Playlist</span>
+                  <ion-icon name="create-outline"></ion-icon> <span>${(typeof t === 'function') ? t('editPlaylistBtn', 'Editar Playlist') : 'Editar Playlist'}</span>
                 </button>
               </div>
             </div>
@@ -16262,10 +16269,10 @@
           html += `
             <div class="mobile-month-bar" onclick="toggleAgendaMonth('${k}')" title="Clique para expandir/recolher mês">
               <!-- Ícones e Contadores primeiro (Padrão Mobile) -->
-              <span class="month-pill-badge month-pill-show" title="Shows">
+              <span class="month-pill-badge month-pill-show" title="${(typeof t === 'function') ? t('agendaShowsLabel', 'Shows') : 'Shows'}">
                 <ion-icon name="calendar-outline"></ion-icon> <span>${mShows}</span>
               </span>
-              <span class="month-pill-badge month-pill-rehearsal" title="Ensaios">
+              <span class="month-pill-badge month-pill-rehearsal" title="${(typeof t === 'function') ? t('agendaRehearsalsLabel', 'Ensaios') : 'Ensaios'}">
                 <ion-icon name="headset-outline"></ion-icon> <span>${mReh}</span>
               </span>
               ${monthGrossTotal > 0 ? `
@@ -19254,6 +19261,12 @@
       if (incomeTextEl) {
         incomeTextEl.textContent = formatCompactNumber(yearTotalIncome);
       }
+      const musicianTotalLabelEl = document.querySelector('#subview-agenda .agenda-circle-col:nth-child(2) .agenda-circle-label');
+      if (musicianTotalLabelEl) musicianTotalLabelEl.textContent = yearEvents.length === 1 ? ((typeof t === 'function') ? t('eventSingular', 'Evento') : 'Evento') : ((typeof t === 'function') ? t('agendaEventsLabel', 'Eventos') : 'Eventos');
+      const musicianShowsLabelEl = document.getElementById('musicianAgendaShowsLabel');
+      if (musicianShowsLabelEl) musicianShowsLabelEl.textContent = yearShows === 1 ? ((typeof t === 'function') ? t('agendaShowSingular', 'Show') : 'Show') : ((typeof t === 'function') ? t('agendaShowsLabel', 'Shows') : 'Shows');
+      const musicianRehLabelEl = document.getElementById('musicianAgendaRehLabel');
+      if (musicianRehLabelEl) musicianRehLabelEl.textContent = yearRehearsals === 1 ? ((typeof t === 'function') ? t('agendaRehearsalSingular', 'Ensaio') : 'Ensaio') : ((typeof t === 'function') ? t('agendaRehearsalsLabel', 'Ensaios') : 'Ensaios');
 
       if (yearEvents.length === 0) {
         list.innerHTML = `
@@ -19311,7 +19324,7 @@
               <ion-icon name="headset-outline"></ion-icon> <span>${mReh}</span>
             </span>
             ${monthMyShareTotal > 0 ? `
-              <span class="month-pill-badge month-pill-musician" title="Sua Parte no Mês">
+              <span class="month-pill-badge month-pill-musician" title="${(typeof t === 'function') ? t('agendaYourShareInMonth', 'Sua Parte no Mês') : 'Sua Parte no Mês'}">
                 <ion-icon name="star"></ion-icon> <span>$ ${monthMyShareTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </span>
             ` : ''}
@@ -19334,7 +19347,7 @@
             const bandInitials = (ev.bandName || 'BD').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
             html += `
-              <div class="musician-agenda-card" onclick="openMusicianEventAction(${ev.bandId ? `'${ev.bandId}'` : 'null'}, '${ev.id}')" title="Clique para ver detalhes do evento">
+              <div class="musician-agenda-card" onclick="openMusicianEventAction(${ev.bandId ? `'${ev.bandId}'` : 'null'}, '${ev.id}')" title="${(typeof t === 'function') ? t('clickToViewEventDetails', 'Clique para ver detalhes do evento') : 'Clique para ver detalhes do evento'}">
                 <!-- Data do lado esquerdo -->
                 <div style="width: 52px; height: 52px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
                   <span style="font-size: 1.25rem; font-weight: 900; color: #fff; line-height: 1;">${dt.day}</span>
@@ -19751,7 +19764,7 @@
       }
 
       if (user.age) {
-        document.getElementById('pubMusAgeBadge').textContent = `${user.age} anos`;
+        document.getElementById('pubMusAgeBadge').textContent = `${user.age} ${(typeof t === "function") ? t("yearsOldSuffix", "anos") : "anos"}`;
         document.getElementById('pubMusAgeBadge').style.display = 'inline-flex';
       } else {
         document.getElementById('pubMusAgeBadge').style.display = 'none';
@@ -20320,7 +20333,7 @@
         container.innerHTML = `
           <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
             <ion-icon name="musical-notes-outline" style="font-size: 2.5rem; margin-bottom: 8px;"></ion-icon>
-            <p>Nenhuma música cadastrada no repertório.</p>
+            <p>${(typeof t === 'function') ? t('sbEmptyRepertoire', 'Nenhuma música cadastrada no repertório.') : 'Nenhuma música cadastrada no repertório.'}</p>
           </div>
         `;
         return;
@@ -20388,16 +20401,16 @@
           <div>
             <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
               <ion-icon name="stats-chart" style="color: var(--cyan);"></ion-icon>
-              <span>Visão Geral do Repertório</span>
+              <span>${(typeof t === 'function') ? t('sbOverviewTitle', 'Visão Geral do Repertório') : 'Visão Geral do Repertório'}</span>
             </h2>
             <p style="color: #94a3b8; font-size: 0.84rem; margin: 4px 0 0 0;">
-              Métricas do acervo, taxa de preenchimento de cifras/letras e últimas novidades cadastradas.
+              ${(typeof t === 'function') ? t('sbOverviewSubtitle', 'Métricas do acervo, taxa de preenchimento de cifras/letras e últimas novidades cadastradas.') : 'Métricas do acervo, taxa de preenchimento de cifras/letras e últimas novidades cadastradas.'}
             </p>
           </div>
           <div>
             <button type="button" class="btn btn-cyan btn-sm" onclick="openAddSongModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 700; padding: 7px 14px; border-radius: 9px;">
               <ion-icon name="add-circle-outline" style="font-size: 1.15rem;"></ion-icon>
-              <span>Nova Música</span>
+              <span>${(typeof t === 'function') ? t('songbookNewSongBtn', 'Nova Música') : 'Nova Música'}</span>
             </button>
           </div>
         </div>
@@ -20410,7 +20423,7 @@
             </div>
             <div>
               <div class="sb-kpi-value">${totalSongs}</div>
-              <div class="sb-kpi-label">Músicas no Acervo</div>
+              <div class="sb-kpi-label">${(typeof t === 'function') ? t('sbKpiTotalSongs', 'Músicas no Acervo') : 'Músicas no Acervo'}</div>
             </div>
           </div>
 
@@ -20420,7 +20433,7 @@
             </div>
             <div>
               <div class="sb-kpi-value">${uniqueArtists}</div>
-              <div class="sb-kpi-label">Artistas Únicos</div>
+              <div class="sb-kpi-label">${(typeof t === 'function') ? t('sbKpiUniqueArtists', 'Artistas Únicos') : 'Artistas Únicos'}</div>
             </div>
           </div>
 
@@ -20430,7 +20443,7 @@
             </div>
             <div>
               <div class="sb-kpi-value">${formattedTotalDuration}</div>
-              <div class="sb-kpi-label">Tempo de Show</div>
+              <div class="sb-kpi-label">${(typeof t === 'function') ? t('sbKpiShowTime', 'Tempo de Show') : 'Tempo de Show'}</div>
             </div>
           </div>
 
@@ -20440,7 +20453,7 @@
             </div>
             <div>
               <div class="sb-kpi-value">${favoritesCount} <span style="font-size: 0.85rem; font-weight: 600; opacity: 0.8;">(${favoritesPct}%)</span></div>
-              <div class="sb-kpi-label">Favoritas ⭐</div>
+              <div class="sb-kpi-label">${(typeof t === 'function') ? t('sbKpiFavorites', 'Favoritas ⭐') : 'Favoritas ⭐'}</div>
             </div>
           </div>
         </div>
@@ -20453,9 +20466,9 @@
             <div class="sb-dash-section-header">
               <h3 class="sb-dash-section-title">
                 <ion-icon name="shield-checkmark-outline" style="color: #34d399;"></ion-icon>
-                <span>Status de Preenchimento</span>
+                <span>${(typeof t === 'function') ? t('sbSectionFillStatus', 'Status de Preenchimento') : 'Status de Preenchimento'}</span>
               </h3>
-              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">${totalSongs} músicas</span>
+              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">${totalSongs} ${(typeof t === 'function') ? t('songPlural', 'músicas') : 'músicas'}</span>
             </div>
 
             <!-- CIFRAS -->
@@ -20463,7 +20476,7 @@
               <div class="sb-stat-bar-header">
                 <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
                   <ion-icon name="musical-note" style="color: #38bdf8;"></ion-icon>
-                  <span>Cifras</span>
+                  <span>${(typeof t === 'function') ? t('songbookModeChords', 'Cifras') : 'Cifras'}</span>
                 </span>
                 <span style="font-weight: 800; color: #38bdf8;">
                   ${chordsPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${chordsCount}/${totalSongs})</span>
@@ -20479,7 +20492,7 @@
               <div class="sb-stat-bar-header">
                 <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
                   <ion-icon name="document-text" style="color: #34d399;"></ion-icon>
-                  <span>Letras</span>
+                  <span>${(typeof t === 'function') ? t('songbookModeLyrics', 'Letras') : 'Letras'}</span>
                 </span>
                 <span style="font-weight: 800; color: #34d399;">
                   ${lyricsPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${lyricsCount}/${totalSongs})</span>
@@ -20495,7 +20508,7 @@
               <div class="sb-stat-bar-header">
                 <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
                   <ion-icon name="barcode-outline" style="color: #c084fc;"></ion-icon>
-                  <span>Tablaturas</span>
+                  <span>${(typeof t === 'function') ? t('songbookModeTabs', 'Tablaturas') : 'Tablaturas'}</span>
                 </span>
                 <span style="font-weight: 800; color: #c084fc;">
                   ${tabsPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${tabsCount}/${totalSongs})</span>
@@ -20511,7 +20524,7 @@
               <div class="sb-stat-bar-header">
                 <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
                   <ion-icon name="checkmark-done-circle" style="color: #fbbf24;"></ion-icon>
-                  <span>Completas (Cifra + Letra)</span>
+                  <span>${(typeof t === 'function') ? t('sbFillComplete', 'Completas (Cifra + Letra)') : 'Completas (Cifra + Letra)'}</span>
                 </span>
                 <span style="font-weight: 800; color: #fbbf24;">
                   ${completePct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${completeCount}/${totalSongs})</span>
@@ -20527,7 +20540,7 @@
               <div class="sb-stat-bar-header">
                 <span style="font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
                   <ion-icon name="timer-outline" style="color: #94a3b8;"></ion-icon>
-                  <span>Duração Cadastrada</span>
+                  <span>${(typeof t === 'function') ? t('sbFillDuration', 'Duração Cadastrada') : 'Duração Cadastrada'}</span>
                 </span>
                 <span style="font-weight: 800; color: #cbd5e1;">
                   ${withDurationPct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${withDurationCount}/${totalSongs})</span>
@@ -20545,16 +20558,16 @@
             <div class="sb-dash-section-header">
               <h3 class="sb-dash-section-title">
                 <ion-icon name="pricetags-outline" style="color: var(--cyan);"></ion-icon>
-                <span>Top Estilos & Gêneros (%)</span>
+                <span>${(typeof t === 'function') ? t('sbSectionTopStyles', 'Top Estilos & Gêneros (%)') : 'Top Estilos & Gêneros (%)'}</span>
               </h3>
-              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">Baseado nas tags</span>
+              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">${(typeof t === 'function') ? t('sbBasedOnTags', 'Baseado nas tags') : 'Baseado nas tags'}</span>
             </div>
 
             ${sortedTags.length === 0 ? `
               <div style="text-align: center; padding: 36px 14px; color: #94a3b8; font-size: 0.85rem;">
                 <ion-icon name="pricetag-outline" style="font-size: 2rem; opacity: 0.4; margin-bottom: 6px;"></ion-icon>
-                <p style="margin: 0 0 4px 0; font-weight: 700; color: #cbd5e1;">Nenhuma tag de estilo definida</p>
-                <p style="margin: 0; font-size: 0.78rem;">Edite as músicas e insira estilos (ex: Rock, Pop, Reggae) para visualizar a distribuição percentual.</p>
+                <p style="margin: 0 0 4px 0; font-weight: 700; color: #cbd5e1;">${(typeof t === 'function') ? t('sbNoStylesDefined', 'Nenhuma tag de estilo definida') : 'Nenhuma tag de estilo definida'}</p>
+                <p style="margin: 0; font-size: 0.78rem;">${(typeof t === 'function') ? t('sbNoStylesHint', 'Edite as músicas e insira estilos (ex: Rock, Pop, Reggae) para visualizar a distribuição percentual.') : 'Edite as músicas e insira estilos (ex: Rock, Pop, Reggae) para visualizar a distribuição percentual.'}</p>
               </div>
             ` : sortedTags.map((tag, idx) => {
               const color = tagColors[idx % tagColors.length];
@@ -20566,7 +20579,7 @@
                       <span>${escapeHtml(tag.name)}</span>
                     </span>
                     <span style="font-weight: 800; color: ${color};">
-                      ${tag.pct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${tag.count} ${tag.count === 1 ? 'música' : 'músicas'})</span>
+                      ${tag.pct}% <span style="font-weight: 500; font-size: 0.74rem; color: #94a3b8;">(${tag.count} ${tag.count === 1 ? ((typeof t === 'function') ? t('songSingular', 'música') : 'música') : ((typeof t === 'function') ? t('songPlural', 'músicas') : 'músicas')})</span>
                     </span>
                   </div>
                   <div class="sb-stat-bar-track">
@@ -20585,9 +20598,9 @@
             <div>
               <h3 class="sb-dash-section-title">
                 <ion-icon name="time-outline" style="color: #38bdf8;"></ion-icon>
-                <span>Últimas 10 Músicas Adicionadas</span>
+                <span>${(typeof t === 'function') ? t('sbRecentSongsTitle', 'Últimas 10 Músicas Adicionadas') : 'Últimas 10 Músicas Adicionadas'}</span>
               </h3>
-              <span style="font-size: 0.75rem; color: #94a3b8;">Clique em qualquer música para abrir no editor</span>
+              <span style="font-size: 0.75rem; color: #94a3b8;">${(typeof t === 'function') ? t('sbRecentSongsSubtitle', 'Clique em qualquer música para abrir no editor') : 'Clique em qualquer música para abrir no editor'}</span>
             </div>
           </div>
 
@@ -20599,7 +20612,7 @@
               const firstTag = s.style ? s.style.split(',')[0].trim() : '';
 
               return `
-                <div class="sb-recent-song-row" onclick="selectSongbookItem('${s.id}')" title="Abrir '${escapeHtml(s.name)}' no editor">
+                <div class="sb-recent-song-row" onclick="selectSongbookItem('${s.id}')" title="${(typeof t === 'function') ? t('openInEditorTooltip', 'Abrir no editor') : 'Abrir no editor'}: '${escapeHtml(s.name)}'">
                   <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
                     <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.1); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
                       <ion-icon name="musical-note"></ion-icon>
@@ -20609,7 +20622,7 @@
                         ${escapeHtml(s.name)}
                       </div>
                       <div style="font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${escapeHtml(s.originalBand || 'Artista não definido')}
+                        ${escapeHtml(s.originalBand || ((typeof t === 'function') ? t('artistNotDefined', 'Artista não definido') : 'Artista não definido'))}
                       </div>
                     </div>
                   </div>
@@ -20622,13 +20635,13 @@
                       </span>
                     ` : ''}
                     <span class="sb-data-badge ${hasChords ? 'filled-cifra' : 'empty'}">
-                      Cifra
+                      ${(typeof t === 'function') ? t('chordBadge', 'Cifra') : 'Cifra'}
                     </span>
                     <span class="sb-data-badge ${hasLyrics ? 'filled-letra' : 'empty'}">
-                      Letra
+                      ${(typeof t === 'function') ? t('lyricBadge', 'Letra') : 'Letra'}
                     </span>
                     <span class="sb-data-badge ${hasTabs ? 'filled-tab' : 'empty'}">
-                      Tab
+                      ${(typeof t === 'function') ? t('tabBadge', 'Tab') : 'Tab'}
                     </span>
                     ${s.duration ? `
                       <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-left: 4px;">
@@ -22030,9 +22043,9 @@
     }
 
     function getSocialLocationEmptyText() {
-      if (currentSocialCity) return ` em ${currentSocialCity}`;
-      if (currentSocialState) return ` no estado de ${currentSocialState}`;
-      if (currentSocialCountry) return ` no país ${currentSocialCountry}`;
+      if (currentSocialCity) return (typeof t === 'function' ? t('inCity', ' em {0}').replace('{0}', currentSocialCity) : ` em ${currentSocialCity}`);
+      if (currentSocialState) return (typeof t === 'function' ? t('inState', ' no estado de {0}').replace('{0}', currentSocialState) : ` no estado de ${currentSocialState}`);
+      if (currentSocialCountry) return (typeof t === 'function' ? t('inCountry', ' no país {0}').replace('{0}', currentSocialCountry) : ` no país ${currentSocialCountry}`);
       return '';
     }
 
@@ -22129,7 +22142,8 @@
       loadSocialData();
     }
 
-    function getSocialLoadingHtml(label = 'Carregando...') {
+    function getSocialLoadingHtml(label) {
+      if (!label) label = (typeof t === 'function' ? t('loadingGeneric', 'Carregando...') : 'Carregando...');
       return `
         <div class="social-tab-loading-state" style="grid-column: 1/-1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 20px; color: var(--cyan); gap: 12px;">
           <ion-icon name="sync" class="spin-icon" style="font-size: 2.2rem;"></ion-icon>
@@ -22148,7 +22162,7 @@
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewAnn');
       if (container) {
-        container.innerHTML = getSocialLoadingHtml('Carregando anúncios & oportunidades...');
+        container.innerHTML = getSocialLoadingHtml((typeof t === 'function') ? t('socialLoadingAnnouncements', 'Carregando anúncios & oportunidades...') : 'Carregando anúncios & oportunidades...');
       }
 
       try {
@@ -22166,7 +22180,7 @@
           if (countBadge) countBadge.innerText = filtered.length;
 
           if (filtered.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum anúncio encontrado${getSocialLocationEmptyText()}.</div>`;
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">${(typeof t === 'function') ? t('socialNoAnnouncements', 'Nenhum anúncio encontrado') : 'Nenhum anúncio encontrado'}${getSocialLocationEmptyText()}.</div>`;
             return;
           }
 
@@ -22586,7 +22600,7 @@
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewMus');
       if (container) {
-        container.innerHTML = getSocialLoadingHtml('Carregando músicos na rede...');
+        container.innerHTML = getSocialLoadingHtml((typeof t === 'function') ? t('socialLoadingMusicians', 'Carregando músicos na rede...') : 'Carregando músicos na rede...');
       }
 
       try {
@@ -22604,7 +22618,7 @@
               </div>
             `;
           } else {
-            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Não foi possível carregar os músicos no momento.</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">${(typeof t === 'function') ? t('socialErrorMusicians', 'Não foi possível carregar os músicos no momento.') : 'Não foi possível carregar os músicos no momento.'}</div>`;
           }
           return;
         }
@@ -22620,7 +22634,7 @@
         if (countBadge) countBadge.innerText = filtered.length;
 
         if (filtered.length === 0) {
-          container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhum músico encontrado${getSocialLocationEmptyText()}.</div>`;
+          container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">${(typeof t === 'function') ? t('socialNoMusicians', 'Nenhum músico encontrado') : 'Nenhum músico encontrado'}${getSocialLocationEmptyText()}.</div>`;
           return;
         }
 
@@ -22678,7 +22692,7 @@
                   <!-- Details Row 1: @username • Idade • Ícone de Status -->
                   <div class="user-card-meta-row">
                     <span class="user-card-handle">@${username}</span>
-                    ${age ? `<span class="user-card-age">${age} anos</span>` : ''}
+                    ${age ? `<span class="user-card-age">${age} ${(typeof t === "function") ? t("yearsOldSuffix", "anos") : "anos"}</span>` : ''}
                     ${isAvailable ? `<ion-icon name="checkmark-circle" style="color: #10b981; font-size: 15px;" title="Disponível"></ion-icon>` : `<ion-icon name="close-circle" style="color: #ef4444; font-size: 15px;" title="Indisponível"></ion-icon>`}
                   </div>
 
@@ -22712,7 +22726,7 @@
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewBands');
       if (container) {
-        container.innerHTML = getSocialLoadingHtml('Carregando bandas públicas...');
+        container.innerHTML = getSocialLoadingHtml((typeof t === 'function') ? t('socialLoadingBands', 'Carregando bandas públicas...') : 'Carregando bandas públicas...');
       }
 
       try {
@@ -22734,7 +22748,7 @@
         if (countBadge) countBadge.innerText = filtered.length;
 
         if (filtered.length === 0) {
-          container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Nenhuma banda pública encontrada${getSocialLocationEmptyText()}.</div>`;
+          container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">${(typeof t === 'function') ? t('socialNoBands', 'Nenhuma banda pública encontrada') : 'Nenhuma banda pública encontrada'}${getSocialLocationEmptyText()}.</div>`;
           return;
         }
 
@@ -22800,7 +22814,7 @@
                 </div>
                 <div style="display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border-subtle); align-items: center; justify-content: center; text-align: center;">
                   <span style="font-size: 0.78rem; color: var(--cyan-light); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-                    <ion-icon name="musical-notes-outline"></ion-icon> Ver Banda
+                    <ion-icon name="musical-notes-outline"></ion-icon> ${(typeof t === "function") ? t("viewBandBtn", "Ver Banda") : "Ver Banda"}
                     <ion-icon name="chevron-forward-outline" style="color: var(--text-dim); font-size: 0.85rem;"></ion-icon>
                   </span>
                 </div>
@@ -22810,7 +22824,7 @@
         }).join('');
       } catch (err) {
         console.error('Error loading public bands:', err);
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Erro ao carregar as bandas. Verifique sua conexão.</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">${(typeof t === 'function') ? t('socialErrorBands', 'Erro ao carregar as bandas. Verifique sua conexão.') : 'Erro ao carregar as bandas. Verifique sua conexão.'}</div>`;
       }
     }
 
@@ -22842,7 +22856,7 @@
       const qs = params.toString() ? `?${params.toString()}` : '';
       const container = document.getElementById('socialViewClassifieds');
       if (container) {
-        container.innerHTML = getSocialLoadingHtml('Carregando classificados & equipamentos...');
+        container.innerHTML = getSocialLoadingHtml((typeof t === 'function') ? t('socialLoadingClassifieds', 'Carregando classificados & equipamentos...') : 'Carregando classificados & equipamentos...');
       }
 
       try {
@@ -22948,7 +22962,7 @@
       } catch (err) {
         console.error('Error loading classifieds:', err);
         if (container) {
-          container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">Erro ao carregar classificados. Verifique sua conexão.</div>`;
+          container.innerHTML = `<div style="text-align: center; padding: 48px; color: var(--text-dim); width: 100%;">${(typeof t === 'function') ? t('socialErrorClassifieds', 'Erro ao carregar classificados. Verifique sua conexão.') : 'Erro ao carregar classificados. Verifique sua conexão.'}</div>`;
         }
       }
     }
