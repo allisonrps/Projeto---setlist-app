@@ -6946,13 +6946,13 @@
               
               <!-- Barra de Navegação e Opções Mobile (Alinhados em Linha no Topo) -->
               <div class="sb-mobile-nav-bar" id="sbMobileNavBar">
-                <button type="button" class="sb-mobile-back-btn" onclick="showSongbookDashboard()" title="Estatísticas">
+                <button type="button" class="sb-mobile-back-btn" onclick="showSongbookDashboard()" title="Estatísticas" data-i18n-title="sbHeaderStatsBtn">
                   <ion-icon name="stats-chart-outline"></ion-icon>
-                  <span>Estatísticas</span>
+                  <span data-i18n="sbHeaderStatsBtn">Estatísticas</span>
                 </button>
-                <button type="button" class="sb-mobile-back-btn" onclick="returnToSongbookList()" title="Voltar para a Lista de Músicas">
+                <button type="button" class="sb-mobile-back-btn" onclick="returnToSongbookList()" title="Voltar para a Lista de Músicas" data-i18n-title="songbookBackToList">
                   <ion-icon name="arrow-back-outline"></ion-icon>
-                  <span>Músicas</span>
+                  <span data-i18n="songbookSidebarTitle">Músicas</span>
                 </button>
                 <div class="sb-mobile-icons-row">
                   <button type="button" class="sb-mobile-icon-btn" onclick="toggleSongDetailsDrawer()" title="Editar Detalhes da Música">
@@ -6997,18 +6997,18 @@
                 <div class="sb-song-header-actions">
                   <button class="btn btn-outline btn-sm" onclick="showSongbookDashboard()" title="Voltar para Estatísticas & Visão Geral" style="display: flex; align-items: center; gap: 6px;">
                     <ion-icon name="stats-chart-outline" style="color: var(--cyan);"></ion-icon>
-                    <span>Estatísticas</span>
+                    <span data-i18n="sbHeaderStatsBtn">Estatísticas</span>
                   </button>
                   <!-- OPÇÕES PARA EDITAR DETALHES DA MÚSICA -->
                   <button class="btn btn-outline btn-sm" id="btnToggleSongDetails" onclick="toggleSongDetailsDrawer()" title="Editar dados da música (Título, Artista, Tom, BPM...)">
                     <ion-icon name="create-outline"></ion-icon>
-                    <span>Editar Detalhes</span>
+                    <span data-i18n="sbHeaderEditDetailsBtn">Editar Detalhes</span>
                   </button>
 
                   <!-- SALVAR NA NUVEM -->
                   <button class="btn btn-primary btn-sm" onclick="saveCurrentSongContent()" id="btnSaveSong">
                     <ion-icon name="cloud-upload-outline"></ion-icon>
-                    <span>Salvar Música</span>
+                    <span data-i18n="sbHeaderSaveSongBtn">Salvar Música</span>
                   </button>
                 </div>
               </div>
@@ -7018,34 +7018,34 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                   <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
                     <ion-icon name="options-outline" style="color: #38bdf8;"></ion-icon>
-                    <span>Detalhes da Música</span>
+                    <span data-i18n="sbDetailsDrawerTitle">Detalhes da Música</span>
                   </h4>
                   <button class="btn-close-sm" onclick="toggleSongDetailsDrawer(false)">&times;</button>
                 </div>
 
                 <div class="sb-details-grid">
                   <div>
-                    <label class="form-label">Nome da Música</label>
-                    <input type="text" id="sbEditName" class="form-input" placeholder="Título da música" oninput="isSongEditorDirty = true">
+                    <label class="form-label" data-i18n="sbDetailsSongName">Nome da Música</label>
+                    <input type="text" id="sbEditName" class="form-input" placeholder="Título da música" data-i18n-placeholder="sbDetailsSongName" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
-                    <label class="form-label">Banda / Artista Original</label>
-                    <input type="text" id="sbEditArtist" class="form-input" placeholder="Nome do artista ou banda" oninput="isSongEditorDirty = true">
+                    <label class="form-label" data-i18n="sbDetailsArtist">Banda / Artista Original</label>
+                    <input type="text" id="sbEditArtist" class="form-input" placeholder="Nome do artista ou banda" data-i18n-placeholder="sbDetailsArtist" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
-                    <label class="form-label">Estilo / Gênero</label>
-                    <input type="text" id="sbEditStyle" class="form-input" placeholder="Ex: Rock, Nacional, Grunge" oninput="isSongEditorDirty = true">
+                    <label class="form-label" data-i18n="sbDetailsGenre">Estilo / Gênero</label>
+                    <input type="text" id="sbEditStyle" class="form-input" placeholder="Ex: Rock, Nacional, Grunge" data-i18n-placeholder="sbDetailsGenre" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
-                    <label class="form-label">Tom Principal</label>
-                    <input type="text" id="sbEditKey" class="form-input" placeholder="Ex: G, Am, D" oninput="isSongEditorDirty = true">
+                    <label class="form-label" data-i18n="sbDetailsMainKey">Tom Principal</label>
+                    <input type="text" id="sbEditKey" class="form-input" placeholder="Ex: G, Am, D" data-i18n-placeholder="sbDetailsMainKey" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
-                    <label class="form-label">BPM</label>
+                    <label class="form-label" data-i18n="sbDetailsBpm">BPM</label>
                     <input type="number" id="sbEditBpm" class="form-input" placeholder="120" oninput="isSongEditorDirty = true">
                   </div>
                   <div>
-                    <label class="form-label">Duração</label>
+                    <label class="form-label" data-i18n="sbDetailsDuration">Duração</label>
                     <input type="text" id="sbEditDuration" class="form-input" placeholder="e.g. 4:15" oninput="isSongEditorDirty = true" data-i18n-placeholder="songDurationPlaceholder">
                   </div>
                 </div>
@@ -7053,13 +7053,13 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 10px;">
                   <button class="btn btn-danger btn-sm" onclick="deleteCurrentSong()" type="button">
                     <ion-icon name="trash-outline"></ion-icon>
-                    <span>Excluir Música</span>
+                    <span data-i18n="sbDetailsDeleteSongBtn">Excluir Música</span>
                   </button>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-outline btn-sm" onclick="toggleSongDetailsDrawer(false)" type="button">Cancelar</button>
+                    <button class="btn btn-outline btn-sm" onclick="toggleSongDetailsDrawer(false)" type="button" data-i18n="cancel">Cancelar</button>
                     <button class="btn btn-primary btn-sm" onclick="saveSongDetailsOnly()" type="button">
                       <ion-icon name="checkmark-outline"></ion-icon>
-                      <span>Salvar Detalhes</span>
+                      <span data-i18n="sbDetailsSaveBtn">Salvar Detalhes</span>
                     </button>
                   </div>
                 </div>
@@ -7115,7 +7115,7 @@
 
               <!-- ÁREA DO EDITOR DE TEXTO -->
               <div class="sb-editor-body">
-                <textarea id="sbEditorTextarea" class="sb-editor-textarea" spellcheck="false" placeholder="Digite ou cole aqui a letra, cifra ou tablatura da música..." oninput="onEditorContentChanged()"></textarea>
+                <textarea id="sbEditorTextarea" class="sb-editor-textarea" spellcheck="false" placeholder="Digite ou cole aqui a letra, cifra ou tablatura da música..." data-i18n-placeholder="sbEditorPlaceholder" oninput="onEditorContentChanged()"></textarea>
               </div>
 
               <!-- RODAPÉ DO EDITOR -->
@@ -7125,10 +7125,10 @@
                   <span>Sincronizado na nuvem (Supabase)</span>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                  <span style="font-size: 0.78rem; color: #64748b;">Alterações sincronizam com o App Mobile</span>
+                  <span style="font-size: 0.78rem; color: #64748b;" data-i18n="sbFooterMobileSyncHint">Alterações sincronizam com o App Mobile</span>
                   <button class="btn btn-primary btn-sm" onclick="saveCurrentSongContent()">
                     <ion-icon name="checkmark-circle-outline"></ion-icon>
-                    <span>Salvar Música</span>
+                    <span data-i18n="sbHeaderSaveSongBtn">Salvar Música</span>
                   </button>
                 </div>
               </div>
@@ -7534,7 +7534,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="person-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Perfil do Músico</span>
+          <span data-i18n="publicMusicianTitle">Perfil do Músico</span>
         </h3>
         <button class="modal-close" onclick="closeModal('publicMusicianModal')">&times;</button>
       </div>
@@ -7546,9 +7546,9 @@
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <h2 id="pubMusDisplayName" style="font-size: 1.5rem; font-weight: 900; color: #fff;">Músico</h2>
+              <h2 id="pubMusDisplayName" style="font-size: 1.5rem; font-weight: 900; color: #fff;" data-i18n="publicMusicianBadge">Músico</h2>
               <span class="badge badge-cyan" id="pubMusAgeBadge" style="display: none;">-- anos</span>
-              <span class="badge badge-emerald" id="pubMusAvailBadge">Disponível</span>
+              <span class="badge badge-emerald" id="pubMusAvailBadge" data-i18n="publicMusicianAvailable">Disponível</span>
             </div>
             <div id="pubMusHandle" style="font-size: 0.92rem; font-weight: 700; color: var(--cyan-light); margin: 2px 0 4px 0;">@handle</div>
             <div id="pubMusLocation" style="font-size: 0.85rem; color: var(--text-dim); display: flex; align-items: center; gap: 4px;">
@@ -7558,25 +7558,25 @@
         </div>
 
         <div style="padding: 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 6px;">Sobre o Músico</div>
-          <p id="pubMusBio" style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; white-space: pre-line;">Sem biografia informada.</p>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 6px;" data-i18n="publicMusicianAbout">Sobre o Músico</div>
+          <p id="pubMusBio" style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; white-space: pre-line;" data-i18n="publicMusicianNoBio">Sem biografia informada.</p>
         </div>
 
         <div>
-          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 8px;">Instrumentos & Habilidades</div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 8px;" data-i18n="publicMusicianSkills">Instrumentos & Habilidades</div>
           <div id="pubMusSkills" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
         <div id="pubMusExtraSkillsSection" style="display: none;">
           <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
             <ion-icon name="sparkles"></ion-icon>
-            <span>Habilidades Extra-Musicais (Diferenciais p/ Banda)</span>
+            <span data-i18n="publicMusicianExtraSkills">Habilidades Extra-Musicais (Diferenciais p/ Banda)</span>
           </div>
           <div id="pubMusExtraSkills" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
 
         <div>
-          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 8px;">Bandas do Músico</div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 8px;" data-i18n="publicMusicianBands">Bandas do Músico</div>
           <div id="pubMusBands" class="grid-cards"></div>
         </div>
 
@@ -7585,9 +7585,9 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
           <a id="pubMusExternalLink" href="#" target="_blank" class="btn btn-outline btn-sm">
             <ion-icon name="open-outline"></ion-icon>
-            <span>Abrir Página Externa</span>
+            <span data-i18n="publicMusicianExternalPage">Abrir Página Externa</span>
           </a>
-          <button class="btn btn-primary" onclick="closeModal('publicMusicianModal')">Fechar</button>
+          <button class="btn btn-primary" onclick="closeModal('publicMusicianModal')" data-i18n="btnClose">Fechar</button>
         </div>
       </div>
     </div>
@@ -7599,7 +7599,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="musical-notes-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Perfil Público da Banda</span>
+          <span data-i18n="publicBandTitle">Perfil Público da Banda</span>
         </h3>
         <button class="modal-close" onclick="closeModal('publicBandModal')">&times;</button>
       </div>
@@ -7612,7 +7612,7 @@
           </div>
           <div style="flex: 1; min-width: 220px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <h2 id="pubBandName" style="font-size: 1.5rem; font-weight: 900; color: #fff; margin: 0;">Banda</h2>
+              <h2 id="pubBandName" style="font-size: 1.5rem; font-weight: 900; color: #fff; margin: 0;" data-i18n="publicBandBadge">Banda</h2>
               <span class="band-page-hero-since-badge" id="pubBandSinceBadge" style="font-size: 0.72rem; padding: 3px 9px; border-radius: 9999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 800;">DESDE --</span>
             </div>
             <div id="pubBandHandle" style="font-size: 0.9rem; font-weight: 700; color: var(--cyan-light); margin: 3px 0 6px 0;">@banda</div>
@@ -7625,7 +7625,7 @@
 
         <!-- Descrição / Sobre (se houver) -->
         <div id="pubBandBioSection" style="display: none; padding: 14px 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 6px;">Sobre a Banda</div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); margin-bottom: 6px;" data-i18n="publicBandAbout">Sobre a Banda</div>
           <p id="pubBandBio" style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55; white-space: pre-line; margin: 0;"></p>
         </div>
 
@@ -7633,7 +7633,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
             <ion-icon name="people-outline" style="color: var(--cyan); font-size: 1.1rem;"></ion-icon>
-            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px;">Membros da Banda</span>
+            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px;" data-i18n="publicBandMembers">Membros da Banda</span>
             <span id="pubBandMembersCount" class="band-members-count-circle" style="width: 22px; height: 22px; font-size: 0.72rem;">0</span>
           </div>
           <div id="pubBandMembers" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -7643,7 +7643,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
             <ion-icon name="calendar-outline" style="color: var(--cyan); font-size: 1.1rem;"></ion-icon>
-            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px;">Shows</span>
+            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px;" data-i18n="publicBandGigs">Shows</span>
             <span id="pubBandShowsCount" class="band-members-count-circle" style="width: 22px; height: 22px; font-size: 0.72rem;">0</span>
           </div>
           <div id="pubBandShows" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -7653,7 +7653,7 @@
         <div id="pubBandSocialsRow" style="display: none; gap: 10px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border-subtle);"></div>
 
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 6px;">
-          <button class="btn btn-primary" onclick="closeModal('publicBandModal')">Fechar</button>
+          <button class="btn btn-primary" onclick="closeModal('publicBandModal')" data-i18n="btnClose">Fechar</button>
         </div>
       </div>
     </div>
@@ -7664,13 +7664,13 @@
     <div class="modal-card">
       <div style="text-align: center; margin-bottom: 24px;">
         <img src="assets/bandlink_logo_transparent_wide.png" alt="BandLink" style="height: 48px; margin-bottom: 8px;">
-        <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff;">A Rede Musical Definitiva</h3>
-        <p style="color: var(--text-muted); font-size: 0.85rem;">Faça login para sincronizar seu perfil, songbook, bandas e agenda.</p>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff;" data-i18n="authModalHeroTitle">A Rede Musical Definitiva</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;" data-i18n="authModalHeroSubtitle">Faça login para sincronizar seu perfil, songbook, bandas e agenda.</p>
       </div>
 
       <div class="auth-tabs" id="authModeTabs">
-        <button class="auth-tab-btn active" id="authTabLogin" onclick="setAuthMode('login')">Entrar</button>
-        <button class="auth-tab-btn" id="authTabRegister" onclick="setAuthMode('register')">Cadastrar</button>
+        <button class="auth-tab-btn active" id="authTabLogin" onclick="setAuthMode('login')" data-i18n="authTabLogin">Entrar</button>
+        <button class="auth-tab-btn" id="authTabRegister" onclick="setAuthMode('register')" data-i18n="authTabRegister">Cadastrar</button>
       </div>
 
       <!-- Form Login -->
@@ -7684,43 +7684,43 @@
           <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password">
         </div>
         <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-          <a href="javascript:void(0)" onclick="setAuthMode('forgot')" style="color: var(--cyan-light); font-size: 0.82rem; text-decoration: none;">Esqueci minha senha</a>
+          <a href="javascript:void(0)" onclick="setAuthMode('forgot')" style="color: var(--cyan-light); font-size: 0.82rem; text-decoration: none;" data-i18n="authForgotLink">Esqueci minha senha</a>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Entrar na Rede</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;" data-i18n="authSignInBtn">Entrar na Rede</button>
       </form>
 
       <!-- Form Cadastro -->
       <form id="formRegister" onsubmit="handleRegister(event)" style="display: none;">
         <div class="form-group">
-          <label>Nome de Usuário (@handle)</label>
+          <label data-i18n="authUsernameHandleLabel">Nome de Usuário (@handle)</label>
           <div style="position: relative;">
-            <input type="text" id="regUsername" class="form-input" placeholder="ex: lucas_rock" maxlength="30" required oninput="onUsernameInputChange(this.value)">
+            <input type="text" id="regUsername" class="form-input" placeholder="ex: lucas_rock" data-i18n-placeholder="authUsernamePlaceholder" maxlength="30" required oninput="onUsernameInputChange(this.value)">
           </div>
           <div id="regUsernameFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none; font-weight: 600;"></div>
         </div>
 
         <div class="form-group">
           <label data-i18n="authEmailLabel">Email</label>
-          <input type="email" id="regEmail" class="form-input" placeholder="seu-email@dominio.com" required autocomplete="email">
+          <input type="email" id="regEmail" class="form-input" placeholder="seu-email@dominio.com" data-i18n-placeholder="authEmailPlaceholder" required autocomplete="email">
         </div>
 
         <div class="form-group">
-          <label>Data de Nascimento</label>
+          <label data-i18n="authBirthDateLabel">Data de Nascimento</label>
           <input type="date" id="regBirthDate" class="form-input">
         </div>
 
         <!-- Localização: Cidade, UF e País (Forms abertos para digitar) -->
         <div class="form-group">
-          <label>Localização</label>
+          <label data-i18n="authLocationLabel">Localização</label>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 8px;">
             <div>
-              <input type="text" id="regCity" class="form-input" placeholder="Cidade (ex: São Paulo)" maxlength="100">
+              <input type="text" id="regCity" class="form-input" placeholder="Cidade (ex: São Paulo)" data-i18n-placeholder="authCityPlaceholder" maxlength="100">
             </div>
             <div>
-              <input type="text" id="regState" class="form-input" placeholder="UF (ex: SP)" maxlength="30">
+              <input type="text" id="regState" class="form-input" placeholder="UF (ex: SP)" data-i18n-placeholder="authStatePlaceholder" maxlength="30">
             </div>
             <div>
-              <input type="text" id="regCountry" class="form-input" placeholder="País" value="Brasil" maxlength="100">
+              <input type="text" id="regCountry" class="form-input" placeholder="País" data-i18n-placeholder="authCountryPlaceholder" value="Brasil" maxlength="100">
             </div>
           </div>
         </div>
@@ -7748,70 +7748,70 @@
 
         <!-- Condições da Senha (Abaixo dos campos) -->
         <div id="regPasswordRulesBox" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 0.78rem;">
-          <div style="font-weight: 700; color: #94a3b8; margin-bottom: 6px;">Condições para a senha:</div>
+          <div style="font-weight: 700; color: #94a3b8; margin-bottom: 6px;" data-i18n="authPasswordRulesHeading">Condições para a senha:</div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
             <div id="ruleMinLen" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
               <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
-              <span>Mínimo 8 caracteres</span>
+              <span data-i18n="authRuleMinLen">Mínimo 8 caracteres</span>
             </div>
             <div id="ruleUpper" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
               <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
-              <span>1 letra maiúscula</span>
+              <span data-i18n="authRuleUpper">1 letra maiúscula</span>
             </div>
             <div id="ruleNumber" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
               <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
-              <span>1 número</span>
+              <span data-i18n="authRuleNumber">1 número</span>
             </div>
             <div id="ruleSpecial" style="color: #64748b; display: flex; align-items: center; gap: 5px; transition: color 0.15s;">
               <ion-icon name="ellipse-outline" style="font-size: 0.85rem;"></ion-icon>
-              <span>1 caractere especial</span>
+              <span data-i18n="authRuleSpecial">1 caractere especial</span>
             </div>
           </div>
         </div>
 
-        <button type="submit" id="btnSubmitRegister" class="btn btn-violet" style="width: 100%; padding: 12px; margin-top: 4px;">Criar Conta Gratuita</button>
+        <button type="submit" id="btnSubmitRegister" class="btn btn-violet" style="width: 100%; padding: 12px; margin-top: 4px;" data-i18n="authSubmitCreateAccountBtn">Criar Conta Gratuita</button>
       </form>
 
       <!-- Form Confirmar Código -->
       <form id="formConfirm" onsubmit="handleConfirmEmail(event)" style="display: none;">
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-          Enviamos um código de confirmação de 6 dígitos para o seu e-mail: <strong id="confirmEmailDisplay" style="color: #fff;"></strong>.
+          <span data-i18n="authConfirmCodeInfo">Enviamos um código de confirmação de 6 dígitos para o seu e-mail:</span> <strong id="confirmEmailDisplay" style="color: #fff;"></strong>.
         </p>
         <div class="form-group">
-          <label>Código de Confirmação (6 dígitos)</label>
+          <label data-i18n="authConfirmCodeLabel">Código de Confirmação (6 dígitos)</label>
           <input type="text" id="confirmCode" class="form-input" placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.4rem; letter-spacing: 4px; font-weight: 800;" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;">Confirmar e Entrar</button>
-        <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="handleResendCode()">Reenviar Código</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;" data-i18n="authConfirmAndEnterBtn">Confirmar e Entrar</button>
+        <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="handleResendCode()" data-i18n="authResendCodeBtn">Reenviar Código</button>
       </form>
 
       <!-- Form Esqueci a Senha -->
       <form id="formForgot" onsubmit="handleForgotPassword(event)" style="display: none;">
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;" data-i18n="authForgotInfo">
           Digite seu e-mail cadastrado para receber o código de redefinição de senha.
         </p>
         <div class="form-group">
-          <label>E-mail Cadastrado</label>
-          <input type="email" id="forgotEmail" class="form-input" placeholder="seu-email@dominio.com" required>
+          <label data-i18n="authForgotEmailLabel">E-mail Cadastrado</label>
+          <input type="email" id="forgotEmail" class="form-input" placeholder="seu-email@dominio.com" data-i18n-placeholder="authEmailPlaceholder" required>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;" data-i18n="authSubmitForgotBtn">Send Recovery Code</button>
-        <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="setAuthMode('login')">Voltar ao Login</button>
+        <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="setAuthMode('login')" data-i18n="authBackToLoginBtn">Voltar ao Login</button>
       </form>
 
       <!-- Form Redefinir Senha -->
       <form id="formReset" onsubmit="handleResetPassword(event)" style="display: none;">
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;" data-i18n="authResetInfo">
           Digite o código recebido por e-mail e a sua nova senha.
         </p>
         <div class="form-group">
-          <label>Código de 6 Dígitos</label>
+          <label data-i18n="authResetCodeLabel">Código de 6 Dígitos</label>
           <input type="text" id="resetCode" class="form-input" placeholder="123456" maxlength="6" required>
         </div>
         <div class="form-group">
           <label data-i18n="authNewPasswordLabel">New Password</label>
           <input type="password" id="resetPassword" class="form-input" placeholder="••••••••" minlength="8" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;">Redefinir e Entrar</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;" data-i18n="authResetAndEnterBtn">Redefinir e Entrar</button>
       </form>
 
     </div>
@@ -8035,10 +8035,10 @@
             <span style="font-weight: 700; color: #fff; font-size: 0.9rem;" data-i18n="gearNegotiableLabel">Negociável</span>
           </label>
           <div id="gearPriceWrapper" style="display: none; margin-top: 10px;">
-            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px; font-weight: 600;">Valor Pretendido ($)</label>
+            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 4px; font-weight: 600;" data-i18n="gearPriceLabel">Valor Pretendido ($)</label>
             <div style="position: relative; max-width: 200px;">
               <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 0.9rem; color: #34d399;">$</span>
-              <input type="text" id="gearPriceInput" class="form-input" placeholder="0,00" style="padding-left: 28px; font-weight: 800; color: #34d399;">
+              <input type="text" id="gearPriceInput" class="form-input" placeholder="0,00" data-i18n-placeholder="gearPricePlaceholder" style="padding-left: 28px; font-weight: 800; color: #34d399;">
             </div>
           </div>
         </div>
@@ -8062,27 +8062,27 @@
     <div class="modal-card large">
       <div class="modal-header">
         <div>
-          <h3 class="modal-title" id="songModalTitle">Título da Música</h3>
-          <p id="songModalArtist" style="color: var(--text-muted); font-size: 0.88rem; margin-top: 2px;">Artista / Banda</p>
+          <h3 class="modal-title" id="songModalTitle" data-i18n="songModalTitlePlaceholder">Título da Música</h3>
+          <p id="songModalArtist" style="color: var(--text-muted); font-size: 0.88rem; margin-top: 2px;" data-i18n="songModalArtistPlaceholder">Artista / Banda</p>
         </div>
         <button class="modal-close" onclick="closeModal('songModal')">&times;</button>
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
         <div style="display: flex; gap: 6px; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Modo:</span>
-          <button class="btn btn-sm btn-outline active" id="btnViewChords" onclick="setSongViewMode('chords')">Cifra</button>
-          <button class="btn btn-sm btn-outline" id="btnViewLyrics" onclick="setSongViewMode('lyrics')">Letra</button>
-          <button class="btn btn-sm btn-outline" id="btnViewTabs" onclick="setSongViewMode('tabs')">Tablatura</button>
+          <span style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;" data-i18n="songModalModeLabel">Modo:</span>
+          <button class="btn btn-sm btn-outline active" id="btnViewChords" onclick="setSongViewMode('chords')" data-i18n="songModalTabChords">Cifra</button>
+          <button class="btn btn-sm btn-outline" id="btnViewLyrics" onclick="setSongViewMode('lyrics')" data-i18n="songModalTabLyrics">Letra</button>
+          <button class="btn btn-sm btn-outline" id="btnViewTabs" onclick="setSongViewMode('tabs')" data-i18n="songModalTabTabs">Tablatura</button>
         </div>
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-sm btn-outline" onclick="copySongText()">
             <ion-icon name="copy-outline"></ion-icon>
-            <span>Copiar</span>
+            <span data-i18n="songModalCopyBtn">Copiar</span>
           </button>
           <button class="btn btn-sm btn-primary" onclick="openSongInEditorFromModal()">
             <ion-icon name="create-outline"></ion-icon>
-            <span>Editar no Songbook</span>
+            <span data-i18n="songModalEditInSongbookBtn">Editar no Songbook</span>
           </button>
         </div>
       </div>
@@ -8090,7 +8090,7 @@
       <pre class="chord-pro-display" id="songContentDisplay"></pre>
 
       <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
-        <button class="btn btn-outline" onclick="closeModal('songModal')">Fechar</button>
+        <button class="btn btn-outline" onclick="closeModal('songModal')" data-i18n="btnClose">Fechar</button>
       </div>
     </div>
   </div>
@@ -8224,17 +8224,17 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="people-outline" style="color: var(--violet);"></ion-icon>
-          <span>Nova Banda</span>
+          <span data-i18n="bandModalCreateTitle">Nova Banda</span>
         </h3>
         <button class="modal-close" onclick="closeModal('createBandModal')">&times;</button>
       </div>
       <form onsubmit="handleCreateBand(event)">
         <div class="form-group">
-          <label>Nome da Banda *</label>
+          <label data-i18n="bandNameRequiredLabel">Nome da Banda *</label>
           <input type="text" id="bandName" class="form-input" placeholder="e.g. The Brave Ones" data-i18n-placeholder="bandNamePlaceholder" required maxlength="100" oninput="onBandNameInputChange(this.value)">
         </div>
         <div class="form-group">
-          <label>Username da Banda (@) *</label>
+          <label data-i18n="bandUsernameRequiredLabel">Username da Banda (@) *</label>
           <div style="position: relative;">
             <input type="text" id="bandUsername" class="form-input" placeholder="e.g. the_brave_ones" data-i18n-placeholder="bandUsernamePlaceholder" required maxlength="30" oninput="onBandUsernameInputChange(this.value, 'create')">
           </div>
@@ -8245,23 +8245,23 @@
           <input type="text" id="bandGenre" class="form-input" placeholder="e.g. Classic Rock, Pop Rock" data-i18n-placeholder="bandGenrePlaceholder" maxlength="100">
         </div>
         <div class="form-group">
-          <label>Descrição / Release</label>
-          <textarea id="bandDescription" class="form-input" placeholder="Apresentação da banda..." maxlength="500"></textarea>
+          <label data-i18n="bandReleaseLabel">Descrição / Release</label>
+          <textarea id="bandDescription" class="form-input" placeholder="Apresentação da banda..." data-i18n-placeholder="bandBioPlaceholder" maxlength="500"></textarea>
         </div>
         <div class="form-group">
-          <label>Foto / Logo da Banda (Opcional)</label>
+          <label data-i18n="bandPhotoLogoOptional">Foto / Logo da Banda (Opcional)</label>
           <div style="display: flex; gap: 10px; align-items: center;">
             <input type="text" id="bandImageUri" class="form-input" placeholder="Photo URL or upload a file" data-i18n-placeholder="editProfilePhotoUrlPlaceholder" style="flex: 1;">
             <label class="btn btn-sm btn-outline" style="cursor: pointer; white-space: nowrap;">
               <ion-icon name="cloud-upload-outline"></ion-icon>
-              <span>Carregar</span>
+              <span data-i18n="bandUploadBtn">Carregar</span>
               <input type="file" id="bandImageFile" accept="image/*" style="display: none;" onchange="handleBandImageUpload(event)">
             </label>
           </div>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('createBandModal')">Cancelar</button>
-          <button type="submit" class="btn btn-violet">Nova Banda</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('createBandModal')" data-i18n="cancel">Cancelar</button>
+          <button type="submit" class="btn btn-violet" data-i18n="bandModalCreateTitle">Nova Banda</button>
         </div>
       </form>
     </div>
@@ -8324,21 +8324,21 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="megaphone-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Publicar no Mural</span>
+          <span data-i18n="annModalCreateTitle">Publicar no Mural</span>
         </h3>
         <button class="modal-close" onclick="closeModal('createAnnouncementModal')">&times;</button>
       </div>
       <form onsubmit="handleCreateAnnouncement(event)">
         <div class="form-group">
-          <label>Título do Anúncio *</label>
-          <input type="text" id="annTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" required maxlength="200">
+          <label data-i18n="annTitleLabel">Título do Anúncio *</label>
+          <input type="text" id="annTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" data-i18n-placeholder="annTitlePlaceholder" required maxlength="200">
         </div>
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-            <label style="margin: 0;">Músicos / Funções Procuradas *</label>
-            <span style="font-size: 0.72rem; color: #94a3b8;">(separe por vírgula se for mais de um)</span>
+            <label style="margin: 0;" data-i18n="annMusiciansLabel">Músicos / Funções Procuradas *</label>
+            <span style="font-size: 0.72rem; color: #94a3b8;" data-i18n="annMusiciansHint">(separe por vírgula se for mais de um)</span>
           </div>
-          <input type="text" id="annInstrument" class="form-input" placeholder="Ex: Guitarrista, Baixista, Vocalista" required maxlength="150" oninput="handleAnnInstrumentTextInput('create')">
+          <input type="text" id="annInstrument" class="form-input" placeholder="Ex: Guitarrista, Baixista, Vocalista" data-i18n-placeholder="annMusiciansPlaceholder" required maxlength="150" oninput="handleAnnInstrumentTextInput('create')">
           <div class="ann-styles-chips" id="annInstrumentPreview_create" style="min-height: 26px; margin-top: 6px;"></div>
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -8347,70 +8347,70 @@
             <input type="text" id="annCity" class="form-input" placeholder="e.g. Curitiba" data-i18n-placeholder="editProfileCityPlaceholder" maxlength="100">
           </div>
           <div class="form-group">
-            <label>Estado (UF)</label>
+            <label data-i18n="annStateLabel">Estado (UF)</label>
             <input type="text" id="annState" class="form-input" placeholder="e.g. PR" data-i18n-placeholder="editProfileStatePlaceholder" maxlength="50">
           </div>
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-              <label style="margin: 0;">Tipo de Repertório</label>
-              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+              <label style="margin: 0;" data-i18n="annRepertoireLabel">Tipo de Repertório</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;" data-i18n="annRepertoireHint">(pode marcar ambos)</span>
             </div>
             <div class="ann-segments-grid" id="annProjectTypeGroup_create">
-              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="toggleAnnProjectType('Cover', 'create')">Cover</button>
-              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="toggleAnnProjectType('Autoral', 'create')">Autoral</button>
+              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="toggleAnnProjectType('Cover', 'create')" data-i18n="annCoverOption">Cover</button>
+              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="toggleAnnProjectType('Autoral', 'create')" data-i18n="annOriginalOption">Autoral</button>
             </div>
             <input type="hidden" id="annProjectType" value="Cover">
           </div>
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-              <label style="margin: 0;">Nível de Interesse</label>
-              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+              <label style="margin: 0;" data-i18n="annInterestLevelLabel">Nível de Interesse</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;" data-i18n="annRepertoireHint">(pode marcar ambos)</span>
             </div>
             <div class="ann-segments-grid" id="annInterestLevelGroup_create">
-              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="toggleAnnInterestLevel('Casual', 'create')">Casual</button>
-              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="toggleAnnInterestLevel('Profissional', 'create')">Profissional</button>
+              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="toggleAnnInterestLevel('Casual', 'create')" data-i18n="annCasualOption">Casual</button>
+              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="toggleAnnInterestLevel('Profissional', 'create')" data-i18n="annProOption">Profissional</button>
             </div>
             <input type="hidden" id="annInterestLevel" value="Casual">
           </div>
         </div>
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-            <label style="margin: 0;">Estilos Musicais / Tags</label>
-            <span id="annStylesCounter_create" style="font-size: 0.76rem; color: #94a3b8;">(0/4 estilos)</span>
+            <label style="margin: 0;" data-i18n="annStylesLabel">Estilos Musicais / Tags</label>
+            <span id="annStylesCounter_create" style="font-size: 0.76rem; color: #94a3b8;" data-i18n="annStylesCountHint">(0/4 estilos)</span>
           </div>
-          <input type="text" id="annStylesInput_create" class="form-input" placeholder="Digite até 4 estilos separados por vírgula (ex: Rock, Pop, Indie, Metal)" oninput="handleAnnStylesTextInput('create')">
+          <input type="text" id="annStylesInput_create" class="form-input" placeholder="Digite até 4 estilos separados por vírgula (ex: Rock, Pop, Indie, Metal)" data-i18n-placeholder="annStylesPlaceholder" oninput="handleAnnStylesTextInput('create')">
           <div class="ann-styles-chips" id="annStylesPreview_create" style="min-height: 28px; margin-top: 8px;">
-            <span style="font-size: 0.78rem; color: #64748b; font-style: italic;">Nenhum estilo digitado ainda</span>
+            <span style="font-size: 0.78rem; color: #64748b; font-style: italic;" data-i18n="annNoStylesYet">Nenhum estilo digitado ainda</span>
           </div>
           <input type="hidden" id="annStyles" value="">
         </div>
         <div class="form-group">
-          <label>Descrição Detalhada *</label>
-          <textarea id="annDescription" class="form-input" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
+          <label data-i18n="annDescriptionLabel">Descrição Detalhada *</label>
+          <textarea id="annDescription" class="form-input" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." data-i18n-placeholder="annDescriptionPlaceholder" required maxlength="1000"></textarea>
         </div>
         <div class="form-group">
-          <label>Foto do Anúncio / Projeto (Opcional)</label>
+          <label data-i18n="annPhotoLabel">Foto do Anúncio / Projeto (Opcional)</label>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-            <input type="text" id="annImageUrl" class="form-input" placeholder="Cole a URL da foto ou use o botão carregar..." style="flex: 1;" oninput="updateAnnPhotoPreview('create')">
+            <input type="text" id="annImageUrl" class="form-input" placeholder="Cole a URL da foto ou use o botão carregar..." data-i18n-placeholder="annPhotoPlaceholder" style="flex: 1;" oninput="updateAnnPhotoPreview('create')">
             <button type="button" class="btn btn-outline" style="padding: 8px 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap;" onclick="document.getElementById('annPhotoFileInput').click()">
-              <ion-icon name="image-outline"></ion-icon> Carregar
+              <ion-icon name="image-outline"></ion-icon> <span data-i18n="bandUploadBtn">Carregar</span>
             </button>
             <input type="file" id="annPhotoFileInput" accept="image/*" style="display: none;" onchange="handleAnnPhotoUpload(event, 'create')">
           </div>
           <div id="annPhotoPreviewContainer" style="display: none; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 10px;">
             <img id="annPhotoPreviewImg" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
-            <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;">Foto selecionada</span>
+            <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;" data-i18n="annPhotoSelectedText">Foto selecionada</span>
             <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 10px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;" onclick="reopenAnnCropper('create')">
-              <ion-icon name="crop-outline"></ion-icon> Recortar
+              <ion-icon name="crop-outline"></ion-icon> <span data-i18n="annCropBtn">Recortar</span>
             </button>
-            <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('create')">Remover</button>
+            <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('create')" data-i18n="annRemovePhotoBtn">Remover</button>
           </div>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('createAnnouncementModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Publicar no Mural</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('createAnnouncementModal')" data-i18n="cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" data-i18n="annPublishBtn">Publicar no Mural</button>
         </div>
       </form>
     </div>
@@ -8422,22 +8422,22 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="create-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Editar Anúncio</span>
+          <span data-i18n="annModalEditTitle">Editar Anúncio</span>
         </h3>
         <button class="modal-close" onclick="closeModal('editAnnouncementModal')">&times;</button>
       </div>
       <form onsubmit="handleUpdateAnnouncement(event)">
         <input type="hidden" id="editAnnId">
         <div class="form-group">
-          <label>Título do Anúncio *</label>
-          <input type="text" id="editAnnTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" required maxlength="200">
+          <label data-i18n="annTitleLabel">Título do Anúncio *</label>
+          <input type="text" id="editAnnTitle" class="form-input" placeholder="Ex: Procuramos Baixista para banda de Indie Rock" data-i18n-placeholder="annTitlePlaceholder" required maxlength="200">
         </div>
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-            <label style="margin: 0;">Músicos / Funções Procuradas *</label>
-            <span style="font-size: 0.72rem; color: #94a3b8;">(separe por vírgula se for mais de um)</span>
+            <label style="margin: 0;" data-i18n="annMusiciansLabel">Músicos / Funções Procuradas *</label>
+            <span style="font-size: 0.72rem; color: #94a3b8;" data-i18n="annMusiciansHint">(separe por vírgula se for mais de um)</span>
           </div>
-          <input type="text" id="editAnnInstrument" class="form-input" placeholder="Ex: Guitarrista, Baixista, Vocalista" required maxlength="150" oninput="handleAnnInstrumentTextInput('edit')">
+          <input type="text" id="editAnnInstrument" class="form-input" placeholder="Ex: Guitarrista, Baixista, Vocalista" data-i18n-placeholder="annMusiciansPlaceholder" required maxlength="150" oninput="handleAnnInstrumentTextInput('edit')">
           <div class="ann-styles-chips" id="annInstrumentPreview_edit" style="min-height: 26px; margin-top: 6px;"></div>
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -8446,70 +8446,70 @@
             <input type="text" id="editAnnCity" class="form-input" placeholder="e.g. Curitiba" data-i18n-placeholder="editProfileCityPlaceholder" maxlength="100">
           </div>
           <div class="form-group">
-            <label>Estado (UF)</label>
+            <label data-i18n="annStateLabel">Estado (UF)</label>
             <input type="text" id="editAnnState" class="form-input" placeholder="e.g. PR" data-i18n-placeholder="editProfileStatePlaceholder" maxlength="50">
           </div>
         </div>
         <div class="ann-two-col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-              <label style="margin: 0;">Tipo de Repertório</label>
-              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+              <label style="margin: 0;" data-i18n="annRepertoireLabel">Tipo de Repertório</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;" data-i18n="annRepertoireHint">(pode marcar ambos)</span>
             </div>
             <div class="ann-segments-grid" id="annProjectTypeGroup_edit">
-              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="toggleAnnProjectType('Cover', 'edit')">Cover</button>
-              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="toggleAnnProjectType('Autoral', 'edit')">Autoral</button>
+              <button type="button" class="ann-segment-btn active" data-val="Cover" onclick="toggleAnnProjectType('Cover', 'edit')" data-i18n="annCoverOption">Cover</button>
+              <button type="button" class="ann-segment-btn" data-val="Autoral" onclick="toggleAnnProjectType('Autoral', 'edit')" data-i18n="annOriginalOption">Autoral</button>
             </div>
             <input type="hidden" id="editAnnProjectType" value="Cover">
           </div>
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-              <label style="margin: 0;">Nível de Interesse</label>
-              <span style="font-size: 0.72rem; color: #94a3b8;">(pode marcar ambos)</span>
+              <label style="margin: 0;" data-i18n="annInterestLevelLabel">Nível de Interesse</label>
+              <span style="font-size: 0.72rem; color: #94a3b8;" data-i18n="annRepertoireHint">(pode marcar ambos)</span>
             </div>
             <div class="ann-segments-grid" id="annInterestLevelGroup_edit">
-              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="toggleAnnInterestLevel('Casual', 'edit')">Casual</button>
-              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="toggleAnnInterestLevel('Profissional', 'edit')">Profissional</button>
+              <button type="button" class="ann-segment-btn active" data-val="Casual" onclick="toggleAnnInterestLevel('Casual', 'edit')" data-i18n="annCasualOption">Casual</button>
+              <button type="button" class="ann-segment-btn" data-val="Profissional" onclick="toggleAnnInterestLevel('Profissional', 'edit')" data-i18n="annProOption">Profissional</button>
             </div>
             <input type="hidden" id="editAnnInterestLevel" value="Casual">
           </div>
         </div>
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-            <label style="margin: 0;">Estilos Musicais / Tags</label>
-            <span id="annStylesCounter_edit" style="font-size: 0.76rem; color: #94a3b8;">(0/4 estilos)</span>
+            <label style="margin: 0;" data-i18n="annStylesLabel">Estilos Musicais / Tags</label>
+            <span id="annStylesCounter_edit" style="font-size: 0.76rem; color: #94a3b8;" data-i18n="annStylesCountHint">(0/4 estilos)</span>
           </div>
-          <input type="text" id="annStylesInput_edit" class="form-input" placeholder="Digite até 4 estilos separados por vírgula (ex: Rock, Pop, Indie, Metal)" oninput="handleAnnStylesTextInput('edit')">
+          <input type="text" id="annStylesInput_edit" class="form-input" placeholder="Digite até 4 estilos separados por vírgula (ex: Rock, Pop, Indie, Metal)" data-i18n-placeholder="annStylesPlaceholder" oninput="handleAnnStylesTextInput('edit')">
           <div class="ann-styles-chips" id="annStylesPreview_edit" style="min-height: 28px; margin-top: 8px;">
-            <span style="font-size: 0.78rem; color: #64748b; font-style: italic;">Nenhum estilo digitado ainda</span>
+            <span style="font-size: 0.78rem; color: #64748b; font-style: italic;" data-i18n="annNoStylesYet">Nenhum estilo digitado ainda</span>
           </div>
           <input type="hidden" id="editAnnStyles" value="">
         </div>
         <div class="form-group">
-          <label>Descrição Detalhada *</label>
-          <textarea id="editAnnDescription" class="form-input" rows="4" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." required maxlength="1000"></textarea>
+          <label data-i18n="annDescriptionLabel">Descrição Detalhada *</label>
+          <textarea id="editAnnDescription" class="form-input" rows="4" placeholder="Conte mais sobre o projeto, repertório, agenda de ensaios..." data-i18n-placeholder="annDescriptionPlaceholder" required maxlength="1000"></textarea>
         </div>
         <div class="form-group">
-          <label>Foto do Anúncio / Projeto (Opcional)</label>
+          <label data-i18n="annPhotoLabel">Foto do Anúncio / Projeto (Opcional)</label>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-            <input type="text" id="editAnnImageUrl" class="form-input" placeholder="Cole a URL da foto ou use o botão carregar..." style="flex: 1;" oninput="updateAnnPhotoPreview('edit')">
+            <input type="text" id="editAnnImageUrl" class="form-input" placeholder="Cole a URL da foto ou use o botão carregar..." data-i18n-placeholder="annPhotoPlaceholder" style="flex: 1;" oninput="updateAnnPhotoPreview('edit')">
             <button type="button" class="btn btn-outline" style="padding: 8px 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap;" onclick="document.getElementById('editAnnPhotoFileInput').click()">
-              <ion-icon name="image-outline"></ion-icon> Carregar
+              <ion-icon name="image-outline"></ion-icon> <span data-i18n="bandUploadBtn">Carregar</span>
             </button>
             <input type="file" id="editAnnPhotoFileInput" accept="image/*" style="display: none;" onchange="handleAnnPhotoUpload(event, 'edit')">
           </div>
           <div id="editAnnPhotoPreviewContainer" style="display: none; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 10px;">
             <img id="editAnnPhotoPreviewImg" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
-            <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;">Foto selecionada</span>
+            <span style="font-size: 0.82rem; color: #94a3b8; flex: 1;" data-i18n="annPhotoSelectedText">Foto selecionada</span>
             <button type="button" class="btn btn-sm btn-outline" style="padding: 4px 10px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;" onclick="reopenAnnCropper('edit')">
-              <ion-icon name="crop-outline"></ion-icon> Recortar
+              <ion-icon name="crop-outline"></ion-icon> <span data-i18n="annCropBtn">Recortar</span>
             </button>
-            <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('edit')">Remover</button>
+            <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 4px 8px; cursor: pointer;" onclick="clearAnnPhoto('edit')" data-i18n="annRemovePhotoBtn">Remover</button>
           </div>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('editAnnouncementModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('editAnnouncementModal')" data-i18n="cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" data-i18n="annSaveEditBtn">Salvar Alterações</button>
         </div>
       </form>
     </div>
@@ -8521,7 +8521,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="crop-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Recortar Foto do Anúncio</span>
+          <span data-i18n="cropModalTitle">Recortar Foto</span>
         </h3>
         <button class="modal-close" onclick="closeModal('annCropModal')">&times;</button>
       </div>
@@ -8533,10 +8533,10 @@
         <input type="range" id="annCropZoomSlider" min="1" max="3" step="0.05" value="1" style="flex: 1;" oninput="onAnnCropZoomChanged(this.value)">
         <ion-icon name="add-circle-outline" style="color: var(--text-dim); font-size: 1.3rem; cursor: pointer;" onclick="adjustAnnCropZoom(0.1)"></ion-icon>
       </div>
-      <div style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-top: 6px;">Arraste para posicionar e use o slider para ajustar o zoom.</div>
+      <div style="font-size: 0.76rem; color: #94a3b8; text-align: center; margin-top: 6px;" data-i18n="cropModalSubtitle">Arraste para posicionar e use o slider para ajustar o zoom.</div>
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-        <button type="button" class="btn btn-outline" onclick="closeModal('annCropModal')">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="applyAnnCroppedImage()">Aplicar Recorte</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('annCropModal')" data-i18n="cancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="applyAnnCroppedImage()" data-i18n="cropModalApplyBtn">Aplicar Recorte</button>
       </div>
     </div>
   </div>
@@ -8547,19 +8547,19 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="people" style="color: #22c55e;"></ion-icon>
-          <span>Interessados no Anúncio</span>
+          <span data-i18n="annCandidatesModalTitle">Interessados no Anúncio</span>
         </h3>
         <button class="modal-close" onclick="closeModal('announcementCandidatesModal')">&times;</button>
       </div>
       <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08);">
         <div style="font-weight: 700; color: #fff; font-size: 0.95rem;" id="candidatesModalProjectTitle">Título do Anúncio</div>
-        <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 2px;" id="candidatesModalSubtitle">Músicos que demonstraram interesse nesta vaga</div>
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 2px;" id="candidatesModalSubtitle" data-i18n="annCandidatesModalSubtitle">Músicos que demonstraram interesse nesta vaga</div>
       </div>
       <div id="announcementCandidatesList" style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
         <!-- Filled dynamically -->
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
-        <button type="button" class="btn btn-outline" onclick="closeModal('announcementCandidatesModal')">Fechar</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('announcementCandidatesModal')" data-i18n="btnClose">Fechar</button>
       </div>
     </div>
   </div>
@@ -8570,7 +8570,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="sparkles" style="color: #38bdf8;"></ion-icon>
-          <span>Scanner de Músicos Ideais</span>
+          <span data-i18n="idealMusiciansTitle">Scanner de Músicos Ideais</span>
         </h3>
         <button class="modal-close" onclick="closeModal('idealMusiciansModal')">&times;</button>
       </div>
@@ -8580,7 +8580,7 @@
             <div style="font-weight: 800; color: #fff; font-size: 1rem;" id="scannerTargetTitle">Procuramos Baixista</div>
             <div style="font-size: 0.84rem; color: #bae6fd; margin-top: 2px;" id="scannerTargetCriteria">Critérios: Baixo • Curitiba/PR • Rock/Indie</div>
           </div>
-          <div id="scannerMatchCountBadge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 9999px;">
+          <div id="scannerMatchCountBadge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 9999px;" data-i18n="idealMusiciansCount">
             0 Músicos Compatíveis
           </div>
         </div>
@@ -8589,7 +8589,7 @@
         <!-- Filled dynamically -->
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
-        <button type="button" class="btn btn-outline" onclick="closeModal('idealMusiciansModal')">Fechar</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('idealMusiciansModal')" data-i18n="btnClose">Fechar</button>
       </div>
     </div>
   </div>
@@ -8600,7 +8600,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="paper-plane" style="color: #22c55e;"></ion-icon>
-          <span>Demonstrar Interesse</span>
+          <span data-i18n="expressInterestTitle">Demonstrar Interesse</span>
         </h3>
         <button class="modal-close" onclick="closeModal('expressInterestModal')">&times;</button>
       </div>
@@ -8617,20 +8617,20 @@
         </div>
 
         <div class="form-group">
-          <label>Sua Mensagem para a Banda *</label>
-          <textarea id="interestMessageText" class="form-input" rows="4" placeholder="Apresente-se, fale sobre sua experiência, instrumentos e disponibilidade..." required maxlength="1000"></textarea>
+          <label data-i18n="expressInterestMsgLabel">Sua Mensagem para a Banda *</label>
+          <textarea id="interestMessageText" class="form-input" rows="4" placeholder="Apresente-se, fale sobre sua experiência, instrumentos e disponibilidade..." data-i18n-placeholder="expressInterestMsgPlaceholder" required maxlength="1000"></textarea>
         </div>
 
         <div class="form-group">
-          <label>Seu Contato / Telefone (Opcional)</label>
-          <input type="text" id="interestPhone" class="form-input" placeholder="(DDD) 99999-9999" maxlength="30">
+          <label data-i18n="expressInterestContactLabel">Seu Contato / Telefone (Opcional)</label>
+          <input type="text" id="interestPhone" class="form-input" placeholder="(DDD) 99999-9999" data-i18n-placeholder="expressInterestContactPlaceholder" maxlength="30">
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('expressInterestModal')">Cancelar</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('expressInterestModal')" data-i18n="cancel">Cancelar</button>
           <button type="submit" class="btn" style="background: #22c55e; color: #fff; font-weight: 800; border: none; border-radius: 10px; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35); cursor: pointer;">
             <ion-icon name="send"></ion-icon>
-            <span>Enviar Mensagem</span>
+            <span data-i18n="expressInterestSendBtn">Enviar Mensagem</span>
           </button>
         </div>
       </form>
@@ -8643,14 +8643,14 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <ion-icon name="create-outline" style="color: var(--cyan);"></ion-icon>
-          <span>Editar Perfil da Banda</span>
+          <span data-i18n="bandModalEditTitle">Editar Perfil da Banda</span>
         </h3>
         <button class="modal-close" onclick="closeModal('editBandProfileModal')">&times;</button>
       </div>
       <form onsubmit="handleSaveBandProfile(event)" style="width: 100%; box-sizing: border-box;">
         <!-- Foto / Logo da Banda -->
         <div class="form-group">
-          <label>Foto / Logo da Banda</label>
+          <label data-i18n="bandPhotoLogoLabel">Foto / Logo da Banda</label>
           <div style="display: flex; gap: 12px; align-items: center;">
             <div id="bandPhotoPreviewBox" style="width: 52px; height: 52px; border-radius: 50%; overflow: hidden; background: #121824; border: 2px solid var(--cyan); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
               <span id="bandPhotoPreviewFallback" style="font-weight: 800; font-size: 1.15rem; color: #fff;">BD</span>
@@ -8660,7 +8660,7 @@
               <input type="text" id="editBandImageUri" class="form-input" style="flex: 1; min-width: 0;" oninput="updateBandPhotoPreview()">
               <label class="btn btn-sm btn-outline" style="cursor: pointer; white-space: nowrap; flex-shrink: 0; padding: 7px 12px;">
                 <ion-icon name="cloud-upload-outline"></ion-icon>
-                <span>Upload</span>
+                <span data-i18n="bandUploadBtn">Upload</span>
                 <input type="file" id="editBandImageFile" accept="image/*" style="display: none;" onchange="handleBandPhotoUpload(event)">
               </label>
             </div>
@@ -8668,12 +8668,12 @@
         </div>
 
         <div class="form-group">
-          <label>Nome da Banda *</label>
+          <label data-i18n="bandNameRequiredLabel">Nome da Banda *</label>
           <input type="text" id="editBandName" class="form-input" required maxlength="100">
         </div>
 
         <div class="form-group">
-          <label>Username da Banda (@) *</label>
+          <label data-i18n="bandUsernameRequiredLabel">Username da Banda (@) *</label>
           <div style="position: relative;">
             <input type="text" id="editBandUsername" class="form-input" placeholder="e.g. the_brave_ones" data-i18n-placeholder="bandUsernamePlaceholder" required maxlength="30" oninput="onBandUsernameInputChange(this.value, 'edit')">
           </div>
@@ -8682,11 +8682,11 @@
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label>Ano de Fundação *</label>
+            <label data-i18n="bandFoundationYearLabel">Ano de Fundação *</label>
             <input type="text" id="editBandSinceYear" class="form-input" required maxlength="10">
           </div>
           <div class="form-group">
-            <label>Gênero Musical</label>
+            <label data-i18n="bandGenreLabel">Gênero Musical</label>
             <input type="text" id="editBandGenre" class="form-input" maxlength="100">
           </div>
         </div>
@@ -8694,64 +8694,64 @@
         <!-- Proposta Musical e Foco / Interesse -->
         <div class="form-grid-2" style="margin-bottom: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Proposta Musical</label>
+            <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;" data-i18n="bandProposalLabel">Proposta Musical</label>
             <div style="display: flex; gap: 8px;">
               <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
                 <input type="checkbox" id="editBandIsCover" style="accent-color: var(--cyan);">
-                <span>Cover</span>
+                <span data-i18n="annCoverOption">Cover</span>
               </label>
               <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
                 <input type="checkbox" id="editBandIsAutoral" style="accent-color: var(--cyan);">
-                <span>Autoral</span>
+                <span data-i18n="annOriginalOption">Autoral</span>
               </label>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Nível / Foco</label>
+            <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;" data-i18n="bandFocusLabel">Nível / Foco</label>
             <div style="display: flex; gap: 8px;">
               <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
                 <input type="checkbox" id="editBandIsProfissional" style="accent-color: var(--cyan);">
-                <span>Profissional</span>
+                <span data-i18n="annProOption">Profissional</span>
               </label>
               <label class="clean-pill-checkbox" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: pointer; font-size: 0.82rem; font-weight: 700; user-select: none;">
                 <input type="checkbox" id="editBandIsCasual" style="accent-color: var(--cyan);">
-                <span>Casual</span>
+                <span data-i18n="annCasualOption">Casual</span>
               </label>
             </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Localização</label>
+          <label data-i18n="bandLocationLabel">Localização</label>
           <div class="band-location-grid">
             <div class="band-loc-col-city band-location-field">
-              <span class="band-location-label">Cidade</span>
+              <span class="band-location-label" data-i18n="bandCityLabel">Cidade</span>
               <input type="text" id="editBandCity" class="form-input" maxlength="100">
             </div>
             <div class="band-loc-col-uf band-location-field">
-              <span class="band-location-label">UF</span>
+              <span class="band-location-label" data-i18n="bandStateLabel">UF</span>
               <input type="text" id="editBandState" class="form-input" maxlength="4" style="text-align: center; text-transform: uppercase; padding-left: 2px; padding-right: 2px;">
             </div>
             <div class="band-loc-col-country band-location-field">
-              <span class="band-location-label">País</span>
+              <span class="band-location-label" data-i18n="bandCountryLabel">País</span>
               <input type="text" id="editBandCountry" class="form-input" maxlength="100">
             </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Apresentação da Banda</label>
-          <textarea id="editBandDescription" class="form-input" rows="3" maxlength="500"></textarea>
+          <label data-i18n="bandBioLabel">Apresentação da Banda</label>
+          <textarea id="editBandDescription" class="form-input" rows="3" placeholder="Apresentação da banda..." data-i18n-placeholder="bandBioPlaceholder" maxlength="500"></textarea>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap;">
           <button type="button" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.08); font-size: 0.82rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;" onclick="handleDeleteCurrentBandFromModal()">
             <ion-icon name="trash-outline"></ion-icon>
-            <span>Excluir Banda</span>
+            <span data-i18n="bandDeleteBtn">Excluir Banda</span>
           </button>
           <div style="display: flex; gap: 10px;">
-            <button type="button" class="btn btn-outline" onclick="closeModal('editBandProfileModal')">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Salvar Perfil da Banda</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal('editBandProfileModal')" data-i18n="cancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary" data-i18n="bandSaveProfileBtn">Salvar Perfil da Banda</button>
           </div>
         </div>
       </form>
@@ -8803,28 +8803,28 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Data *</label>
+              <label data-i18n="eventDateLabel">Data *</label>
               <input type="date" id="mEventDate" class="form-input" required>
             </div>
             <div class="form-group">
-              <label>Horário</label>
+              <label data-i18n="eventTimeLabel">Horário</label>
               <input type="time" id="mEventTime" class="form-input">
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
             <div class="form-group">
-              <label>Local / Casa de Show</label>
-              <input type="text" id="mEventLocal" class="form-input" placeholder="Ex: Barteco, Franca/SP" maxlength="200">
+              <label data-i18n="eventVenueLabel">Local / Casa de Show</label>
+              <input type="text" id="mEventLocal" class="form-input" placeholder="Ex: Barteco, Franca/SP" data-i18n-placeholder="eventVenuePlaceholder" maxlength="200">
             </div>
             <div class="form-group">
-              <label>Cachê Estimado</label>
-              <input type="text" id="mEventCache" class="form-input" placeholder="Ex: R$ 1.100,00" maxlength="30">
+              <label data-i18n="eventCacheLabel">Cachê Estimado</label>
+              <input type="text" id="mEventCache" class="form-input" placeholder="Ex: R$ 1.100,00" data-i18n-placeholder="eventCachePlaceholder" maxlength="30">
             </div>
           </div>
 
           <div class="form-group">
-            <label>Observações & Anotações</label>
+            <label data-i18n="eventNotesLabel">Observações & Anotações</label>
             <textarea id="mEventNotes" class="form-input" rows="3" placeholder="Informações de som, horário de passagem, contato da casa..." data-i18n-placeholder="eventNotesDetailedPlaceholder" maxlength="500"></textarea>
           </div>
         </div>
@@ -8859,12 +8859,12 @@
           <div id="mEventAddSongPicker" style="display: none; background: #131a28; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
             <div style="display: flex; gap: 8px; margin-bottom: 8px;">
               <input type="text" id="mEventSongCatalogFilter" class="form-input" placeholder="🔍 Type to search song or band in repertoire..." data-i18n-placeholder="setlistSearchSongPlaceholder" oninput="populateEventSongCatalogSelect(this.value)" style="width: 100%; padding: 9px 12px; font-size: 0.88rem;">
-              <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)" title="Fechar seletor" style="padding: 0 12px;">Fechar</button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="toggleAddSongToPlaylistPicker(false)" title="Fechar seletor" data-i18n="close" style="padding: 0 12px;">Fechar</button>
             </div>
             <div style="display: flex; gap: 8px;">
               <select id="mEventSongCatalogSelect" class="form-input" style="flex: 1; font-size: 0.88rem; padding: 8px 10px;"></select>
               <button type="button" class="btn btn-sm btn-primary" onclick="addSelectedSongToCurrentPlaylist()" style="padding: 0 18px; font-weight: 700;">
-                <ion-icon name="add-outline"></ion-icon> Adicionar
+                <ion-icon name="add-outline"></ion-icon> <span data-i18n="add">Adicionar</span>
               </button>
             </div>
           </div>
@@ -9166,7 +9166,7 @@
             <ion-icon name="receipt-outline" style="font-size: 1.3rem;"></ion-icon>
           </div>
           <div>
-            <h3 class="modal-title" id="editFinanceEntryModalTitle" style="margin: 0;">Lançamento Financeiro</h3>
+            <h3 class="modal-title" id="editFinanceEntryModalTitle" style="margin: 0;" data-i18n="bandFinanceEntryTitle">Lançamento Financeiro</h3>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('editFinanceEntryModal')">&times;</button>
@@ -9175,35 +9175,35 @@
       <form onsubmit="handleSaveFinanceEntry(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
         <!-- Tipo de Lançamento: Entrada (+) vs Saída / Despesa (-) -->
         <div class="form-group">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Tipo de Operação</label>
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;" data-i18n="bandFinanceTypeLabel">Tipo de Operação</label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <label style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.08); cursor: pointer; color: #4ade80; font-weight: 700; font-size: 0.9rem;">
               <input type="radio" name="finEntryType" id="finEntryTypeIncome" value="income" onchange="updateFinanceCashSimulation()" style="accent-color: #4ade80;">
-              <span>+ Entrada (Receita)</span>
+              <span data-i18n="bandFinanceIncomeOption">+ Entrada (Receita)</span>
             </label>
             <label style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); cursor: pointer; color: #f87171; font-weight: 700; font-size: 0.9rem;">
               <input type="radio" name="finEntryType" id="finEntryTypeExpense" value="expense" checked onchange="updateFinanceCashSimulation()" style="accent-color: #f87171;">
-              <span>- Saída (Despesa)</span>
+              <span data-i18n="bandFinanceExpenseOption">- Saída (Despesa)</span>
             </label>
           </div>
         </div>
 
         <!-- Descrição / Título -->
         <div class="form-group">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Descrição / Título *</label>
-          <input type="text" id="finEntryTitle" class="form-input" placeholder="Ex: Compra de cabos, Patrocínio, Combustível van..." required maxlength="200">
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;" data-i18n="bandFinanceDescLabel">Descrição / Título *</label>
+          <input type="text" id="finEntryTitle" class="form-input" placeholder="Ex: Compra de cabos, Patrocínio, Combustível van..." data-i18n-placeholder="bandFinanceDescPlaceholder" required maxlength="200">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <!-- Valor -->
           <div class="form-group">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Valor ($) *</label>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;" data-i18n="bandFinanceAmountLabel">Valor ($) *</label>
             <input type="number" step="0.01" min="0.01" id="finEntryAmount" class="form-input" placeholder="0.00" required oninput="updateFinanceCashSimulation()" style="font-weight: 800; font-size: 1.05rem;">
           </div>
 
           <!-- Data -->
           <div class="form-group">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Data *</label>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;" data-i18n="bandFinanceDateLabel">Data *</label>
             <input type="date" id="finEntryDate" class="form-input" required>
           </div>
         </div>
@@ -9212,21 +9212,21 @@
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.88rem; font-weight: 700; color: #fff;">
             <input type="checkbox" id="finEntryUseCash" onchange="updateFinanceCashSimulation()" style="width: 17px; height: 17px; accent-color: #fbbf24; cursor: pointer;">
-            <span id="finEntryUseCashLabel">Retirar do caixa da banda</span>
+            <span id="finEntryUseCashLabel" data-i18n="bandFinanceDeductCashLabel">Retirar do caixa da banda</span>
           </label>
 
           <!-- Simulação do Caixa: Saldo Atual, Quanto vai usar e Saldo Posterior -->
           <div id="finCashSimulationBox" style="display: none; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 12px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; text-align: center;">
             <div>
-              <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Saldo Atual</div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;" data-i18n="bandFinanceCurrentBalanceLabel">Saldo Atual</div>
               <div id="finSimCurrentCash" style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; font-family: var(--font-mono); margin-top: 2px;">$ 0,00</div>
             </div>
             <div>
-              <div id="finSimActionLabel" style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Quanto vai usar</div>
+              <div id="finSimActionLabel" style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;" data-i18n="bandFinanceAmountToUseLabel">Quanto vai usar</div>
               <div id="finSimUseAmount" style="font-size: 0.95rem; font-weight: 800; color: #f87171; font-family: var(--font-mono); margin-top: 2px;">- $ 0,00</div>
             </div>
             <div>
-              <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Saldo Posterior</div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;" data-i18n="bandFinanceResultingBalanceLabel">Saldo Posterior</div>
               <div id="finSimResultCash" style="font-size: 0.95rem; font-weight: 800; color: #34d399; font-family: var(--font-mono); margin-top: 2px;">$ 0,00</div>
             </div>
           </div>
@@ -9234,22 +9234,22 @@
 
         <!-- Status -->
         <div class="form-group">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;">Status do Pagamento</label>
+          <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: block;" data-i18n="bandFinanceStatusLabel">Status do Pagamento</label>
           <select id="finEntryStatus" class="form-input">
-            <option value="paid">Pago / Concluído</option>
-            <option value="pending">Pendente</option>
+            <option value="paid" data-i18n="bandFinancePaidStatus">Pago / Concluído</option>
+            <option value="pending" data-i18n="bandFinancePendingStatus">Pendente</option>
           </select>
         </div>
 
         <!-- Observações -->
         <div class="form-group">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block;">Observações (Opcional)</label>
-          <textarea id="finEntryNotes" class="form-input" rows="2" placeholder="Detalhes adicionais, comprovante, responsável..." maxlength="500"></textarea>
+          <label style="font-size: 0.82rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block;" data-i18n="bandFinanceNotesLabel">Observações (Opcional)</label>
+          <textarea id="finEntryNotes" class="form-input" rows="2" placeholder="Detalhes adicionais, comprovante, responsável..." data-i18n-placeholder="bandFinanceNotesPlaceholder" maxlength="500"></textarea>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-          <button type="button" class="btn btn-outline" onclick="closeModal('editFinanceEntryModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('editFinanceEntryModal')" data-i18n="cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" data-i18n="bandFinanceSaveBtn">Salvar Lançamento</button>
         </div>
       </form>
     </div>
@@ -9299,7 +9299,7 @@
           <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; color: var(--cyan);">
             <ion-icon name="person-outline" style="font-size: 1.25rem;"></ion-icon>
           </div>
-          <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0; font-size: 1.15rem;">Integrante</h3>
+          <h3 class="modal-title" id="editBandMemberModalTitle" style="margin: 0; font-size: 1.15rem;" data-i18n="bandMemberModalTitle">Integrante</h3>
         </div>
         <button class="modal-close" onclick="closeModal('editBandMemberModal')">&times;</button>
       </div>
@@ -9307,10 +9307,10 @@
       <form id="editBandMemberForm" onsubmit="saveBandMemberModal(event)" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
         <!-- Username com Busca em Tempo Real -->
         <div class="form-group" style="margin-bottom: 0;">
-          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;" data-i18n="bandMemberUsernameLabel">
             Usuário (@username) *
           </label>
-          <input type="text" id="mMemberUsername" class="form-input" placeholder="Ex: allison_xd" oninput="handleMemberUsernameInput(this.value)" autocomplete="off" required>
+          <input type="text" id="mMemberUsername" class="form-input" placeholder="Ex: allison_xd" data-i18n-placeholder="bandMemberUsernamePlaceholder" oninput="handleMemberUsernameInput(this.value)" autocomplete="off" required>
           <div id="mMemberUserStatus" style="margin-top: 4px; min-height: 18px;"></div>
         </div>
 
@@ -9320,8 +9320,8 @@
             <span id="mMemberAvatarInitial">M</span>
           </div>
           <div style="flex: 1; min-width: 0;">
-            <div id="mMemberResolvedName" style="font-size: 0.95rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Aguardando @usuário</div>
-            <div id="mMemberResolvedHandle" style="font-size: 0.78rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Digite o nome de usuário acima</div>
+            <div id="mMemberResolvedName" style="font-size: 0.95rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" data-i18n="bandMemberWaitingUser">Aguardando @usuário</div>
+            <div id="mMemberResolvedHandle" style="font-size: 0.78rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" data-i18n="bandMemberTypeUsernameHint">Digite o nome de usuário acima</div>
           </div>
         </div>
 
@@ -9332,28 +9332,28 @@
 
         <!-- Função / Instrumento -->
         <div class="form-group" style="margin-bottom: 0;">
-          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;" data-i18n="bandMemberRoleLabel">
             Função / Instrumento
           </label>
-          <input type="text" id="mMemberRole" class="form-input" placeholder="Ex: Guitarra, Vocal, Bateria" oninput="renderMemberRolePreviewTags(this.value)">
+          <input type="text" id="mMemberRole" class="form-input" placeholder="Ex: Guitarra, Vocal, Bateria" data-i18n-placeholder="bandMemberRolePlaceholder" oninput="renderMemberRolePreviewTags(this.value)">
           <div id="mMemberRolePillsPreview" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;"></div>
         </div>
 
         <!-- Cargo de Líder -->
         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
           <input type="checkbox" id="mMemberIsLeader" style="width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer;">
-          <div style="font-size: 0.88rem; font-weight: 600; color: #e2e8f0;">Líder / Administrador</div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: #e2e8f0;" data-i18n="bandMemberLeaderCheckbox">Líder / Administrador</div>
         </label>
 
         <!-- Ações do Modal -->
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap;">
           <button type="button" id="btnDeleteBandMemberFromModal" class="btn" onclick="handleDeleteBandMemberFromModal()" style="display: none; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.82rem; min-height: 36px; padding: 0 14px; gap: 6px; align-items: center; border-radius: 8px;">
             <ion-icon name="trash-outline"></ion-icon>
-            <span>Remover</span>
+            <span data-i18n="bandMemberRemoveBtn">Remover</span>
           </button>
           <div style="display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline" onclick="closeModal('editBandMemberModal')" style="min-width: 90px; min-height: 36px; padding: 0 16px; font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveBandMember" style="min-width: 90px; min-height: 36px; padding: 0 18px; font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">Salvar</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal('editBandMemberModal')" style="min-width: 90px; min-height: 36px; padding: 0 16px; font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;" data-i18n="cancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveBandMember" style="min-width: 90px; min-height: 36px; padding: 0 18px; font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;" data-i18n="btnSave">Salvar</button>
           </div>
         </div>
       </form>
@@ -9369,8 +9369,8 @@
             <ion-icon name="musical-notes"></ion-icon>
           </div>
           <div>
-            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem;">Adicionar do Songbook</h3>
-            <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;" id="addSongsToBandSubtitle">Selecione as músicas para o repertório da banda.</p>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem;" data-i18n="addSongsToBandTitle">Adicionar do Songbook</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;" id="addSongsToBandSubtitle" data-i18n="addSongsToBandSubtitle">Selecione as músicas para o repertório da banda.</p>
           </div>
         </div>
         <button class="modal-close" onclick="closeModal('addSongsToBandModal')">&times;</button>
@@ -9380,9 +9380,9 @@
       <div style="padding: 12px 0 10px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 200px; display: flex; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; height: 38px;">
           <ion-icon name="search-outline" style="font-size: 1.1rem; color: #94a3b8; margin-right: 8px;"></ion-icon>
-          <input type="text" id="addSongsFilterInput" placeholder="Buscar por música, artista ou estilo..." oninput="filterAddSongsToBandList(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none; width: 100%;">
+          <input type="text" id="addSongsFilterInput" placeholder="Buscar por música, artista ou estilo..." data-i18n-placeholder="addSongsToBandSearchPlaceholder" oninput="filterAddSongsToBandList(this.value)" style="flex: 1; background: transparent; border: none; color: #fff; font-size: 0.88rem; outline: none; width: 100%;">
         </div>
-        <button type="button" class="btn btn-outline btn-sm" onclick="toggleSelectAllAddSongs()" id="btnToggleSelectAllAddSongs" style="font-size: 0.82rem; white-space: nowrap; height: 38px; padding: 0 14px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="toggleSelectAllAddSongs()" id="btnToggleSelectAllAddSongs" style="font-size: 0.82rem; white-space: nowrap; height: 38px; padding: 0 14px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;" data-i18n="addSongsToBandSelectAll">
           Selecionar Todas
         </button>
       </div>
@@ -9394,10 +9394,10 @@
 
       <!-- Rodapé com Ações -->
       <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
-        <span id="selectedAddSongsCountLabel" style="font-size: 0.85rem; color: #94a3b8;">0 selecionadas</span>
+        <span id="selectedAddSongsCountLabel" style="font-size: 0.85rem; color: #94a3b8;" data-i18n="addSongsToBandSelectedCount">0 selecionadas</span>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button type="button" class="btn btn-outline" onclick="closeModal('addSongsToBandModal')" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="confirmAddSongsToBand()" id="btnConfirmAddSongsToBand" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">Adicionar</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addSongsToBandModal')" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;" data-i18n="cancel">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="confirmAddSongsToBand()" id="btnConfirmAddSongsToBand" style="min-width: 105px; height: 38px; padding: 0 18px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;" data-i18n="addSongsToBandAddBtn">Adicionar</button>
         </div>
       </div>
     </div>
@@ -9409,14 +9409,14 @@
       <div class="modal-header">
         <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
           <ion-icon name="pin-outline" style="color: var(--cyan); font-size: 1.3rem;"></ion-icon>
-          <span id="bandPostModalTitle">Novo Lembrete da Banda</span>
+          <span id="bandPostModalTitle" data-i18n="bandPostModalCreateTitle">Novo Lembrete da Banda</span>
         </h3>
         <button type="button" class="modal-close" onclick="closeModal('bandPostModal')">&times;</button>
       </div>
 
       <form id="bandPostForm" onsubmit="handleSaveBandPost(event)" style="width: 100%; box-sizing: border-box;">
         <div class="form-group" style="margin-bottom: 16px;">
-          <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+          <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;" data-i18n="bandPostTitleLabel">
             Título do Lembrete *
           </label>
           <input 
@@ -9424,6 +9424,7 @@
             id="postTitleInput" 
             class="form-input" 
             placeholder="Ex: Ensaio de quinta-feira, repertório do próximo show..." 
+            data-i18n-placeholder="bandPostTitlePlaceholder" 
             required 
             maxlength="150"
             style="width: 100%; box-sizing: border-box;"
@@ -9432,7 +9433,7 @@
 
         <div class="form-group" style="margin-bottom: 6px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label style="font-size: 0.86rem; font-weight: 700; color: #cbd5e1;">
+            <label style="font-size: 0.86rem; font-weight: 700; color: #cbd5e1;" data-i18n="bandPostContentLabel">
               Conteúdo do Lembrete / Aviso *
             </label>
             <span id="postCharCounter" style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">
@@ -9443,7 +9444,7 @@
             id="postContentInput" 
             class="form-input" 
             rows="6" 
-            placeholder="Escreva aqui as informações, escala de horários, detalhes ou avisos para os integrantes..." 
+            placeholder="Escreva aqui as informações, escala de horários, detalhes ou avisos para os integrantes..." data-i18n-placeholder="bandPostContentPlaceholder" 
             required 
             maxlength="800"
             oninput="updatePostContentCounter()"
@@ -9461,18 +9462,18 @@
             title="Fixar lembrete no topo"
           >
             <ion-icon name="star-outline" id="modalPinStarIcon" style="font-size: 1.25rem;"></ion-icon>
-            <span id="modalPinStarLabel" style="color: #cbd5e1;">Fixar</span>
+            <span id="modalPinStarLabel" style="color: #cbd5e1;" data-i18n="bandPostPinLabel">Fixar</span>
           </button>
           <input type="hidden" id="postIsPinnedInput" value="false">
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
-          <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostModal')">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostModal')" data-i18n="cancel">
             Cancelar
           </button>
           <button type="submit" id="btnSaveBandPost" class="btn btn-cyan btn-sm" style="display: flex; align-items: center; gap: 6px;">
             <ion-icon name="send-outline"></ion-icon>
-            <span id="btnSaveBandPostText">Publicar Lembrete</span>
+            <span id="btnSaveBandPostText" data-i18n="bandPostPublishBtn">Publicar Lembrete</span>
           </button>
         </div>
       </form>
@@ -9488,7 +9489,7 @@
           <button type="button" id="viewPostStarBtn" class="btn-favorite-star" style="font-size: 1.35rem; padding: 4px;" title="Fixar / Desafixar">
             <ion-icon name="star-outline"></ion-icon>
           </button>
-          <h3 class="modal-title" id="viewPostTitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; font-size: 1.15rem; color: #fff;">
+          <h3 class="modal-title" id="viewPostTitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; font-size: 1.15rem; color: #fff;" data-i18n="bandPostViewTitle">
             Lembrete
           </h3>
         </div>
@@ -9512,7 +9513,7 @@
 
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08);">
         <div id="viewPostActions" style="display: flex; gap: 8px;"></div>
-        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostViewModal')">
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('bandPostViewModal')" data-i18n="btnClose">
           Fechar
         </button>
       </div>
@@ -10116,7 +10117,7 @@
       if (clean.length < 3) {
         if (feedback) {
           feedback.style.display = 'block';
-          feedback.innerHTML = '<span style="color: #f59e0b;">Mínimo de 3 caracteres.</span>';
+          feedback.innerHTML = '<span style="color: #f59e0b;">' + t('usernameMinChars', 'Mínimo de 3 caracteres.') + '</span>';
         }
         isUsernameAvailable = false;
         return;
@@ -10125,7 +10126,7 @@
       if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
         if (feedback) {
           feedback.style.display = 'block';
-          feedback.innerHTML = '<span style="color: #f87171;">Apenas letras, números e sublinhados (_).</span>';
+          feedback.innerHTML = '<span style="color: #f87171;">' + t('usernameValidChars', 'Apenas letras, números e sublinhados (_).') + '</span>';
         }
         isUsernameAvailable = false;
         return;
@@ -10133,7 +10134,7 @@
 
       if (feedback) {
         feedback.style.display = 'block';
-        feedback.innerHTML = '<span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="sync-outline" class="spin-icon"></ion-icon> Verificando disponibilidade...</span>';
+        feedback.innerHTML = '<span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;"><ion-icon name="sync-outline" class="spin-icon"></ion-icon> ' + t('usernameChecking', 'Verificando disponibilidade...') + '</span>';
       }
 
       usernameCheckTimer = setTimeout(async () => {
@@ -10144,12 +10145,12 @@
             if (data.available) {
               isUsernameAvailable = true;
               if (feedback) {
-                feedback.innerHTML = `<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> @${clean} está disponível</span>`;
+                feedback.innerHTML = '<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> ' + t('usernameAvailable', '@{u} está disponível').replace('{u}', clean) + '</span>';
               }
             } else {
               isUsernameAvailable = false;
               if (feedback) {
-                feedback.innerHTML = `<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> ${data.message || `@${clean} já está em uso`}</span>`;
+                feedback.innerHTML = '<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> ' + (data.message || t('usernameTaken', '@{u} já está em uso').replace('{u}', clean)) + '</span>';
               }
             }
           }
@@ -10180,10 +10181,10 @@
           matchEl.style.display = 'none';
         } else if (pwd === confirm) {
           matchEl.style.display = 'block';
-          matchEl.innerHTML = '<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> As senhas conferem</span>';
+          matchEl.innerHTML = '<span style="color: #34d399; display: flex; align-items: center; gap: 4px;"><ion-icon name="checkmark-circle"></ion-icon> ' + t('passwordsMatch', 'As senhas conferem') + '</span>';
         } else {
           matchEl.style.display = 'block';
-          matchEl.innerHTML = '<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> As senhas não conferem</span>';
+          matchEl.innerHTML = '<span style="color: #f87171; display: flex; align-items: center; gap: 4px;"><ion-icon name="close-circle"></ion-icon> ' + t('passwordsDoNotMatch', 'As senhas não conferem') + '</span>';
         }
       }
 
@@ -10239,12 +10240,12 @@
           sessionStorage.setItem('pending_confirm_email', email);
           document.getElementById('confirmEmailDisplay').textContent = email;
           setAuthMode('confirm');
-          showToast('Confirme seu e-mail com o código de 6 dígitos.', 'info');
+          showToast(t('authConfirmEmailToast', 'Confirme seu e-mail com o código de 6 dígitos.'), 'info');
           return;
         }
 
         if (!res.ok) {
-          let errorMsg = 'E-mail ou senha incorretos.';
+          let errorMsg = t('authInvalidCredentials', 'E-mail ou senha incorretos.');
           try {
             const text = await res.text();
             if (text && text.trim() && !text.includes("<") && text.length < 200) {
@@ -10260,10 +10261,10 @@
         clearAllUserLocalCache();
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(data));
-        showToast('Login realizado com sucesso! Bem-vindo.', 'success');
+        showToast(t('authLoginSuccess', 'Login realizado com sucesso! Bem-vindo.'), 'success');
         await verifySessionAndLoadData();
       } catch (err) {
-        showToast('Erro ao conectar ao servidor. Tente novamente.', 'error');
+        showToast(t('authServerConnectionError', 'Erro ao conectar ao servidor. Tente novamente.'), 'error');
       }
     }
 
@@ -10279,12 +10280,12 @@
       const country = document.getElementById('regCountry') ? document.getElementById('regCountry').value.trim() : 'Brasil';
 
       if (isUsernameAvailable === false) {
-        showToast('O nome de usuário escolhido não está disponível ou é inválido.', 'warning');
+        showToast(t('authUsernameInvalidToast', 'O nome de usuário escolhido não está disponível ou é inválido.'), 'warning');
         return;
       }
 
       if (password !== confirmPassword) {
-        showToast('A confirmação de senha não confere.', 'warning');
+        showToast(t('authPasswordMismatchToast', 'A confirmação de senha não confere.'), 'warning');
         return;
       }
 
@@ -10294,7 +10295,7 @@
       const hasSpecial = /[^A-Za-z0-9]/.test(password);
 
       if (!hasMinLen || !hasUpper || !hasNumber || !hasSpecial) {
-        showToast('A senha deve conter no mínimo 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial.', 'warning');
+        showToast(t('authPasswordRulesToast', 'A senha deve conter no mínimo 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial.'), 'warning');
         return;
       }
 
@@ -10315,7 +10316,7 @@
         });
 
         if (!res.ok) {
-          let errorMsg = 'Erro ao criar conta. Verifique os dados.';
+          let errorMsg = t('authAccountCreateError', 'Erro ao criar conta. Verifique os dados.');
           try {
             const text = await res.text();
             try {
@@ -10337,7 +10338,7 @@
         sessionStorage.setItem('pending_confirm_email', email);
         document.getElementById('confirmEmailDisplay').textContent = email;
         setAuthMode('confirm');
-        showToast('Conta criada! Insira o código enviado por e-mail.', 'success');
+        showToast(t('authAccountCreatedToast', 'Conta criada! Insira o código enviado por e-mail.'), 'success');
       } catch (err) {
         showToast('Erro ao criar conta.', 'error');
       }
@@ -10356,7 +10357,7 @@
         });
 
         if (!res.ok) {
-          let errorMsg = 'Código inválido ou expirado.';
+          let errorMsg = t('authInvalidCodeToast', 'Código inválido ou expirado.');
           try {
             const text = await res.text();
             if (text && text.trim() && !text.includes("<") && text.length < 200) errorMsg = text.trim();
@@ -10368,7 +10369,7 @@
         const data = await res.json();
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(data));
-        showToast('E-mail confirmado com sucesso!', 'success');
+        showToast(t('authEmailConfirmedToast', 'E-mail confirmado com sucesso!'), 'success');
         await verifySessionAndLoadData();
       } catch (err) {
         showToast('Erro ao confirmar e-mail.', 'error');
@@ -10386,7 +10387,7 @@
           body: JSON.stringify({ email })
         });
         if (res.ok) {
-          showToast('Código reenviado para o seu e-mail!', 'success');
+          showToast(t('authCodeResentToast', 'Código reenviado para o seu e-mail!'), 'success');
         } else {
           showToast('Erro ao reenviar código.', 'error');
         }
@@ -10407,7 +10408,7 @@
         if (res.ok) {
           sessionStorage.setItem('pending_reset_email', email);
           setAuthMode('reset');
-          showToast('Código enviado para seu e-mail!', 'success');
+          showToast(t('authResetCodeSentToast', 'Código enviado para seu e-mail!'), 'success');
         } else {
           showToast('Não foi possível solicitar recuperação.', 'error');
         }
@@ -10429,7 +10430,7 @@
           body: JSON.stringify({ email, code, newPassword })
         });
         if (res.ok) {
-          showToast('Senha alterada com sucesso! Faça login.', 'success');
+          showToast(t('authPasswordChangedToast', 'Senha alterada com sucesso! Faça login.'), 'success');
           setAuthMode('login');
         } else {
           showToast('Código de recuperação inválido ou expirado.', 'error');
@@ -10444,7 +10445,7 @@
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       currentUser = null;
-      showToast('Sessão encerrada.', 'info');
+      showToast(t('authSessionEndedToast', 'Sessão encerrada.'), 'info');
       showAuthModal('login');
     }
 
