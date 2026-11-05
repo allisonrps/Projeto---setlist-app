@@ -155,7 +155,7 @@ export default function LoginScreen({ onLogin }) {
   const [birthDate, setBirthDate] = useState('');
   const [city, setCity] = useState('');
   const [stateVal, setStateVal] = useState('');
-  const [country, setCountry] = useState('Brasil');
+  const [country, setCountry] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

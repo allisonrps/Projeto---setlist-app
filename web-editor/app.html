@@ -7720,7 +7720,7 @@
               <input type="text" id="regState" class="form-input" placeholder="UF (ex: SP)" data-i18n-placeholder="authStatePlaceholder" maxlength="30" required>
             </div>
             <div>
-              <input type="text" id="regCountry" class="form-input" placeholder="País" data-i18n-placeholder="authCountryPlaceholder" value="Brasil" maxlength="100" required>
+              <input type="text" id="regCountry" class="form-input" placeholder="País" data-i18n-placeholder="authCountryPlaceholder" maxlength="100" required>
             </div>
           </div>
         </div>
@@ -10277,7 +10277,7 @@
       const birthDate = document.getElementById('regBirthDate').value;
       const city = document.getElementById('regCity') ? document.getElementById('regCity').value.trim() : '';
       const state = document.getElementById('regState') ? document.getElementById('regState').value.trim() : '';
-      const country = document.getElementById('regCountry') ? document.getElementById('regCountry').value.trim() : 'Brasil';
+      const country = document.getElementById('regCountry') ? document.getElementById('regCountry').value.trim() : '';
 
       if (isUsernameAvailable === false) {
         showToast(t('authUsernameInvalidToast', 'O nome de usuário escolhido não está disponível ou é inválido.'), 'warning');
