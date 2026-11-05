@@ -153,6 +153,9 @@ export default function LoginScreen({ onLogin }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [city, setCity] = useState('');
+  const [stateVal, setStateVal] = useState('');
+  const [country, setCountry] = useState('Brasil');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -313,12 +316,23 @@ export default function LoginScreen({ onLogin }) {
         Alert.alert(t('attention') || 'Atenção', 'A confirmação de senha não coincide com a senha informada.');
         return;
       }
+      if (!city.trim() || !stateVal.trim() || !country.trim()) {
+        Alert.alert(
+          t('attention') || 'Atenção',
+          t('locationRequiredError') || 'Cidade, estado e país são obrigatórios para realizar o cadastro.'
+        );
+        return;
+      }
     }
     
     setLoading(true);
     try {
       if (isRegistering) {
-        const res = await api.register(username.trim(), cleanEmail, password, formattedBirthIso);
+        const res = await api.register(username.trim(), cleanEmail, password, formattedBirthIso, {
+          city: city.trim(),
+          state: stateVal.trim(),
+          country: country.trim()
+        });
         if (res?.requiresConfirmation) {
           setPendingEmail(cleanEmail);
           setWaitingConfirmation(true);
@@ -676,6 +690,60 @@ export default function LoginScreen({ onLogin }) {
                   value={birthDate}
                   onChangeText={(val) => setBirthDate(formatBirthDate(val))}
                   keyboardType="number-pad"
+                />
+              </View>
+            </View>
+          )}
+
+          {/* Localização no Cadastro: Cidade, Estado e País (Obrigatórios) */}
+          {isRegistering && (
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text }]}>{t('locationLabelMandatory') || 'Localização *'}</Text>
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                <View style={[styles.inputWrapper, { 
+                  flex: 2,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
+                  borderColor: colors.border
+                }]}>
+                  <Ionicons name="location-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                  <TextInput
+                    maxLength={100}
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder={t('cityRegPlaceholder') || 'Cidade (ex: São Paulo)'}
+                    placeholderTextColor={colors.textMuted}
+                    value={city}
+                    onChangeText={setCity}
+                  />
+                </View>
+
+                <View style={[styles.inputWrapper, { 
+                  flex: 1,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
+                  borderColor: colors.border
+                }]}>
+                  <TextInput
+                    maxLength={30}
+                    style={[styles.input, { color: colors.text, paddingLeft: 12 }]}
+                    placeholder={t('stateRegPlaceholder') || 'UF (ex: SP)'}
+                    placeholderTextColor={colors.textMuted}
+                    value={stateVal}
+                    onChangeText={setStateVal}
+                  />
+                </View>
+              </View>
+
+              <View style={[styles.inputWrapper, { 
+                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#f8fafc',
+                borderColor: colors.border
+              }]}>
+                <Ionicons name="globe-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  maxLength={100}
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder={t('countryRegPlaceholder') || 'País'}
+                  placeholderTextColor={colors.textMuted}
+                  value={country}
+                  onChangeText={setCountry}
                 />
               </View>
             </View>

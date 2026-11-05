@@ -7709,18 +7709,18 @@
           <input type="date" id="regBirthDate" class="form-input">
         </div>
 
-        <!-- Localização: Cidade, UF e País (Forms abertos para digitar) -->
+        <!-- Localização: Cidade, UF e País (Obrigatórios) -->
         <div class="form-group">
-          <label data-i18n="authLocationLabel">Localização</label>
+          <label data-i18n="authLocationLabel">Localização *</label>
           <div style="display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 8px;">
             <div>
-              <input type="text" id="regCity" class="form-input" placeholder="Cidade (ex: São Paulo)" data-i18n-placeholder="authCityPlaceholder" maxlength="100">
+              <input type="text" id="regCity" class="form-input" placeholder="Cidade (ex: São Paulo)" data-i18n-placeholder="authCityPlaceholder" maxlength="100" required>
             </div>
             <div>
-              <input type="text" id="regState" class="form-input" placeholder="UF (ex: SP)" data-i18n-placeholder="authStatePlaceholder" maxlength="30">
+              <input type="text" id="regState" class="form-input" placeholder="UF (ex: SP)" data-i18n-placeholder="authStatePlaceholder" maxlength="30" required>
             </div>
             <div>
-              <input type="text" id="regCountry" class="form-input" placeholder="País" data-i18n-placeholder="authCountryPlaceholder" value="Brasil" maxlength="100">
+              <input type="text" id="regCountry" class="form-input" placeholder="País" data-i18n-placeholder="authCountryPlaceholder" value="Brasil" maxlength="100" required>
             </div>
           </div>
         </div>
@@ -10281,6 +10281,11 @@
 
       if (isUsernameAvailable === false) {
         showToast(t('authUsernameInvalidToast', 'O nome de usuário escolhido não está disponível ou é inválido.'), 'warning');
+        return;
+      }
+
+      if (!city || !state || !country) {
+        showToast(t('authLocationRequiredToast', 'A localização completa (cidade, estado e país) é obrigatória.'), 'warning');
         return;
       }
 

@@ -158,18 +158,24 @@ export const api = {
 
   register: async (username, email, password, birthDate = null, location = {}) => {
     const cleanEmail = (email || '').trim().toLowerCase();
+    const city = (location?.city || '').trim();
+    const state = (location?.state || '').trim();
+    const country = (location?.country || '').trim();
+
+    if (!city || !state || !country) {
+      throw new Error("A localização completa (cidade, estado e país) é obrigatória para o cadastro.");
+    }
+
     const payload = {
       username: (username || '').trim(),
       email: cleanEmail,
-      password
+      password,
+      city,
+      state,
+      country
     };
     if (birthDate && birthDate.trim()) {
       payload.birthDate = birthDate.trim();
-    }
-    if (location && typeof location === 'object') {
-      if (location.city && location.city.trim()) payload.city = location.city.trim();
-      if (location.state && location.state.trim()) payload.state = location.state.trim();
-      if (location.country && location.country.trim()) payload.country = location.country.trim();
     }
     const response = await fetchWithTimeout(`${API_URL}/Auth/register`, {
       method: "POST",
