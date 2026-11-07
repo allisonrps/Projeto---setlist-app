@@ -58,10 +58,8 @@ export default function SongDetailScreen({
   const [showDetailsLayer, setShowDetailsLayer] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Keyboard and Auto-lift Scroll refs and states
+  // Keyboard and Scroll refs and states
   const scrollViewRef = useRef(null);
-  const isEditingRef = useRef(false);
-  const cursorSelectionRef = useRef({ start: 0, end: 0 });
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
@@ -71,15 +69,6 @@ export default function SongDetailScreen({
     const showSub = Keyboard.addListener(showEvent, (e) => {
       const h = e.endCoordinates ? e.endCoordinates.height : 0;
       setKeyboardHeight(h);
-      if (isEditingRef.current) {
-        const text = activeEditorTab === 'chords' ? chords : activeEditorTab === 'lyrics' ? lyrics : tabs;
-        const curEnd = cursorSelectionRef.current?.end || 0;
-        if (curEnd >= (text?.length || 0) - 25) {
-          setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }, 100);
-        }
-      }
     });
 
     const hideSub = Keyboard.addListener(hideEvent, () => {
@@ -90,28 +79,7 @@ export default function SongDetailScreen({
       showSub.remove();
       hideSub.remove();
     };
-  }, [activeEditorTab, chords, lyrics, tabs]);
-
-  const handleEditorFocus = () => {
-    isEditingRef.current = true;
-  };
-
-  const handleEditorBlur = () => {
-    isEditingRef.current = false;
-  };
-
-  const handleSelectionChange = (e) => {
-    cursorSelectionRef.current = e.nativeEvent.selection;
-  };
-
-  const handleTextChangeAutoLift = (newVal) => {
-    const curEnd = cursorSelectionRef.current?.end || 0;
-    if (curEnd >= (newVal?.length || 0) - 20) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 50);
-    }
-  };
+  }, []);
 
   // Initial values snapshot to check dirty state
   const initialDataRef = useRef({});
@@ -462,7 +430,7 @@ export default function SongDetailScreen({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingBottom: Platform.OS === 'ios' ? 80 : (keyboardHeight > 0 ? keyboardHeight + 140 : 60),
+          paddingBottom: keyboardHeight > 0 ? keyboardHeight + 80 : 80,
         }}
       >
         {/* INDEX 0: TÍTULO, BANDA, TAGS E DETALHES RETRÁTEIS */}
@@ -845,13 +813,7 @@ export default function SongDetailScreen({
             { color: colors.inputText }
           ]}
           value={chords}
-          onChangeText={(val) => {
-            setChords(val);
-            handleTextChangeAutoLift(val);
-          }}
-          onFocus={handleEditorFocus}
-          onBlur={handleEditorBlur}
-          onSelectionChange={handleSelectionChange}
+          onChangeText={setChords}
           multiline
           scrollEnabled={false}
           placeholder={t('chordsPlaceholder')}
@@ -872,13 +834,7 @@ export default function SongDetailScreen({
             { color: colors.inputText }
           ]}
           value={lyrics}
-          onChangeText={(val) => {
-            setLyrics(val);
-            handleTextChangeAutoLift(val);
-          }}
-          onFocus={handleEditorFocus}
-          onBlur={handleEditorBlur}
-          onSelectionChange={handleSelectionChange}
+          onChangeText={setLyrics}
           multiline
           scrollEnabled={false}
           placeholder={t('lyricsPlaceholder')}
@@ -900,13 +856,7 @@ export default function SongDetailScreen({
             { color: colors.inputText }
           ]}
           value={tabs}
-          onChangeText={(val) => {
-            setTabs(val);
-            handleTextChangeAutoLift(val);
-          }}
-          onFocus={handleEditorFocus}
-          onBlur={handleEditorBlur}
-          onSelectionChange={handleSelectionChange}
+          onChangeText={setTabs}
           multiline
           scrollEnabled={false}
           placeholder={t('tabsPlaceholder')}
@@ -918,8 +868,6 @@ export default function SongDetailScreen({
           textAlignVertical="top"
         />
       )}
-
-      {keyboardHeight > 0 && <View style={{ height: keyboardHeight + 40 }} />}
     </View>
   </ScrollView>
       </KeyboardAvoidingView>

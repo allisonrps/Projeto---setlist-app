@@ -6808,7 +6808,40 @@ export default function BandDetailScreen({
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.modalOverlay}
         >
-          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground, maxWidth: 440, borderRadius: 20 }]}>
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={() => setShowEditBandCashModal(false)}
+          />
+          <View
+            style={[
+              styles.pickerModalContainer,
+              {
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.border,
+                borderTopWidth: 1,
+                width: '100%',
+                maxWidth: 520,
+                alignSelf: 'center',
+                height: 'auto',
+                maxHeight: '88%',
+                paddingHorizontal: 20,
+                paddingTop: 12,
+                paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+              },
+            ]}
+          >
+            {/* Drag Handle */}
+            <View
+              style={{
+                width: 44,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                alignSelf: 'center',
+                marginBottom: 14,
+              }}
+            />
+
             {/* Modal Header */}
             <View style={[styles.modalHeaderRow, { marginBottom: 16 }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
@@ -6830,18 +6863,18 @@ export default function BandDetailScreen({
             </View>
 
             {/* Modal Body */}
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 10 }}>
               <View style={{ marginBottom: 14 }}>
                 <Text style={{ fontSize: 12, fontWeight: '700', color: '#fbbf24', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   {t('bandCashBalanceLabel') || 'Saldo do Caixa da Banda ($) *'}
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: colors.background,
-                    borderColor: '#fbbf2470',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    borderColor: '#fbbf2480',
                     borderWidth: 1.5,
                     borderRadius: 12,
-                    paddingHorizontal: 14,
+                    paddingHorizontal: 16,
                     paddingVertical: 12,
                     fontSize: 22,
                     fontWeight: '900',
@@ -6865,7 +6898,16 @@ export default function BandDetailScreen({
                   {t('adjustReason') || 'Motivo do Ajuste (Opcional)'}
                 </Text>
                 <TextInput
-                  style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+                  style={{
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    borderColor: colors.border,
+                    borderWidth: 1,
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    fontSize: 14,
+                    color: colors.text
+                  }}
                   value={bandCashNotesInput}
                   onChangeText={setBandCashNotesInput}
                   placeholder={t('adjustReasonPlaceholder') || 'Ex: Aporte inicial, conferência de saldo, retirada...'}
@@ -6875,18 +6917,18 @@ export default function BandDetailScreen({
               </View>
 
               {/* Actions */}
-              <View style={[styles.modalFooterRow, { marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }]}>
+              <View style={[styles.modalFooterRow, { marginTop: 8, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.border, gap: 10 }]}>
                 <Pressable
-                  style={[styles.modalCancelBtn, { borderColor: colors.border }]}
+                  style={[styles.modalCancelBtn, { borderColor: colors.border, flex: 1, height: 46, borderRadius: 12, marginRight: 0, alignItems: 'center', justifyContent: 'center' }]}
                   onPress={() => setShowEditBandCashModal(false)}
                 >
-                  <Text style={{ color: colors.text }}>{t('cancel') || 'Cancelar'}</Text>
+                  <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>{t('cancel') || 'Cancelar'}</Text>
                 </Pressable>
                 <Pressable
-                  style={[styles.modalConfirmBtn, { backgroundColor: '#fbbf24', borderColor: '#fbbf24' }]}
+                  style={[styles.modalConfirmBtn, { backgroundColor: '#fbbf24', borderColor: '#fbbf24', flex: 1.3, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }]}
                   onPress={handleSaveBandCash}
                 >
-                  <Text style={{ color: '#000000', fontWeight: '900' }}>
+                  <Text style={{ color: '#000000', fontWeight: '900', fontSize: 14 }}>
                     {t('saveBalance') || 'Salvar Saldo'}
                   </Text>
                 </Pressable>
