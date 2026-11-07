@@ -100,11 +100,11 @@ export const setlistService = {
     }
   },
 
-  async insert(name, type, myBandId, date, local, cachê, notes, songIds = [], time = '') {
+  async insert(name, type, myBandId, date, local, cachê, notes, songIds = [], time = '', cacheStatus = 'paid') {
     try {
       const result = await db.runAsync(
-        'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);',
-        [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000)]
+        'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, cacheStatus, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0);',
+        [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), sanitizeText(cacheStatus || 'paid', 20)]
       );
       const setlistId = result.lastInsertRowId;
 
@@ -138,7 +138,7 @@ export const setlistService = {
     }
   },
 
-  async update(id, name, type, myBandId, date, local, cachê, notes, songIds = [], time = '') {
+  async update(id, name, type, myBandId, date, local, cachê, notes, songIds = [], time = '', cacheStatus = null) {
     try {
       let targetSetlistId = id;
       let existsLocally = false;
@@ -167,14 +167,21 @@ export const setlistService = {
       }
 
       if (existsLocally) {
-        await db.runAsync(
-          'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, time = ?, local = ?, cachê = ?, notes = ? WHERE id = ?;',
-          [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), targetSetlistId]
-        );
+        if (cacheStatus) {
+          await db.runAsync(
+            'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, time = ?, local = ?, cachê = ?, notes = ?, cacheStatus = ? WHERE id = ?;',
+            [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), sanitizeText(cacheStatus, 20), targetSetlistId]
+          );
+        } else {
+          await db.runAsync(
+            'UPDATE setlists SET name = ?, type = ?, myBandId = ?, date = ?, time = ?, local = ?, cachê = ?, notes = ? WHERE id = ?;',
+            [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), targetSetlistId]
+          );
+        }
       } else {
         const ins = await db.runAsync(
-          'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0);',
-          [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000)]
+          'INSERT INTO setlists (name, type, myBandId, date, time, local, cachê, notes, cacheStatus, isFavorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0);',
+          [sanitizeText(name, 200), sanitizeText(type, 50), myBandId, sanitizeText(date, 20), sanitizeText(time, 20), sanitizeText(local, 200), sanitizeText(cachê, 20), sanitizeText(notes, 1000), sanitizeText(cacheStatus || 'paid', 20)]
         );
         targetSetlistId = ins.lastInsertRowId;
       }

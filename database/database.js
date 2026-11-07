@@ -1557,6 +1557,18 @@ export const createTables = async () => {
       }
     }
 
+    // Migração de cloudEventId em setlists
+    try {
+      await db.execAsync("ALTER TABLE setlists ADD COLUMN cloudEventId INTEGER;");
+      console.log("Nativo: Coluna 'cloudEventId' adicionada em 'setlists'!");
+    } catch (e) {
+      if (e.message && e.message.includes("duplicate column name")) {
+        console.log("Nativo: Coluna 'cloudEventId' já existe em setlists.");
+      } else {
+        console.log("Nativo: Nota da migração de cloudEventId em setlists:", e.message);
+      }
+    }
+
     // Inserir música especial PAUSA (id: -1) - Removemos a palavra INTERVALO
     try {
       await db.execAsync("INSERT OR REPLACE INTO songs (id, name, originalBand, style) VALUES (-1, 'PAUSA', '', 'PAUSA');");

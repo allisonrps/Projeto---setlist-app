@@ -2216,43 +2216,81 @@ function MainApp() {
     try {
       const setlistId = setlistData?.id || editingSetlist?.id;
       const cleanCache = setlistData?.cachê || setlistData?.cache || setlistData?.cacheê || '';
-      const existingSetlist = (setlists || []).find(s => s.id === setlistId);
-      const targetBandId = setlistData?.myBandId || existingSetlist?.myBandId || editingSetlist?.myBandId || editingSetlistFromBandDetail?.id || activeBandDetail?.id;
+      const cacheStatus = setlistData?.cacheStatus || 'paid';
+      const existingSetlist = (setlists || []).find(s => String(s.id) === String(setlistId));
+      const rawTargetBand = setlistData?.myBandId || existingSetlist?.myBandId || editingSetlist?.myBandId || (editingSetlistFromBandDetail?.id || editingSetlistFromBandDetail) || activeBandDetail?.id;
+      const targetBandId = typeof rawTargetBand === 'object' && rawTargetBand !== null ? rawTargetBand.id : rawTargetBand;
+      
+      let savedSetlistId = setlistId;
       if (setlistId) {
         await setlistService.update(
           setlistId,
           setlistData.name,
           setlistData.type,
-          setlistData.myBandId,
+          targetBandId,
           setlistData.date,
           setlistData.local,
           cleanCache,
           setlistData.notes,
           setlistData.songIds,
-          setlistData.time || ''
+          setlistData.time || '',
+          cacheStatus
         );
       } else {
-        await setlistService.insert(
+        savedSetlistId = await setlistService.insert(
           setlistData.name,
           setlistData.type,
-          setlistData.myBandId,
+          targetBandId,
           setlistData.date,
           setlistData.local,
           cleanCache,
           setlistData.notes,
           setlistData.songIds,
-          setlistData.time || ''
+          setlistData.time || '',
+          cacheStatus
         );
       }
 
       // Auto-sincroniza com a nuvem se a banda for online para que apareça na web e na aba da banda imediatamente
       if (targetBandId) {
-        const bandObj = bands.find(b => String(b.id) === String(targetBandId));
+        const bandObj = bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId));
         if (bandObj && bandObj.cloudId) {
           try {
             await bandService.syncBandToCloud(bandObj.id);
           } catch (e) {
             console.log('Auto-sync band setlist error:', e);
+          }
+
+          // Se tiver conectividade online, também registra/atualiza na API de Agenda (/api/Events)
+          try {
+            const hasAuth = await api.isLoggedIn();
+            if (hasAuth) {
+              const eventPayload = {
+                bandId: bandObj.cloudId,
+                title: setlistData.name || 'Evento',
+                date: setlistData.date || new Date().toISOString().split('T')[0],
+                time: setlistData.time || '20:00',
+                location: setlistData.local || '',
+                cacheValue: parseFloat(String(cleanCache).replace(',', '.')) || null,
+                notes: setlistData.notes || '',
+                eventType: (setlistData.type === 'ensaio' || (setlistData.name || '').toLowerCase().includes('ensaio')) ? 'Rehearsal' : 'Show',
+                status: cacheStatus === 'paid' ? 'Confirmed' : 'Pending'
+              };
+
+              if (setlistData.cloudEventId) {
+                await api.updateEvent(setlistData.cloudEventId, eventPayload);
+              } else {
+                const createdEv = await api.createEvent(eventPayload);
+                if (createdEv && createdEv.id && savedSetlistId) {
+                  // Salva cloudEventId na setlist localmente
+                  try {
+                    await db.runAsync('UPDATE setlists SET cloudEventId = ? WHERE id = ?;', [createdEv.id, savedSetlistId]);
+                  } catch (e) {}
+                }
+              }
+            }
+          } catch (apiEvErr) {
+            console.log('Agenda API sync error (non-fatal):', apiEvErr.message);
           }
         }
       }
@@ -2262,10 +2300,14 @@ function MainApp() {
       setEditingSetlist(null);
       setActiveSetlistDetail(null);
       if (editingSetlistFromBandDetail) {
-        setActiveBandDetail(editingSetlistFromBandDetail);
+        const restoredBand = typeof editingSetlistFromBandDetail === 'object'
+          ? editingSetlistFromBandDetail
+          : (bands.find(b => String(b.id) === String(editingSetlistFromBandDetail)) || null);
+        setActiveBandDetail(restoredBand || editingSetlistFromBandDetail);
         setEditingSetlistFromBandDetail(null);
       }
     } catch (error) {
+      console.error('Error in handleSaveSetlist:', error);
       Alert.alert(t('error') || 'Erro', t('errorSavingSetlist') || 'Não foi possível salvar o setlist.');
     }
   };
@@ -6950,9 +6992,11 @@ function MainApp() {
           setActiveSongDetail({ originalBand: b.name });
         }}
         onOpenNewSetlistForBand={(b, setlist) => {
-          setEditingSetlistFromBandDetail(b);
+          const bandObj = typeof b === 'object' && b !== null ? b : (bands.find(bandItem => String(bandItem.id) === String(b) || String(bandItem.cloudId) === String(b)) || null);
+          const targetBandId = bandObj ? bandObj.id : (typeof b === 'number' ? b : null);
+          setEditingSetlistFromBandDetail(bandObj || b);
           setActiveBandDetail(null);
-          setActiveSetlistDetail(setlist || { myBandId: b.id });
+          setActiveSetlistDetail(setlist || { myBandId: targetBandId });
         }}
         onStartPerformance={handleStartPerformance}
         onExportDoc={handleExportDoc}

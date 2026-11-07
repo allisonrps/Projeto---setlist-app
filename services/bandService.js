@@ -873,7 +873,48 @@ export const bandService = {
                 cleanList = cloudSl.songs;
               }
             }
-            return { ...sl, songs: cleanList };
+
+            // Carrega divisão de cachê persistida localmente ou preserva da nuvem
+            let cacheSplit = null;
+            try {
+              const splitRows = await db.getAllAsync('SELECT value FROM settings WHERE key = ?;', [`cache_split_${sl.id}`]);
+              if (splitRows && splitRows.length > 0 && splitRows[0].value) {
+                cacheSplit = JSON.parse(splitRows[0].value);
+              }
+            } catch (e) {}
+
+            if (!cacheSplit && sl.name && sl.date) {
+              try {
+                const nameDateKey = `cache_split_${sl.name.trim().toLowerCase()}_${String(sl.date).trim()}`;
+                const splitRows = await db.getAllAsync('SELECT value FROM settings WHERE key = ?;', [nameDateKey]);
+                if (splitRows && splitRows.length > 0 && splitRows[0].value) {
+                  cacheSplit = JSON.parse(splitRows[0].value);
+                }
+              } catch (e) {}
+            }
+
+            if (!cacheSplit && Array.isArray(existingCloudSnapshot?.setlists)) {
+              const cloudSl = existingCloudSnapshot.setlists.find(csl =>
+                (sl.id && String(csl.id) === String(sl.id)) ||
+                (csl.name && sl.name && csl.name.trim().toLowerCase() === sl.name.trim().toLowerCase() && String(csl.date || '').trim() === String(sl.date || '').trim())
+              );
+              if (cloudSl?.cacheSplit) {
+                cacheSplit = cloudSl.cacheSplit;
+              }
+            }
+
+            const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
+                             (cacheSplit?.status === 'paid') ||
+                             (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
+                             (!sl.cacheStatus && !cacheSplit && !sl.status);
+            const resolvedCacheStatus = isSlPaid ? 'paid' : 'pending';
+
+            return {
+              ...sl,
+              cacheSplit: cacheSplit || sl.cacheSplit || null,
+              cacheStatus: resolvedCacheStatus,
+              songs: cleanList
+            };
           }));
         }
       } catch (sle) {
@@ -905,7 +946,31 @@ export const bandService = {
             links: s.links || []
           }))
         : (existingCloudSnapshot?.songs || []);
-      const finalSetlists = (setlists && setlists.length > 0) ? setlists : (existingCloudSnapshot?.setlists || []);
+      // Mescla setlists locais com os setlists existentes no snapshot da nuvem sem perdas
+      const mergedSetlistsMap = new Map();
+      if (Array.isArray(existingCloudSnapshot?.setlists)) {
+        existingCloudSnapshot.setlists.forEach(csl => {
+          if (csl) {
+            const key = csl.id ? String(csl.id) : `${String(csl.name || csl.title || '').trim().toLowerCase()}_${String(csl.date || '').trim()}`;
+            mergedSetlistsMap.set(key, csl);
+          }
+        });
+      }
+      (setlists || []).forEach(lsl => {
+        if (lsl) {
+          const lslKey = lsl.id ? String(lsl.id) : `${String(lsl.name || lsl.title || '').trim().toLowerCase()}_${String(lsl.date || '').trim()}`;
+          const lslNameDate = `${String(lsl.name || lsl.title || '').trim().toLowerCase()}_${String(lsl.date || '').trim()}`;
+          for (const [k, v] of mergedSetlistsMap.entries()) {
+            const vNameDate = `${String(v.name || v.title || '').trim().toLowerCase()}_${String(v.date || '').trim()}`;
+            if (k === lslKey || (lslNameDate && vNameDate === lslNameDate)) {
+              mergedSetlistsMap.delete(k);
+              break;
+            }
+          }
+          mergedSetlistsMap.set(lslKey, lsl);
+        }
+      });
+      const finalSetlists = Array.from(mergedSetlistsMap.values());
       const finalActivityLogs = (activityLogs && activityLogs.length > 0) ? activityLogs : (existingCloudSnapshot?.activityLogs || []);
 
       const syncPayloadData = {
@@ -1413,14 +1478,28 @@ export const bandService = {
         }
       }
 
-      // Regra Banda Online: se a banda é online, apenas eventos da API são mantidos vinculados a esta banda se houver setlists na nuvem.
-      if (snapshot.setlists && Array.isArray(snapshot.setlists) && snapshot.setlists.length > 0) {
-        if (matchedLocalIds.size > 0) {
-          const slPlaceholders = Array.from(matchedLocalIds).map(() => '?').join(',');
-          await db.runAsync(
-            `UPDATE setlists SET myBandId = NULL WHERE myBandId = ? AND id NOT IN (${slPlaceholders});`,
-            [bandId, ...Array.from(matchedLocalIds)]
-          );
+      // Preserva setlists locais criados pelo usuário e persiste cacheSplit no banco
+      if (snapshot.setlists && Array.isArray(snapshot.setlists)) {
+        for (const sl of snapshot.setlists) {
+          if (sl.cacheSplit) {
+            const localMatchId = Array.from(matchedLocalIds).find(id => {
+              const item = localSetlists.find(l => l.id === id);
+              return item && (
+                (sl.id && String(item.id) === String(sl.id)) ||
+                (sl.name && item.name && sl.name.trim().toLowerCase() === item.name.trim().toLowerCase() && String(sl.date || '').trim() === String(item.date || '').trim())
+              );
+            });
+            if (localMatchId) {
+              try {
+                const splitVal = JSON.stringify(sl.cacheSplit);
+                await db.runAsync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);', [`cache_split_${localMatchId}`, splitVal]);
+                if (sl.name && sl.date) {
+                  const nameDateKey = `cache_split_${sl.name.trim().toLowerCase()}_${String(sl.date).trim()}`;
+                  await db.runAsync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);', [nameDateKey, splitVal]);
+                }
+              } catch (e) {}
+            }
+          }
         }
       }
 

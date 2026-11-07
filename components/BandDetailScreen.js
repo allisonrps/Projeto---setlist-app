@@ -1855,35 +1855,77 @@ export default function BandDetailScreen({
             ? (JSON.parse(cloudData.syncDataJson || '{}') || {})
             : (cloudData?.syncDataJson || {});
 
-          if (Array.isArray(snapshot.setlists)) {
-            const targetSl = snapshot.setlists.find(s =>
-              (selectedShowForSplit.id && s.id === selectedShowForSplit.id) ||
-              (s.name === selectedShowForSplit.name && s.date === selectedShowForSplit.date)
-            );
-            if (targetSl) {
-              targetSl.cacheSplit = {
-                members: { ...fullSplits },
-                substitutes: [...substitutes],
-                bandFund: fundVal,
-                band_fund: fundVal,
-                status: selectedShowCacheStatus,
-                updatedAt: new Date().toISOString()
-              };
-              targetSl.cacheStatus = selectedShowCacheStatus;
-              await api.syncBand(band.cloudId, {
-                name: band.name,
-                genre: band.genre || '',
-                description: band.description || '',
-                imageUri: band.imageUri || '',
-                city: band.city || '',
-                state: band.state || '',
-                country: band.country || '',
-                syncDataJson: JSON.stringify(snapshot)
+          if (!Array.isArray(snapshot.setlists)) {
+            snapshot.setlists = [];
+          }
+
+          let targetSl = snapshot.setlists.find(s =>
+            (selectedShowForSplit.id && String(s.id) === String(selectedShowForSplit.id)) ||
+            (selectedShowForSplit.cloudEventId && (String(s.cloudEventId) === String(selectedShowForSplit.cloudEventId) || String(s.id) === String(selectedShowForSplit.cloudEventId))) ||
+            (String(s.name || s.title || '').trim().toLowerCase() === String(selectedShowForSplit.name || selectedShowForSplit.title || '').trim().toLowerCase() &&
+             String(s.date || '').trim() === String(selectedShowForSplit.date || '').trim())
+          );
+
+          const splitPayload = {
+            members: { ...fullSplits },
+            substitutes: [...substitutes],
+            bandFund: fundVal,
+            band_fund: fundVal,
+            status: selectedShowCacheStatus,
+            updatedAt: new Date().toISOString()
+          };
+
+          if (targetSl) {
+            targetSl.cacheSplit = splitPayload;
+            targetSl.cacheStatus = selectedShowCacheStatus;
+          } else {
+            targetSl = {
+              id: selectedShowForSplit.id || `cloud_sl_${Date.now()}`,
+              cloudEventId: selectedShowForSplit.cloudEventId || null,
+              name: selectedShowForSplit.name || selectedShowForSplit.title || 'Evento',
+              title: selectedShowForSplit.name || selectedShowForSplit.title || 'Evento',
+              type: selectedShowForSplit.type || 'show',
+              date: selectedShowForSplit.date || '',
+              time: selectedShowForSplit.time || '',
+              local: selectedShowForSplit.local || '',
+              cachê: selectedShowForSplit.cachê || '',
+              cacheSplit: splitPayload,
+              cacheStatus: selectedShowCacheStatus,
+              songs: Array.isArray(selectedShowForSplit.songs) ? selectedShowForSplit.songs : []
+            };
+            snapshot.setlists.push(targetSl);
+          }
+
+          await api.syncBand(band.cloudId, {
+            name: band.name,
+            publicSlug: band.publicSlug || '',
+            genre: band.genres || band.genre || '',
+            description: band.description || band.city || '',
+            imageUri: band.imageUri || '',
+            city: band.city || '',
+            state: band.state || '',
+            country: band.country || '',
+            bandType: band.bandType || '',
+            genresJson: typeof band.genres === 'string' ? band.genres : JSON.stringify(band.genres || []),
+            linksJson: typeof band.links === 'string' ? band.links : JSON.stringify(band.links || {}),
+            instagram: band.instagram || '',
+            youtube: band.youtube || '',
+            spotify: band.spotify || '',
+            isNetworkVisible: Boolean(band.isNetworkVisible),
+            syncDataJson: JSON.stringify(snapshot)
+          });
+          if (band?.id) {
+            await bandService.updateBandSyncDataJson(band.id, snapshot);
+          }
+
+          if (selectedShowForSplit.cloudEventId) {
+            try {
+              await api.updateEvent(selectedShowForSplit.cloudEventId, {
+                title: selectedShowForSplit.name || selectedShowForSplit.title || 'Show',
+                status: selectedShowCacheStatus === 'paid' ? 'Confirmed' : 'Pending',
+                cacheValue: parseFloat(String(selectedShowForSplit.cachê || '0').replace(',', '.')) || null,
               });
-              if (band?.id) {
-                await bandService.updateBandSyncDataJson(band.id, snapshot);
-              }
-            }
+            } catch (evErr) {}
           }
         } catch (syncErr) {
           console.warn('Erro ao sincronizar split com a nuvem:', syncErr);
@@ -1895,24 +1937,42 @@ export default function BandDetailScreen({
             const snapshot = typeof localB.syncDataJson === 'string'
               ? JSON.parse(localB.syncDataJson || '{}')
               : (localB.syncDataJson || {});
-            if (Array.isArray(snapshot.setlists)) {
-              const targetSl = snapshot.setlists.find(s =>
-                (selectedShowForSplit.id && s.id === selectedShowForSplit.id) ||
-                (s.name === selectedShowForSplit.name && s.date === selectedShowForSplit.date)
-              );
-              if (targetSl) {
-                targetSl.cacheSplit = {
-                  members: { ...fullSplits },
-                  substitutes: [...substitutes],
-                  bandFund: fundVal,
-                  band_fund: fundVal,
-                  status: selectedShowCacheStatus,
-                  updatedAt: new Date().toISOString()
-                };
-                targetSl.cacheStatus = selectedShowCacheStatus;
-                await bandService.updateBandSyncDataJson(band.id, snapshot);
-              }
+            if (!Array.isArray(snapshot.setlists)) {
+              snapshot.setlists = [];
             }
+            let targetSl = snapshot.setlists.find(s =>
+              (selectedShowForSplit.id && String(s.id) === String(selectedShowForSplit.id)) ||
+              (selectedShowForSplit.cloudEventId && (String(s.cloudEventId) === String(selectedShowForSplit.cloudEventId) || String(s.id) === String(selectedShowForSplit.cloudEventId))) ||
+              (String(s.name || s.title || '').trim().toLowerCase() === String(selectedShowForSplit.name || selectedShowForSplit.title || '').trim().toLowerCase() &&
+               String(s.date || '').trim() === String(selectedShowForSplit.date || '').trim())
+            );
+            const splitPayload = {
+              members: { ...fullSplits },
+              substitutes: [...substitutes],
+              bandFund: fundVal,
+              band_fund: fundVal,
+              status: selectedShowCacheStatus,
+              updatedAt: new Date().toISOString()
+            };
+            if (targetSl) {
+              targetSl.cacheSplit = splitPayload;
+              targetSl.cacheStatus = selectedShowCacheStatus;
+            } else {
+              snapshot.setlists.push({
+                id: selectedShowForSplit.id || `local_sl_${Date.now()}`,
+                name: selectedShowForSplit.name || selectedShowForSplit.title || 'Evento',
+                title: selectedShowForSplit.name || selectedShowForSplit.title || 'Evento',
+                type: selectedShowForSplit.type || 'show',
+                date: selectedShowForSplit.date || '',
+                time: selectedShowForSplit.time || '',
+                local: selectedShowForSplit.local || '',
+                cachê: selectedShowForSplit.cachê || '',
+                cacheSplit: splitPayload,
+                cacheStatus: selectedShowCacheStatus,
+                songs: Array.isArray(selectedShowForSplit.songs) ? selectedShowForSplit.songs : []
+              });
+            }
+            await bandService.updateBandSyncDataJson(band.id, snapshot);
           }
         } catch (localErr) {}
       }
@@ -2741,7 +2801,7 @@ export default function BandDetailScreen({
           status: finStatus,
           notes: notesToSave
         };
-        const fIdx = snapshot.finances.findIndex(f => f.id === editingFinanceItem?.id);
+        const fIdx = snapshot.finances.findIndex(f => String(f.id) === String(editingFinanceItem?.id));
         if (fIdx >= 0) {
           snapshot.finances[fIdx] = finPayload;
         } else {
@@ -2749,14 +2809,25 @@ export default function BandDetailScreen({
         }
         await api.syncBand(band.cloudId, {
           name: band.name,
-          genre: band.genre || '',
-          description: band.description || '',
+          publicSlug: band.publicSlug || '',
+          genre: band.genres || band.genre || '',
+          description: band.description || band.city || '',
           imageUri: band.imageUri || '',
           city: band.city || '',
           state: band.state || '',
           country: band.country || '',
+          bandType: band.bandType || '',
+          genresJson: typeof band.genres === 'string' ? band.genres : JSON.stringify(band.genres || []),
+          linksJson: typeof band.links === 'string' ? band.links : JSON.stringify(band.links || {}),
+          instagram: band.instagram || '',
+          youtube: band.youtube || '',
+          spotify: band.spotify || '',
+          isNetworkVisible: Boolean(band.isNetworkVisible),
           syncDataJson: JSON.stringify(snapshot)
         });
+        if (band?.id) {
+          await bandService.updateBandSyncDataJson(band.id, snapshot);
+        }
       } else {
         // MODO OFFLINE: salva no SQLite
         if (editingFinanceItem) {
@@ -2801,29 +2872,44 @@ export default function BandDetailScreen({
 
   const handleToggleFinanceStatus = async (item) => {
     try {
+      const nextStatus = item.status === 'paid' ? 'pending' : 'paid';
+      if (item.id && typeof item.id === 'number') {
+        try {
+          await bandService.toggleFinanceStatus(item.id, item.status || 'paid');
+        } catch (e) {}
+      }
       if (band.cloudId) {
         // MODO ONLINE: atualiza no snapshot da nuvem
-        const nextStatus = item.status === 'paid' ? 'pending' : 'paid';
         const cloudData = await api.pullBand(band.cloudId);
         const snapshot = typeof cloudData.syncDataJson === 'string'
           ? JSON.parse(cloudData.syncDataJson || '{}')
           : (cloudData.syncDataJson || {});
-        if (Array.isArray(snapshot.finances)) {
-          const matchF = snapshot.finances.find(f => f.id === item.id);
-          if (matchF) matchF.status = nextStatus;
-          await api.syncBand(band.cloudId, {
-            name: band.name,
-            genre: band.genre || '',
-            description: band.description || '',
-            imageUri: band.imageUri || '',
-            city: band.city || '',
-            state: band.state || '',
-            country: band.country || '',
-            syncDataJson: JSON.stringify(snapshot)
-          });
+        if (!Array.isArray(snapshot.finances)) snapshot.finances = [];
+        const matchF = snapshot.finances.find(f => String(f.id) === String(item.id) || (f.title === item.title && f.date === item.date));
+        if (matchF) {
+          matchF.status = nextStatus;
         }
-      } else {
-        await bandService.toggleFinanceStatus(item.id, item.status || 'paid');
+        await api.syncBand(band.cloudId, {
+          name: band.name,
+          publicSlug: band.publicSlug || '',
+          genre: band.genres || band.genre || '',
+          description: band.description || band.city || '',
+          imageUri: band.imageUri || '',
+          city: band.city || '',
+          state: band.state || '',
+          country: band.country || '',
+          bandType: band.bandType || '',
+          genresJson: typeof band.genres === 'string' ? band.genres : JSON.stringify(band.genres || []),
+          linksJson: typeof band.links === 'string' ? band.links : JSON.stringify(band.links || {}),
+          instagram: band.instagram || '',
+          youtube: band.youtube || '',
+          spotify: band.spotify || '',
+          isNetworkVisible: Boolean(band.isNetworkVisible),
+          syncDataJson: JSON.stringify(snapshot)
+        });
+        if (band?.id) {
+          await bandService.updateBandSyncDataJson(band.id, snapshot);
+        }
       }
       await loadData();
     } catch (e) {
@@ -5203,7 +5289,7 @@ export default function BandDetailScreen({
                       paddingHorizontal: 8,
                     }
                   ]}
-                  onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band.id)}
+                  onPress={() => onOpenNewSetlistForBand && onOpenNewSetlistForBand(band)}
                 >
                   <Ionicons name="add" size={19} color="#ffffff" style={{ marginRight: 4 }} />
                   <Text style={styles.createEventBtnText} numberOfLines={1}>{t('newEvent')}</Text>
