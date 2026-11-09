@@ -1060,7 +1060,9 @@ function MainApp() {
     try {
       // Limpeza de duplicadas em background sem bloquear o carregamento principal da tela
       setTimeout(() => {
-        songService.cleanDuplicateSongs().catch(() => {});
+        if (typeof songService.cleanDuplicateSongs === 'function') {
+          Promise.resolve(songService.cleanDuplicateSongs()).catch(() => {});
+        }
       }, 1500);
       const hasValidToken = await api.isLoggedIn();
       const isOnline = forceOnline !== null ? (forceOnline && hasValidToken) : (isLoggedIn && hasValidToken);

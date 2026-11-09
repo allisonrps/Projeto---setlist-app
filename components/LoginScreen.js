@@ -142,7 +142,7 @@ function AnimatedNetworkBadge() {
   );
 }
 
-export default function LoginScreen({ onLogin }) {
+export default function LoginScreen({ onLogin, onClose }) {
   const { colors } = useTheme();
   const { t, language } = useLanguage();
   const isDark = colors.isDark;
@@ -607,6 +607,27 @@ export default function LoginScreen({ onLogin }) {
         colors={isDark ? ['#070a14', '#0d1629', '#080c18'] : ['#f8fafc', '#eef2f6', '#f1f5f9']} 
         style={StyleSheet.absoluteFillObject} 
       />
+
+      {onClose && (
+        <Pressable
+          onPress={onClose}
+          hitSlop={12}
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'ios' ? 44 : 20,
+            right: 18,
+            zIndex: 999,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="close" size={22} color={colors.text} />
+        </Pressable>
+      )}
 
       <ScrollView 
         style={styles.container} 

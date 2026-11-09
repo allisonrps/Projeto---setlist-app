@@ -3,6 +3,23 @@ import { settingsService } from '../services/settingsService';
 
 const translations = {
   pt: {
+    offlineSongbookTitle: 'Levar Songbook para a Nuvem',
+    offlineSongbookDesc: 'Você está no modo offline com dados locais (SQLite).\n\nDeseja entrar ou criar sua conta BandLink para migrar suas músicas e sincronizar tudo na nuvem?',
+    continueOffline: 'Continuar Offline',
+    connectAndSync: 'Entrar e Migrar Songbook',
+    migratingSongbookTitle: 'Migrando Songbook para a Nuvem',
+    migratingSongbookSubtitle: 'Enviando suas músicas e cifras locais para a sua conta online...',
+    migratingSongItem: 'Enviando música',
+    dontCloseAppDuringSync: 'Não feche o aplicativo durante o envio.',
+    migrationCompleteTitle: 'Songbook Migrado com Sucesso!',
+    migrationCompleteDesc: 'músicas foram sincronizadas na sua conta online.',
+    noOfflineSongsToMigrate: 'Você não possui músicas offline salvas para migrar.',
+    migrationError: 'Não foi possível concluir a migração do Songbook.',
+    onlineModeTitle: 'Modo Online',
+    onlineModeDesc: 'Você está conectado à nuvem! Suas bandas e repertório estão sincronizados com sua conta BandLink.',
+    syncNow: 'Sincronizar Agora',
+    conclude: 'Concluir',
+
     // Navegação e Abas
     home: 'Home',
     songs: 'Músicas',
@@ -1245,6 +1262,23 @@ const translations = {
   },
 
   en: {
+    offlineSongbookTitle: 'Bring Songbook to Cloud',
+    offlineSongbookDesc: 'You are currently in offline mode with local data (SQLite).\n\nWould you like to log in or create your BandLink account to migrate your songs and sync everything to the cloud?',
+    continueOffline: 'Continue Offline',
+    connectAndSync: 'Log In & Migrate Songbook',
+    migratingSongbookTitle: 'Migrating Songbook to Cloud',
+    migratingSongbookSubtitle: 'Uploading your local songs and chords to your online account...',
+    migratingSongItem: 'Uploading song',
+    dontCloseAppDuringSync: 'Please do not close the app during upload.',
+    migrationCompleteTitle: 'Songbook Migrated Successfully!',
+    migrationCompleteDesc: 'songs have been synced to your online account.',
+    noOfflineSongsToMigrate: 'You have no offline songs to migrate.',
+    migrationError: 'Could not complete Songbook migration.',
+    onlineModeTitle: 'Online Mode',
+    onlineModeDesc: 'You are connected to the cloud! Your bands and repertoire are synced with your BandLink account.',
+    syncNow: 'Sync Now',
+    conclude: 'Done',
+
     // Navigation & Tabs
     home: 'Home',
     songs: 'Songs',
@@ -2487,6 +2521,23 @@ const translations = {
   },
 
   es: {
+    offlineSongbookTitle: 'Llevar Songbook a la Nube',
+    offlineSongbookDesc: 'Estás en modo offline con datos locales (SQLite).\n\n¿Deseas iniciar sesión o crear tu cuenta BandLink para migrar tus canciones y sincronizar todo en la nube?',
+    continueOffline: 'Continuar Offline',
+    connectAndSync: 'Iniciar Sesión y Migrar Songbook',
+    migratingSongbookTitle: 'Migrando Songbook a la Nube',
+    migratingSongbookSubtitle: 'Subiendo tus canciones y acordes locales a tu cuenta online...',
+    migratingSongItem: 'Subiendo canción',
+    dontCloseAppDuringSync: 'Por favor, no cierres la aplicación durante el envío.',
+    migrationCompleteTitle: '¡Songbook Migrado con Éxito!',
+    migrationCompleteDesc: 'canciones han sido sincronizadas en tu cuenta online.',
+    noOfflineSongsToMigrate: 'No tienes canciones offline para migrar.',
+    migrationError: 'No se pudo completar la migración del Songbook.',
+    onlineModeTitle: 'Modo Online',
+    onlineModeDesc: '¡Estás conectado a la nube! Tus bandas y repertorio están sincronizados con tu cuenta BandLink.',
+    syncNow: 'Sincronizar Ahora',
+    conclude: 'Concluir',
+
     // Navegación y Pestañas
     home: 'Inicio',
     songs: 'Canciones',
