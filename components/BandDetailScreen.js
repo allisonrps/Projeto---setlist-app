@@ -1099,6 +1099,11 @@ export default function BandDetailScreen({
   const [postContentInput, setPostContentInput] = useState('');
   const [postIsPinnedInput, setPostIsPinnedInput] = useState(false);
   const [isSavingPost, setIsSavingPost] = useState(false);
+  const [isSavingFinance, setIsSavingFinance] = useState(false);
+  const [isSavingMember, setIsSavingMember] = useState(false);
+  const [isSavingSplit, setIsSavingSplit] = useState(false);
+  const [isSavingBandCash, setIsSavingBandCash] = useState(false);
+  const [isSavingRepertoire, setIsSavingRepertoire] = useState(false);
   const [selectedPostToView, setSelectedPostToView] = useState(null);
 
   // ── Funções dos Lembretes da Banda (Home) ──
@@ -1928,6 +1933,7 @@ export default function BandDetailScreen({
   const handleSaveCachetSplit = async () => {
     if (!selectedShowForSplit) return;
     try {
+      setIsSavingSplit(true);
       const fundVal = parseFloat(String(splitBandFund || '0').replace(',', '.')) || 0;
       // Merge member splits with substitute entries and bandFund
       const fullSplits = {
@@ -2095,6 +2101,8 @@ export default function BandDetailScreen({
     } catch (err) {
       console.error('Error saving cache split:', err);
       Alert.alert(t('error') || 'Erro', t('errorSavingCacheSplit') || 'Não foi possível salvar a divisão do cachê.');
+    } finally {
+      setIsSavingSplit(false);
     }
   };
 
@@ -2123,6 +2131,7 @@ export default function BandDetailScreen({
     }
 
     try {
+      setIsSavingBandCash(true);
       setBandCashBalance(parsedVal);
       if (band?.cloudId) {
         const cloudData = await api.pullBand(band.cloudId);
@@ -2186,6 +2195,8 @@ export default function BandDetailScreen({
     } catch (err) {
       console.error('Error saving band cash:', err);
       Alert.alert(t('error') || 'Erro', 'Não foi possível atualizar o saldo do caixa.');
+    } finally {
+      setIsSavingBandCash(false);
     }
   };
 
@@ -2417,6 +2428,7 @@ export default function BandDetailScreen({
 
   const handleSavePickerSongs = async () => {
     try {
+      setIsSavingRepertoire(true);
       if (typeof Vibration !== 'undefined') Vibration.vibrate(10);
       const targetIds = Array.from(selectedPickerSongIds);
 
@@ -2470,6 +2482,8 @@ export default function BandDetailScreen({
     } catch (err) {
       console.error('Error saving band repertoire songs:', err);
       Alert.alert(t('error') || 'Erro', t('errorUpdatingBandSongs') || 'Não foi possível atualizar as músicas da banda.');
+    } finally {
+      setIsSavingRepertoire(false);
     }
   };
 
@@ -2545,6 +2559,7 @@ export default function BandDetailScreen({
     }
 
     try {
+      setIsSavingMember(true);
       const cleanUsername = memberUsername.trim().replace(/^@+/, '');
       if (band.cloudId) {
         // MODO ONLINE: salva diretamente na API e no snapshot da nuvem (nunca SQLite)
@@ -2645,6 +2660,8 @@ export default function BandDetailScreen({
     } catch (e) {
       console.error('Error in handleSaveMember:', e);
       Alert.alert(t('error') || 'Erro', t('errorSavingMember') || 'Não foi possível salvar o integrante.');
+    } finally {
+      setIsSavingMember(false);
     }
   };
 
@@ -2896,6 +2913,7 @@ export default function BandDetailScreen({
     }
 
     try {
+      setIsSavingFinance(true);
       if (band.cloudId) {
         // MODO ONLINE: salva diretamente no snapshot da API
         const cloudData = await api.pullBand(band.cloudId);
@@ -2968,6 +2986,8 @@ export default function BandDetailScreen({
     } catch (e) {
       console.error('Error saving financial entry:', e);
       Alert.alert(t('error') || 'Erro', t('errorSavingFinance') || 'Não foi possível salvar o lançamento financeiro.');
+    } finally {
+      setIsSavingFinance(false);
     }
   };
 
@@ -5716,10 +5736,15 @@ export default function BandDetailScreen({
                 <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
+                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary, opacity: isSavingRepertoire ? 0.7 : 1 }]}
                 onPress={handleSavePickerSongs}
+                disabled={isSavingRepertoire}
               >
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveRepertoire')}</Text>
+                {isSavingRepertoire ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveRepertoire')}</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -5950,10 +5975,15 @@ export default function BandDetailScreen({
                 <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
+                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary, opacity: isSavingFinance ? 0.7 : 1 }]}
                 onPress={handleSaveFinanceEntry}
+                disabled={isSavingFinance}
               >
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('save')}</Text>
+                {isSavingFinance ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('save')}</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -6196,10 +6226,15 @@ export default function BandDetailScreen({
                 <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]}
+                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary, opacity: isSavingMember ? 0.7 : 1 }]}
                 onPress={handleSaveMember}
+                disabled={isSavingMember}
               >
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveMember')}</Text>
+                {isSavingMember ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveMember')}</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -6625,8 +6660,16 @@ export default function BandDetailScreen({
               <Pressable style={[styles.modalCancelBtn, { borderColor: colors.border }]} onPress={() => setShowCacheSplitModal(false)}>
                 <Text style={{ color: colors.text }}>{t('cancel')}</Text>
               </Pressable>
-              <Pressable style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]} onPress={handleSaveCachetSplit}>
-                <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveSplit')}</Text>
+              <Pressable 
+                style={[styles.modalConfirmBtn, { backgroundColor: colors.primary, opacity: isSavingSplit ? 0.7 : 1 }]} 
+                onPress={handleSaveCachetSplit}
+                disabled={isSavingSplit}
+              >
+                {isSavingSplit ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{t('saveSplit')}</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -7134,12 +7177,17 @@ export default function BandDetailScreen({
                   <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>{t('cancel') || 'Cancelar'}</Text>
                 </Pressable>
                 <Pressable
-                  style={[styles.modalConfirmBtn, { backgroundColor: '#fbbf24', borderColor: '#fbbf24', flex: 1.3, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }]}
+                  style={[styles.modalConfirmBtn, { backgroundColor: '#fbbf24', borderColor: '#fbbf24', flex: 1.3, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center', opacity: isSavingBandCash ? 0.7 : 1 }]}
                   onPress={handleSaveBandCash}
+                  disabled={isSavingBandCash}
                 >
-                  <Text style={{ color: '#000000', fontWeight: '900', fontSize: 14 }}>
-                    {t('saveBalance') || 'Salvar Saldo'}
-                  </Text>
+                  {isSavingBandCash ? (
+                    <ActivityIndicator size="small" color="#000000" />
+                  ) : (
+                    <Text style={{ color: '#000000', fontWeight: '900', fontSize: 14 }}>
+                      {t('saveBalance') || 'Salvar Saldo'}
+                    </Text>
+                  )}
                 </Pressable>
               </View>
             </ScrollView>

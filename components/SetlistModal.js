@@ -498,6 +498,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
   const [isDraggingActive, setIsDraggingActive] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -650,7 +651,7 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
     setShowSongSelectorModal(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert(t('attention'), t('alertSetlistName'));
       setShowEventDetails(true);
@@ -671,19 +672,26 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
       return;
     }
 
-    onSave({
-      ...(setlist || {}),
-      id: setlist?.id,
-      name: name.trim(),
-      type,
-      myBandId: bandId,
-      date: date.trim(),
-      time: time.trim(),
-      local: local.trim(),
-      cachê: type === 'show' ? (cachê ? cachê.trim() : null) : null,
-      notes: notes.trim(),
-      songIds: selectedSongs,
-    });
+    try {
+      setIsSaving(true);
+      await onSave({
+        ...(setlist || {}),
+        id: setlist?.id,
+        name: name.trim(),
+        type,
+        myBandId: bandId,
+        date: date.trim(),
+        time: time.trim(),
+        local: local.trim(),
+        cachê: type === 'show' ? (cachê ? cachê.trim() : null) : null,
+        notes: notes.trim(),
+        songIds: selectedSongs,
+      });
+    } catch (err) {
+      console.error('Error saving setlist in modal:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const orderedSongs = selectedSongs
@@ -1138,14 +1146,21 @@ export default function SetlistModal({ visible, onClose, onSave, setlist, bands 
                 style={({ pressed }) => [
                   styles.saveButton, 
                   { backgroundColor: colors.success },
-                  pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
+                  (pressed || isSaving) && { opacity: 0.85, transform: [{ scale: 0.98 }] }
                 ]} 
                 onPress={handleSave}
+                disabled={isSaving}
               >
-                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                <Text style={styles.saveButtonText}>
-                  {setlist ? t('saveChanges') : t('createSetlist')}
-                </Text>
+                {isSaving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                    <Text style={styles.saveButtonText}>
+                      {setlist ? t('saveChanges') : t('createSetlist')}
+                    </Text>
+                  </>
+                )}
               </Pressable>
             </View>
           </View>

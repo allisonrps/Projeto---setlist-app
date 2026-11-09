@@ -16,6 +16,7 @@ import {
   Image,
   Dimensions,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { useLanguage } from '../hooks/useLanguage';
@@ -76,6 +77,8 @@ export default function SetlistDetailScreen({
   const [notes, setNotes] = useState('');
   const [selectedSongs, setSelectedSongs] = useState([]);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // UI Layers
   const [showDetailsLayer, setShowDetailsLayer] = useState(false); // Collapsed by default
@@ -227,7 +230,7 @@ export default function SetlistDetailScreen({
     }
   };
 
-  const handleSaveInternal = () => {
+  const handleSaveInternal = async () => {
     if (!name.trim()) {
       Alert.alert(t('attention'), t('alertSetlistName'));
       setShowDetailsLayer(true);
@@ -260,7 +263,14 @@ export default function SetlistDetailScreen({
       songIds: orderedSongs.length > 0 ? orderedSongs : selectedSongs,
     };
 
-    onSave(payload);
+    try {
+      setIsSaving(true);
+      await onSave(payload);
+    } catch (err) {
+      console.error('Error saving setlist in detail screen:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteWithConfirm = () => {
@@ -273,8 +283,15 @@ export default function SetlistDetailScreen({
         {
           text: t('delete'),
           style: 'destructive',
-          onPress: () => {
-            onDelete(setlist.id);
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+              await onDelete(setlist.id);
+            } catch (err) {
+              console.error('Error deleting setlist in detail screen:', err);
+            } finally {
+              setIsDeleting(false);
+            }
           },
         },
       ]
@@ -637,12 +654,17 @@ export default function SetlistDetailScreen({
                 style={({ pressed }) => [
                   styles.circleActionBtn,
                   { backgroundColor: colors.success + '25' },
-                  pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+                  (pressed || isSaving) && { opacity: 0.7, transform: [{ scale: 0.92 }] },
                 ]}
                 onPress={handleSaveInternal}
+                disabled={isSaving || isDeleting}
                 hitSlop={6}
               >
-                <Ionicons name="save-outline" size={18} color={colors.success} />
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={colors.success} />
+                ) : (
+                  <Ionicons name="save-outline" size={18} color={colors.success} />
+                )}
               </Pressable>
 
               {/* Duplicate / Copy Setlist */}
@@ -698,12 +720,17 @@ export default function SetlistDetailScreen({
                   style={({ pressed }) => [
                     styles.circleActionBtn,
                     { backgroundColor: colors.danger + '20' },
-                    pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+                    (pressed || isDeleting) && { opacity: 0.7, transform: [{ scale: 0.92 }] },
                   ]}
                   onPress={handleDeleteWithConfirm}
+                  disabled={isSaving || isDeleting}
                   hitSlop={6}
                 >
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  {isDeleting ? (
+                    <ActivityIndicator size="small" color={colors.danger} />
+                  ) : (
+                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  )}
                 </Pressable>
               ) : null}
 

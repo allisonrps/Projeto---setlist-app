@@ -46,6 +46,7 @@ export default function SettingsModal({ visible, onClose }) {
   const [tempPrimary, setTempPrimary] = useState(primaryColor);
   const [tempSecondary, setTempSecondary] = useState(secondaryColor);
   const [tempLanguage, setTempLanguage] = useState(language);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -57,9 +58,14 @@ export default function SettingsModal({ visible, onClose }) {
   }, [visible, themeMode, primaryColor, secondaryColor, language]);
 
   const handleSave = async () => {
-    await setThemePreferences(tempMode, tempPrimary, tempSecondary);
-    await setLanguage(tempLanguage);
-    onClose();
+    try {
+      setIsSaving(true);
+      await setThemePreferences(tempMode, tempPrimary, tempSecondary);
+      await setLanguage(tempLanguage);
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -246,13 +252,20 @@ export default function SettingsModal({ visible, onClose }) {
               style={({ pressed }) => [
                 styles.saveButton, 
                 { backgroundColor: colors.success },
-                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
+                (pressed || isSaving) && { opacity: 0.85, transform: [{ scale: 0.98 }] }
               ]}
               onPress={handleSave}
+              disabled={isSaving}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                <Text style={styles.saveButtonText}>{t('save')}</Text>
+                {isSaving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                    <Text style={styles.saveButtonText}>{t('save')}</Text>
+                  </>
+                )}
               </View>
             </Pressable>
           </ScrollView>

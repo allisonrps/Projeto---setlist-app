@@ -592,6 +592,9 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
   
   // Skills
   const [showSkillModal, setShowSkillModal] = useState(false);
+  const [isSavingSkill, setIsSavingSkill] = useState(false);
+  const [isSavingGear, setIsSavingGear] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [editingSkill, setEditingSkill] = useState(null);
   const [skillName, setSkillName] = useState('');
   const [skillStars, setSkillStars] = useState(3);
@@ -1684,28 +1687,32 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
   const handleSaveSkill = async () => {
     if (!skillName.trim()) return;
-    let updatedSkills;
-    if (editingSkill) {
-      updatedSkills = user.skills.map(s => s.id === editingSkill.id ? { ...s, instrument: skillName, stars: skillStars } : s);
-    } else {
-      updatedSkills = [...user.skills, { id: Date.now(), instrument: skillName, stars: skillStars }];
-    }
-    const updatedUser = { 
-      ...user, 
-      skills: updatedSkills, 
-      instruments: JSON.stringify(updatedSkills) 
-    };
-    setUser(updatedUser);
-    setShowSkillModal(false);
     try {
+      setIsSavingSkill(true);
+      let updatedSkills;
+      if (editingSkill) {
+        updatedSkills = (user?.skills || []).map(s => s.id === editingSkill.id ? { ...s, instrument: skillName, stars: skillStars } : s);
+      } else {
+        updatedSkills = [...(user?.skills || []), { id: Date.now(), instrument: skillName, stars: skillStars }];
+      }
+      const updatedUser = { 
+        ...user, 
+        skills: updatedSkills, 
+        instruments: JSON.stringify(updatedSkills) 
+      };
+      setUser(updatedUser);
       await AsyncStorage.setItem('user_profile_cache', JSON.stringify(updatedUser));
       await AsyncStorage.setItem('user_profile_completed', 'true');
       await api.updateProfile({ 
         instruments: JSON.stringify(updatedSkills),
         skillsJson: JSON.stringify(updatedSkills)
       });
+      setShowSkillModal(false);
     } catch (e) {
       console.log('Error saving skill:', e);
+      setShowSkillModal(false);
+    } finally {
+      setIsSavingSkill(false);
     }
   };
 
@@ -1835,7 +1842,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
     setShowGearModal(true);
   };
 
-  const handleSaveGear = () => {
+  const handleSaveGear = async () => {
     if (!gearName.trim()) {
       Alert.alert(t('fieldRequired') || 'Campo Obrigatório', t('fillBrandModelError') || 'Preencha a Marca / Modelo do equipamento.');
       return;
@@ -1868,8 +1875,16 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
         }
       ];
     }
-    saveGearList(updated);
-    setShowGearModal(false);
+    try {
+      setIsSavingGear(true);
+      await saveGearList(updated);
+      setShowGearModal(false);
+    } catch (e) {
+      console.log('Error saving gear:', e);
+      setShowGearModal(false);
+    } finally {
+      setIsSavingGear(false);
+    }
   };
 
   // Habilidades Extras Handlers
@@ -2130,6 +2145,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
   const handleSaveUserProfile = async () => {
     try {
+      setIsSavingProfile(true);
       const cleanName = editProfileName.trim() || user?.username || 'Músico';
       const cleanUsername = editProfileUsername.trim().toLowerCase().replace(/^@+/, '');
 
@@ -2243,6 +2259,8 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
     } catch (e) {
       console.log('Erro ao atualizar perfil:', e);
       Alert.alert(t('errorTitle') || 'Erro', 'Falha ao salvar dados do perfil.');
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -4007,8 +4025,16 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: isDark ? '#1e293b' : '#e5e7eb' }]} onPress={() => setShowSkillModal(false)}>
                 <Text style={{ color: colors.text, fontWeight: 'bold' }}>{t('cancelBtn') || 'Cancelar'}</Text>
               </Pressable>
-              <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary }]} onPress={handleSaveSkill}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{editingSkill ? (t('saveBtn') || 'Salvar') : (t('addBtn') || 'Adicionar')}</Text>
+              <Pressable 
+                style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary, opacity: isSavingSkill ? 0.7 : 1 }]} 
+                onPress={handleSaveSkill}
+                disabled={isSavingSkill}
+              >
+                {isSavingSkill ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>{editingSkill ? (t('saveBtn') || 'Salvar') : (t('addBtn') || 'Adicionar')}</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -4280,8 +4306,16 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: isDark ? '#1e293b' : '#e5e7eb' }]} onPress={() => setShowGearModal(false)}>
                 <Text style={{ color: colors.text, fontWeight: 'bold' }}>{t('cancelBtn') || 'Cancelar'}</Text>
               </Pressable>
-              <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary }]} onPress={handleSaveGear}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{editingGear ? (t('saveBtn') || 'Salvar') : (t('addBtn') || 'Adicionar')}</Text>
+              <Pressable 
+                style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary, opacity: isSavingGear ? 0.7 : 1 }]} 
+                onPress={handleSaveGear}
+                disabled={isSavingGear}
+              >
+                {isSavingGear ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>{editingGear ? (t('saveBtn') || 'Salvar') : (t('addBtn') || 'Adicionar')}</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -4501,8 +4535,16 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
               <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: isDark ? '#1e293b' : '#e5e7eb' }]} onPress={() => setShowEditProfileModal(false)}>
                 <Text style={{ color: colors.text, fontWeight: 'bold' }}>{t('cancelBtn') || 'Cancelar'}</Text>
               </Pressable>
-              <Pressable style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary }]} onPress={handleSaveUserProfile}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('saveBtn') || 'Salvar Perfil'}</Text>
+              <Pressable 
+                style={[styles.syncButton, { flex: 1, backgroundColor: colors.primary, opacity: isSavingProfile ? 0.7 : 1 }]} 
+                onPress={handleSaveUserProfile}
+                disabled={isSavingProfile}
+              >
+                {isSavingProfile ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t('saveBtn') || 'Salvar Perfil'}</Text>
+                )}
               </Pressable>
             </View>
           </View>

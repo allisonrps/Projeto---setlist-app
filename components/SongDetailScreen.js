@@ -16,6 +16,7 @@ import {
   Modal,
   StatusBar,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,6 +54,8 @@ export default function SongDetailScreen({
   const [defaultView, setDefaultView] = useState('lyrics');
   const [scrollSpeed, setScrollSpeed] = useState('none');
   const [activeEditorTab, setActiveEditorTab] = useState('chords');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [links, setLinks] = useState([]);
   const [showLinksSection, setShowLinksSection] = useState(false);
   const [showDetailsLayer, setShowDetailsLayer] = useState(false);
@@ -226,7 +229,7 @@ export default function SongDetailScreen({
     return regex.test(dur.trim());
   };
 
-  const handleSaveInternal = () => {
+  const handleSaveInternal = async () => {
     if (!name.trim()) {
       Alert.alert(t('attention') || 'Atenção', t('alertSongName') || 'Informe o nome da música.');
       return;
@@ -260,7 +263,14 @@ export default function SongDetailScreen({
       isFavorite: isFavorite ? 1 : 0,
     };
 
-    onSave(songData);
+    try {
+      setIsSaving(true);
+      await onSave(songData);
+    } catch (err) {
+      console.error('Error in handleSaveInternal:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteWithConfirm = () => {
@@ -277,8 +287,15 @@ export default function SongDetailScreen({
         {
           text: t('delete') || 'Excluir',
           style: 'destructive',
-          onPress: () => {
-            onDelete(song.id);
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+              await onDelete(song.id);
+            } catch (err) {
+              console.error('Error in handleDeleteWithConfirm:', err);
+            } finally {
+              setIsDeleting(false);
+            }
           },
         },
       ]
@@ -371,12 +388,17 @@ export default function SongDetailScreen({
             style={({ pressed }) => [
               styles.circleActionBtn,
               { backgroundColor: colors.success + '25' },
-              pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+              (pressed || isSaving) && { opacity: 0.7, transform: [{ scale: 0.92 }] },
             ]}
             onPress={handleSaveInternal}
+            disabled={isSaving || isDeleting}
             hitSlop={6}
           >
-            <Ionicons name="save-outline" size={18} color={colors.success} />
+            {isSaving ? (
+              <ActivityIndicator size="small" color={colors.success} />
+            ) : (
+              <Ionicons name="save-outline" size={18} color={colors.success} />
+            )}
           </Pressable>
 
           {/* Share */}
@@ -387,6 +409,7 @@ export default function SongDetailScreen({
               pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
             ]}
             onPress={handleShareClick}
+            disabled={isSaving || isDeleting}
             hitSlop={6}
           >
             <Ionicons name="share-social-outline" size={18} color={colors.secondary} />
@@ -398,12 +421,17 @@ export default function SongDetailScreen({
               style={({ pressed }) => [
                 styles.circleActionBtn,
                 { backgroundColor: colors.danger + '20' },
-                pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+                (pressed || isDeleting) && { opacity: 0.7, transform: [{ scale: 0.92 }] },
               ]}
               onPress={handleDeleteWithConfirm}
+              disabled={isSaving || isDeleting}
               hitSlop={6}
             >
-              <Ionicons name="trash-outline" size={18} color={colors.danger} />
+              {isDeleting ? (
+                <ActivityIndicator size="small" color={colors.danger} />
+              ) : (
+                <Ionicons name="trash-outline" size={18} color={colors.danger} />
+              )}
             </Pressable>
           ) : null}
 

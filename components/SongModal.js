@@ -33,6 +33,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
   const [links, setLinks] = useState([]);
   const [showLinksSection, setShowLinksSection] = useState(false);
   const [showSongDetails, setShowSongDetails] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -95,7 +96,7 @@ export default function SongModal({ visible, onClose, onSave, song }) {
     return regex.test(dur.trim());
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert(t('attention'), t('alertSongName'));
       return;
@@ -115,18 +116,25 @@ export default function SongModal({ visible, onClose, onSave, song }) {
 
     const filledLinks = links.filter((l) => l.url.trim().length > 0);
 
-    onSave({
-      name: name.trim(),
-      originalBand: originalBand.trim(),
-      style: style.trim(),
-      duration: duration.trim() || null,
-      lyrics: lyrics.trim(),
-      chords: chords.trim(),
-      tabs: tabs.trim(),
-      defaultView: defaultView,
-      scrollSpeed: scrollSpeed,
-      links: filledLinks,
-    });
+    try {
+      setIsSaving(true);
+      await onSave({
+        name: name.trim(),
+        originalBand: originalBand.trim(),
+        style: style.trim(),
+        duration: duration.trim() || null,
+        lyrics: lyrics.trim(),
+        chords: chords.trim(),
+        tabs: tabs.trim(),
+        defaultView: defaultView,
+        scrollSpeed: scrollSpeed,
+        links: filledLinks,
+      });
+    } catch (err) {
+      console.error('Error saving song in modal:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -535,15 +543,22 @@ export default function SongModal({ visible, onClose, onSave, song }) {
               style={({ pressed }) => [
                 styles.saveButton, 
                 { backgroundColor: colors.success },
-                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
+                (pressed || isSaving) && { opacity: 0.85, transform: [{ scale: 0.98 }] }
               ]} 
               onPress={handleSave}
+              disabled={isSaving}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                <Text style={styles.saveButtonText}>
-                  {song ? t('saveChanges') : t('saveSong')}
-                </Text>
+                {isSaving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                    <Text style={styles.saveButtonText}>
+                      {song ? t('saveChanges') : t('saveSong')}
+                    </Text>
+                  </>
+                )}
               </View>
             </Pressable>
           </ScrollView>

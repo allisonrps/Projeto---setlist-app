@@ -99,6 +99,7 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
   const [isAutoral, setIsAutoral] = useState(false);
   const [isProfissional, setIsProfissional] = useState(true);
   const [isCasual, setIsCasual] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Localização
   const [city, setCity] = useState('');
@@ -189,6 +190,7 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
   
   useEffect(() => {
     if (visible) {
+      setIsSaving(false);
       if (band) {
         setIsOnlineMode(Boolean(band.cloudId));
         setName(band.name || '');
@@ -377,7 +379,7 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert(t('attention'), t('alertBandName'));
       return;
@@ -415,30 +417,37 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
       tiktok: tiktok.trim(),
       facebook: facebook.trim(),
     };
-    onSave({ 
-      name: name.trim(), 
-      publicSlug: publicSlug.trim().toLowerCase().replace('@', ''),
-      imageUri, 
-      startDate: startDate.trim(), 
-      endDate: endDate.trim(),
-      isCover: isCover ? 1 : 0,
-      isAutoral: isAutoral ? 1 : 0,
-      isProfissional: isProfissional ? 1 : 0,
-      isCasual: isCasual ? 1 : 0,
-      bandType,
-      interestLevel,
-      city: city.trim(),
-      state: state.trim(),
-      country: country.trim() || '',
-      genres: JSON.stringify(tags),
-      links: JSON.stringify(linksObj),
-      instagram: instagram.trim(),
-      youtube: youtube.trim(),
-      spotify: spotify.trim(),
-      tiktok: tiktok.trim(),
-      facebook: facebook.trim(),
-      isOnline: isOnlineMode
-    });
+    try {
+      setIsSaving(true);
+      await onSave({ 
+        name: name.trim(), 
+        publicSlug: publicSlug.trim().toLowerCase().replace('@', ''),
+        imageUri, 
+        startDate: startDate.trim(), 
+        endDate: endDate.trim(),
+        isCover: isCover ? 1 : 0,
+        isAutoral: isAutoral ? 1 : 0,
+        isProfissional: isProfissional ? 1 : 0,
+        isCasual: isCasual ? 1 : 0,
+        bandType,
+        interestLevel,
+        city: city.trim(),
+        state: state.trim(),
+        country: country.trim() || '',
+        genres: JSON.stringify(tags),
+        links: JSON.stringify(linksObj),
+        instagram: instagram.trim(),
+        youtube: youtube.trim(),
+        spotify: spotify.trim(),
+        tiktok: tiktok.trim(),
+        facebook: facebook.trim(),
+        isOnline: isOnlineMode
+      });
+    } catch (err) {
+      console.error('Error saving band in modal:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -1149,15 +1158,22 @@ export default function BandModal({ visible, onClose, onSave, band, isLoggedIn =
               style={({ pressed }) => [
                 styles.saveButton, 
                 { backgroundColor: colors.success },
-                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }
+                (pressed || isSaving) && { opacity: 0.85, transform: [{ scale: 0.98 }] }
               ]} 
               onPress={handleSave}
+              disabled={isSaving}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                <Text style={styles.saveButtonText}>
-                  {band ? t('saveChanges') : t('createBand')}
-                </Text>
+                {isSaving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                    <Text style={styles.saveButtonText}>
+                      {band ? t('saveChanges') : t('createBand')}
+                    </Text>
+                  </>
+                )}
               </View>
             </Pressable>
           </ScrollView>
