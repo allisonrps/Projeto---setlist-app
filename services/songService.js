@@ -3,6 +3,46 @@ import { sanitizeText, sanitizeMultiline, sanitizeUrl } from './sanitize';
 import { bandService } from './bandService';
 
 export const songService = {
+  /**
+   * Remove músicas duplicadas do SQLite local (mesmo nome + artista, ignorando
+   * maiúsculas/espaços). Mantém a versão com mais conteúdo e reaponta as
+   * referências (setlists, repertório da banda, links) antes de excluir.
+   */
+  async cleanDuplicateSongs() {
+    try {
+      const rows = await db.getAllAsync('SELECT * FROM songs WHERE id >= 0 ORDER BY id ASC;');
+      if (!rows || rows.length < 2) return 0;
+      const norm = (v) => String(v || '').trim().replace(/\s+/g, ' ').toLowerCase();
+      const size = (s) => (s.lyrics || '').length + (s.chords || '').length + (s.tabs || '').length;
+      const groups = {};
+      for (const s of rows) {
+        if (!s.name) continue;
+        const key = `${norm(s.name)}|${norm(s.originalBand)}`;
+        (groups[key] = groups[key] || []).push(s);
+      }
+      let removed = 0;
+      for (const list of Object.values(groups)) {
+        if (list.length < 2) continue;
+        const keep = list.reduce((a, b) => (size(b) > size(a) ? b : a));
+        for (const dup of list) {
+          if (dup.id === keep.id) continue;
+          for (const table of ['setlist_songs', 'band_songs', 'song_links']) {
+            try { await db.runAsync(`UPDATE ${table} SET songId = ? WHERE songId = ?;`, [keep.id, dup.id]); } catch (e) {}
+          }
+          if (dup.isFavorite && !keep.isFavorite) {
+            try { await db.runAsync('UPDATE songs SET isFavorite = 1 WHERE id = ?;', [keep.id]); } catch (e) {}
+          }
+          await db.runAsync('DELETE FROM songs WHERE id = ?;', [dup.id]);
+          removed++;
+        }
+      }
+      return removed;
+    } catch (error) {
+      console.warn('cleanDuplicateSongs falhou:', error);
+      return 0;
+    }
+  },
+
   async getAll(searchQuery = '', styleFilter = '', sortBy = 'name', sortOrder = 'asc') {
     try {
       let query = 'SELECT * FROM songs';

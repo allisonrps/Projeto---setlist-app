@@ -1232,7 +1232,7 @@ export const bandService = {
           if (!song.name) continue;
           // Check if song already exists in local songs table
           const existing = await db.getAllAsync(
-            'SELECT id FROM songs WHERE LOWER(name) = ? AND LOWER(COALESCE(originalBand, "")) = ?;',
+            "SELECT id FROM songs WHERE LOWER(TRIM(name)) = ? AND LOWER(TRIM(COALESCE(originalBand, ''))) = ?;",
             [song.name.trim().toLowerCase(), (song.originalBand || '').trim().toLowerCase()]
           );
 
@@ -1424,7 +1424,7 @@ export const bandService = {
               if (!slSong.name) continue;
               let sId = null;
               const matchSong = await db.getAllAsync(
-                'SELECT id FROM songs WHERE LOWER(name) = ?;',
+                'SELECT id FROM songs WHERE LOWER(TRIM(name)) = ?;',
                 [slSong.name.trim().toLowerCase()]
               );
               if (matchSong && matchSong.length > 0) {
