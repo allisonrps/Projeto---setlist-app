@@ -240,7 +240,7 @@ export default function SplashScreen({ isReady, onFinish }) {
           <View style={styles.proBadge}>
             <Text style={styles.proBadgeText}>{t('proEdition') || 'PRO'}</Text>
           </View>
-          <Text style={styles.versionText}>v1.4.1 • BandLink</Text>
+          <Text style={styles.versionText}>v1.4.2 • BandLink</Text>
         </View>
       </Animated.View>
     </Modal>
