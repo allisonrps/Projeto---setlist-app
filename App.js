@@ -5094,7 +5094,8 @@ function MainApp() {
 
                 {/* DEMAIS BANDAS */}
                 {filteredBands.map(band => {
-              const isOnline = Boolean(band.cloudId);
+              // Deslogado: mesmo bandas vinculadas à nuvem exibem a cópia local (SQLite)
+              const isOnline = Boolean(band.cloudId) && isLoggedIn;
               let onlineSync = null;
               if (isOnline && band.syncDataJson) {
                 try {
@@ -5356,10 +5357,15 @@ function MainApp() {
                     </View>
 
                     {/* Modalidade da Banda: Online ou Offline */}
-                    {band.cloudId ? (
+                    {band.cloudId && isLoggedIn ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <Ionicons name="cloud-done" size={17} color="#10b981" />
                         <Text style={{ fontSize: 12, fontWeight: '900', color: '#10b981' }}>Online</Text>
+                      </View>
+                    ) : band.cloudId ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Ionicons name="cloud-offline-outline" size={16} color="#f59e0b" />
+                        <Text style={{ fontSize: 11, fontWeight: '900', color: '#f59e0b' }}>{t('offlineCopy')}</Text>
                       </View>
                     ) : (
                       <Pressable
