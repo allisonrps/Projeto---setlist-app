@@ -596,6 +596,15 @@ export const bandService = {
       try {
         await db.runAsync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?);', [key, jsonVal]);
         await db.runAsync('UPDATE setlists SET cacheStatus = ? WHERE id = ?;', [cacheStatus, setlistId]);
+        // Marca a banda como alterada e envia para a nuvem (sen�o o pr�ximo pull sobrescreve o pagamento)
+        try {
+          const slRows = await db.getAllAsync('SELECT myBandId FROM setlists WHERE id = ?;', [setlistId]);
+          const bId = slRows && slRows[0] ? slRows[0].myBandId : null;
+          if (bId) {
+            await this.markBandNeedsSync(bId);
+            this.autoSyncIfOnline(bId).catch(() => {});
+          }
+        } catch (markErr) {}
       } catch (sqle) {
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem(key, jsonVal);
@@ -659,12 +668,13 @@ export const bandService = {
     }
   },
 
-  async updateCloudInfo(id, cloudId, cloudVersion, lastSyncedAt, isNetworkVisible) {
+  async updateCloudInfo(id, cloudId, cloudVersion, lastSyncedAt, isNetworkVisible, clearLocalChanges = true) {
     try {
-      await db.runAsync(
-        'UPDATE my_bands SET cloudId = ?, cloudVersion = ?, lastSyncedAt = ?, isNetworkVisible = ?, hasLocalChanges = 0 WHERE id = ?;',
-        [cloudId, cloudVersion, lastSyncedAt, isNetworkVisible ? 1 : 0, id]
-      );
+      // S� limpa o flag de altera��es locais ap�s um push bem-sucedido; atualiza��es de metadados preservam altera��es pendentes
+      const sql = clearLocalChanges
+        ? 'UPDATE my_bands SET cloudId = ?, cloudVersion = ?, lastSyncedAt = ?, isNetworkVisible = ?, hasLocalChanges = 0 WHERE id = ?;'
+        : 'UPDATE my_bands SET cloudId = ?, cloudVersion = ?, lastSyncedAt = ?, isNetworkVisible = ? WHERE id = ?;';
+      await db.runAsync(sql, [cloudId, cloudVersion, lastSyncedAt, isNetworkVisible ? 1 : 0, id]);
     } catch (error) {
       console.error('Error in bandService.updateCloudInfo:', error);
     }
@@ -1778,11 +1788,30 @@ export const bandService = {
                 cb.id,
                 local.cloudVersion || 0,
                 local.lastSyncedAt || new Date().toISOString(),
-                cb.isNetworkVisible ? 1 : (local.isNetworkVisible ? 1 : 0)
+                cb.isNetworkVisible ? 1 : (local.isNetworkVisible ? 1 : 0),
+                false
               );
             }
             if (cb.syncDataJson && !local.syncDataJson) {
               await this.updateBandSyncDataJson(localBandId, cb.syncDataJson);
+            }
+
+            // Altera��es locais pendentes (ensaios, pagamentos de cach� etc.) precisam subir ANTES de qualquer pull,
+            // sen�o o snapshot da nuvem sobrescreve e os dados somem
+            if (Number(local.hasLocalChanges) === 1) {
+              try {
+                await this.syncBandToCloud(localBandId, false);
+              } catch (pushErr) {
+                console.log('Push pendente falhou; pull ignorado para preservar dados locais:', cb.name, pushErr?.message);
+                importedOrUpdatedCount++;
+                continue;
+              }
+              const refreshed = await this.getBandById(localBandId);
+              if (refreshed && Number(refreshed.hasLocalChanges) === 1) {
+                importedOrUpdatedCount++;
+                continue;
+              }
+              if (refreshed) local = refreshed;
             }
 
             // If remote version changed, forced, or never synced, pull updates

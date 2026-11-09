@@ -1091,7 +1091,7 @@ function MainApp() {
                 (b.name && cb.name && b.name.trim().toLowerCase() === cb.name.trim().toLowerCase())
               );
               if (localMatch) {
-                await bandService.updateCloudInfo(localMatch.id, cb.id, cb.version || 1, cb.updatedAt || new Date().toISOString(), cb.isNetworkVisible);
+                await bandService.updateCloudInfo(localMatch.id, cb.id, localMatch.hasLocalChanges ? (localMatch.cloudVersion || 0) : (cb.version || 1), cb.updatedAt || new Date().toISOString(), cb.isNetworkVisible, false);
                 if (cb.syncDataJson) {
                   await bandService.updateBandSyncDataJson(localMatch.id, cb.syncDataJson);
                   localMatch.syncDataJson = cb.syncDataJson;
