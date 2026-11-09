@@ -2045,7 +2045,38 @@ function MainApp() {
       const targetId = songData.id || (editingSong && editingSong.id);
       let localId = null;
 
-      // 1. SEMPRE persiste localmente no SQLite para garantir funcionamento offline e consistência nos setlists locais
+      // ── PRIORIDADE 1: SE LOGADO, PERSISTE DIRETO NA API (NUVEM) PRIMEIRO ──
+      if (isLoggedIn) {
+        const cloudPayload = {
+          name: songData.name,
+          originalBand: songData.originalBand || '',
+          duration: songData.duration ? String(songData.duration) : '',
+          style: songData.style || '',
+          key: songData.key || null,
+          bpm: songData.bpm ? parseInt(songData.bpm) : null,
+          lyrics: songData.lyrics || '',
+          chords: songData.chords || '',
+          tabs: songData.tabs || '',
+          linksJson: JSON.stringify(songData.links || []),
+          isFavorite: Boolean(songData.isFavorite !== undefined ? songData.isFavorite : activeSongDetail?.isFavorite)
+        };
+
+        const isOnlineTarget = Boolean(songData.isOnlineSong || (targetId && (onlineSongs || []).some(os => String(os.id) === String(targetId))));
+        const onlineIdToSync = isOnlineTarget ? targetId : null;
+
+        if (api.syncSong) {
+          const synced = await api.syncSong(cloudPayload, onlineIdToSync);
+          songId = synced?.id || targetId;
+        } else if (onlineIdToSync) {
+          await api.updateSong(onlineIdToSync, cloudPayload);
+          songId = onlineIdToSync;
+        } else {
+          const created = await api.createSong(cloudPayload);
+          songId = created?.id;
+        }
+      }
+
+      // ── PRIORIDADE 2: CÓPIA OFFLINE NO SQLITE (DEPOIS DA API) ──
       try {
         let existingLocal = null;
         if (targetId && typeof targetId === 'number') {
@@ -2089,52 +2120,10 @@ function MainApp() {
         if (localId && songData.links) {
           await songService.syncLinks(localId, songData.links);
         }
+        if (!songId) songId = localId || targetId;
       } catch (localErr) {
-        console.warn('Erro ao salvar música no SQLite local:', localErr);
-      }
-
-      // 2. Se logado, persiste e sincroniza na API na nuvem (PostgreSQL)
-      if (isLoggedIn) {
-        const cloudPayload = {
-          name: songData.name,
-          originalBand: songData.originalBand || '',
-          duration: songData.duration ? String(songData.duration) : '',
-          style: songData.style || '',
-          key: songData.key || null,
-          bpm: songData.bpm ? parseInt(songData.bpm) : null,
-          lyrics: songData.lyrics || '',
-          chords: songData.chords || '',
-          tabs: songData.tabs || '',
-          linksJson: JSON.stringify(songData.links || []),
-          isFavorite: Boolean(songData.isFavorite !== undefined ? songData.isFavorite : activeSongDetail?.isFavorite)
-        };
-
-        const isOnlineTarget = Boolean(songData.isOnlineSong || (targetId && (onlineSongs || []).some(os => String(os.id) === String(targetId))));
-        const onlineIdToSync = isOnlineTarget ? targetId : null;
-
-        try {
-          if (api.syncSong) {
-            const synced = await api.syncSong(cloudPayload, onlineIdToSync);
-            songId = synced?.id || targetId || localId;
-          } else if (onlineIdToSync) {
-            await api.updateSong(onlineIdToSync, cloudPayload);
-            songId = onlineIdToSync;
-          } else {
-            const created = await api.createSong(cloudPayload);
-            songId = created?.id || localId;
-          }
-        } catch (apiErr) {
-          console.warn('Erro ao sincronizar via API sync/PUT, tentando criar registro:', apiErr);
-          try {
-            const created = await api.createSong(cloudPayload);
-            songId = created?.id || localId;
-          } catch (createErr) {
-            console.error('Falha crítica ao persistir música na nuvem:', createErr);
-            songId = localId || targetId;
-          }
-        }
-      } else {
-        songId = localId || targetId;
+        console.warn('Erro ao atualizar cópia local offline da música no SQLite:', localErr);
+        if (!songId) songId = targetId;
       }
 
       // 3. Se a música pertence ou está sendo editada no contexto de uma banda, sincroniza com a banda
@@ -2250,102 +2239,123 @@ function MainApp() {
         (setlists || []).find(s => originalName && norm(s.name) === norm(originalName) && String(s.date || '').trim() === String(originalDate || '').trim());
       const rawTargetBand = setlistData?.myBandId || existingSetlist?.myBandId || editingSetlist?.myBandId || (editingSetlistFromBandDetail?.id || editingSetlistFromBandDetail) || activeBandDetail?.id;
       const targetBandId = typeof rawTargetBand === 'object' && rawTargetBand !== null ? rawTargetBand.id : rawTargetBand;
-      
-      let savedSetlistId = existingSetlist?.id || setlistId;
-      if (savedSetlistId) {
-        savedSetlistId = await setlistService.update(
-          savedSetlistId,
-          setlistData.name,
-          setlistData.type,
-          targetBandId,
-          setlistData.date,
-          setlistData.local,
-          cleanCache,
-          setlistData.notes,
-          setlistData.songIds,
-          setlistData.time || '',
-          cacheStatus,
-          originalName,
-          originalDate
-        );
-      } else {
-        savedSetlistId = await setlistService.insert(
-          setlistData.name,
-          setlistData.type,
-          targetBandId,
-          setlistData.date,
-          setlistData.local,
-          cleanCache,
-          setlistData.notes,
-          setlistData.songIds,
-          setlistData.time || '',
-          cacheStatus
-        );
+      const bandObj = targetBandId ? bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId)) : null;
+      const isOnlineBand = Boolean(bandObj && bandObj.cloudId && isLoggedIn);
+
+      let savedCloudEventId = originalCloudEventId || setlistData?.cloudEventId;
+
+      // ── PRIORIDADE 1: SE LOGADO E BANDA ONLINE, PERSISTE DIRETO NA API PRIMEIRO ──
+      if (isOnlineBand) {
+        const eventPayload = {
+          bandId: bandObj.cloudId,
+          title: setlistData.name || 'Evento',
+          date: setlistData.date || new Date().toISOString().split('T')[0],
+          time: setlistData.time || '20:00',
+          location: setlistData.local || '',
+          cacheValue: parseFloat(String(cleanCache).replace(',', '.')) || null,
+          notes: setlistData.notes || '',
+          eventType: (setlistData.type === 'ensaio' || (setlistData.name || '').toLowerCase().includes('ensaio')) ? 'Rehearsal' : 'Show',
+          status: cacheStatus === 'paid' ? 'Confirmed' : 'Pending'
+        };
+
+        if (!savedCloudEventId && originalName) {
+          const matchEv = (onlineEvents || []).find(ev =>
+            String(ev.bandId) === String(bandObj.cloudId) &&
+            norm(ev.title) === norm(originalName) &&
+            String(ev.date || '').trim() === String(originalDate || '').trim()
+          );
+          if (matchEv) savedCloudEventId = matchEv.id;
+        }
+
+        if (savedCloudEventId) {
+          await api.updateEvent(savedCloudEventId, eventPayload);
+        } else {
+          const createdEv = await api.createEvent(eventPayload);
+          if (createdEv && createdEv.id) {
+            savedCloudEventId = createdEv.id;
+          }
+        }
+
+        // Atualiza imediatamente o snapshot da banda na API
+        try {
+          const snap = typeof bandObj.syncDataJson === 'string' ? JSON.parse(bandObj.syncDataJson) : (bandObj.syncDataJson || {});
+          if (!Array.isArray(snap.setlists)) snap.setlists = [];
+          
+          // Remove versão anterior se renomeada ou com data alterada
+          snap.setlists = snap.setlists.filter(sl => {
+            if (setlistId && String(sl.id) === String(setlistId)) return false;
+            if (savedCloudEventId && (sl.cloudEventId === savedCloudEventId || sl.id === `cloud_ev_${savedCloudEventId}`)) return false;
+            if (originalName && norm(sl.name) === norm(originalName) && String(sl.date || '').trim() === String(originalDate || '').trim()) return false;
+            if (norm(sl.name) === norm(setlistData.name) && String(sl.date || '').trim() === String(setlistData.date || '').trim()) return false;
+            return true;
+          });
+
+          // Insere a versão atualizada
+          snap.setlists.push({
+            id: savedCloudEventId ? `cloud_ev_${savedCloudEventId}` : (setlistId || `cloud_sl_${Date.now()}`),
+            cloudEventId: savedCloudEventId || null,
+            name: setlistData.name,
+            title: setlistData.name,
+            type: setlistData.type || 'show',
+            date: setlistData.date || '',
+            time: setlistData.time || '',
+            local: setlistData.local || '',
+            cachê: cleanCache,
+            cache: cleanCache,
+            notes: setlistData.notes || '',
+            cacheStatus: cacheStatus,
+            songs: setlistData.songIds || []
+          });
+
+          await bandService.updateBandSyncDataJson(bandObj.id, snap);
+        } catch (snapErr) {
+          console.warn('Erro ao atualizar snapshot em memória da banda:', snapErr);
+        }
+
+        // Commit direto na API da nuvem (fonte da verdade)
+        await bandService.commitBandToCloud(bandObj.id);
       }
 
-      // Auto-sincroniza com a nuvem se a banda for online para que apareça na web e na aba da banda imediatamente
-      if (targetBandId) {
-        const bandObj = bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId));
-        if (bandObj && bandObj.cloudId) {
-          // Se o evento foi renomeado ou teve a data alterada, remove a versão antiga do syncDataJson para não manter cópia antiga duplicada
-          const isRenamed = originalName && (norm(originalName) !== norm(setlistData.name) || String(originalDate || '').trim() !== String(setlistData.date || '').trim());
-          if (isRenamed && bandObj.syncDataJson) {
-            try {
-              const snap = typeof bandObj.syncDataJson === 'string' ? JSON.parse(bandObj.syncDataJson) : bandObj.syncDataJson;
-              if (snap && Array.isArray(snap.setlists)) {
-                snap.setlists = snap.setlists.filter(sl => {
-                  if (setlistId && String(sl.id) === String(setlistId)) return false;
-                  if (norm(sl.name) === norm(originalName) && String(sl.date || '').trim() === String(originalDate || '').trim()) return false;
-                  return true;
-                });
-                await bandService.updateBandSyncDataJson(bandObj.id, snap);
-              }
-            } catch (e) {}
-          }
-
-          // Se tiver conectividade online, também registra/atualiza na API de Agenda (/api/Events)
-          try {
-            const hasAuth = await api.isLoggedIn();
-            if (hasAuth) {
-              const eventPayload = {
-                bandId: bandObj.cloudId,
-                title: setlistData.name || 'Evento',
-                date: setlistData.date || new Date().toISOString().split('T')[0],
-                time: setlistData.time || '20:00',
-                location: setlistData.local || '',
-                cacheValue: parseFloat(String(cleanCache).replace(',', '.')) || null,
-                notes: setlistData.notes || '',
-                eventType: (setlistData.type === 'ensaio' || (setlistData.name || '').toLowerCase().includes('ensaio')) ? 'Rehearsal' : 'Show',
-                status: cacheStatus === 'paid' ? 'Confirmed' : 'Pending'
-              };
-
-              let eventIdToUpdate = originalCloudEventId || setlistData.cloudEventId;
-              if (!eventIdToUpdate && originalName) {
-                const matchEv = (onlineEvents || []).find(ev =>
-                  String(ev.bandId) === String(bandObj.cloudId) &&
-                  norm(ev.title) === norm(originalName) &&
-                  String(ev.date || '').trim() === String(originalDate || '').trim()
-                );
-                if (matchEv) eventIdToUpdate = matchEv.id;
-              }
-
-              if (eventIdToUpdate) {
-                await api.updateEvent(eventIdToUpdate, eventPayload);
-              } else {
-                const createdEv = await api.createEvent(eventPayload);
-                if (createdEv && createdEv.id && savedSetlistId) {
-                  try {
-                    await db.runAsync('UPDATE setlists SET cloudEventId = ? WHERE id = ?;', [createdEv.id, savedSetlistId]);
-                  } catch (e) {}
-                }
-              }
-            }
-          } catch (apiEvErr) {
-            console.log('Agenda API sync error (non-fatal):', apiEvErr.message);
-          }
-
-          await bandService.autoSyncIfOnline(bandObj.id);
+      // ── PRIORIDADE 2: CÓPIA OFFLINE NO SQLITE (DEPOIS QUE A API CONFIRMOU) ──
+      let savedSetlistId = existingSetlist?.id || setlistId;
+      try {
+        if (savedSetlistId) {
+          savedSetlistId = await setlistService.update(
+            savedSetlistId,
+            setlistData.name,
+            setlistData.type,
+            targetBandId,
+            setlistData.date,
+            setlistData.local,
+            cleanCache,
+            setlistData.notes,
+            setlistData.songIds,
+            setlistData.time || '',
+            cacheStatus,
+            originalName,
+            originalDate
+          );
+        } else {
+          savedSetlistId = await setlistService.insert(
+            setlistData.name,
+            setlistData.type,
+            targetBandId,
+            setlistData.date,
+            setlistData.local,
+            cleanCache,
+            setlistData.notes,
+            setlistData.songIds,
+            setlistData.time || '',
+            cacheStatus
+          );
         }
+        if (savedCloudEventId && savedSetlistId) {
+          try {
+            await db.runAsync('UPDATE setlists SET cloudEventId = ? WHERE id = ?;', [savedCloudEventId, savedSetlistId]);
+          } catch (e) {}
+        }
+      } catch (offlineErr) {
+        console.warn('Cópia offline no SQLite avisou erro não fatal:', offlineErr);
       }
 
       await reloadAllData();
@@ -2410,17 +2420,13 @@ function MainApp() {
               const norm = v => String(v || '').trim().toLowerCase();
               const bandObj = toDelete?.myBandId ? bands.find(b => String(b.id) === String(toDelete.myBandId)) : null;
 
-              // 1. Remove do SQLite (por id ou por nome + data, pois o id pode ser do snapshot da nuvem)
               const localMatches = setlists.filter(s =>
                 String(s.id) === String(id) ||
                 (toDelete && s.myBandId && String(s.myBandId) === String(toDelete.myBandId) &&
                   norm(s.name) === norm(toDelete.name) && norm(s.date) === norm(toDelete.date))
               );
-              for (const sl of localMatches) {
-                await setlistService.delete(sl.id);
-              }
 
-              // 2. Logado + banda online: a API é a referência — remove o evento da Agenda e envia o snapshot atualizado
+              // ── PRIORIDADE 1: SE LOGADO E BANDA ONLINE, APAGA DIRETO NA API PRIMEIRO ──
               if (bandObj && bandObj.cloudId && await api.isLoggedIn()) {
                 const eventIds = new Set();
                 if (toDelete?.cloudEventId) eventIds.add(toDelete.cloudEventId);
@@ -2433,7 +2439,7 @@ function MainApp() {
                 for (const evId of eventIds) {
                   try { await api.deleteEvent(evId); } catch (e) { console.log('deleteEvent error:', e?.message); }
                 }
-                // Atualiza o snapshot local imediatamente para o evento sumir da tela
+                // Remove do snapshot da banda na API
                 try {
                   const snap = typeof bandObj.syncDataJson === 'string' ? JSON.parse(bandObj.syncDataJson) : bandObj.syncDataJson;
                   if (snap && Array.isArray(snap.setlists)) {
@@ -2447,6 +2453,11 @@ function MainApp() {
                   await reloadAllData(true);
                   return;
                 }
+              }
+
+              // ── PRIORIDADE 2: CÓPIA LOCAL OFFLINE (DELETA DO SQLITE APÓS SUCESSO DA API) ──
+              for (const sl of localMatches) {
+                await setlistService.delete(sl.id);
               }
 
               await reloadAllData();
