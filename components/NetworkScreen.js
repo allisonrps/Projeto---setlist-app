@@ -361,13 +361,21 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
   const [filterCountry, setFilterCountry] = useState('');
   const hasInitializedLocation = useRef(false);
 
-  // Pagination state
+  // Pagination state (blocos de 20 itens, carregando de 5 em 5 ao rolar)
+  const PAGE_BLOCK_SIZE = 20; // Bloco máximo por página (até 20 itens)
+  const CHUNK_SIZE = 5;       // Incrementa de 5 em 5 ao rolar até o fim
   const [projectsPage, setProjectsPage] = useState(1);
   const [musiciansPage, setMusiciansPage] = useState(1);
   const [bandsPage, setBandsPage] = useState(1);
   const [classifiedsPage, setClassifiedsPage] = useState(1);
+
+  const [projectsVisibleCount, setProjectsVisibleCount] = useState(CHUNK_SIZE);
+  const [musiciansVisibleCount, setMusiciansVisibleCount] = useState(CHUNK_SIZE);
+  const [bandsVisibleCount, setBandsVisibleCount] = useState(CHUNK_SIZE);
+  const [classifiedsVisibleCount, setClassifiedsVisibleCount] = useState(CHUNK_SIZE);
+
   const mainScrollRef = useRef(null);
-  const ITEMS_PER_PAGE = 8;
+  const lastScrollTriggerRef = useRef(0);
 
   // Cloud Network Data
   const [projects, setProjects] = useState([]);
@@ -455,7 +463,28 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
     setMusiciansPage(1);
     setBandsPage(1);
     setClassifiedsPage(1);
+    setProjectsVisibleCount(CHUNK_SIZE);
+    setMusiciansVisibleCount(CHUNK_SIZE);
+    setBandsVisibleCount(CHUNK_SIZE);
+    setClassifiedsVisibleCount(CHUNK_SIZE);
   }, [searchQuery, filterCity, filterState, filterCountry, subTab]);
+
+  const handlePageChange = (type, newPage) => {
+    if (type === 'projects') {
+      setProjectsPage(newPage);
+      setProjectsVisibleCount(CHUNK_SIZE);
+    } else if (type === 'bands') {
+      setBandsPage(newPage);
+      setBandsVisibleCount(CHUNK_SIZE);
+    } else if (type === 'classifieds') {
+      setClassifiedsPage(newPage);
+      setClassifiedsVisibleCount(CHUNK_SIZE);
+    } else if (type === 'musicians') {
+      setMusiciansPage(newPage);
+      setMusiciansVisibleCount(CHUNK_SIZE);
+    }
+    mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
 
   // Candidate Scanner: looping magnifying glass animation
   useEffect(() => {
@@ -1647,18 +1676,24 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
     return filteredMusicians;
   }, [selectedScanProject, scannedCandidates, filteredMusicians, searchQuery, filterCity, filterState, filterCountry]);
 
-  // Pagination calculations
-  const totalProjectsPages = Math.max(1, Math.ceil(filteredProjects.length / ITEMS_PER_PAGE));
-  const paginatedProjects = useMemo(() => {
-    const start = (projectsPage - 1) * ITEMS_PER_PAGE;
-    return filteredProjects.slice(start, start + ITEMS_PER_PAGE);
+  // Pagination calculations (blocos de 20 com chunks de 5)
+  const totalProjectsPages = Math.max(1, Math.ceil(filteredProjects.length / PAGE_BLOCK_SIZE));
+  const currentBlockProjects = useMemo(() => {
+    const start = (projectsPage - 1) * PAGE_BLOCK_SIZE;
+    return filteredProjects.slice(start, start + PAGE_BLOCK_SIZE);
   }, [filteredProjects, projectsPage]);
+  const paginatedProjects = useMemo(() => {
+    return currentBlockProjects.slice(0, projectsVisibleCount);
+  }, [currentBlockProjects, projectsVisibleCount]);
 
-  const totalMusiciansPages = Math.max(1, Math.ceil(displayedMusicians.length / ITEMS_PER_PAGE));
-  const paginatedMusicians = useMemo(() => {
-    const start = (musiciansPage - 1) * ITEMS_PER_PAGE;
-    return displayedMusicians.slice(start, start + ITEMS_PER_PAGE);
+  const totalMusiciansPages = Math.max(1, Math.ceil(displayedMusicians.length / PAGE_BLOCK_SIZE));
+  const currentBlockMusicians = useMemo(() => {
+    const start = (musiciansPage - 1) * PAGE_BLOCK_SIZE;
+    return displayedMusicians.slice(start, start + PAGE_BLOCK_SIZE);
   }, [displayedMusicians, musiciansPage]);
+  const paginatedMusicians = useMemo(() => {
+    return currentBlockMusicians.slice(0, musiciansVisibleCount);
+  }, [currentBlockMusicians, musiciansVisibleCount]);
 
   // Classifieds calculations
   const filteredClassifieds = useMemo(() => {
@@ -1687,11 +1722,14 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
     });
   }, [classifieds, searchQuery, filterCity, filterState, filterCountry]);
 
-  const totalClassifiedsPages = Math.max(1, Math.ceil(filteredClassifieds.length / ITEMS_PER_PAGE));
-  const paginatedClassifieds = useMemo(() => {
-    const start = (classifiedsPage - 1) * ITEMS_PER_PAGE;
-    return filteredClassifieds.slice(start, start + ITEMS_PER_PAGE);
+  const totalClassifiedsPages = Math.max(1, Math.ceil(filteredClassifieds.length / PAGE_BLOCK_SIZE));
+  const currentBlockClassifieds = useMemo(() => {
+    const start = (classifiedsPage - 1) * PAGE_BLOCK_SIZE;
+    return filteredClassifieds.slice(start, start + PAGE_BLOCK_SIZE);
   }, [filteredClassifieds, classifiedsPage]);
+  const paginatedClassifieds = useMemo(() => {
+    return currentBlockClassifieds.slice(0, classifiedsVisibleCount);
+  }, [currentBlockClassifieds, classifiedsVisibleCount]);
 
   // Assemble all visible bands (User's visible bands + Announcements projects bands + Network ecosystem bands)
   const allBands = useMemo(() => {
@@ -1854,17 +1892,80 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
     });
   }, [allBands, searchQuery, filterCity, filterState, filterCountry]);
 
-  const totalBandsPages = Math.max(1, Math.ceil(filteredBands.length / ITEMS_PER_PAGE));
-  const paginatedBands = useMemo(() => {
-    const start = (bandsPage - 1) * ITEMS_PER_PAGE;
-    return filteredBands.slice(start, start + ITEMS_PER_PAGE);
+  const totalBandsPages = Math.max(1, Math.ceil(filteredBands.length / PAGE_BLOCK_SIZE));
+  const currentBlockBands = useMemo(() => {
+    const start = (bandsPage - 1) * PAGE_BLOCK_SIZE;
+    return filteredBands.slice(start, start + PAGE_BLOCK_SIZE);
   }, [filteredBands, bandsPage]);
+  const paginatedBands = useMemo(() => {
+    return currentBlockBands.slice(0, bandsVisibleCount);
+  }, [currentBlockBands, bandsVisibleCount]);
 
-  // Pagination UI Component
-  const renderPagination = (currentPage, totalPages, totalItems, onPageChange) => {
-    if (totalItems <= ITEMS_PER_PAGE) return null;
-    const startItem = (currentPage - 1) * ITEMS_PER_PAGE + 1;
-    const endItem = Math.min(currentPage * ITEMS_PER_PAGE, totalItems);
+  // Infinite Scroll & Load More handlers
+  const loadMoreForActiveTab = () => {
+    if (subTab === 'projects') {
+      if (projectsVisibleCount < currentBlockProjects.length && projectsVisibleCount < PAGE_BLOCK_SIZE) {
+        setProjectsVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE));
+      }
+    } else if (subTab === 'bands') {
+      if (bandsVisibleCount < currentBlockBands.length && bandsVisibleCount < PAGE_BLOCK_SIZE) {
+        setBandsVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE));
+      }
+    } else if (subTab === 'classifieds') {
+      if (classifiedsVisibleCount < currentBlockClassifieds.length && classifiedsVisibleCount < PAGE_BLOCK_SIZE) {
+        setClassifiedsVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE));
+      }
+    } else {
+      if (musiciansVisibleCount < currentBlockMusicians.length && musiciansVisibleCount < PAGE_BLOCK_SIZE) {
+        setMusiciansVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE));
+      }
+    }
+  };
+
+  const handleScroll = (event) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 180;
+    if (isCloseToBottom) {
+      const now = Date.now();
+      if (now - lastScrollTriggerRef.current > 350) {
+        lastScrollTriggerRef.current = now;
+        loadMoreForActiveTab();
+      }
+    }
+  };
+
+  const renderLoadMoreChunk = (visibleInBlock, blockTotal, onLoadMore) => {
+    if (visibleInBlock >= blockTotal || visibleInBlock >= PAGE_BLOCK_SIZE) return null;
+    const remaining = blockTotal - visibleInBlock;
+    const nextCount = Math.min(CHUNK_SIZE, remaining);
+
+    return (
+      <Pressable
+        onPress={onLoadMore}
+        style={({ pressed }) => [
+          styles.loadMoreChunkBtn,
+          {
+            backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+            borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
+            opacity: pressed ? 0.7 : 1
+          }
+        ]}
+      >
+        <Ionicons name="arrow-down-circle-outline" size={17} color={colors.primary} />
+        <Text style={[styles.loadMoreChunkText, { color: colors.primary }]}>
+          {`${t('loadMore') || 'Carregar mais'} (+${nextCount})`}
+        </Text>
+      </Pressable>
+    );
+  };
+
+  // Pagination UI Component (aparece quando atinge os 20 itens ou o final do bloco)
+  const renderPagination = (currentPage, totalPages, totalItems, visibleInBlock, blockTotal, onPageChange) => {
+    if (visibleInBlock < blockTotal && visibleInBlock < PAGE_BLOCK_SIZE) return null;
+    if (totalItems <= PAGE_BLOCK_SIZE) return null;
+
+    const startItem = (currentPage - 1) * PAGE_BLOCK_SIZE + 1;
+    const endItem = Math.min((currentPage - 1) * PAGE_BLOCK_SIZE + visibleInBlock, totalItems);
 
     return (
       <View style={[styles.paginationContainer, { borderTopColor: colors.border }]}>
@@ -1888,7 +1989,6 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
             onPress={() => {
               if (currentPage > 1) {
                 onPageChange(currentPage - 1);
-                mainScrollRef.current?.scrollTo({ y: 0, animated: true });
               }
             }}
           >
@@ -1919,7 +2019,6 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                   ]}
                   onPress={() => {
                     onPageChange(pageNum);
-                    mainScrollRef.current?.scrollTo({ y: 0, animated: true });
                   }}
                 >
                   <Text style={[styles.pageNumberText, { color: isActive ? '#fff' : colors.text, fontWeight: isActive ? '800' : '500' }]}>
@@ -1943,7 +2042,6 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
             onPress={() => {
               if (currentPage < totalPages) {
                 onPageChange(currentPage + 1);
-                mainScrollRef.current?.scrollTo({ y: 0, animated: true });
               }
             }}
           >
@@ -1983,6 +2081,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
         stickyHeaderIndices={[1]}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isTabSwiping}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 
@@ -2627,7 +2727,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 );
               })
             )}
-            {renderPagination(projectsPage, totalProjectsPages, filteredProjects.length, setProjectsPage)}
+            {renderLoadMoreChunk(projectsVisibleCount, currentBlockProjects.length, () => setProjectsVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE)))}
+            {renderPagination(projectsPage, totalProjectsPages, filteredProjects.length, projectsVisibleCount, currentBlockProjects.length, (p) => handlePageChange('projects', p))}
           </View>
         ) : subTab === 'bands' ? (
           /* ── FEED DE BANDAS VISÍVEIS ── */
@@ -2772,7 +2873,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 );
               })
             )}
-            {renderPagination(bandsPage, totalBandsPages, filteredBands.length, setBandsPage)}
+            {renderLoadMoreChunk(bandsVisibleCount, currentBlockBands.length, () => setBandsVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE)))}
+            {renderPagination(bandsPage, totalBandsPages, filteredBands.length, bandsVisibleCount, currentBlockBands.length, (p) => handlePageChange('bands', p))}
           </View>
         ) : subTab === 'classifieds' ? (
           /* ── FEED DE CLASSIFICADOS (EQUIPAMENTOS NEGOCIÁVEIS) ── */
@@ -2865,7 +2967,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 );
               })
             )}
-            {renderPagination(classifiedsPage, totalClassifiedsPages, filteredClassifieds.length, setClassifiedsPage)}
+            {renderLoadMoreChunk(classifiedsVisibleCount, currentBlockClassifieds.length, () => setClassifiedsVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE)))}
+            {renderPagination(classifiedsPage, totalClassifiedsPages, filteredClassifieds.length, classifiedsVisibleCount, currentBlockClassifieds.length, (p) => handlePageChange('classifieds', p))}
           </View>
         ) : isScanningCandidates ? (
           /* ── TELA DE LOADING COM LUPA ANIMADA PROCURANDO CANDIDATOS ── */
@@ -3170,7 +3273,8 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 );
               })
             )}
-            {renderPagination(musiciansPage, totalMusiciansPages, displayedMusicians.length, setMusiciansPage)}
+            {renderLoadMoreChunk(musiciansVisibleCount, currentBlockMusicians.length, () => setMusiciansVisibleCount(prev => Math.min(prev + CHUNK_SIZE, PAGE_BLOCK_SIZE)))}
+            {renderPagination(musiciansPage, totalMusiciansPages, displayedMusicians.length, musiciansVisibleCount, currentBlockMusicians.length, (p) => handlePageChange('musicians', p))}
           </View>
         )}
           </View>
@@ -4472,6 +4576,23 @@ const styles = StyleSheet.create({
   },
 
   // Pagination
+  loadMoreChunkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 12,
+    marginBottom: 16,
+    alignSelf: 'center',
+  },
+  loadMoreChunkText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
   paginationContainer: {
     paddingVertical: 18,
     paddingHorizontal: 16,
