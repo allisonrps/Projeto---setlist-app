@@ -780,6 +780,17 @@ function MainApp() {
   const [showStats, setShowStats] = useState(false);
   const [statsBandId, setStatsBandId] = useState(null);
   const [showOfflineSocialModal, setShowOfflineSocialModal] = useState(false);
+  const [showMigrationAuthModal, setShowMigrationAuthModal] = useState(false);
+  const [showMigrationProgressModal, setShowMigrationProgressModal] = useState(false);
+  const [migrationProgress, setMigrationProgress] = useState({
+    current: 0,
+    total: 0,
+    percent: 0,
+    songName: '',
+    completed: false,
+    count: 0,
+    error: null,
+  });
 
   // Estados dos dados
   const [bands, setBands] = useState([]);
@@ -3757,6 +3768,167 @@ function MainApp() {
     };
   };
 
+    // ===== LOGIN E SINCRONIZAÇÃO / MIGRAÇÃO =====
+  const handleUserLogin = async () => {
+    setIsLoggedIn(true);
+    setIsCloudSyncing(true);
+    setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
+    try {
+      await bandService.syncAllUserBandsFromCloud(true, (progressInfo) => {
+        if (typeof progressInfo === 'object') {
+          const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
+          setSyncProgress({ current, total, percent, bandName: bandName || '' });
+          setSyncingBandsMap(prev => {
+            const next = { ...prev };
+            if (isSyncing) next[String(bandId)] = true;
+            else delete next[String(bandId)];
+            return next;
+          });
+        }
+      });
+    } catch (syncErr) {
+      console.log('Error syncing user cloud bands on login:', syncErr);
+    }
+    try {
+      await reloadAllData(true);
+    } catch (reloadErr) {
+      console.log('Error reloading all data on login:', reloadErr);
+    }
+    setIsCloudSyncing(false);
+    setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
+    try {
+      const isCompleted = await AsyncStorage.getItem('user_profile_completed');
+      if (isCompleted === 'true') {
+        setSocialView('feed');
+      } else {
+        const cached = await AsyncStorage.getItem('user_profile_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+            await AsyncStorage.setItem('user_profile_completed', 'true');
+            setSocialView('feed');
+            return;
+          }
+        }
+        setSocialView('profile');
+      }
+    } catch (e) {
+      setSocialView('profile');
+    }
+  };
+
+  const runSongbookMigration = async () => {
+    setShowMigrationProgressModal(true);
+    setMigrationProgress({
+      current: 0,
+      total: 0,
+      percent: 0,
+      songName: '',
+      completed: false,
+      count: 0,
+      error: null,
+    });
+
+    try {
+      const localSongs = await songService.getAll();
+      const validSongs = (localSongs || []).filter(s => s && s.name && s.id >= 0);
+
+      if (!validSongs || validSongs.length === 0) {
+        setMigrationProgress({
+          current: 0,
+          total: 0,
+          percent: 100,
+          songName: '',
+          completed: true,
+          count: 0,
+          error: null,
+        });
+        Alert.alert(
+          t('offlineSongbookTitle') || 'Songbook',
+          t('noOfflineSongsToMigrate') || 'Você não possui músicas offline salvas para migrar.'
+        );
+        await reloadAllData(true);
+        return;
+      }
+
+      const total = validSongs.length;
+      let migratedCount = 0;
+
+      for (let i = 0; i < total; i++) {
+        const song = validSongs[i];
+        const current = i + 1;
+        const percent = Math.round((current / total) * 100);
+
+        setMigrationProgress({
+          current,
+          total,
+          percent,
+          songName: song.name,
+          completed: false,
+          count: migratedCount,
+          error: null,
+        });
+
+        const cloudPayload = {
+          name: song.name,
+          originalBand: song.originalBand || song.artist || '',
+          duration: song.duration ? String(song.duration) : '',
+          style: song.style || '',
+          key: song.key || null,
+          bpm: song.bpm ? parseInt(song.bpm) : null,
+          lyrics: song.lyrics || '',
+          chords: song.chords || '',
+          tabs: song.tabs || '',
+          linksJson: typeof song.linksJson === 'string' ? song.linksJson : JSON.stringify(song.links || []),
+          isFavorite: Boolean(song.isFavorite),
+        };
+
+        try {
+          if (api.syncSong) {
+            await api.syncSong(cloudPayload);
+          } else {
+            await api.createSong(cloudPayload);
+          }
+          migratedCount++;
+        } catch (songErr) {
+          console.warn('[SongbookMigration] Falha ao enviar música ' + song.name + ':', songErr);
+        }
+      }
+
+      setMigrationProgress({
+        current: total,
+        total,
+        percent: 100,
+        songName: '',
+        completed: true,
+        count: migratedCount,
+        error: null,
+      });
+
+      await reloadAllData(true);
+    } catch (err) {
+      console.error('[SongbookMigration] Erro geral na migração:', err);
+      setMigrationProgress(prev => ({
+        ...prev,
+        error: t('migrationError') || 'Não foi possível concluir a migração do Songbook.',
+      }));
+    }
+  };
+
+  const handleOpenMigrationPrompt = () => {
+    Alert.alert(
+      t('offlineSongbookTitle') || 'Levar Songbook para a Nuvem',
+      t('offlineSongbookDesc') || 'Você está no modo offline com dados locais (SQLite).\n\nDeseja entrar ou criar sua conta BandLink para migrar suas músicas e sincronizar tudo na nuvem?',
+      [
+        { text: t('continueOffline') || 'Continuar Offline', style: 'cancel' },
+        {
+          text: t('connectAndSync') || 'Entrar e Migrar Songbook',
+          onPress: () => setShowMigrationAuthModal(true),
+        },
+      ]
+    );
+  };
+
   // ===== INDICADOR DE STATUS ONLINE/OFFLINE =====
   const renderOnlineStatusIndicator = () => {
     return (
@@ -3764,18 +3936,18 @@ function MainApp() {
         onPress={() => {
           if (isLoggedIn) {
             Alert.alert(
-              'Modo Online',
-              'Você está conectado à nuvem! As informações desta tela estão sincronizadas diretamente com a API online.'
-            );
-          } else {
-            Alert.alert(
-              'Modo Offline',
-              'Você está no modo offline com dados locais (SQLite).\n\nDeseja entrar com sua conta para sincronizar suas informações na nuvem?',
+              t('onlineModeTitle') || 'Modo Online',
+              t('onlineModeDesc') || 'Você está conectado à nuvem! As informações desta tela estão sincronizadas diretamente com a API online.',
               [
-                { text: 'Continuar Offline', style: 'cancel' },
-                { text: 'Fazer Login', onPress: () => setCurrentTab('network') }
+                { text: 'OK', style: 'cancel' },
+                {
+                  text: t('syncNow') || 'Sincronizar Agora',
+                  onPress: () => runSongbookMigration(),
+                },
               ]
             );
+          } else {
+            handleOpenMigrationPrompt();
           }
         }}
         hitSlop={8}
@@ -3784,8 +3956,8 @@ function MainApp() {
           {
             backgroundColor: isLoggedIn ? '#10B98118' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
             borderColor: isLoggedIn ? '#10B981' : (isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.18)'),
-            opacity: pressed ? 0.7 : 1
-          }
+            opacity: pressed ? 0.7 : 1,
+          },
         ]}
         accessibilityLabel={isLoggedIn ? 'Status: Online' : 'Status: Offline'}
       >
@@ -5549,6 +5721,45 @@ function MainApp() {
           </View>
         </View>
 
+        {!isLoggedIn && songs.length > 0 && (
+          <Pressable
+            onPress={handleOpenMigrationPrompt}
+            style={({ pressed }) => [{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: colors.primary + '18',
+              borderColor: colors.primary + '55',
+              borderWidth: 1,
+              borderRadius: 12,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              marginBottom: 14,
+              gap: 12,
+              opacity: pressed ? 0.85 : 1
+            }]}
+          >
+            <View style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Ionicons name="cloud-upload" size={20} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                {t('offlineSongbookTitle') || 'Levar Songbook para a Nuvem'}
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.textSecondary }} numberOfLines={1}>
+                {t('connectAndSync') || 'Entrar e sincronizar suas músicas na sua conta'}
+              </Text>
+            </View>
+            <Ionicons name="arrow-forward-circle" size={20} color={colors.primary} />
+          </Pressable>
+        )}
+
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 8 }}>
           <TextInput
             style={[styles.searchInput, { 
@@ -6728,54 +6939,6 @@ function MainApp() {
       );
     }
 
-    const handleUserLogin = async () => {
-      setIsLoggedIn(true);
-      setIsCloudSyncing(true);
-      setSyncProgress({ current: 0, total: 0, percent: 0, bandName: '' });
-      try {
-        await bandService.syncAllUserBandsFromCloud(true, (progressInfo) => {
-          if (typeof progressInfo === 'object') {
-            const { bandId, isSyncing, current, total, percent, bandName } = progressInfo;
-            setSyncProgress({ current, total, percent, bandName: bandName || '' });
-            setSyncingBandsMap(prev => {
-              const next = { ...prev };
-              if (isSyncing) next[String(bandId)] = true;
-              else delete next[String(bandId)];
-              return next;
-            });
-          }
-        });
-      } catch (syncErr) {
-        console.log('Error syncing user cloud bands on login:', syncErr);
-      }
-      try {
-        await reloadAllData(true);
-      } catch (reloadErr) {
-        console.log('Error reloading all data on login:', reloadErr);
-      }
-      setIsCloudSyncing(false);
-      setSyncProgress({ current: 0, total: 0, percent: 100, bandName: '' });
-      try {
-        const isCompleted = await AsyncStorage.getItem('user_profile_completed');
-        if (isCompleted === 'true') {
-          setSocialView('feed');
-        } else {
-          const cached = await AsyncStorage.getItem('user_profile_cache');
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
-              await AsyncStorage.setItem('user_profile_completed', 'true');
-              setSocialView('feed');
-              return;
-            }
-          }
-          setSocialView('profile');
-        }
-      } catch (e) {
-        setSocialView('profile');
-      }
-    };
-
     return (
       <View style={{ flex: 1 }}>
         {isLoggedIn ? (
@@ -7017,6 +7180,200 @@ function MainApp() {
                 </Text>
               </Pressable>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Autenticação para Migração do Songbook */}
+      <Modal
+        visible={showMigrationAuthModal}
+        animationType="slide"
+        onRequestClose={() => setShowMigrationAuthModal(false)}
+      >
+        <LoginScreen
+          onLogin={async () => {
+            setShowMigrationAuthModal(false);
+            await handleUserLogin();
+            setTimeout(() => {
+              runSongbookMigration();
+            }, 300);
+          }}
+          onClose={() => setShowMigrationAuthModal(false)}
+        />
+      </Modal>
+
+      {/* Modal de Progresso da Migração do Songbook para a Nuvem */}
+      <Modal
+        visible={showMigrationProgressModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          if (migrationProgress.completed || migrationProgress.error) {
+            setShowMigrationProgressModal(false);
+          }
+        }}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 24
+        }}>
+          <View style={{
+            width: '100%',
+            maxWidth: 420,
+            backgroundColor: colors.cardBackground,
+            borderRadius: 24,
+            padding: 24,
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.3,
+            shadowRadius: 20,
+            elevation: 12,
+            alignItems: 'center'
+          }}>
+            {/* Ícone de Estado */}
+            <View style={{
+              width: 72,
+              height: 72,
+              borderRadius: 36,
+              backgroundColor: migrationProgress.completed ? '#10B98118' : (migrationProgress.error ? '#EF444418' : colors.primary + '18'),
+              borderWidth: 2,
+              borderColor: migrationProgress.completed ? '#10B981' : (migrationProgress.error ? '#EF4444' : colors.primary),
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 16
+            }}>
+              {migrationProgress.completed ? (
+                <Ionicons name="checkmark-circle" size={42} color="#10B981" />
+              ) : migrationProgress.error ? (
+                <Ionicons name="alert-circle" size={42} color="#EF4444" />
+              ) : (
+                <Ionicons name="cloud-upload" size={38} color={colors.primary} />
+              )}
+            </View>
+
+            {/* Título */}
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '800',
+              color: colors.text,
+              textAlign: 'center',
+              marginBottom: 8
+            }}>
+              {migrationProgress.completed
+                ? (t('migrationCompleteTitle') || 'Songbook Migrado com Sucesso!')
+                : migrationProgress.error
+                ? (t('migrationError') || 'Falha na Migração')
+                : (t('migratingSongbookTitle') || 'Migrando Songbook para a Nuvem')}
+            </Text>
+
+            {/* Descrição */}
+            <Text style={{
+              fontSize: 14,
+              color: colors.textSecondary,
+              textAlign: 'center',
+              lineHeight: 20,
+              marginBottom: 20
+            }}>
+              {migrationProgress.completed
+                ? `${migrationProgress.count} ${t('migrationCompleteDesc') || 'músicas foram sincronizadas na sua conta online.'}`
+                : migrationProgress.error
+                ? migrationProgress.error
+                : (t('migratingSongbookSubtitle') || 'Enviando suas músicas e cifras locais para a sua conta online...')}
+            </Text>
+
+            {/* Progresso (se em andamento) */}
+            {!migrationProgress.completed && !migrationProgress.error && (
+              <View style={{ width: '100%', marginBottom: 16 }}>
+                {/* Barra de Progresso */}
+                <View style={{
+                  height: 10,
+                  width: '100%',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                  borderRadius: 5,
+                  overflow: 'hidden',
+                  marginBottom: 10
+                }}>
+                  <View style={{
+                    height: '100%',
+                    width: `${migrationProgress.percent}%`,
+                    backgroundColor: colors.primary,
+                    borderRadius: 5
+                  }} />
+                </View>
+
+                {/* Porcentagem e Contagem */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>
+                    {migrationProgress.percent}%
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                    {migrationProgress.current} / {migrationProgress.total}
+                  </Text>
+                </View>
+
+                {/* Card da Música Atual */}
+                {migrationProgress.songName ? (
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 10,
+                    marginTop: 12,
+                    gap: 8
+                  }}>
+                    <Ionicons name="musical-note" size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 13, color: colors.text, flex: 1, fontWeight: '600' }} numberOfLines={1}>
+                      {migrationProgress.songName}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Aviso para não fechar o app */}
+                <Text style={{
+                  fontSize: 11,
+                  color: colors.textMuted,
+                  textAlign: 'center',
+                  marginTop: 12,
+                  fontStyle: 'italic'
+                }}>
+                  {t('dontCloseAppDuringSync') || 'Não feche o aplicativo durante o envio.'}
+                </Text>
+              </View>
+            )}
+
+            {/* Botão de Fechar / Concluir */}
+            {(migrationProgress.completed || migrationProgress.error) && (
+              <Pressable
+                onPress={() => setShowMigrationProgressModal(false)}
+                style={({ pressed }) => [{
+                  backgroundColor: migrationProgress.error ? colors.cardBackground : colors.primary,
+                  borderColor: migrationProgress.error ? '#EF4444' : colors.primary,
+                  borderWidth: 1,
+                  paddingVertical: 14,
+                  paddingHorizontal: 32,
+                  borderRadius: 14,
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: pressed ? 0.9 : 1
+                }]}
+              >
+                <Text style={{
+                  color: migrationProgress.error ? '#EF4444' : '#ffffff',
+                  fontWeight: '700',
+                  fontSize: 15
+                }}>
+                  {t('conclude') || 'Concluir'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </Modal>
