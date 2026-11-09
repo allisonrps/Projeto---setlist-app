@@ -3201,7 +3201,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
 
     const upcomingEvents = yearEvents
       .filter(e => !isMonthEnded(e.rawDate || e.date))
-      .sort((a, b) => parseDateForSort(a.rawDate || a.date) - parseDateForSort(b.rawDate || b.date));
+      .sort((a, b) => parseDateForSort(b.rawDate || b.date) - parseDateForSort(a.rawDate || a.date));
 
     const pastEvents = yearEvents
       .filter(e => isMonthEnded(e.rawDate || e.date))

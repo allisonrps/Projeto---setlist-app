@@ -122,20 +122,71 @@ const isFutureDate = (dateStr) => {
   return false;
 };
 
+const isMonthEnded = (dateStr) => {
+  if (!dateStr) return false;
+  const clean = String(dateStr).split(' • ')[0].trim();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-indexed
+
+  let year = null;
+  let month = null;
+
+  const dmyMatch = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (dmyMatch) {
+    month = parseInt(dmyMatch[2], 10) - 1;
+    year = parseInt(dmyMatch[3], 10);
+    if (year < 100) year += 2000;
+  } else {
+    const ymdMatch = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+    if (ymdMatch) {
+      year = parseInt(ymdMatch[1], 10);
+      month = parseInt(ymdMatch[2], 10) - 1;
+    } else {
+      try {
+        const d = new Date(clean);
+        if (!isNaN(d.getTime())) {
+          year = d.getFullYear();
+          month = d.getMonth();
+        }
+      } catch (e) {}
+    }
+  }
+
+  if (year !== null && month !== null) {
+    if (year < currentYear) return true;
+    if (year === currentYear && month < currentMonth) return true;
+    return false;
+  }
+
+  return false;
+};
+
 const parseDateForSort = (dateStr) => {
   if (!dateStr) return 0;
-  const clean = String(dateStr).trim();
+  const clean = String(dateStr).split(' • ')[0].trim();
   if (clean.includes('-')) {
     const parts = clean.split('-');
-    if (parts.length === 3) return new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      } else {
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
+    }
   } else if (clean.includes('/')) {
     const parts = clean.split('/');
     if (parts.length === 3) {
-      const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
-      return new Date(year, parts[1] - 1, parts[0]).getTime();
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+      } else {
+        const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+        return new Date(parseInt(year, 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+      }
     }
   }
-  return 0;
+  const d = new Date(clean);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
 };
 
 const getMonthInfo = (dateStr, lang = 'pt') => {
@@ -5410,12 +5461,12 @@ export default function BandDetailScreen({
                   );
                 }
 
-                // Próximos eventos no topo (cronológico ascendente) e passados descendo até janeiro (decrescente)
+                // Próximos eventos no topo (decrescente: futuros/mais recentes em cima) mantendo o mês atual aberto até acabar
                 const upcomingEvents = yearEvents
-                  .filter(s => isFutureDate(s.date))
-                  .sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+                  .filter(s => !isMonthEnded(s.date))
+                  .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
                 const pastEvents = yearEvents
-                  .filter(s => !isFutureDate(s.date))
+                  .filter(s => isMonthEnded(s.date))
                   .sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
 
                 const upcomingMonthsMap = upcomingEvents.reduce((acc, s) => {
