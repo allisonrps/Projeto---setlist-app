@@ -5465,7 +5465,13 @@ export default function BandDetailScreen({
                         {Object.keys(pastMonthsMap).map(header => {
                           const mEvents = pastMonthsMap[header];
                           const pastKey = 'past-' + header;
-                          const isExpanded = expandedEventMonths[pastKey] !== undefined ? expandedEventMonths[pastKey] : true;
+                          const isExpanded = expandedEventMonths[pastKey] !== undefined ? expandedEventMonths[pastKey] : (() => {
+                            // Mês atual (ou futuro) permanece aberto até acabar; meses já encerrados ficam retraídos por padrão
+                            const mInfo = getMonthInfo(mEvents[0]?.date, language);
+                            const nowRef = new Date();
+                            return (Number(mInfo.year) > nowRef.getFullYear()) ||
+                              (Number(mInfo.year) === nowRef.getFullYear() && mInfo.index >= nowRef.getMonth());
+                          })();
                           const mShows = mEvents.filter(s => s.type === 'show').length;
                           const mRehearsals = mEvents.filter(s => s.type !== 'show').length;
                           return (
