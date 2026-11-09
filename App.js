@@ -1056,7 +1056,9 @@ function MainApp() {
     }
   };
 
+  const reloadSeqRef = useRef(0);
   const reloadAllData = async (forceOnline = null) => {
+    const mySeq = ++reloadSeqRef.current;
     try {
       // Limpeza de duplicadas em background sem bloquear o carregamento principal da tela
       setTimeout(() => {
@@ -1388,6 +1390,8 @@ function MainApp() {
         return true;
       });
 
+      // Evita que um recarregamento antigo (iniciado antes do sync) sobrescreva dados mais novos
+      if (mySeq !== reloadSeqRef.current) return;
       setBands(allBands);
       setSongs(allSongs);
       setAllSongsUnfiltered(allSongsUnfilteredData);
@@ -4738,10 +4742,8 @@ function MainApp() {
 
   // ABA BANDAS / PROJETOS
   const renderBandsTab = () => {
-    const query = (searchQuery || '').toLowerCase().trim();
-    const filteredBands = bands.filter(b => 
-      !query || (b.name || '').toLowerCase().includes(query)
-    );
+    // A aba Bandas não possui busca própria: não filtrar pelo searchQuery do Songbook
+    const filteredBands = bands || [];
 
     return (
       <View style={{ flex: 1 }}>
