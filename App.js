@@ -2344,8 +2344,26 @@ function MainApp() {
     }
   };
 
-  const handleDeleteSetlist = (id) => {
-    const toDelete = setlists.find(s => s.id === id);
+  const handleDeleteSetlist = (idOrSetlist) => {
+    const id = (idOrSetlist && typeof idOrSetlist === 'object') ? idOrSetlist.id : idOrSetlist;
+    // O evento pode vir do SQLite, do snapshot da API (syncDataJson) ou da Agenda da API
+    let toDelete = (idOrSetlist && typeof idOrSetlist === 'object') ? idOrSetlist : null;
+    if (!toDelete) toDelete = setlists.find(s => String(s.id) === String(id)) || null;
+    if (!toDelete) {
+      for (const b of bands) {
+        if (!b.syncDataJson) continue;
+        try {
+          const snap = typeof b.syncDataJson === 'string' ? JSON.parse(b.syncDataJson) : b.syncDataJson;
+          const found = (snap?.setlists || []).find(sl => String(sl.id) === String(id));
+          if (found) { toDelete = { ...found, myBandId: b.id }; break; }
+        } catch (e) {}
+      }
+    }
+    if (!toDelete) {
+      const ev = (onlineEvents || []).find(e => String(e.id) === String(id) || `api_${e.id}` === String(id));
+      if (ev) toDelete = { name: ev.title, date: ev.date, cloudEventId: ev.id, myBandId: (bands.find(b => String(b.cloudId) === String(ev.bandId)) || {}).id };
+    }
+
     Alert.alert(
       t('deleteSetlistConfirmTitle'),
       t('deleteSetlistConfirmMsg'),
@@ -2356,13 +2374,48 @@ function MainApp() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await setlistService.delete(id);
-              if (toDelete?.myBandId) {
-                const bandObj = bands.find(b => String(b.id) === String(toDelete.myBandId));
-                if (bandObj && bandObj.cloudId) {
-                  bandService.syncBandToCloud(bandObj.id).catch(e => console.log('Auto-sync band delete error:', e));
+              const norm = v => String(v || '').trim().toLowerCase();
+              const bandObj = toDelete?.myBandId ? bands.find(b => String(b.id) === String(toDelete.myBandId)) : null;
+
+              // 1. Remove do SQLite (por id ou por nome + data, pois o id pode ser do snapshot da nuvem)
+              const localMatches = setlists.filter(s =>
+                String(s.id) === String(id) ||
+                (toDelete && s.myBandId && String(s.myBandId) === String(toDelete.myBandId) &&
+                  norm(s.name) === norm(toDelete.name) && norm(s.date) === norm(toDelete.date))
+              );
+              for (const sl of localMatches) {
+                await setlistService.delete(sl.id);
+              }
+
+              // 2. Logado + banda online: a API é a referência — remove o evento da Agenda e envia o snapshot atualizado
+              if (bandObj && bandObj.cloudId && await api.isLoggedIn()) {
+                const eventIds = new Set();
+                if (toDelete?.cloudEventId) eventIds.add(toDelete.cloudEventId);
+                localMatches.forEach(sl => { if (sl.cloudEventId) eventIds.add(sl.cloudEventId); });
+                (onlineEvents || []).forEach(ev => {
+                  if (String(ev.bandId) === String(bandObj.cloudId) && norm(ev.title) === norm(toDelete?.name) && norm(ev.date) === norm(toDelete?.date)) {
+                    eventIds.add(ev.id);
+                  }
+                });
+                for (const evId of eventIds) {
+                  try { await api.deleteEvent(evId); } catch (e) { console.log('deleteEvent error:', e?.message); }
+                }
+                // Atualiza o snapshot local imediatamente para o evento sumir da tela
+                try {
+                  const snap = typeof bandObj.syncDataJson === 'string' ? JSON.parse(bandObj.syncDataJson) : bandObj.syncDataJson;
+                  if (snap && Array.isArray(snap.setlists)) {
+                    snap.setlists = snap.setlists.filter(sl => !(String(sl.id) === String(id) ||
+                      (norm(sl.name) === norm(toDelete?.name) && norm(sl.date) === norm(toDelete?.date))));
+                    await bandService.updateBandSyncDataJson(bandObj.id, snap);
+                  }
+                } catch (e) {}
+                const res = await bandService.commitBandToCloud(bandObj.id);
+                if (res && res.ok === false) {
+                  await reloadAllData(true);
+                  return;
                 }
               }
+
               await reloadAllData();
               setActiveSetlistDetail(null);
               if (editingSetlistFromBandDetail) {
