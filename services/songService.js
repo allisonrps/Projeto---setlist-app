@@ -36,6 +36,24 @@ export const songService = {
           removed++;
         }
       }
+      // Deduplica setlist_songs caso o merge tenha gerado linhas com mesmo setlistId e songId
+      try {
+        await db.runAsync(`
+          DELETE FROM setlist_songs
+          WHERE rowid NOT IN (
+            SELECT MIN(rowid) FROM setlist_songs GROUP BY setlistId, songId
+          );
+        `);
+      } catch (e) {}
+      // Deduplica band_songs
+      try {
+        await db.runAsync(`
+          DELETE FROM band_songs
+          WHERE rowid NOT IN (
+            SELECT MIN(rowid) FROM band_songs GROUP BY bandId, songId
+          );
+        `);
+      } catch (e) {}
       return removed;
     } catch (error) {
       console.warn('cleanDuplicateSongs falhou:', error);

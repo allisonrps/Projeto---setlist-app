@@ -1462,7 +1462,17 @@ export default function BandDetailScreen({
 
           const allKnownBandSongs = [...(apiSongs || []), ...(allGeneralSongs || [])];
 
-          setOnlineSetlists(apiSetlists.map(sl => {
+          // Deduplica apiSetlists para garantir que nenhum evento apareça repetido
+          const seenSetlistKeys = new Set();
+          const uniqueApiSetlists = [];
+          for (const sl of apiSetlists) {
+            const key = `${String(sl.name || sl.title || '').trim().toLowerCase()}_${String(sl.date || '').trim()}`;
+            if (seenSetlistKeys.has(key)) continue;
+            seenSetlistKeys.add(key);
+            uniqueApiSetlists.push(sl);
+          }
+
+          setOnlineSetlists(uniqueApiSetlists.map(sl => {
             const isSlPaid = (sl.cacheStatus === 'paid' || sl.cacheStatus === 'Recebido') ||
                              (sl.cacheSplit?.status === 'paid') ||
                              (sl.status === 'Confirmed' || sl.status === 'paid' || sl.status === 'Recebido') ||
@@ -1475,7 +1485,17 @@ export default function BandDetailScreen({
             const rawSongs = (Array.isArray(sl.songs) && sl.songs.length > 0)
               ? sl.songs
               : (localMatch && Array.isArray(localMatch.songs) ? localMatch.songs : []);
-            const hydratedSongs = rawSongs.map(s => {
+            const seenHydratedIds = new Set();
+            const deduplicatedRawSongs = [];
+            for (const s of rawSongs) {
+              const sId = (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id);
+              if (sId >= 0) {
+                if (seenHydratedIds.has(sId)) continue;
+                seenHydratedIds.add(sId);
+              }
+              deduplicatedRawSongs.push(s);
+            }
+            const hydratedSongs = deduplicatedRawSongs.map(s => {
               const sId = (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id);
               if (sId === -1 || sId === -2) return { ...s, id: sId, songId: sId };
               const fullSong = allKnownBandSongs.find(ks =>

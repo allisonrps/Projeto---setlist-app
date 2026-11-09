@@ -107,17 +107,24 @@ export default function SetlistDetailScreen({
         const sCachê = setlist.cachê || '';
         const sNotes = setlist.notes || '';
         const sFav = Boolean(setlist.isFavorite);
-        const sSongs = Array.isArray(setlist.songs)
-          ? setlist.songs.map((s) => ({
-              ...s,
-              id: (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id),
-              songId: s.songId !== undefined && s.songId !== null ? s.songId : s.id,
-              customNotes: s.customNotes || '',
-              customDuration: s.customDuration || '',
-              rehearsalStatus: s.rehearsalStatus || 'none',
-              rehearsalNotes: s.rehearsalNotes || '',
-            }))
-          : [];
+        const seenInitIds = new Set();
+        const sSongs = [];
+        for (const s of (Array.isArray(setlist.songs) ? setlist.songs : [])) {
+          const sId = (s.id === -1 || s.id === -2) ? s.id : (s.songId !== undefined && s.songId !== null ? s.songId : s.id);
+          if (sId >= 0) {
+            if (seenInitIds.has(sId)) continue;
+            seenInitIds.add(sId);
+          }
+          sSongs.push({
+            ...s,
+            id: sId,
+            songId: sId,
+            customNotes: s.customNotes || '',
+            customDuration: s.customDuration || '',
+            rehearsalStatus: s.rehearsalStatus || 'none',
+            rehearsalNotes: s.rehearsalNotes || '',
+          });
+        }
 
         setName(sName);
         setType(sType);
@@ -238,6 +245,10 @@ export default function SetlistDetailScreen({
 
     const payload = {
       ...(setlist || {}),
+      originalId: setlist?.id,
+      originalName: setlist?.name,
+      originalDate: setlist?.date,
+      originalCloudEventId: setlist?.cloudEventId,
       name: name.trim(),
       type,
       myBandId: bandId,

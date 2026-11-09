@@ -2238,17 +2238,23 @@ function MainApp() {
   // ===== AÇÕES SETLISTS =====
   const handleSaveSetlist = async (setlistData) => {
     try {
+      const norm = v => String(v || '').trim().toLowerCase();
       const setlistId = setlistData?.id || editingSetlist?.id;
+      const originalName = setlistData?.originalName || editingSetlist?.name || setlistData?.name;
+      const originalDate = setlistData?.originalDate || editingSetlist?.date || setlistData?.date;
+      const originalCloudEventId = setlistData?.originalCloudEventId || setlistData?.cloudEventId || editingSetlist?.cloudEventId;
       const cleanCache = setlistData?.cachê || setlistData?.cache || setlistData?.cacheê || '';
       const cacheStatus = setlistData?.cacheStatus || 'paid';
-      const existingSetlist = (setlists || []).find(s => String(s.id) === String(setlistId));
+
+      const existingSetlist = (setlists || []).find(s => String(s.id) === String(setlistId)) ||
+        (setlists || []).find(s => originalName && norm(s.name) === norm(originalName) && String(s.date || '').trim() === String(originalDate || '').trim());
       const rawTargetBand = setlistData?.myBandId || existingSetlist?.myBandId || editingSetlist?.myBandId || (editingSetlistFromBandDetail?.id || editingSetlistFromBandDetail) || activeBandDetail?.id;
       const targetBandId = typeof rawTargetBand === 'object' && rawTargetBand !== null ? rawTargetBand.id : rawTargetBand;
       
-      let savedSetlistId = setlistId;
-      if (setlistId) {
-        await setlistService.update(
-          setlistId,
+      let savedSetlistId = existingSetlist?.id || setlistId;
+      if (savedSetlistId) {
+        savedSetlistId = await setlistService.update(
+          savedSetlistId,
           setlistData.name,
           setlistData.type,
           targetBandId,
@@ -2258,7 +2264,9 @@ function MainApp() {
           setlistData.notes,
           setlistData.songIds,
           setlistData.time || '',
-          cacheStatus
+          cacheStatus,
+          originalName,
+          originalDate
         );
       } else {
         savedSetlistId = await setlistService.insert(
@@ -2279,7 +2287,21 @@ function MainApp() {
       if (targetBandId) {
         const bandObj = bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId));
         if (bandObj && bandObj.cloudId) {
-          await bandService.autoSyncIfOnline(bandObj.id);
+          // Se o evento foi renomeado ou teve a data alterada, remove a versão antiga do syncDataJson para não manter cópia antiga duplicada
+          const isRenamed = originalName && (norm(originalName) !== norm(setlistData.name) || String(originalDate || '').trim() !== String(setlistData.date || '').trim());
+          if (isRenamed && bandObj.syncDataJson) {
+            try {
+              const snap = typeof bandObj.syncDataJson === 'string' ? JSON.parse(bandObj.syncDataJson) : bandObj.syncDataJson;
+              if (snap && Array.isArray(snap.setlists)) {
+                snap.setlists = snap.setlists.filter(sl => {
+                  if (setlistId && String(sl.id) === String(setlistId)) return false;
+                  if (norm(sl.name) === norm(originalName) && String(sl.date || '').trim() === String(originalDate || '').trim()) return false;
+                  return true;
+                });
+                await bandService.updateBandSyncDataJson(bandObj.id, snap);
+              }
+            } catch (e) {}
+          }
 
           // Se tiver conectividade online, também registra/atualiza na API de Agenda (/api/Events)
           try {
@@ -2297,12 +2319,21 @@ function MainApp() {
                 status: cacheStatus === 'paid' ? 'Confirmed' : 'Pending'
               };
 
-              if (setlistData.cloudEventId) {
-                await api.updateEvent(setlistData.cloudEventId, eventPayload);
+              let eventIdToUpdate = originalCloudEventId || setlistData.cloudEventId;
+              if (!eventIdToUpdate && originalName) {
+                const matchEv = (onlineEvents || []).find(ev =>
+                  String(ev.bandId) === String(bandObj.cloudId) &&
+                  norm(ev.title) === norm(originalName) &&
+                  String(ev.date || '').trim() === String(originalDate || '').trim()
+                );
+                if (matchEv) eventIdToUpdate = matchEv.id;
+              }
+
+              if (eventIdToUpdate) {
+                await api.updateEvent(eventIdToUpdate, eventPayload);
               } else {
                 const createdEv = await api.createEvent(eventPayload);
                 if (createdEv && createdEv.id && savedSetlistId) {
-                  // Salva cloudEventId na setlist localmente
                   try {
                     await db.runAsync('UPDATE setlists SET cloudEventId = ? WHERE id = ?;', [createdEv.id, savedSetlistId]);
                   } catch (e) {}
@@ -2312,6 +2343,8 @@ function MainApp() {
           } catch (apiEvErr) {
             console.log('Agenda API sync error (non-fatal):', apiEvErr.message);
           }
+
+          await bandService.autoSyncIfOnline(bandObj.id);
         }
       }
 
