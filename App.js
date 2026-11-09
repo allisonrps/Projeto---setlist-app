@@ -968,6 +968,23 @@ function MainApp() {
     initializeApp();
   }, []);
 
+  // Logado: a API é a referência. Avisa quando uma alteração não pôde ser salva na nuvem.
+  const reloadAllDataRef = useRef(null);
+  useEffect(() => {
+    const unsubscribe = bandService.onCloudCommit((evt) => {
+      if (!evt.ok) {
+        Alert.alert(
+          t('cloudSaveFailedTitle'),
+          evt.reverted ? t('cloudSaveRevertedMsg') : t('cloudSavePendingMsg')
+        );
+      }
+      if (evt.reverted && reloadAllDataRef.current) {
+        reloadAllDataRef.current(true);
+      }
+    });
+    return unsubscribe;
+  }, [t]);
+
   const initializeApp = async () => {
     try {
       console.log('Inicializando banco de dados...');
@@ -1059,6 +1076,7 @@ function MainApp() {
   const reloadSeqRef = useRef(0);
   const reloadAllData = async (forceOnline = null) => {
     const mySeq = ++reloadSeqRef.current;
+    reloadAllDataRef.current = reloadAllData;
     try {
       // Limpeza de duplicadas em background sem bloquear o carregamento principal da tela
       setTimeout(() => {
@@ -2261,11 +2279,7 @@ function MainApp() {
       if (targetBandId) {
         const bandObj = bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId));
         if (bandObj && bandObj.cloudId) {
-          try {
-            await bandService.syncBandToCloud(bandObj.id);
-          } catch (e) {
-            console.log('Auto-sync band setlist error:', e);
-          }
+          await bandService.autoSyncIfOnline(bandObj.id);
 
           // Se tiver conectividade online, também registra/atualiza na API de Agenda (/api/Events)
           try {

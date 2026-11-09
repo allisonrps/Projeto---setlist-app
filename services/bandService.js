@@ -292,6 +292,7 @@ export const bandService = {
   async updateBandCashBalance(bandId, balance) {
     try {
       await db.runAsync('UPDATE my_bands SET manualCashBalance = ?, hasLocalChanges = 1 WHERE id = ?;', [balance, bandId]);
+      this.autoSyncIfOnline(bandId).catch(() => {});
       return true;
     } catch (error) {
       console.error('Error in bandService.updateBandCashBalance:', error);
@@ -723,22 +724,65 @@ export const bandService = {
     }
   },
 
-  async autoSyncIfOnline(bandId) {
-    try {
-      if (!bandId) return;
-      const loggedIn = await api.isLoggedIn();
-      if (!loggedIn) return;
+  // ===== API COMO FONTE DA VERDADE (logado) =====
+  // Toda alteração em banda online é enviada imediatamente para a API. Se a API recusar,
+  // a cópia local é restaurada a partir da nuvem; se não houver conexão, fica pendente e o usuário é avisado.
+  _commitTimers: {},
+  _commitWaiters: {},
+  _commitChains: {},
+  _commitListeners: new Set(),
 
-      const local = await this.getBandById(bandId);
-      // Se a banda NÃO possui cloudId, ela é estritamente offline!
-      // NUNCA deve ser enviada para a nuvem de forma automática sem consentimento do usuário.
-      if (!local || !local.cloudId) return;
+  onCloudCommit(listener) {
+    this._commitListeners.add(listener);
+    return () => this._commitListeners.delete(listener);
+  },
 
-      // Dispara push silencioso em background apenas para bandas já conectadas à nuvem
-      await this.syncBandToCloud(bandId, false);
-    } catch (e) {
-      console.log('Background auto-sync note for band', bandId, ':', e.message);
+  _emitCloudCommit(evt) {
+    for (const fn of this._commitListeners) {
+      try { fn(evt); } catch (e) {}
     }
+  },
+
+  async commitBandToCloud(bandId) {
+    if (!bandId) return { skipped: true };
+    const loggedIn = await api.isLoggedIn();
+    if (!loggedIn) return { skipped: true };
+    const local = await this.getBandById(bandId);
+    // Se a banda NÃO possui cloudId, ela é estritamente offline!
+    // NUNCA deve ser enviada para a nuvem de forma automática sem consentimento do usuário.
+    if (!local || !local.cloudId) return { skipped: true };
+
+    try {
+      await this.syncBandToCloud(bandId, false);
+      this._emitCloudCommit({ bandId, ok: true });
+      return { ok: true };
+    } catch (e) {
+      // A API é a referência: tenta restaurar a cópia local com o estado da nuvem
+      let reverted = false;
+      try {
+        await this.pullBandFromCloud(bandId);
+        reverted = true;
+      } catch (pullErr) {}
+      this._emitCloudCommit({ bandId, ok: false, reverted, error: e?.message });
+      return { ok: false, reverted, error: e?.message };
+    }
+  },
+
+  // Agrupa alterações em sequência (debounce) e serializa os envios por banda
+  autoSyncIfOnline(bandId) {
+    if (!bandId) return Promise.resolve({ skipped: true });
+    return new Promise((resolve) => {
+      (this._commitWaiters[bandId] = this._commitWaiters[bandId] || []).push(resolve);
+      clearTimeout(this._commitTimers[bandId]);
+      this._commitTimers[bandId] = setTimeout(() => {
+        const waiters = this._commitWaiters[bandId] || [];
+        this._commitWaiters[bandId] = [];
+        const prev = this._commitChains[bandId] || Promise.resolve();
+        const run = prev.catch(() => {}).then(() => this.commitBandToCloud(bandId));
+        this._commitChains[bandId] = run;
+        run.then(res => waiters.forEach(w => w(res)), err => waiters.forEach(w => w({ ok: false, error: err?.message })));
+      }, 400);
+    });
   },
 
   async markBandNeedsSync(bandId) {

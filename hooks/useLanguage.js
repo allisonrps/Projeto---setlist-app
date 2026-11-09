@@ -18,6 +18,9 @@ const translations = {
     onlineModeTitle: 'Modo Online',
     onlineModeDesc: 'Você está conectado à nuvem! Suas bandas e repertório estão sincronizados com sua conta BandLink.',
     syncNow: 'Sincronizar Agora',
+    cloudSaveFailedTitle: 'Não foi salvo na nuvem',
+    cloudSaveRevertedMsg: 'A alteração foi recusada pelo servidor e os dados foram restaurados conforme a nuvem. Tente novamente.',
+    cloudSavePendingMsg: 'Sem conexão com o servidor. A alteração ficou salva apenas neste aparelho e será enviada quando a conexão voltar.',
     conclude: 'Concluir',
 
     // Navegação e Abas
@@ -1277,6 +1280,9 @@ const translations = {
     onlineModeTitle: 'Online Mode',
     onlineModeDesc: 'You are connected to the cloud! Your bands and repertoire are synced with your BandLink account.',
     syncNow: 'Sync Now',
+    cloudSaveFailedTitle: 'Not saved to the cloud',
+    cloudSaveRevertedMsg: 'The server rejected the change and your data was restored from the cloud. Please try again.',
+    cloudSavePendingMsg: 'Could not reach the server. The change was saved on this device only and will be sent when the connection is back.',
     conclude: 'Done',
 
     // Navigation & Tabs
@@ -2536,6 +2542,9 @@ const translations = {
     onlineModeTitle: 'Modo Online',
     onlineModeDesc: '¡Estás conectado a la nube! Tus bandas y repertorio están sincronizados con tu cuenta BandLink.',
     syncNow: 'Sincronizar Ahora',
+    cloudSaveFailedTitle: 'No se guardó en la nube',
+    cloudSaveRevertedMsg: 'El servidor rechazó el cambio y los datos se restauraron desde la nube. Inténtalo de nuevo.',
+    cloudSavePendingMsg: 'Sin conexión con el servidor. El cambio se guardó solo en este dispositivo y se enviará cuando vuelva la conexión.',
     conclude: 'Concluir',
 
     // Navegación y Pestañas
