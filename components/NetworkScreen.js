@@ -99,10 +99,27 @@ const calculateAge = (birthDateOrAge) => {
   return age > 0 && age < 120 ? age : null;
 };
 
-export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToProfile }) {
+export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToProfile, isLoggedIn = true }) {
   const { colors } = useTheme();
   const isDark = colors.isDark;
   const { t } = useLanguage();
+
+  const handleConfirmLogout = () => {
+    Alert.alert(
+      t('logoutConfirmTitle') || 'Sair da Conta',
+      t('logoutConfirmMsg') || 'Deseja realmente sair da sua conta?',
+      [
+        { text: t('cancel') || 'Cancelar', style: 'cancel' },
+        { 
+          text: t('logout') || 'Sair', 
+          style: 'destructive', 
+          onPress: () => {
+            if (onLogout) onLogout();
+          } 
+        }
+      ]
+    );
+  };
   const formatRelativeTime = (timeStr) => {
     if (!timeStr) return '';
     const s = String(timeStr).trim();
@@ -1987,36 +2004,56 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
                 <Text style={[styles.headerTitle, { color: colors.text }]}>{t('networkTab') || 'Network'}</Text>
               </View>
 
-              {/* Ação da Direita: Botão Unificado com Avatar + "Perfil" (Apenas se onOpenProfile for fornecido) */}
-              {onOpenProfile ? (
-                <Pressable
-                  onPress={onOpenProfile}
-                  style={({ pressed }) => [
-                    styles.unifiedProfileBtn,
-                    {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                      borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
-                      opacity: pressed ? 0.8 : 1
-                    }
-                  ]}
-                  accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
-                >
-                  <View style={styles.unifiedAvatarBox}>
-                    {userProfileImage ? (
-                      <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
-                    ) : (
-                      <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
-                        <Text style={styles.unifiedAvatarInitial}>
-                          {userDisplayName.charAt(0).toUpperCase()}
-                        </Text>
-                      </View>
-                    )}
-                    <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
-                  </View>
-                  <Text style={[styles.unifiedProfileText, { color: colors.text }]}>{t('profile') || 'Perfil'}</Text>
-                  <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
-                </Pressable>
-              ) : null}
+              {/* Ações da Direita: Perfil (se disponível) + Ícone de Desligar / Logout (quando logado) */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {onOpenProfile ? (
+                  <Pressable
+                    onPress={onOpenProfile}
+                    style={({ pressed }) => [
+                      styles.unifiedProfileBtn,
+                      {
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                        borderColor: isDark ? 'rgba(255,255,255,0.12)' : colors.border,
+                        opacity: pressed ? 0.8 : 1
+                      }
+                    ]}
+                    accessibilityLabel={t('accessMyProfileAccessibility') || "Acessar meu perfil pessoal"}
+                  >
+                    <View style={styles.unifiedAvatarBox}>
+                      {userProfileImage ? (
+                        <Image source={{ uri: userProfileImage }} style={styles.unifiedAvatarImg} />
+                      ) : (
+                        <View style={[styles.unifiedAvatarPlaceholder, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.unifiedAvatarInitial}>
+                            {userDisplayName.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={[styles.statusDotSmall, { backgroundColor: '#10b981', borderColor: colors.cardBackground }]} />
+                    </View>
+                    <Text style={[styles.unifiedProfileText, { color: colors.text }]}>{t('profile') || 'Perfil'}</Text>
+                    <Ionicons name="chevron-forward" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
+                  </Pressable>
+                ) : null}
+
+                {onLogout && isLoggedIn ? (
+                  <Pressable
+                    onPress={handleConfirmLogout}
+                    style={({ pressed }) => [
+                      styles.headerLogoutBtn,
+                      {
+                        backgroundColor: isDark ? 'rgba(239, 68, 68, 0.12)' : 'rgba(239, 68, 68, 0.08)',
+                        borderColor: isDark ? 'rgba(239, 68, 68, 0.25)' : 'rgba(239, 68, 68, 0.2)',
+                        opacity: pressed ? 0.7 : 1
+                      }
+                    ]}
+                    accessibilityLabel={t('logout') || "Sair da conta"}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="power" size={18} color={isDark ? '#f87171' : '#ef4444'} />
+                  </Pressable>
+                ) : null}
+              </View>
             </View>
 
             {/* BARRA DE PESQUISA (ARREDONDADA E RESPONSIVA) */}
@@ -3753,6 +3790,14 @@ const styles = StyleSheet.create({
   },
   headerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   networkIconCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  headerLogoutBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
   headerTitle: { fontSize: 22, fontWeight: '800' },
 
   newProjectHeaderBtn: {

@@ -6741,6 +6741,7 @@ function MainApp() {
             marginTop: -(Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) + 16 : 50),
           }}>
             <NetworkScreen 
+              isLoggedIn={isLoggedIn}
               onNavigateToProfile={() => setCurrentTab('home')}
               onLogout={async () => {
                 await api.logout();
