@@ -198,7 +198,11 @@ export default function LoginScreen({ onLogin, onClose }) {
   const handleGoogleTokenReceived = async (idToken) => {
     setGoogleLoading(true);
     try {
-      await api.googleLogin(idToken);
+      const authData = await api.googleLogin(idToken);
+      const userProfile = authData?.user || (await api.getProfile().catch(() => null));
+      if (!userProfile?.city || !userProfile.city.trim()) {
+        await AsyncStorage.removeItem('user_profile_completed');
+      }
       Alert.alert('Bem-vindo!', 'Login com Google realizado com sucesso.');
       onLogin && onLogin();
     } catch (err) {
@@ -316,10 +320,13 @@ export default function LoginScreen({ onLogin, onClose }) {
         Alert.alert(t('attention') || 'Atenção', 'A confirmação de senha não coincide com a senha informada.');
         return;
       }
-      if (!city.trim() || !stateVal.trim() || !country.trim()) {
+      const cleanCity = city.trim();
+      const cleanState = stateVal.trim();
+      const cleanCountry = country.trim() || 'Brasil';
+      if (!cleanCity || !cleanState) {
         Alert.alert(
           t('attention') || 'Atenção',
-          t('locationRequiredError') || 'Cidade, estado e país são obrigatórios para realizar o cadastro.'
+          t('locationRequiredError') || 'Cidade e estado são obrigatórios para realizar o cadastro.'
         );
         return;
       }
@@ -331,7 +338,7 @@ export default function LoginScreen({ onLogin, onClose }) {
         const res = await api.register(username.trim(), cleanEmail, password, formattedBirthIso, {
           city: city.trim(),
           state: stateVal.trim(),
-          country: country.trim()
+          country: cleanCountry
         });
         if (res?.requiresConfirmation) {
           setPendingEmail(cleanEmail);

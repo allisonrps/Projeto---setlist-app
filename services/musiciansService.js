@@ -669,8 +669,8 @@ export const musiciansService = {
           if (typeof userSkills === 'string') {
             try { userSkills = JSON.parse(userSkills); } catch (e) { userSkills = []; }
           }
-          if (!Array.isArray(userSkills) || userSkills.length === 0) {
-            userSkills = [{ instrument: parsed.primaryInstrument || 'Guitarra', stars: 5, isPrimary: true }];
+          if (!Array.isArray(userSkills)) {
+            userSkills = [];
           }
 
           let userInfluences = parsed.influences || [];
@@ -693,7 +693,7 @@ export const musiciansService = {
             imageUri: profileImg || null,
             skills: userSkills,
             primaryInstruments: userSkills,
-            primaryInstrument: parsed.primaryInstrument || (userSkills[0]?.instrument || userSkills[0]?.name || 'Guitarra'),
+            primaryInstrument: parsed.primaryInstrument || (userSkills[0]?.instrument || userSkills[0]?.name || ''),
             stars: 5,
             city: parsed.city || '',
             state: parsed.state || '',
@@ -704,7 +704,7 @@ export const musiciansService = {
             availability: parsed.availability || 'Disponível',
             interestLevel: userInterest,
             influences: userInfluences,
-            bio: parsed.bio || 'Músico ativo na plataforma Setlist.',
+            bio: parsed.bio || '',
             instagram: parsed.instagram || '',
             youtube: parsed.youtube || '',
             twitter: parsed.twitter || '',

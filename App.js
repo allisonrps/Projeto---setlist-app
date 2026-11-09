@@ -1064,9 +1064,10 @@ function MainApp() {
             const cached = await AsyncStorage.getItem('user_profile_cache');
             if (cached) {
               const parsed = JSON.parse(cached);
-              if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+              if (parsed.city && parsed.city.trim()) {
                 await AsyncStorage.setItem('user_profile_completed', 'true');
               } else {
+                await AsyncStorage.removeItem('user_profile_completed');
                 setSocialView('profile');
               }
             } else {
@@ -3806,7 +3807,7 @@ function MainApp() {
         const cached = await AsyncStorage.getItem('user_profile_cache');
         if (cached) {
           const parsed = JSON.parse(cached);
-          if ((parsed.city && parsed.city.trim()) || (parsed.skills && parsed.skills.length > 0) || parsed.instruments) {
+          if (parsed.city && parsed.city.trim()) {
             await AsyncStorage.setItem('user_profile_completed', 'true');
             setSocialView('feed');
             return;

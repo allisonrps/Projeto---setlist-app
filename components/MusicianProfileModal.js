@@ -506,7 +506,7 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
   const availability = activeMusician.availability || 'Disponível';
 
   // Bio
-  const bio = activeMusician.bio || 'Músico ativo na cena musical e na comunidade Setlist.';
+  const bio = activeMusician.bio || '';
 
   // Influências (com estrelas)
   let rawInfluences = [];
@@ -1152,7 +1152,13 @@ export default function MusicianProfileModal({ visible, musician: propMusician, 
       {/* Faixa: SOBRE MIM (Sem botão de editar) */}
       <SectionBanner title={t('aboutMeSection') || "Sobre mim"} />
       <View style={{ paddingHorizontal: 4 }}>
-        <Text style={[styles.cleanBodyText, { color: colors.text }]}>{bio}</Text>
+        {bio ? (
+          <Text style={[styles.cleanBodyText, { color: colors.text }]}>{bio}</Text>
+        ) : (
+          <Text style={{ color: colors.textMuted, fontStyle: 'italic', fontSize: 13, marginTop: 4 }}>
+            {t('noBioProvided') || 'Nenhuma descrição informada.'}
+          </Text>
+        )}
       </View>
 
       {/* Faixa: INFLUÊNCIAS MUSICAIS (Sem botão gerenciar) */}

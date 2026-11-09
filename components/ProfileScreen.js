@@ -959,7 +959,7 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
         ...data,
         imageUri: cloudPic || null,
         displayName: savedDisplayName || data.displayName || data.username || 'Músico',
-        bio: data.bio || 'Escreva algo sobre você...',
+        bio: data.bio || '',
         city: data.city || '',
         state: data.state || '',
         country: data.country || '',
@@ -1541,16 +1541,18 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
   const handleLogout = async () => { await api.logout(); onLogout(); };
 
   const isProfileComplete = Boolean(
-    (user?.skills && user.skills.length > 0) ||
-    (user?.city && user.city.trim().length > 0)
+    user?.city && user.city.trim().length > 0
   );
 
   const handleBackToFeed = async () => {
     if (!isProfileComplete) {
       Alert.alert(
-        t('incompleteProfileTitle') || 'Complete seu Perfil',
-        t('incompleteProfileMsg') || 'Adicione ao menos seus instrumentos ou localização para liberar seu acesso ao feed da Rede BandLink.',
-        [{ text: t('ok') || 'Entendi' }]
+        t('mandatoryLocationTitle') || 'Localização Obrigatória',
+        t('incompleteProfileMsg') || 'A sua localização (Cidade/Estado) é obrigatória para liberar seu acesso à Rede BandLink e conectar você a músicos da sua região.',
+        [
+          { text: t('mandatoryLocationTitle') || 'Informar Localização', onPress: openLocationModal },
+          { text: t('ok') || 'Entendi', style: 'cancel' }
+        ]
       );
       return;
     }
@@ -2586,7 +2588,13 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
         }
       />
       <View style={{ paddingHorizontal: 4 }}>
-        <Text style={[styles.cleanBodyText, { color: colors.text }]}>{user.bio}</Text>
+        {user.bio ? (
+          <Text style={[styles.cleanBodyText, { color: colors.text }]}>{user.bio}</Text>
+        ) : (
+          <Text style={{ color: colors.textMuted, fontStyle: 'italic', fontSize: 13, marginTop: 4 }}>
+            {t('noBioProvided') || 'Nenhuma descrição informada.'}
+          </Text>
+        )}
       </View>
 
       {/* Faixa: INFLUÊNCIAS MUSICAIS (sem #) */}
@@ -3909,17 +3917,29 @@ export default function ProfileScreen({ onLogout, onBack, onOpenBandProfile, onO
           }
         >
           {!isProfileComplete && (
-            <View style={[styles.incompleteProfileBanner, { backgroundColor: colors.isDark ? 'rgba(234, 179, 8, 0.15)' : '#fef9c3', borderColor: colors.isDark ? 'rgba(234, 179, 8, 0.35)' : '#fde047' }]}>
-              <Ionicons name="information-circle-outline" size={22} color={colors.isDark ? '#facc15' : '#ca8a04'} />
+            <Pressable 
+              onPress={openLocationModal}
+              style={({ pressed }) => [
+                styles.incompleteProfileBanner, 
+                { 
+                  backgroundColor: colors.isDark ? 'rgba(234, 179, 8, 0.18)' : '#fef9c3', 
+                  borderColor: colors.isDark ? '#facc15' : '#eab308',
+                  borderWidth: 1.5,
+                  opacity: pressed ? 0.85 : 1
+                }
+              ]}
+            >
+              <Ionicons name="location" size={24} color={colors.isDark ? '#facc15' : '#ca8a04'} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.incompleteProfileBannerTitle, { color: colors.isDark ? '#facc15' : '#854d0e' }]}>
-                  {t('incompleteProfileTitle') || 'Complete seu Perfil'}
+                  {t('mandatoryLocationTitle') || 'Localização Obrigatória'}
                 </Text>
                 <Text style={[styles.incompleteProfileBannerText, { color: colors.isDark ? '#e2e8f0' : '#713f12' }]}>
-                  {t('incompleteProfileMsg') || 'Adicione ao menos seus instrumentos ou localização para liberar seu acesso ao feed da Rede BandLink.'}
+                  {t('incompleteProfileMsg') || 'Toque aqui para informar sua Cidade e Estado. Sem localização, o acesso à rede fica bloqueado.'}
                 </Text>
               </View>
-            </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.isDark ? '#facc15' : '#ca8a04'} />
+            </Pressable>
           )}
           {activeTab === 'bio' && renderBioTab()}
           {activeTab === 'skills' && renderSkillsTab()}

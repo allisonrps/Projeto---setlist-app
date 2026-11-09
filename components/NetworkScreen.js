@@ -629,9 +629,10 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
         }
 
         const isCompleted = await AsyncStorage.getItem('user_profile_completed');
-        if (isCompleted !== 'true') {
-          const hasInfo = (normalizedUser.city && normalizedUser.city.trim()) || (normalizedUser.skills && normalizedUser.skills.length > 0) || normalizedUser.instruments;
-          if (!hasInfo) {
+        const hasLocation = Boolean(normalizedUser.city && normalizedUser.city.trim());
+        if (isCompleted !== 'true' || !hasLocation) {
+          if (!hasLocation) {
+            await AsyncStorage.removeItem('user_profile_completed');
             if (onNavigateToProfile) onNavigateToProfile();
             else if (onOpenProfile) onOpenProfile();
             return;
@@ -1349,10 +1350,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
         );
       }
       if (userPrimaryInsts.length === 0) {
-        userPrimaryInsts = [
-          { name: 'Guitarra', stars: 5 },
-          { name: 'Violão', stars: 3 }
-        ];
+        userPrimaryInsts = [];
       }
 
       let userInfluences = [];
@@ -1369,7 +1367,7 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
         }
       }
       if (userInfluences.length === 0) {
-        userInfluences = ['Rock Clássico', 'Blues'];
+        userInfluences = [];
       }
 
       const myProfileMusician = {
@@ -1378,14 +1376,14 @@ export default function NetworkScreen({ onOpenProfile, onLogout, onNavigateToPro
         name: currentUser.displayName || currentUser.name || currentUser.username || 'Músico',
         username: (currentUser.username || 'voce').replace(/^@+/, ''),
         primaryInstruments: userPrimaryInsts,
-        primaryInstrument: userPrimaryInsts[0]?.name || 'Guitarra',
+        primaryInstrument: userPrimaryInsts[0]?.name || '',
         stars: 5,
         city: currentUser.city || '',
         state: currentUser.state || '',
         country: currentUser.country || '',
         availability: currentUser.availability || 'Disponível',
         influences: userInfluences,
-        bio: currentUser.bio || 'Músico cadastrado na plataforma.',
+        bio: currentUser.bio || '',
         imageUri: userProfileImage || currentUser.imageUri || null,
         age: currentUser.age || calculateAge(currentUser.birthDate)
       };
