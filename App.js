@@ -2250,7 +2250,9 @@ function MainApp() {
         (setlists || []).find(s => originalName && norm(s.name) === norm(originalName) && String(s.date || '').trim() === String(originalDate || '').trim());
       const rawTargetBand = setlistData?.myBandId || existingSetlist?.myBandId || editingSetlist?.myBandId || (editingSetlistFromBandDetail?.id || editingSetlistFromBandDetail) || activeBandDetail?.id;
       const targetBandId = typeof rawTargetBand === 'object' && rawTargetBand !== null ? rawTargetBand.id : rawTargetBand;
-      const bandObj = targetBandId ? bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId)) : null;
+      const bandObj = targetBandId
+        ? bands.find(b => String(b.id) === String(targetBandId) || String(b.cloudId) === String(targetBandId) || (b.name && setlistData?.bandName && b.name.trim().toLowerCase() === setlistData.bandName.trim().toLowerCase()))
+        : (setlistData?.bandName ? bands.find(b => b.name && b.name.trim().toLowerCase() === setlistData.bandName.trim().toLowerCase()) : null);
       const isOnlineBand = Boolean(bandObj && bandObj.cloudId && isLoggedIn);
 
       let savedCloudEventId = originalCloudEventId || setlistData?.cloudEventId;

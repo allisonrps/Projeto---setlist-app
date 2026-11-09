@@ -873,8 +873,12 @@ export default function BandDetailScreen({
 
   const toggleEventMonth = (monthName) => {
     setExpandedEventMonths(prev => {
-      const currentVal = prev[monthName] !== undefined ? prev[monthName] : true;
-      return { ...prev, [monthName]: !currentVal };
+      let defaultVal = true;
+      if (String(monthName).startsWith('past-')) {
+        defaultVal = false;
+      }
+      const actualVal = prev[monthName] !== undefined ? prev[monthName] : defaultVal;
+      return { ...prev, [monthName]: !actualVal };
     });
   };
   const toggleFinanceMonth = (monthName) => {
@@ -1397,18 +1401,26 @@ export default function BandDetailScreen({
             const apiEvents = await api.getEvents();
             if (Array.isArray(apiEvents)) {
               apiEvents.forEach(ev => {
-                if (ev.bandId && String(ev.bandId) === String(band.cloudId)) {
+                const matchesBand = Boolean(
+                  (ev.bandId && band.cloudId && String(ev.bandId) === String(band.cloudId)) ||
+                  (ev.bandId && band.id && String(ev.bandId) === String(band.id)) ||
+                  (ev.bandName && band.name && ev.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) ||
+                  (ev.band && band.name && String(ev.band).trim().toLowerCase() === band.name.trim().toLowerCase())
+                );
+                if (matchesBand) {
                   const exists = apiSetlists.some(sl => 
                     (sl.cloudEventId && sl.cloudEventId === ev.id) ||
                     (String(sl.name || sl.title || '').toLowerCase().trim() === String(ev.title || '').toLowerCase().trim() && (sl.date || '').trim() === (ev.date || '').trim())
                   );
                   if (!exists) {
+                    const rawType = String(ev.eventType || '').toLowerCase();
+                    const isRehearsal = rawType === 'rehearsal' || rawType === 'ensaio' || String(ev.title || '').toLowerCase().includes('ensaio');
                     apiSetlists.push({
                       id: `cloud_ev_${ev.id}`,
                       cloudEventId: ev.id,
-                      name: ev.title || 'Show',
-                      title: ev.title || 'Show',
-                      type: (ev.eventType || 'show').toLowerCase() === 'rehearsal' ? 'ensaio' : 'show',
+                      name: ev.title || (isRehearsal ? 'Ensaio' : 'Show'),
+                      title: ev.title || (isRehearsal ? 'Ensaio' : 'Show'),
+                      type: isRehearsal ? 'ensaio' : 'show',
                       date: ev.date || '',
                       time: ev.time || '',
                       local: ev.location || ev.city || '',
@@ -1427,7 +1439,16 @@ export default function BandDetailScreen({
           let localBandSetlists = [];
           try {
             const localSl = await setlistService.getAll();
-            const matchedSl = (localSl || []).filter(item => item && String(item.myBandId) === String(band.id));
+            const matchedSl = (localSl || []).filter(item => {
+              if (!item) return false;
+              const sBandId = String(item.myBandId || item.bandId || '');
+              const bId = String(band.id || '');
+              const bCloudId = String(band.cloudId || '');
+              if (sBandId && (sBandId === bId || (bCloudId && sBandId === bCloudId))) return true;
+              if (item.bandName && band.name && item.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+              if (item.band && band.name && String(item.band).trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+              return false;
+            });
             if (matchedSl.length > 0) {
               localBandSetlists = await Promise.all(
                 matchedSl.map(async (lsl) => {
@@ -1669,19 +1690,38 @@ export default function BandDetailScreen({
   }, [visible, band?.id, band?.cloudId, loadData, loadBandPosts]);
 
   // Filter setlists belonging to this band sorted by date
-  // MODO ONLINE: APENAS consulta os setlists da API (onlineSetlists) - NUNCA SQLite
-  // MODO OFFLINE: consulta os setlists do SQLite (allSetlists)
-  const bandSetlists = ((band?.cloudId && isUserLoggedIn)
-    ? (onlineSetlists || [])
-    : (allSetlists || []).filter(s => {
-        if (!s || !band) return false;
-        const sBandId = Number(s.myBandId || s.bandId);
-        const bId = Number(band?.id);
-        if (sBandId && sBandId === bId) return true;
-        if (s.bandName && band?.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
-        return false;
-      })
-  ).sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+  // Unifica de forma tolerante os eventos da API (onlineSetlists) e do SQLite/Props (allSetlists)
+  const bandSetlists = useMemo(() => {
+    const list = [];
+    const seenKeys = new Set();
+
+    const addSetlist = (sl) => {
+      if (!sl) return;
+      const key = sl.cloudEventId
+        ? `cloud_${sl.cloudEventId}`
+        : `${String(sl.name || sl.title || '').trim().toLowerCase()}_${String(sl.date || '').trim()}`;
+      if (seenKeys.has(key)) return;
+      seenKeys.add(key);
+      list.push(sl);
+    };
+
+    // 1. Eventos carregados online da API
+    (onlineSetlists || []).forEach(addSetlist);
+
+    // 2. Setlists locais ou recebidos via props pertencentes a esta banda
+    (allSetlists || []).filter(s => {
+      if (!s || !band) return false;
+      const sBandId = String(s.myBandId || s.bandId || '');
+      const bId = String(band.id || '');
+      const bCloudId = String(band.cloudId || '');
+      if (sBandId && (sBandId === bId || (bCloudId && sBandId === bCloudId))) return true;
+      if (s.bandName && band.name && s.bandName.trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+      if (s.band && band.name && String(s.band).trim().toLowerCase() === band.name.trim().toLowerCase()) return true;
+      return false;
+    }).forEach(addSetlist);
+
+    return list.sort((a, b) => parseDateForSort(b.date) - parseDateForSort(a.date));
+  }, [onlineSetlists, allSetlists, band]);
 
   // Eventos (shows) da banda no formato da arte de agenda do perfil
   const bandLogoUri = band?.imageUri || band?.image || band?.logo ||
@@ -2005,8 +2045,8 @@ export default function BandDetailScreen({
       console.error('Error saving cache split:', err);
       Alert.alert(t('error') || 'Erro', t('errorSavingCacheSplit') || 'Não foi possível salvar a divisão do cachê.');
     }
-  };
-
+  };
+
   const handleAddSubstitute = () => {
     setSubstitutes(prev => [...prev, { name: '', amount: '' }]);
   };
@@ -5215,8 +5255,14 @@ export default function BandDetailScreen({
                 const m = getMonthInfo(s.date, language);
                 return m.year === selectedEventYear || m.year === 0 || !s.date;
               });
-              const showCount = yearEvents.filter(s => s.type === 'show').length;
-              const rehearsalCount = yearEvents.filter(s => s.type !== 'show').length;
+              const showCount = yearEvents.filter(s => {
+                const t = (s.type || '').toLowerCase();
+                return t !== 'ensaio' && t !== 'rehearsal';
+              }).length;
+              const rehearsalCount = yearEvents.filter(s => {
+                const t = (s.type || '').toLowerCase();
+                return t === 'ensaio' || t === 'rehearsal';
+              }).length;
 
               return (
                 <View style={[styles.agendaSummaryCard, { backgroundColor: colors.cardBackground, borderColor: colors.border, marginBottom: 16 }]}>
