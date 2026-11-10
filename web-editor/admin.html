@@ -1252,42 +1252,200 @@
         </div>
       </div>
 
-      <!-- PLAY STORE KPIS (CONSOLE VITALS & ADOPTION) -->
+      <!-- FILTER & DATE SELECTION TOOLBAR -->
+      <div class="card-panel" style="margin-bottom: 24px; padding: 16px 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <!-- Quick Presets -->
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Filtrar Período:</span>
+            <button class="btn-action play-period-btn" id="btnPeriod7" onclick="setPlayPeriod(7, this)">7 Dias</button>
+            <button class="btn-action play-period-btn" id="btnPeriod14" onclick="setPlayPeriod(14, this)">14 Dias</button>
+            <button class="btn-action play-period-btn active" id="btnPeriod28" onclick="setPlayPeriod(28, this)" style="border-color: var(--cyan); color: var(--cyan);">28 Dias (Oficial Google)</button>
+          </div>
+
+          <!-- Specific Day Selector -->
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <label for="playDatePicker" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <ion-icon name="calendar-outline" style="color: var(--cyan); font-size: 1.1rem;"></ion-icon> Selecionar Dia:
+            </label>
+            <input type="date" id="playDatePicker" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-medium); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.82rem; font-family: 'JetBrains Mono', monospace;" onchange="onPlayDateChanged()">
+            <button class="btn-action btn-primary" onclick="setPlayToday()" style="padding: 6px 12px; font-size: 0.8rem;">
+              <ion-icon name="today-outline"></ion-icon> Ver Hoje
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPOTLIGHT: SELECTED DAY DRILL-DOWN -->
+      <div class="card-panel" id="playDaySpotlight" style="margin-bottom: 24px; border: 1px solid rgba(6, 182, 212, 0.4); background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(12, 16, 24, 0.95) 100%);">
+        <div class="card-panel-header" style="margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(6, 182, 212, 0.15); display: flex; align-items: center; justify-content: center; color: var(--cyan);">
+              <ion-icon name="analytics-outline" style="font-size: 1.4rem;"></ion-icon>
+            </div>
+            <div>
+              <h3 class="panel-title" style="margin: 0; font-size: 1.05rem;" id="playDaySpotlightTitle">Inspecionando Dia: Carregando...</h3>
+              <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;" id="playDaySpotlightSub">Métricas detalhadas do dia selecionado</p>
+            </div>
+          </div>
+          <span class="code-chip" id="playDayRetentionBadge" style="color: var(--emerald); border-color: rgba(16,185,129,0.3);">Retenção: 100%</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px;">
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Instalaram no Dia</span>
+            <div style="font-size: 1.65rem; font-weight: 800; color: var(--emerald); font-family: 'JetBrains Mono', monospace;" id="dayInstalls">+0</div>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Aquisições no app</span>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Desinstalaram no Dia</span>
+            <div style="font-size: 1.65rem; font-weight: 800; color: var(--rose); font-family: 'JetBrains Mono', monospace;" id="dayUninstalls">0</div>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Perdas no dia</span>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Saldo Líquido</span>
+            <div style="font-size: 1.65rem; font-weight: 800; color: var(--cyan); font-family: 'JetBrains Mono', monospace;" id="dayNetGrowth">+0</div>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Crescimento real</span>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Acessaram no Dia (DAU)</span>
+            <div style="font-size: 1.65rem; font-weight: 800; color: var(--violet-light); font-family: 'JetBrains Mono', monospace;" id="dayActiveUsers">0</div>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Músicos ativos</span>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Primeiros Acessos</span>
+            <div style="font-size: 1.65rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace;" id="dayFirstAccess">0</div>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Novos músicos</span>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Falhas / Crashes</span>
+            <div style="font-size: 1.65rem; font-weight: 800; color: var(--emerald); font-family: 'JetBrains Mono', monospace;" id="dayCrashes">0</div>
+            <span style="font-size: 0.7rem; color: var(--emerald);">0.00% Crash Rate</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOTALS KPIS OF THE SELECTED PERIOD -->
       <div class="kpi-grid" style="margin-bottom: 24px;">
+        <div class="kpi-card emerald">
+          <div class="kpi-head">
+            <span class="kpi-title" id="kpiLabelPeriodInstalls">Total Instalações (28d)</span>
+            <ion-icon name="download-outline" class="kpi-icon" style="color: var(--emerald);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="playKpiPeriodInstalls" style="color: var(--emerald);">89</div>
+          <div class="kpi-sub" style="color: var(--emerald);">+456% vs mês anterior</div>
+        </div>
+
+        <div class="kpi-card rose">
+          <div class="kpi-head">
+            <span class="kpi-title" id="kpiLabelPeriodUninstalls">Total Desinstalações</span>
+            <ion-icon name="trash-outline" class="kpi-icon" style="color: var(--rose);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="playKpiPeriodUninstalls" style="color: var(--rose);">14</div>
+          <div class="kpi-sub" style="color: var(--text-dim);">Baixa taxa de churn (15%)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">Saldo Líquido</span>
+            <ion-icon name="trending-up-outline" class="kpi-icon" style="color: var(--cyan);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="playKpiPeriodNet" style="color: var(--cyan);">+75</div>
+          <div class="kpi-sub" style="color: var(--emerald);">Novos dispositivos retidos</div>
+        </div>
+
+        <div class="kpi-card violet">
+          <div class="kpi-head">
+            <span class="kpi-title">Média Acessos Diários</span>
+            <ion-icon name="people-outline" class="kpi-icon" style="color: var(--violet);"></ion-icon>
+          </div>
+          <div class="kpi-value" id="playKpiAvgDau" style="color: var(--violet-light);">24.2</div>
+          <div class="kpi-sub">Músicos ativos por dia (DAU)</div>
+        </div>
+
         <div class="kpi-card">
           <div class="kpi-head">
             <span class="kpi-title">Dispositivos Ativos (Mês)</span>
             <ion-icon name="phone-portrait-outline" class="kpi-icon"></ion-icon>
           </div>
-          <div class="kpi-value" id="playKpiActiveDevices" style="color: var(--cyan);">57</div>
+          <div class="kpi-value" id="playKpiActiveDevices" style="color: #fff;">57</div>
           <div class="kpi-sub" style="color: var(--emerald);">+280% últimos 28 dias</div>
-        </div>
-
-        <div class="kpi-card violet">
-          <div class="kpi-head">
-            <span class="kpi-title">Aquisições de Dispositivos</span>
-            <ion-icon name="download-outline" class="kpi-icon" style="color: var(--violet);"></ion-icon>
-          </div>
-          <div class="kpi-value" id="playKpiAcquisitions" style="color: var(--violet-light);">89</div>
-          <div class="kpi-sub" style="color: var(--emerald);">+456% últimos 28 dias</div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-head">
-            <span class="kpi-title">Primeiros Acessos</span>
-            <ion-icon name="people-outline" class="kpi-icon"></ion-icon>
-          </div>
-          <div class="kpi-value" id="playKpiFirstAccess" style="color: #fff;">39</div>
-          <div class="kpi-sub" style="color: var(--emerald);">+290% novos músicos</div>
         </div>
 
         <div class="kpi-card emerald">
           <div class="kpi-head">
-            <span class="kpi-title">Crash Rate (Vitals)</span>
+            <span class="kpi-title">Crash Rate Oficial</span>
             <ion-icon name="shield-checkmark-outline" class="kpi-icon" style="color: var(--emerald);"></ion-icon>
           </div>
           <div class="kpi-value" id="playKpiCrashRate" style="color: var(--emerald);">0.00%</div>
-          <div class="kpi-sub">Excelente (Limite Google: 1.09%)</div>
+          <div class="kpi-sub">100% Estável (Limite: 1.09%)</div>
+        </div>
+      </div>
+
+      <!-- PLAY STORE CHARTS -->
+      <div class="obs-grid" style="margin-bottom: 24px;">
+        <!-- Chart 1: Daily Installs vs Uninstalls -->
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="bar-chart-outline" style="color: var(--emerald);"></ion-icon>
+              Instalações vs Desinstalações por Dia
+            </h3>
+            <span class="code-chip" id="playInstallsChartSub">Sincronizado</span>
+          </div>
+          <div style="height: 280px;">
+            <canvas id="playInstallsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Daily Active Users & First Time Access -->
+        <div class="card-panel">
+          <div class="card-panel-header">
+            <h3 class="panel-title">
+              <ion-icon name="pulse-outline" style="color: var(--violet);"></ion-icon>
+              Músicos Ativos Diários (DAU)
+            </h3>
+            <span class="code-chip" style="color: var(--violet-light);">Acessos & Novos</span>
+          </div>
+          <div style="height: 280px;">
+            <canvas id="playActiveUsersChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY-BY-DAY HISTORICAL TABLE -->
+      <div class="card-panel" style="margin-bottom: 24px;">
+        <div class="card-panel-header">
+          <h3 class="panel-title">
+            <ion-icon name="calendar-number-outline" style="color: var(--cyan);"></ion-icon>
+            Histórico Detalhado Dia a Dia (Google Play Analytics)
+          </h3>
+          <span class="code-chip" id="playTableCountChip">28 dias registrados</span>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Dia</th>
+                <th style="color: var(--emerald);">Instalações</th>
+                <th style="color: var(--rose);">Desinstalações</th>
+                <th>Saldo Líquido</th>
+                <th style="color: var(--violet-light);">Acessaram no Dia (DAU)</th>
+                <th>Primeiros Acessos</th>
+                <th>Retenção</th>
+                <th style="text-align: right;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="playHistoryTableBody">
+              <tr><td colspan="9" style="text-align: center; padding: 24px;">Carregando histórico diário...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -1510,6 +1668,10 @@
     let trafficChart = null;
     let statusCodesChart = null;
     let ratingsChart = null;
+    let playInstallsChart = null;
+    let playActiveUsersChart = null;
+    let playCurrentDays = 28;
+    let playStoreData = null;
 
     // Traffic simulation history for smooth graphs
     const trafficHistory = {
@@ -2095,32 +2257,307 @@
     }
 
     // ==============================================================
+    // TAB 4: GOOGLE PLAY STORE OBSERVABILITY & DAILY ANALYTICS
     // ==============================================================
-    // TAB 4: GOOGLE PLAY STORE OBSERVABILITY
-    // ==============================================================
-    async function fetchPlayStore() {
+    function updateDaySpotlight(day) {
+      if (!day) return;
+      const parts = day.date.split('-');
+      const dateFormatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      
+      document.getElementById('playDaySpotlightTitle').textContent = `Inspecionando Dia: ${dateFormatted} (${day.dayOfWeek})`;
+      document.getElementById('playDaySpotlightSub').textContent = `Dados específicos de instalações, desinstalações e acessos neste dia.`;
+      
+      document.getElementById('dayInstalls').textContent = `+${day.installs}`;
+      document.getElementById('dayUninstalls').textContent = `-${day.uninstalls}`;
+      document.getElementById('dayNetGrowth').textContent = `${day.netGrowth >= 0 ? '+' : ''}${day.netGrowth}`;
+      document.getElementById('dayNetGrowth').style.color = day.netGrowth >= 0 ? 'var(--cyan)' : 'var(--rose)';
+      document.getElementById('dayActiveUsers').textContent = day.activeUsers;
+      document.getElementById('dayFirstAccess').textContent = day.firstTimeAccesses;
+      document.getElementById('dayCrashes').textContent = day.crashes;
+      
+      const badge = document.getElementById('playDayRetentionBadge');
+      badge.textContent = `Retenção: ${day.retentionRate.toFixed(1)}%`;
+      badge.style.color = day.retentionRate >= 80 ? 'var(--emerald)' : day.retentionRate >= 50 ? 'var(--amber)' : 'var(--rose)';
+      
+      const picker = document.getElementById('playDatePicker');
+      if (picker && picker.value !== day.date) {
+        picker.value = day.date;
+      }
+    }
+
+    function selectPlayDay(dateStr) {
+      if (!playStoreData || !playStoreData.dailyMetrics) return;
+      const day = playStoreData.dailyMetrics.find(d => d.date === dateStr);
+      if (day) {
+        updateDaySpotlight(day);
+        renderPlayHistoryTable(playStoreData.dailyMetrics, dateStr);
+        document.getElementById('playDaySpotlight').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function setPlayPeriod(days, btn) {
+      document.querySelectorAll('.play-period-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.borderColor = '';
+        b.style.color = '';
+      });
+      if (btn) {
+        btn.classList.add('active');
+        btn.style.borderColor = 'var(--cyan)';
+        btn.style.color = 'var(--cyan)';
+      }
+      playCurrentDays = days;
+      fetchPlayStore(null, days);
+    }
+
+    function onPlayDateChanged() {
+      const picker = document.getElementById('playDatePicker');
+      if (picker && picker.value) {
+        fetchPlayStore(picker.value, playCurrentDays);
+      }
+    }
+
+    function setPlayToday() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const picker = document.getElementById('playDatePicker');
+      if (picker) picker.value = todayStr;
+      fetchPlayStore(todayStr, playCurrentDays);
+    }
+
+    function renderPlayHistoryTable(dailyList, selectedDate) {
+      const tbody = document.getElementById('playHistoryTableBody');
+      if (!tbody) return;
+      
+      document.getElementById('playTableCountChip').textContent = `${dailyList.length} dias registrados`;
+      
+      if (!dailyList || dailyList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--text-dim);">Nenhum dado para o período selecionado.</td></tr>`;
+        return;
+      }
+
+      // Render descending (most recent first)
+      const reversed = [...dailyList].reverse();
+      tbody.innerHTML = reversed.map(d => {
+        const isSelected = d.date === selectedDate;
+        const parts = d.date.split('-');
+        const dateFormatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        const netBadgeClass = d.netGrowth > 0 ? 'active' : d.netGrowth === 0 ? 'pending' : 'banned';
+
+        return `
+          <tr style="${isSelected ? 'background: rgba(6, 182, 212, 0.12); border-left: 3px solid var(--cyan);' : ''}">
+            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: ${isSelected ? '700' : '400'}; color: ${isSelected ? 'var(--cyan)' : '#fff'};">
+              ${dateFormatted} ${isSelected ? '<span style="font-size: 0.7rem; color: var(--cyan); margin-left: 4px;">● Foco</span>' : ''}
+            </td>
+            <td style="color: var(--text-muted); font-size: 0.8rem;">${escapeHtml(d.dayOfWeek)}</td>
+            <td style="color: var(--emerald); font-weight: 700; font-family: 'JetBrains Mono', monospace;">+${d.installs}</td>
+            <td style="color: var(--rose); font-weight: 700; font-family: 'JetBrains Mono', monospace;">-${d.uninstalls}</td>
+            <td>
+              <span class="status-badge ${netBadgeClass}">
+                ${d.netGrowth >= 0 ? '+' : ''}${d.netGrowth}
+              </span>
+            </td>
+            <td style="color: var(--violet-light); font-weight: 700; font-family: 'JetBrains Mono', monospace;">${d.activeUsers}</td>
+            <td style="color: #fff; font-family: 'JetBrains Mono', monospace;">${d.firstTimeAccesses}</td>
+            <td style="color: var(--text-dim); font-size: 0.78rem;">${d.retentionRate.toFixed(0)}%</td>
+            <td style="text-align: right;">
+              <button class="btn-action ${isSelected ? 'btn-primary' : ''}" style="padding: 4px 10px; font-size: 0.72rem;" onclick="selectPlayDay('${d.date}')">
+                <ion-icon name="search-outline"></ion-icon> Inspecionar
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPlayCharts(dailyList) {
+      if (!dailyList || dailyList.length === 0) return;
+      
+      const labels = dailyList.map(d => {
+        const p = d.date.split('-');
+        return `${p[2]}/${p[1]} (${d.dayOfWeek})`;
+      });
+      const installs = dailyList.map(d => d.installs);
+      const uninstalls = dailyList.map(d => d.uninstalls);
+      const netGrowth = dailyList.map(d => d.netGrowth);
+      const activeUsers = dailyList.map(d => d.activeUsers);
+      const firstAccess = dailyList.map(d => d.firstTimeAccesses);
+
+      // 1. Installs vs Uninstalls Chart
+      const canvasInstalls = document.getElementById('playInstallsChart');
+      if (canvasInstalls) {
+        if (playInstallsChart) {
+          playInstallsChart.destroy();
+        }
+        playInstallsChart = new Chart(canvasInstalls.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Instalações',
+                data: installs,
+                backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                borderRadius: 4,
+                order: 2
+              },
+              {
+                label: 'Desinstalações',
+                data: uninstalls,
+                backgroundColor: 'rgba(244, 63, 94, 0.85)',
+                borderRadius: 4,
+                order: 2
+              },
+              {
+                type: 'line',
+                label: 'Saldo Líquido',
+                data: netGrowth,
+                borderColor: '#06b6d4',
+                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                borderWidth: 2.5,
+                tension: 0.35,
+                pointRadius: 3,
+                order: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#94a3b8', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }
+              },
+              tooltip: {
+                backgroundColor: '#0c1018',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleColor: '#fff',
+                bodyColor: '#cbd5e1'
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                ticks: { color: '#64748b', font: { size: 10 } }
+              },
+              y: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#64748b', font: { size: 10 }, stepSize: 1 }
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Active Users & First Time Access Chart
+      const canvasActive = document.getElementById('playActiveUsersChart');
+      if (canvasActive) {
+        if (playActiveUsersChart) {
+          playActiveUsersChart.destroy();
+        }
+        playActiveUsersChart = new Chart(canvasActive.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Músicos Ativos (DAU)',
+                data: activeUsers,
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                fill: true,
+                borderWidth: 2.5,
+                tension: 0.4,
+                pointRadius: 3
+              },
+              {
+                label: 'Primeiros Acessos',
+                data: firstAccess,
+                borderColor: '#fbbf24',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                borderDash: [4, 4],
+                tension: 0.3,
+                pointRadius: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#94a3b8', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }
+              },
+              tooltip: {
+                backgroundColor: '#0c1018',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleColor: '#fff',
+                bodyColor: '#cbd5e1'
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                ticks: { color: '#64748b', font: { size: 10 } }
+              },
+              y: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#64748b', font: { size: 10 }, stepSize: 5 }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    async function fetchPlayStore(targetDate = null, days = null) {
+      if (days !== null) playCurrentDays = days;
+      const dateVal = targetDate !== null ? targetDate : (document.getElementById('playDatePicker')?.value || '');
+
       try {
-        const res = await fetch(`${currentApiBase}/admin/playstore`, { headers: getAuthHeaders() });
+        const queryParams = new URLSearchParams();
+        if (dateVal) queryParams.set('date', dateVal);
+        if (playCurrentDays) queryParams.set('days', playCurrentDays.toString());
+
+        const res = await fetch(`${currentApiBase}/admin/playstore?${queryParams.toString()}`, { headers: getAuthHeaders() });
         if (res.ok) {
           const data = await res.json();
+          playStoreData = data;
+
           document.getElementById('playAppName').textContent = data.appName || 'BandLink • Setlist Band Manager';
           document.getElementById('playPackage').innerHTML = `${data.packageName} • Versão <span style="color:var(--cyan);">${data.currentVersion}</span> (Build ${data.versionCode})`;
 
-          // Update Vitals KPIs
+          // Update Period Totals KPIs
+          if (data.totals) {
+            document.getElementById('kpiLabelPeriodInstalls').textContent = `Total Instalações (${data.daysRequested || playCurrentDays}d)`;
+            document.getElementById('playKpiPeriodInstalls').textContent = `+${data.totals.totalInstalls}`;
+            document.getElementById('kpiLabelPeriodUninstalls').textContent = `Total Desinstalações (${data.daysRequested || playCurrentDays}d)`;
+            document.getElementById('playKpiPeriodUninstalls').textContent = `-${data.totals.totalUninstalls}`;
+            document.getElementById('playKpiPeriodNet').textContent = `${data.totals.totalNetGrowth >= 0 ? '+' : ''}${data.totals.totalNetGrowth}`;
+            document.getElementById('playKpiAvgDau').textContent = data.totals.averageDailyActiveUsers.toFixed(1);
+          }
+
           if (data.vitals) {
             if (data.vitals.activeDevicesLast28Days != null) {
               document.getElementById('playKpiActiveDevices').textContent = data.vitals.activeDevicesLast28Days;
-            }
-            if (data.vitals.deviceAcquisitions != null) {
-              document.getElementById('playKpiAcquisitions').textContent = data.vitals.deviceAcquisitions;
-            }
-            if (data.vitals.firstTimeAccesses != null) {
-              document.getElementById('playKpiFirstAccess').textContent = data.vitals.firstTimeAccesses;
             }
             if (data.vitals.crashRate != null) {
               document.getElementById('playKpiCrashRate').textContent = `${data.vitals.crashRate.toFixed(2)}%`;
             }
           }
+
+          // Spotlight Selected Day
+          if (data.selectedDay) {
+            updateDaySpotlight(data.selectedDay);
+          }
+
+          // Render History Table
+          renderPlayHistoryTable(data.dailyMetrics || [], data.selectedDate);
+
+          // Render Charts
+          renderPlayCharts(data.dailyMetrics || []);
 
           // Update Connection Status Banner
           const banner = document.getElementById('playConnBanner');
