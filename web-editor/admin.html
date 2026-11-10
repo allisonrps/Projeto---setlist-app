@@ -1252,6 +1252,37 @@
         </div>
       </div>
 
+      <!-- OFFICIAL CLOUD STORAGE (GCS) & REPORTS INTEGRATION BANNER -->
+      <div class="card-panel" style="margin-bottom: 24px; border-left: 4px solid var(--cyan); background: rgba(6, 182, 212, 0.03);">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="flex: 1; min-width: 280px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <ion-icon name="cloud-done-outline" style="font-size: 1.3rem; color: var(--cyan);"></ion-icon>
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0;">Relatórios Oficiais Google Play (GCS & Console)</h3>
+              <span class="code-chip" id="playDataSourceChip">Google Play Developer API</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">
+              Bucket oficial configurado: <code style="color: var(--cyan); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">gs://pubsite_prod_5017515551308415703/</code>
+            </p>
+            <p style="font-size: 0.78rem; color: var(--text-dim);" id="playGcsStatusText">
+              Verificando permissões de download de relatórios em massa...
+            </p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <input type="file" id="playCsvFileInput" accept=".csv" style="display: none;" onchange="onPlayCsvSelected(this)">
+            <button class="btn-action btn-primary" onclick="document.getElementById('playCsvFileInput').click()">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+              Importar CSV Oficial do Console
+            </button>
+            <a href="https://play.google.com/console" target="_blank" class="btn-action">
+              <ion-icon name="download-outline"></ion-icon>
+              Baixar Relatórios no Play Console
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- FILTER & DATE SELECTION TOOLBAR -->
       <div class="card-panel" style="margin-bottom: 24px; padding: 16px 20px;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
@@ -2417,7 +2448,17 @@
       document.getElementById('playTableCountChip').textContent = `${dailyList.length} dias registrados`;
       
       if (!dailyList || dailyList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--text-dim);">Nenhum dado para o período selecionado.</td></tr>`;
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
+              <ion-icon name="shield-checkmark-outline" style="font-size: 2rem; color: var(--emerald); margin-bottom: 6px;"></ion-icon>
+              <p style="color: #fff; font-size: 0.9rem; font-weight: 600;">Sem dados simulados</p>
+              <p style="font-size: 0.78rem; color: var(--text-dim); margin-top: 4px;">
+                Conforme solicitado, nenhum dado artificial é gerado. Assim que o bucket Cloud Storage sincronizar ou você importar o CSV de instalações do console, a tabela será preenchida 100% com os dados reais.
+              </p>
+            </td>
+          </tr>
+        `;
         return;
       }
 
@@ -2464,7 +2505,18 @@
       const grid = document.getElementById('playCountriesGrid');
       const tbody = document.getElementById('playCountriesTableBody');
       if (!countries || countries.length === 0) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 18px; color: var(--text-muted);">Nenhum dado geográfico disponível.</td></tr>`;
+        if (grid) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border-medium); border-radius: var(--radius-sm); padding: 24px; text-align: center; color: var(--text-muted);">
+              <ion-icon name="globe-outline" style="font-size: 2rem; color: var(--cyan); margin-bottom: 6px;"></ion-icon>
+              <h4 style="color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Nenhum relatório de países sincronizado ainda</h4>
+              <p style="font-size: 0.8rem; color: var(--text-dim); max-width: 540px; margin: 0 auto 12px; line-height: 1.5;">
+                O Google Play armazena a lista real com a <strong>Rússia</strong> em 1º lugar em relatórios CSV dentro de <code>gs://pubsite_prod_5017515551308415703/</code>. Para visualizar agora, clique em <strong>Importar CSV Oficial</strong> acima.
+              </p>
+            </div>
+          `;
+        }
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-dim);">Aguardando sincronização de relatórios do Google Cloud Storage.</td></tr>`;
         return;
       }
 
@@ -2680,6 +2732,33 @@
       }
     }
 
+    async function onPlayCsvSelected(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      showToast(`Enviando relatório oficial: ${file.name}...`, 'info');
+      setPlayLoading(30, `Processando ${file.name}...`);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch(`${currentApiBase}/admin/playstore/upload-report`, {
+          method: 'POST',
+          body: formData
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          showToast('Relatório oficial importado com sucesso!', 'success');
+          setPlayLoading(100, 'Relatório oficial sincronizado!');
+          fetchPlayStore();
+        } else {
+          showToast(json.message || 'Erro ao importar CSV.', 'error');
+        }
+      } catch (err) {
+        showToast('Falha na conexão ao enviar CSV.', 'error');
+      }
+    }
+
     function setPlayLoading(percent, text) {
       const box = document.getElementById('playSyncProgressBox');
       const bar = document.getElementById('playSyncProgressBar');
@@ -2732,6 +2811,15 @@
 
           document.getElementById('playAppName').textContent = data.appName || 'BandLink • Setlist Band Manager';
           document.getElementById('playPackage').innerHTML = `${data.packageName} • Versão <span style="color:var(--cyan);">${data.currentVersion}</span> (Build ${data.versionCode})`;
+
+          if (data.gcsStatus) {
+            const gcsTxt = document.getElementById('playGcsStatusText');
+            if (gcsTxt) gcsTxt.textContent = data.gcsStatus;
+          }
+          if (data.dataSource) {
+            const dsChip = document.getElementById('playDataSourceChip');
+            if (dsChip) dsChip.textContent = data.dataSource;
+          }
 
           // Update Period Totals KPIs
           if (data.totals) {
