@@ -21216,6 +21216,11 @@
             headers: getAuthHeaders(),
             body: JSON.stringify({ ...payload, id: isNumeric ? songId : null })
           });
+          if (res && res.status === 401) {
+            showToast('Sua sessão expirou. Faça login novamente.', 'warning');
+            executeLogout();
+            return;
+          }
           if (res.ok) {
             const syncedSong = await res.json();
             if (syncedSong && syncedSong.id) {
@@ -21628,6 +21633,12 @@
           body: JSON.stringify(payload)
         });
 
+        if (res.status === 401) {
+          if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+          showToast('Sua sessão expirou. Faça login novamente para salvar na nuvem.', 'warning');
+          executeLogout();
+          return;
+        }
         if (res.ok) {
           created = await res.json();
         }
