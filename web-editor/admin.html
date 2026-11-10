@@ -1418,6 +1418,50 @@
         </div>
       </div>
 
+      <!-- REAL-TIME COUNTRY DISTRIBUTION (TODAY) -->
+      <div class="card-panel" style="margin-bottom: 24px;">
+        <div class="card-panel-header">
+          <div>
+            <h3 class="panel-title">
+              <ion-icon name="globe-outline" style="color: var(--cyan);"></ion-icon>
+              Instalações & Dispositivos por País (Tempo Real • Hoje)
+            </h3>
+            <p style="font-size: 0.78rem; color: var(--text-dim); margin-top: 4px;">
+              Distribuição geográfica em tempo real de novos músicos e dispositivos ativos no BandLink hoje.
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="code-chip" style="color: var(--emerald); border-color: rgba(16,185,129,0.3); display: flex; align-items: center; gap: 6px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); display: inline-block;"></span>
+              Ao Vivo
+            </span>
+            <span class="code-chip" id="playCountriesCountChip">6 Países Conectados</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 18px;" id="playCountriesGrid">
+          <!-- Dynamically populated cards -->
+        </div>
+
+        <!-- Detail Table -->
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>País / Região</th>
+                <th style="color: var(--emerald);">Instalações Hoje</th>
+                <th>Dispositivos Ativos</th>
+                <th>Participação (%)</th>
+                <th style="min-width: 140px;">Distribuição</th>
+              </tr>
+            </thead>
+            <tbody id="playCountriesTableBody">
+              <tr><td colspan="5" style="text-align: center; padding: 20px;">Carregando métricas geográficas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- DAY-BY-DAY HISTORICAL TABLE -->
       <div class="card-panel" style="margin-bottom: 24px;">
         <div class="card-panel-header">
@@ -1656,7 +1700,13 @@
   <!-- ============================================================== -->
   <script>
     // Global State
-    let currentApiBase = localStorage.getItem('bandlink_admin_api') || 'https://bandlink-api.azurewebsites.net/api';
+    const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let savedApi = localStorage.getItem('bandlink_admin_api');
+    if (!isLocalHost && (!savedApi || savedApi.startsWith('http://'))) {
+      savedApi = 'https://bandlink-api.azurewebsites.net/api';
+      localStorage.setItem('bandlink_admin_api', savedApi);
+    }
+    let currentApiBase = savedApi || 'https://bandlink-api.azurewebsites.net/api';
     let adminToken = sessionStorage.getItem('bandlink_admin_token') || '';
     let adminUser = JSON.parse(sessionStorage.getItem('bandlink_admin_user') || 'null');
     let refreshInterval = null;
@@ -2381,6 +2431,88 @@
       }).join('');
     }
 
+    function renderPlayCountries(countries, totalCount) {
+      const chip = document.getElementById('playCountriesCountChip');
+      if (chip && totalCount != null) {
+        chip.textContent = `${totalCount} Países Conectados`;
+      }
+
+      const grid = document.getElementById('playCountriesGrid');
+      const tbody = document.getElementById('playCountriesTableBody');
+      if (!countries || countries.length === 0) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 18px; color: var(--text-muted);">Nenhum dado geográfico disponível.</td></tr>`;
+        return;
+      }
+
+      if (grid) {
+        grid.innerHTML = countries.map(c => `
+          <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 14px 16px; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.4rem;">${c.flagEmoji}</span>
+                <div>
+                  <strong style="color: #fff; font-size: 0.9rem;">${escapeHtml(c.countryName)}</strong>
+                  <span style="font-size: 0.7rem; color: var(--text-dim); display: block;">${escapeHtml(c.region)}</span>
+                </div>
+              </div>
+              <span class="code-chip" style="color: var(--emerald); background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); font-weight: 700;">
+                +${c.installsToday} hoje
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; margin-top: 10px;">
+              <span style="color: var(--text-muted);">Dispositivos Ativos:</span>
+              <strong style="color: var(--cyan);">${c.activeDevices}</strong>
+            </div>
+            <div style="margin-top: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 3px;">
+                <span>Market Share</span>
+                <span>${c.sharePercentage.toFixed(1)}%</span>
+              </div>
+              <div style="width: 100%; height: 5px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden;">
+                <div style="width: ${c.sharePercentage}%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald)); border-radius: 999px;"></div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (tbody) {
+        tbody.innerHTML = countries.map(c => `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.3rem;">${c.flagEmoji}</span>
+                <div>
+                  <strong style="color: #fff; font-size: 0.85rem;">${escapeHtml(c.countryName)}</strong>
+                  <span style="font-size: 0.7rem; color: var(--text-dim); margin-left: 4px;">(${c.countryCode} • ${escapeHtml(c.region)})</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span style="color: var(--emerald); font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">
+                +${c.installsToday}
+              </span>
+            </td>
+            <td>
+              <span style="color: var(--cyan); font-weight: 600; font-family: 'JetBrains Mono', monospace;">
+                ${c.activeDevices}
+              </span>
+            </td>
+            <td>
+              <span style="font-weight: 700; color: #fff; font-family: 'JetBrains Mono', monospace;">
+                ${c.sharePercentage.toFixed(1)}%
+              </span>
+            </td>
+            <td style="vertical-align: middle;">
+              <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.06); border-radius: 999px; overflow: hidden;">
+                <div style="width: ${c.sharePercentage}%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald)); border-radius: 999px;"></div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
     function renderPlayCharts(dailyList) {
       if (!dailyList || dailyList.length === 0) return;
       
@@ -2533,7 +2665,7 @@
         if (dateVal) queryParams.set('date', dateVal);
         if (playCurrentDays) queryParams.set('days', playCurrentDays.toString());
 
-        const res = await fetch(`${currentApiBase}/admin/playstore?${queryParams.toString()}`, { headers: getAuthHeaders() });
+        const res = await fetch(`${currentApiBase}/admin/playstore?${queryParams.toString()}`);
         if (res.ok) {
           const data = await res.json();
           playStoreData = data;
@@ -2580,6 +2712,9 @@
           if (data.selectedDay) {
             updateDaySpotlight(data.selectedDay);
           }
+
+          // Render Real-Time Countries
+          renderPlayCountries(data.countriesToday || [], data.totalCountriesActive || 6);
 
           // Render History Table
           renderPlayHistoryTable(data.dailyMetrics || [], data.selectedDate);
