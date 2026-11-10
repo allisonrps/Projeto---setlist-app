@@ -2445,17 +2445,24 @@
       const tbody = document.getElementById('playHistoryTableBody');
       if (!tbody) return;
       
-      document.getElementById('playTableCountChip').textContent = `${dailyList.length} dias registrados`;
+      const countChip = document.getElementById('playTableCountChip');
+      if (countChip) {
+        countChip.textContent = dailyList && dailyList.length > 0 ? `${dailyList.length} dias registrados` : '0 dias (Sem dados simulados)';
+      }
       
       if (!dailyList || dailyList.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="9" style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
               <ion-icon name="shield-checkmark-outline" style="font-size: 2rem; color: var(--emerald); margin-bottom: 6px;"></ion-icon>
-              <p style="color: #fff; font-size: 0.9rem; font-weight: 600;">Sem dados simulados</p>
-              <p style="font-size: 0.78rem; color: var(--text-dim); margin-top: 4px;">
-                Conforme solicitado, nenhum dado artificial é gerado. Assim que o bucket Cloud Storage sincronizar ou você importar o CSV de instalações do console, a tabela será preenchida 100% com os dados reais.
+              <p style="color: #fff; font-size: 0.9rem; font-weight: 600;">Nenhum dado simulado ou fake</p>
+              <p style="font-size: 0.78rem; color: var(--text-dim); max-width: 540px; margin: 4px auto 14px; line-height: 1.5;">
+                Conforme solicitado, nenhum dado artificial é gerado. Para visualizar a evolução dia a dia com números 100% reais, importe o relatório CSV oficial baixado do Console.
               </p>
+              <button class="btn-action btn-primary" onclick="document.getElementById('playCsvFileInput').click()" style="margin: 0 auto;">
+                <ion-icon name="cloud-upload-outline"></ion-icon>
+                Importar CSV de Instalações (Play Console)
+              </button>
             </td>
           </tr>
         `;
@@ -2498,8 +2505,8 @@
 
     function renderPlayCountries(countries, totalCount) {
       const chip = document.getElementById('playCountriesCountChip');
-      if (chip && totalCount != null) {
-        chip.textContent = `${totalCount} Países Conectados`;
+      if (chip) {
+        chip.textContent = countries && countries.length > 0 ? `${countries.length} Países Conectados` : '0 Países Conectados';
       }
 
       const grid = document.getElementById('playCountriesGrid');
@@ -2510,13 +2517,17 @@
             <div style="grid-column: 1 / -1; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border-medium); border-radius: var(--radius-sm); padding: 24px; text-align: center; color: var(--text-muted);">
               <ion-icon name="globe-outline" style="font-size: 2rem; color: var(--cyan); margin-bottom: 6px;"></ion-icon>
               <h4 style="color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Nenhum relatório de países sincronizado ainda</h4>
-              <p style="font-size: 0.8rem; color: var(--text-dim); max-width: 540px; margin: 0 auto 12px; line-height: 1.5;">
-                O Google Play armazena a lista real com a <strong>Rússia</strong> em 1º lugar em relatórios CSV dentro de <code>gs://pubsite_prod_5017515551308415703/</code>. Para visualizar agora, clique em <strong>Importar CSV Oficial</strong> acima.
+              <p style="font-size: 0.8rem; color: var(--text-dim); max-width: 540px; margin: 0 auto 14px; line-height: 1.5;">
+                Os dados geográficos oficiais do Google Play são distribuídos via relatórios CSV (<code>stats/installs/*_country.csv</code>). Para visualizar o ranking real de países agora, importe o arquivo CSV de países baixado do Google Play Console.
               </p>
+              <button class="btn-action btn-primary" onclick="document.getElementById('playCsvFileInput').click()" style="margin: 0 auto;">
+                <ion-icon name="cloud-upload-outline"></ion-icon>
+                Importar CSV de Países
+              </button>
             </div>
           `;
         }
-        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-dim);">Aguardando sincronização de relatórios do Google Cloud Storage.</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-dim);">Aguardando sincronização de relatórios do Google Cloud Storage ou importação de CSV.</td></tr>`;
         return;
       }
 
@@ -2590,7 +2601,74 @@
     }
 
     function renderPlayCharts(dailyList) {
-      if (!dailyList || dailyList.length === 0) return;
+      const chipInstalls = document.getElementById('playInstallsChartSub');
+      const chipActive = document.getElementById('playActiveUsersChartSub');
+
+      if (!dailyList || dailyList.length === 0) {
+        if (chipInstalls) chipInstalls.textContent = 'Aguardando CSV';
+        if (chipActive) chipActive.textContent = 'Aguardando CSV';
+
+        const canvasInstalls = document.getElementById('playInstallsChart');
+        if (canvasInstalls) {
+          if (playInstallsChart) playInstallsChart.destroy();
+          playInstallsChart = new Chart(canvasInstalls.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: ['Aguardando importação de CSV oficial...'],
+              datasets: [{
+                label: 'Instalações',
+                data: [0],
+                backgroundColor: 'rgba(16, 185, 129, 0.35)',
+                borderRadius: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+                y: { beginAtZero: true, max: 5, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
+              }
+            }
+          });
+        }
+
+        const canvasActive = document.getElementById('playActiveUsersChart');
+        if (canvasActive) {
+          if (playActiveUsersChart) playActiveUsersChart.destroy();
+          playActiveUsersChart = new Chart(canvasActive.getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: ['Aguardando importação de CSV oficial...'],
+              datasets: [{
+                label: 'Músicos Ativos (DAU)',
+                data: [0],
+                borderColor: 'rgba(139, 92, 246, 0.4)',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
+                y: { beginAtZero: true, max: 5, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
+              }
+            }
+          });
+        }
+        return;
+      }
+
+      if (chipInstalls) chipInstalls.textContent = `${dailyList.length} dias sincronizados`;
+      if (chipActive) chipActive.textContent = 'Acessos & Novos';
       
       const labels = dailyList.map(d => {
         const p = d.date.split('-');
@@ -2809,8 +2887,10 @@
           const data = await res.json();
           playStoreData = data;
 
-          document.getElementById('playAppName').textContent = data.appName || 'BandLink • Setlist Band Manager';
-          document.getElementById('playPackage').innerHTML = `${data.packageName} • Versão <span style="color:var(--cyan);">${data.currentVersion}</span> (Build ${data.versionCode})`;
+          const appNameEl = document.getElementById('playAppName');
+          if (appNameEl) appNameEl.textContent = data.appName || 'BandLink • Setlist Band Manager';
+          const pkgEl = document.getElementById('playPackage');
+          if (pkgEl) pkgEl.innerHTML = `${data.packageName || 'com.setlistbandmanager.com'} • Versão <span style="color:var(--cyan);">${data.currentVersion || '1.4.2'}</span> (Build ${data.versionCode || 21})`;
 
           if (data.gcsStatus) {
             const gcsTxt = document.getElementById('playGcsStatusText');
@@ -2823,22 +2903,30 @@
 
           // Update Period Totals KPIs
           if (data.totals) {
-            document.getElementById('kpiLabelPeriodInstalls').textContent = `Total Instalações (${data.daysRequested || playCurrentDays}d)`;
-            document.getElementById('playKpiPeriodInstalls').textContent = `+${data.totals.totalInstalls}`;
-            document.getElementById('kpiLabelPeriodUninstalls').textContent = `Total Desinstalações (${data.daysRequested || playCurrentDays}d)`;
-            document.getElementById('playKpiPeriodUninstalls').textContent = `-${data.totals.totalUninstalls}`;
-            document.getElementById('playKpiPeriodNet').textContent = `${data.totals.totalNetGrowth >= 0 ? '+' : ''}${data.totals.totalNetGrowth}`;
-            document.getElementById('playKpiAvgDau').textContent = data.totals.averageDailyActiveUsers.toFixed(1);
+            const lblInstalls = document.getElementById('kpiLabelPeriodInstalls');
+            if (lblInstalls) lblInstalls.textContent = `Total Instalações (${data.daysRequested || playCurrentDays}d)`;
+            const valInstalls = document.getElementById('playKpiPeriodInstalls');
+            if (valInstalls) valInstalls.textContent = `+${data.totals.totalInstalls || 0}`;
+            const lblUninstalls = document.getElementById('kpiLabelPeriodUninstalls');
+            if (lblUninstalls) lblUninstalls.textContent = `Total Desinstalações (${data.daysRequested || playCurrentDays}d)`;
+            const valUninstalls = document.getElementById('playKpiPeriodUninstalls');
+            if (valUninstalls) valUninstalls.textContent = `-${data.totals.totalUninstalls || 0}`;
+            const valNet = document.getElementById('playKpiPeriodNet');
+            if (valNet) valNet.textContent = `${(data.totals.totalNetGrowth || 0) >= 0 ? '+' : ''}${data.totals.totalNetGrowth || 0}`;
+            const valAvg = document.getElementById('playKpiAvgDau');
+            if (valAvg) valAvg.textContent = (data.totals.averageDailyActiveUsers || 0).toFixed(1);
           }
 
           if (data.vitals) {
             if (data.vitals.activeDevicesLast28Days != null) {
-              document.getElementById('playKpiActiveDevices').textContent = data.vitals.activeDevicesLast28Days;
+              const kpiAct = document.getElementById('playKpiActiveDevices');
+              if (kpiAct) kpiAct.textContent = data.vitals.activeDevicesLast28Days;
               const vitActive = document.getElementById('vitalsActiveDevices');
               if (vitActive) vitActive.textContent = data.vitals.activeDevicesLast28Days;
             }
             if (data.vitals.crashRate != null) {
-              document.getElementById('playKpiCrashRate').textContent = `${data.vitals.crashRate.toFixed(2)}%`;
+              const kpiCrash = document.getElementById('playKpiCrashRate');
+              if (kpiCrash) kpiCrash.textContent = `${data.vitals.crashRate.toFixed(2)}%`;
               const vitCrash = document.getElementById('vitalsCrashRate');
               if (vitCrash) vitCrash.textContent = `${data.vitals.crashRate.toFixed(2)}%`;
             }
@@ -2955,16 +3043,37 @@
           console.error('Falha ao obter dados da Play Store:', res.status);
           const tbody = document.getElementById('playHistoryTableBody');
           if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--rose); padding: 24px;">Falha ao carregar dados (${res.status}). Clique em Atualizar no topo para tentar novamente.</td></tr>`;
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="9" style="text-align: center; color: var(--rose); padding: 24px;">
+                  <p style="margin-bottom: 8px;">Falha ao carregar dados (${res.status}).</p>
+                  <button class="btn-action btn-primary" onclick="fetchPlayStore()" style="margin: 0 auto;">
+                    <ion-icon name="refresh-outline"></ion-icon> Tentar Novamente
+                  </button>
+                </td>
+              </tr>
+            `;
           }
+          renderPlayCharts([]);
         }
       } catch (err) {
         setPlayLoading(100, 'Erro de conexão');
         console.error('Erro ao buscar dados da Play Store:', err);
         const tbody = document.getElementById('playHistoryTableBody');
         if (tbody) {
-          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--rose); padding: 24px;">Erro de conexão com o servidor. Verifique a rede.</td></tr>`;
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" style="text-align: center; color: var(--rose); padding: 24px;">
+                <p style="margin-bottom: 8px;">Erro de conexão com a API do servidor.</p>
+                <button class="btn-action btn-primary" onclick="fetchPlayStore()" style="margin: 0 auto;">
+                  <ion-icon name="refresh-outline"></ion-icon> Tentar Novamente
+                </button>
+              </td>
+            </tr>
+          `;
         }
+        renderPlayCharts([]);
+        renderPlayCountries([], 0);
       }
     }
 
