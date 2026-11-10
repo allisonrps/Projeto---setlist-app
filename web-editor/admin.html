@@ -1276,6 +1276,20 @@
         </div>
       </div>
 
+      <!-- PLAY STORE SYNC LOADING BAR -->
+      <div class="card-panel" id="playSyncProgressBox" style="margin-bottom: 24px; padding: 16px 20px; display: none; border: 1px solid rgba(6, 182, 212, 0.4); background: rgba(6, 182, 212, 0.05); border-radius: var(--radius-md);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="sync-outline" id="playSyncIcon" style="font-size: 1.25rem; color: var(--cyan);"></ion-icon>
+            <span style="font-size: 0.85rem; font-weight: 600; color: #fff;" id="playSyncStatusText">Sincronizando com a Google Play Developer API...</span>
+          </div>
+          <span style="font-size: 0.95rem; font-weight: 800; color: var(--cyan); font-family: 'JetBrains Mono', monospace;" id="playSyncPercentText">0%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; position: relative;">
+          <div id="playSyncProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--emerald)); border-radius: 999px; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);"></div>
+        </div>
+      </div>
+
       <!-- SPOTLIGHT: SELECTED DAY DRILL-DOWN -->
       <div class="card-panel" id="playDaySpotlight" style="margin-bottom: 24px; border: 1px solid rgba(6, 182, 212, 0.4); background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(12, 16, 24, 0.95) 100%);">
         <div class="card-panel-header" style="margin-bottom: 14px;">
@@ -1699,6 +1713,16 @@
   <!-- JAVASCRIPT LOGIC -->
   <!-- ============================================================== -->
   <script>
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     // Global State
     const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     let savedApi = localStorage.getItem('bandlink_admin_api');
@@ -2656,17 +2680,53 @@
       }
     }
 
+    function setPlayLoading(percent, text) {
+      const box = document.getElementById('playSyncProgressBox');
+      const bar = document.getElementById('playSyncProgressBar');
+      const txt = document.getElementById('playSyncStatusText');
+      const pct = document.getElementById('playSyncPercentText');
+      const icon = document.getElementById('playSyncIcon');
+      if (!box || !bar || !txt || !pct) return;
+
+      box.style.display = 'block';
+      box.style.opacity = '1';
+      bar.style.width = `${percent}%`;
+      pct.textContent = `${percent}%`;
+      if (text) txt.textContent = text;
+
+      if (percent >= 100) {
+        bar.style.background = 'var(--emerald)';
+        pct.style.color = 'var(--emerald)';
+        if (icon) {
+          icon.name = 'checkmark-circle-outline';
+          icon.style.color = 'var(--emerald)';
+        }
+        setTimeout(() => {
+          box.style.transition = 'opacity 0.6s ease';
+          box.style.opacity = '0';
+          setTimeout(() => {
+            box.style.display = 'none';
+            box.style.opacity = '1';
+          }, 600);
+        }, 1800);
+      }
+    }
+
     async function fetchPlayStore(targetDate = null, days = null) {
       if (days !== null) playCurrentDays = days;
       const dateVal = targetDate !== null ? targetDate : (document.getElementById('playDatePicker')?.value || '');
+
+      setPlayLoading(20, 'Conectando à Google Play Developer API...');
 
       try {
         const queryParams = new URLSearchParams();
         if (dateVal) queryParams.set('date', dateVal);
         if (playCurrentDays) queryParams.set('days', playCurrentDays.toString());
 
+        setPlayLoading(45, 'Autenticando Service Account & buscando métricas...');
         const res = await fetch(`${currentApiBase}/admin/playstore?${queryParams.toString()}`);
         if (res.ok) {
+          setPlayLoading(65, 'Processando dados de instalação e Vitals...');
           const data = await res.json();
           playStoreData = data;
 
@@ -2710,17 +2770,36 @@
 
           // Spotlight Selected Day
           if (data.selectedDay) {
-            updateDaySpotlight(data.selectedDay);
+            try {
+              updateDaySpotlight(data.selectedDay);
+            } catch (err) {
+              console.error('Erro updateDaySpotlight:', err);
+            }
           }
 
+          setPlayLoading(80, 'Calculando adoção por país em tempo real...');
           // Render Real-Time Countries
-          renderPlayCountries(data.countriesToday || [], data.totalCountriesActive || 6);
+          try {
+            renderPlayCountries(data.countriesToday || [], data.totalCountriesActive || 6);
+          } catch (err) {
+            console.error('Erro renderPlayCountries:', err);
+          }
 
+          setPlayLoading(90, 'Preenchendo histórico de 28 dias...');
           // Render History Table
-          renderPlayHistoryTable(data.dailyMetrics || [], data.selectedDate);
+          try {
+            renderPlayHistoryTable(data.dailyMetrics || [], data.selectedDate);
+          } catch (err) {
+            console.error('Erro renderPlayHistoryTable:', err);
+          }
 
+          setPlayLoading(95, 'Renderizando gráficos de instalações e DAU...');
           // Render Charts
-          renderPlayCharts(data.dailyMetrics || []);
+          try {
+            renderPlayCharts(data.dailyMetrics || []);
+          } catch (err) {
+            console.error('Erro renderPlayCharts:', err);
+          }
 
           // Update Connection Status Banner
           const banner = document.getElementById('playConnBanner');
@@ -2781,7 +2860,10 @@
               `;
             }).join('');
           }
+
+          setPlayLoading(100, 'Sincronização 100% concluída!');
         } else {
+          setPlayLoading(100, `Falha na API (${res.status})`);
           console.error('Falha ao obter dados da Play Store:', res.status);
           const tbody = document.getElementById('playHistoryTableBody');
           if (tbody) {
@@ -2789,6 +2871,7 @@
           }
         }
       } catch (err) {
+        setPlayLoading(100, 'Erro de conexão');
         console.error('Erro ao buscar dados da Play Store:', err);
         const tbody = document.getElementById('playHistoryTableBody');
         if (tbody) {
