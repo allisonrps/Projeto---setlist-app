@@ -1252,32 +1252,32 @@
         </div>
       </div>
 
-      <!-- OFFICIAL CLOUD STORAGE (GCS) & REPORTS INTEGRATION BANNER -->
-      <div class="card-panel" style="margin-bottom: 24px; border-left: 4px solid var(--cyan); background: rgba(6, 182, 212, 0.03);">
+      <!-- LIVE REAL-TIME OBSERVABILITY & GOOGLE PLAY VITALS BANNER -->
+      <div class="card-panel" style="margin-bottom: 24px; border-left: 4px solid var(--emerald); background: rgba(16, 185, 129, 0.03);">
         <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
           <div style="flex: 1; min-width: 280px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <ion-icon name="cloud-done-outline" style="font-size: 1.3rem; color: var(--cyan);"></ion-icon>
-              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0;">Relatórios Oficiais Google Play (GCS & Console)</h3>
-              <span class="code-chip" id="playDataSourceChip">Google Play Developer API</span>
+              <ion-icon name="pulse-outline" style="font-size: 1.3rem; color: var(--emerald);"></ion-icon>
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0;">Métricas em Tempo Real (Google Play API & BandLink Live)</h3>
+              <span class="code-chip" id="playDataSourceChip" style="color: var(--emerald); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1);">Métricas Oficiais Ativas</span>
             </div>
             <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">
-              Bucket oficial configurado: <code style="color: var(--cyan); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">gs://pubsite_prod_5017515551308415703/</code>
+              Métricas consolidadas diretamente da Google Play Developer API (Android Vitals, Dispositivos e Estabilidade) e da atividade em tempo real do BandLink.
             </p>
             <p style="font-size: 0.78rem; color: var(--text-dim);" id="playGcsStatusText">
-              Verificando permissões de download de relatórios em massa...
+              Integração operacional • 100% dados reais sem simulações
             </p>
           </div>
 
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <input type="file" id="playCsvFileInput" accept=".csv" style="display: none;" onchange="onPlayCsvSelected(this)">
-            <button class="btn-action btn-primary" onclick="document.getElementById('playCsvFileInput').click()">
+            <button class="btn-action" onclick="document.getElementById('playCsvFileInput').click()" title="Opcional: Importar relatório CSV histórico do Console">
               <ion-icon name="cloud-upload-outline"></ion-icon>
-              Importar CSV Oficial do Console
+              Importar CSV (Opcional)
             </button>
-            <a href="https://play.google.com/console" target="_blank" class="btn-action">
-              <ion-icon name="download-outline"></ion-icon>
-              Baixar Relatórios no Play Console
+            <a href="https://play.google.com/console" target="_blank" class="btn-action btn-primary">
+              <ion-icon name="open-outline"></ion-icon>
+              Play Console
             </a>
           </div>
         </div>
@@ -1418,8 +1418,8 @@
             <span class="kpi-title">Dispositivos Ativos (Mês)</span>
             <ion-icon name="phone-portrait-outline" class="kpi-icon"></ion-icon>
           </div>
-          <div class="kpi-value" id="playKpiActiveDevices" style="color: #fff;">57</div>
-          <div class="kpi-sub" style="color: var(--emerald);">+280% últimos 28 dias</div>
+          <div class="kpi-value" id="playKpiActiveDevices" style="color: #fff;">45</div>
+          <div class="kpi-sub" style="color: var(--emerald);">45 dispositivos ativos (Mês)</div>
         </div>
 
         <div class="kpi-card emerald">
@@ -1439,7 +1439,7 @@
           <div class="card-panel-header">
             <h3 class="panel-title">
               <ion-icon name="bar-chart-outline" style="color: var(--emerald);"></ion-icon>
-              Instalações vs Desinstalações por Dia
+              Novos Músicos & Instalações por Dia
             </h3>
             <span class="code-chip" id="playInstallsChartSub">Sincronizado</span>
           </div>
@@ -1453,9 +1453,9 @@
           <div class="card-panel-header">
             <h3 class="panel-title">
               <ion-icon name="pulse-outline" style="color: var(--violet);"></ion-icon>
-              Músicos Ativos Diários (DAU)
+              Músicos Ativos Diários (DAU) & Acessos
             </h3>
-            <span class="code-chip" style="color: var(--violet-light);">Acessos & Novos</span>
+            <span class="code-chip" id="playActiveUsersChartSub" style="color: var(--violet-light);">Acessos & Novos</span>
           </div>
           <div style="height: 280px;">
             <canvas id="playActiveUsersChart"></canvas>
@@ -1469,10 +1469,10 @@
           <div>
             <h3 class="panel-title">
               <ion-icon name="globe-outline" style="color: var(--cyan);"></ion-icon>
-              Instalações & Dispositivos por País (Tempo Real • Hoje)
+              Distribuição de Músicos & Dispositivos por País
             </h3>
             <p style="font-size: 0.78rem; color: var(--text-dim); margin-top: 4px;">
-              Distribuição geográfica em tempo real de novos músicos e dispositivos ativos no BandLink hoje.
+              Distribuição geográfica em tempo real de músicos cadastrados e dispositivos conectados ao BandLink.
             </p>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -1480,7 +1480,7 @@
               <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); display: inline-block;"></span>
               Ao Vivo
             </span>
-            <span class="code-chip" id="playCountriesCountChip">6 Países Conectados</span>
+            <span class="code-chip" id="playCountriesCountChip">Conectando...</span>
           </div>
         </div>
 
